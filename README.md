@@ -1,7 +1,10 @@
 # Fully documented source code for Elite on the BBC Master 128
 
-*This repository is a work in progress. When finished, it will contain the original source code for Elite on the BBC Master 128, with every single line documented and (for the most part) explained.*
+[BBC Micro (cassette)](https://github.com/markmoxon/elite-beebasm) | [BBC Micro (disc)](https://github.com/markmoxon/disc-elite-beebasm) | [6502 Second Processor](https://github.com/markmoxon/6502sp-elite-beebasm) | **BBC Master 128**
 
+This repository is a work in progress. When finished, it will contain fully documented source code for Elite on the BBC Master 128.
+
+It is a companion to the [bbcelite.com website](https://www.bbcelite.com), which contains all the code from this repository, but laid out in a much more human-friendly fashion. The links above will take you to repositories for the other versions of Elite that are covered by this project.
 
 ## Contents
 
