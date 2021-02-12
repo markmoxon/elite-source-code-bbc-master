@@ -244,104 +244,112 @@ SKIP 256                \ These bytes are unused, but they get moved to
 \       Name: TALLYFRAC
 \       Type: Variable
 \   Category: Status
-\    Summary: Fractional kills awarded for killing each type of ship (not used)
+\    Summary: Fractional number of kills awarded for destroying each type of
+\             ship
 \
 \ ------------------------------------------------------------------------------
 \
-\ Gets added to L1266 for destroying ship, L1266 is not used anywhere
-\ See EXNO3, ADC &8062,X
+\ This figure contains the fractional part of the points that are added to the
+\ combat rank in TALLY when destroying a ship of this type. This is different to
+\ the other BBC versions, where you always get a single combat point for
+\ everything you kill; in the Master version, it's more sophisticated.
 \
-\ Looks like it's similar to the fractional kill table from C64
-\ http://www.elitehomepage.org/faq.htm#A4
+\ The integral part is stored in the TALLYINT table.
+\
+\ Each fraction is stored as the numerator in a fraction with a denominator of
+\ 256, so 149 represents 149 / 256 = 0.58203125 points.
 \
 \ ******************************************************************************
 
 .TALLYFRAC
 
- EQUB &95               \ Missile
- EQUB 0                 \ Coriolis space station
- EQUB 16                \ Escape pod
- EQUB 10                \ Alloy plate
- EQUB 10                \ Cargo canister
- EQUB 6                 \ Boulder
- EQUB 8                 \ Asteroid
- EQUB 10                \ Splinter
- EQUB 16                \ Shuttle
- EQUB 17                \ Transporter
- EQUB 234               \ Cobra Mk III
- EQUB 170               \ Python
- EQUB 213               \ Boa
- EQUB 0                 \ Anaconda
- EQUB 85                \ Rock hermit (asteroid)
- EQUB 26                \ Viper
- EQUB 85                \ Sidewinder
- EQUB 128               \ Mamba
- EQUB 85                \ Krait
- EQUB 90                \ Adder
- EQUB 85                \ Gecko
- EQUB 170               \ Cobra Mk I
- EQUB 50                \ Worm
- EQUB 42                \ Cobra Mk III (pirate)
- EQUB 21                \ Asp Mk II
- EQUB 42                \ Python (pirate)
- EQUB 64                \ Fer-de-lance
- EQUB 192               \ Moray
- EQUB 170               \ Thargoid
- EQUB 33                \ Thargon
- EQUB 85                \ Constrictor
- EQUB 85                \ Cougar
- EQUB 0                 \ Dodecahedron ("Dodo") space station
+ EQUB 149               \ Missile                               0.58203125
+ EQUB 0                 \ Coriolis space station                0.0
+ EQUB 16                \ Escape pod                            0.0625
+ EQUB 10                \ Alloy plate                           0.0390625
+ EQUB 10                \ Cargo canister                        0.0390625
+ EQUB 6                 \ Boulder                               0.0234375
+ EQUB 8                 \ Asteroid                              0.03125
+ EQUB 10                \ Splinter                              0.0390625
+ EQUB 16                \ Shuttle                               0.0625
+ EQUB 17                \ Transporter                           0.06640625
+ EQUB 234               \ Cobra Mk III                          0.9140625
+ EQUB 170               \ Python                                0.6640625
+ EQUB 213               \ Boa                                   0.83203125
+ EQUB 0                 \ Anaconda                              1.0
+ EQUB 85                \ Rock hermit (asteroid)                0.33203125
+ EQUB 26                \ Viper                                 0.1015625
+ EQUB 85                \ Sidewinder                            0.33203125
+ EQUB 128               \ Mamba                                 0.5
+ EQUB 85                \ Krait                                 0.33203125
+ EQUB 90                \ Adder                                 0.3515625
+ EQUB 85                \ Gecko                                 0.33203125
+ EQUB 170               \ Cobra Mk I                            0.6640625
+ EQUB 50                \ Worm                                  0.1953125
+ EQUB 42                \ Cobra Mk III (pirate)                 1.1640625
+ EQUB 21                \ Asp Mk II                             1.08203125
+ EQUB 42                \ Python (pirate)                       1.1640625
+ EQUB 64                \ Fer-de-lance                          1.25
+ EQUB 192               \ Moray                                 0.75
+ EQUB 170               \ Thargoid                              2.6640625
+ EQUB 33                \ Thargon                               0.12890625
+ EQUB 85                \ Constrictor                           5.33203125
+ EQUB 85                \ Cougar                                5.33203125
+ EQUB 0                 \ Dodecahedron ("Dodo") space station   0.0
 
 \ ******************************************************************************
 \
-\       Name: TALLYSHIP
+\       Name: TALLYINT
 \       Type: Variable
 \   Category: Status
-\    Summary: Number of kills awarded for destroying each type of ship
+\    Summary: Integer number of kills awarded for destroying each type of ship
 \
 \ ------------------------------------------------------------------------------
 \
-\ Gets added to TALLY for destroying ship
+\ This figure contains the integer part of the points that are added to the
+\ combat rank in TALLY when destroying a ship of this type. This is different to
+\ the other BBC versions, where you always get a single combat point for
+\ everything you kill; in the Master version, it's more sophisticated.
 \
-\ See EXNO3, ADC &L8083,X
+\ The fractional part is stored in the TALLYFRAC table.
 \
 \ ******************************************************************************
 
-.TALLYSHIP
+.TALLYINT
 
- EQUB 0                 \ Missile
- EQUB 0                 \ Coriolis space station
- EQUB 0                 \ Escape pod
- EQUB 0                 \ Alloy plate
- EQUB 0                 \ Cargo canister
- EQUB 0                 \ Boulder
- EQUB 0                 \ Asteroid
- EQUB 0                 \ Splinter
- EQUB 0                 \ Shuttle
- EQUB 0                 \ Transporter
- EQUB 0                 \ Cobra Mk III
- EQUB 0                 \ Python
- EQUB 0                 \ Boa
- EQUB 1                 \ Anaconda
- EQUB 0                 \ Rock hermit (asteroid)
- EQUB 0                 \ Viper
- EQUB 0                 \ Sidewinder
- EQUB 0                 \ Mamba
- EQUB 0                 \ Krait
- EQUB 0                 \ Adder
- EQUB 0                 \ Gecko
- EQUB 0                 \ Cobra Mk I
- EQUB 0                 \ Worm
- EQUB 1                 \ Cobra Mk III (pirate)
- EQUB 1                 \ Asp Mk II
- EQUB 1                 \ Python (pirate)
- EQUB 1                 \ Fer-de-lance
- EQUB 0                 \ Moray
- EQUB 2                 \ Thargoid
- EQUB 0                 \ Thargon
- EQUB 5                 \ Constrictor
- EQUB 5                 \ Cougar
- EQUB 0                 \ Dodecahedron ("Dodo") space station
+ EQUB 0                 \ Missile                               0.58203125
+ EQUB 0                 \ Coriolis space station                0.0
+ EQUB 0                 \ Escape pod                            0.0625
+ EQUB 0                 \ Alloy plate                           0.0390625
+ EQUB 0                 \ Cargo canister                        0.0390625
+ EQUB 0                 \ Boulder                               0.0234375
+ EQUB 0                 \ Asteroid                              0.03125
+ EQUB 0                 \ Splinter                              0.0390625
+ EQUB 0                 \ Shuttle                               0.0625
+ EQUB 0                 \ Transporter                           0.06640625
+ EQUB 0                 \ Cobra Mk III                          0.9140625
+ EQUB 0                 \ Python                                0.6640625
+ EQUB 0                 \ Boa                                   0.83203125
+ EQUB 1                 \ Anaconda                              1.0
+ EQUB 0                 \ Rock hermit (asteroid)                0.33203125
+ EQUB 0                 \ Viper                                 0.1015625
+ EQUB 0                 \ Sidewinder                            0.33203125
+ EQUB 0                 \ Mamba                                 0.5
+ EQUB 0                 \ Krait                                 0.33203125
+ EQUB 0                 \ Adder                                 0.3515625
+ EQUB 0                 \ Gecko                                 0.33203125
+ EQUB 0                 \ Cobra Mk I                            0.6640625
+ EQUB 0                 \ Worm                                  0.1953125
+ EQUB 1                 \ Cobra Mk III (pirate)                 1.1640625
+ EQUB 1                 \ Asp Mk II                             1.08203125
+ EQUB 1                 \ Python (pirate)                       1.1640625
+ EQUB 1                 \ Fer-de-lance                          1.25
+ EQUB 0                 \ Moray                                 0.75
+ EQUB 2                 \ Thargoid                              2.6640625
+ EQUB 0                 \ Thargon                               0.12890625
+ EQUB 5                 \ Constrictor                           5.33203125
+ EQUB 5                 \ Cougar                                5.33203125
+ EQUB 0                 \ Dodecahedron ("Dodo") space station   0.0
 
 \ ******************************************************************************
 \
