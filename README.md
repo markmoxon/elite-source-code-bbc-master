@@ -1,4 +1,4 @@
-# Fully documented source code for Elite on the BBC Master 128
+# Fully buildable source code for Elite on the BBC Master 128
 
 [BBC Micro (cassette)](https://github.com/markmoxon/elite-beebasm) | [BBC Micro (disc)](https://github.com/markmoxon/disc-elite-beebasm) | [6502 Second Processor](https://github.com/markmoxon/6502sp-elite-beebasm) | **BBC Master 128**
 
