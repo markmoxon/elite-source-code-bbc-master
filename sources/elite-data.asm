@@ -3215,7 +3215,7 @@ ENDMACRO
 \       Name: NOT_USED
 \       Type: Variable
 \   Category: Status
-\    Summary: ????
+\    Summary: Probably not used, yet to confirm this
 \
 \ ******************************************************************************
 
@@ -8167,7 +8167,6 @@ ENDMACRO
  EQUB 101                \ System 101, Galaxy 2, Mission 1     Xeveon = Token 23
  EQUB 193                \ System 193, Galaxy 1, Mission 1     Orarra = Token 24
  EQUB 41                 \ System  41, Galaxy 2                Anreer = Token 25
-
  EQUB 1                  \ System   1, Galaxy 16                 Lave = Token 26
 
 \ ******************************************************************************
@@ -8229,7 +8228,6 @@ ENDMACRO
  EQUB &02                \ System 101, Galaxy 2, Mission 1     Xeveon = Token 23
  EQUB &01                \ System 193, Galaxy 1, Mission 1     Orarra = Token 24
  EQUB &82                \ System  41, Galaxy 2                Anreer = Token 25
-
  EQUB &90                \ System   1, Galaxy 16                 Lave = Token 26
 
 \ ******************************************************************************
@@ -8916,9 +8914,9 @@ ENDMACRO
  ECHR '!'
  EQUB VE
 
- EQUS " \mutilate"      \ This appears to be unused and is presumably noise from 
- EQUS " from here"      \ the compilation (it looks like an assembly language
- EQUS " to F%"          \ comment)
+ EQUS " \mutilate"      \ These bytes appear to be unused and are presumably
+ EQUS " from here"      \ workspace noise from the compilation process (it looks
+ EQUS " to F%"          \ like an assembly language comment)
  EQUB 13
  EQUB &0B, &B8
 
