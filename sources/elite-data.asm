@@ -116,6 +116,7 @@ SKIP 256                \ These bytes are unused, but they get moved to
 \       Type: Variable
 \   Category: Drawing ships
 \    Summary: Ship blueprints default NEWB flags
+\  Deep dive: Ship blueprints
 \
 \ ------------------------------------------------------------------------------
 \
@@ -527,6 +528,7 @@ ENDMACRO
 \       Type: Variable
 \   Category: Drawing ships
 \    Summary: Ship blueprint for a missile
+\  Deep dive: Ship blueprints
 \
 \ ******************************************************************************
 
@@ -614,6 +616,7 @@ ENDMACRO
 \       Type: Variable
 \   Category: Drawing ships
 \    Summary: Ship blueprint for a Coriolis space station
+\  Deep dive: Ship blueprints
 \
 \ ******************************************************************************
 
@@ -709,6 +712,7 @@ ENDMACRO
 \       Type: Variable
 \   Category: Drawing ships
 \    Summary: Ship blueprint for an escape pod
+\  Deep dive: Ship blueprints
 \
 \ ******************************************************************************
 
@@ -763,6 +767,7 @@ ENDMACRO
 \       Type: Variable
 \   Category: Drawing ships
 \    Summary: Ship blueprint for an alloy plate
+\  Deep dive: Ship blueprints
 \
 \ ******************************************************************************
 
@@ -810,6 +815,7 @@ ENDMACRO
 \       Type: Variable
 \   Category: Drawing ships
 \    Summary: Ship blueprint for a cargo canister
+\  Deep dive: Ship blueprints
 \
 \ ******************************************************************************
 
@@ -881,6 +887,7 @@ ENDMACRO
 \       Type: Variable
 \   Category: Drawing ships
 \    Summary: Ship blueprint for a boulder
+\  Deep dive: Ship blueprints
 \
 \ ******************************************************************************
 
@@ -950,6 +957,7 @@ ENDMACRO
 \       Type: Variable
 \   Category: Drawing ships
 \    Summary: Ship blueprint for an asteroid
+\  Deep dive: Ship blueprints
 \
 \ ******************************************************************************
 
@@ -1035,6 +1043,7 @@ ENDMACRO
 \       Type: Variable
 \   Category: Drawing ships
 \    Summary: Ship blueprint for a splinter
+\  Deep dive: Ship blueprints
 \
 \ ------------------------------------------------------------------------------
 \
@@ -1084,6 +1093,7 @@ ENDMACRO
 \       Type: Variable
 \   Category: Drawing ships
 \    Summary: Ship blueprint for a shuttle
+\  Deep dive: Ship blueprints
 \
 \ ******************************************************************************
 
@@ -1183,6 +1193,7 @@ ENDMACRO
 \       Type: Variable
 \   Category: Drawing ships
 \    Summary: Ship blueprint for a transporter
+\  Deep dive: Ship blueprints
 \
 \ ******************************************************************************
 
@@ -1317,6 +1328,7 @@ ENDMACRO
 \       Type: Variable
 \   Category: Drawing ships
 \    Summary: Ship blueprint for a Cobra Mk III
+\  Deep dive: Ship blueprints
 \
 \ ******************************************************************************
 
@@ -1437,6 +1449,7 @@ ENDMACRO
 \       Type: Variable
 \   Category: Drawing ships
 \    Summary: Ship blueprint for a Python
+\  Deep dive: Ship blueprints
 \
 \ ******************************************************************************
 
@@ -1528,6 +1541,7 @@ ENDMACRO
 \       Type: Variable
 \   Category: Drawing ships
 \    Summary: Ship blueprint for a Boa
+\  Deep dive: Ship blueprints
 \
 \ ******************************************************************************
 
@@ -1615,6 +1629,7 @@ ENDMACRO
 \       Type: Variable
 \   Category: Drawing ships
 \    Summary: Ship blueprint for an Anaconda
+\  Deep dive: Ship blueprints
 \
 \ ******************************************************************************
 
@@ -1704,6 +1719,7 @@ ENDMACRO
 \       Type: Variable
 \   Category: Drawing ships
 \    Summary: Ship blueprint for a rock hermit (asteroid)
+\  Deep dive: Ship blueprints
 \
 \ ------------------------------------------------------------------------------
 \
@@ -1751,6 +1767,7 @@ ENDMACRO
 \       Type: Variable
 \   Category: Drawing ships
 \    Summary: Ship blueprint for a Viper
+\  Deep dive: Ship blueprints
 \
 \ ******************************************************************************
 
@@ -1830,6 +1847,7 @@ ENDMACRO
 \       Type: Variable
 \   Category: Drawing ships
 \    Summary: Ship blueprint for a Sidewinder
+\  Deep dive: Ship blueprints
 \
 \ ******************************************************************************
 
@@ -1899,6 +1917,7 @@ ENDMACRO
 \       Type: Variable
 \   Category: Drawing ships
 \    Summary: Ship blueprint for a Mamba
+\  Deep dive: Ship blueprints
 \
 \ ******************************************************************************
 
@@ -1994,6 +2013,7 @@ ENDMACRO
 \       Type: Variable
 \   Category: Drawing ships
 \    Summary: Ship blueprint for a Krait
+\  Deep dive: Ship blueprints
 \
 \ ******************************************************************************
 
@@ -2075,6 +2095,7 @@ ENDMACRO
 \       Type: Variable
 \   Category: Drawing ships
 \    Summary: Ship blueprint for an Adder
+\  Deep dive: Ship blueprints
 \
 \ ******************************************************************************
 
@@ -2174,6 +2195,7 @@ ENDMACRO
 \       Type: Variable
 \   Category: Drawing ships
 \    Summary: Ship blueprint for a Gecko
+\  Deep dive: Ship blueprints
 \
 \ ******************************************************************************
 
@@ -2249,6 +2271,7 @@ ENDMACRO
 \       Type: Variable
 \   Category: Drawing ships
 \    Summary: Ship blueprint for a Cobra Mk I
+\  Deep dive: Ship blueprints
 \
 \ ******************************************************************************
 
@@ -2325,6 +2348,7 @@ ENDMACRO
 \       Type: Variable
 \   Category: Drawing ships
 \    Summary: Ship blueprint for a Worm
+\  Deep dive: Ship blueprints
 \
 \ ******************************************************************************
 
@@ -2396,6 +2420,7 @@ ENDMACRO
 \       Type: Variable
 \   Category: Drawing ships
 \    Summary: Ship blueprint for a Cobra Mk III (pirate)
+\  Deep dive: Ship blueprints
 \
 \ ------------------------------------------------------------------------------
 \
@@ -2463,6 +2488,7 @@ ENDMACRO
 \       Type: Variable
 \   Category: Drawing ships
 \    Summary: Ship blueprint for an Asp Mk II
+\  Deep dive: Ship blueprints
 \
 \ ******************************************************************************
 
@@ -2562,6 +2588,7 @@ ENDMACRO
 \       Type: Variable
 \   Category: Drawing ships
 \    Summary: Ship blueprint for a Python (pirate)
+\  Deep dive: Ship blueprints
 \
 \ ------------------------------------------------------------------------------
 \
@@ -2611,6 +2638,7 @@ ENDMACRO
 \       Type: Variable
 \   Category: Drawing ships
 \    Summary: Ship blueprint for a Fer-de-Lance
+\  Deep dive: Ship blueprints
 \
 \ ******************************************************************************
 
@@ -2704,6 +2732,7 @@ ENDMACRO
 \       Type: Variable
 \   Category: Drawing ships
 \    Summary: Ship blueprint for a Moray
+\  Deep dive: Ship blueprints
 \
 \ ******************************************************************************
 
@@ -2783,6 +2812,7 @@ ENDMACRO
 \       Type: Variable
 \   Category: Drawing ships
 \    Summary: Ship blueprint for a Thargoid mothership
+\  Deep dive: Ship blueprints
 \
 \ ******************************************************************************
 
@@ -2876,6 +2906,7 @@ ENDMACRO
 \       Type: Variable
 \   Category: Drawing ships
 \    Summary: Ship blueprint for a Thargon
+\  Deep dive: Ship blueprints
 \
 \ ------------------------------------------------------------------------------
 \
@@ -2934,6 +2965,7 @@ ENDMACRO
 \       Type: Variable
 \   Category: Drawing ships
 \    Summary: Ship blueprint for a Constrictor
+\  Deep dive: Ship blueprints
 \
 \ ******************************************************************************
 
@@ -3022,6 +3054,7 @@ ENDMACRO
 \       Type: Variable
 \   Category: Drawing ships
 \    Summary: Ship blueprint for a Cougar
+\  Deep dive: Ship blueprints
 \
 \ ******************************************************************************
 
@@ -3108,7 +3141,8 @@ ENDMACRO
 \       Name: SHIP_DODO
 \       Type: Variable
 \   Category: Drawing ships
-\    Summary: Ship blueprint for a Dodecahedron ("Dodo")space station
+\    Summary: Ship blueprint for a Dodecahedron ("Dodo") space station
+\  Deep dive: Ship blueprints
 \
 \ ******************************************************************************
 
@@ -4641,6 +4675,7 @@ NEXT
 \       Type: Variable
 \   Category: Maths (Geometry)
 \    Summary: Arctan table
+\  Deep dive: The sine, cosine and arctan tables
 \
 \ ------------------------------------------------------------------------------
 \
@@ -4679,7 +4714,7 @@ NEXT
 \       Type: Macro
 \   Category: Text
 \    Summary: Macro definition for jump tokens in the extended token table
-\  Deep dive: Printing extended text tokens
+\  Deep dive: Extended text tokens
 \
 \ ------------------------------------------------------------------------------
 \
@@ -4708,7 +4743,7 @@ ENDMACRO
 \       Type: Macro
 \   Category: Text
 \    Summary: Macro definition for characters in the extended token table
-\  Deep dive: Printing extended text tokens
+\  Deep dive: Extended text tokens
 \
 \ ------------------------------------------------------------------------------
 \
@@ -4743,7 +4778,7 @@ ENDMACRO
 \       Type: Macro
 \   Category: Text
 \    Summary: Macro definition for recursive tokens in the extended token table
-\  Deep dive: Printing extended text tokens
+\  Deep dive: Extended text tokens
 \
 \ ------------------------------------------------------------------------------
 \
@@ -4773,7 +4808,7 @@ ENDMACRO
 \       Type: Macro
 \   Category: Text
 \    Summary: Macro definition for two-letter tokens in the extended token table
-\  Deep dive: Printing extended text tokens
+\  Deep dive: Extended text tokens
 \
 \ ------------------------------------------------------------------------------
 \
@@ -4849,7 +4884,7 @@ ENDMACRO
 \       Type: Macro
 \   Category: Text
 \    Summary: Macro definition for random tokens in the extended token table
-\  Deep dive: Printing extended text tokens
+\  Deep dive: Extended text tokens
 \
 \ ------------------------------------------------------------------------------
 \
@@ -4925,6 +4960,7 @@ ENDMACRO
 \       Type: Variable
 \   Category: Text
 \    Summary: The first extended token table for recursive tokens 0-255 (DETOK)
+\  Deep dive: Extended text tokens
 \
 \ ******************************************************************************
 
@@ -8121,6 +8157,8 @@ ENDMACRO
 \       Type: Variable
 \   Category: Text
 \    Summary: System numbers that have special extended decriptions
+\  Deep dive: Extended system descriptions
+\             Extended text tokens
 \
 \ ------------------------------------------------------------------------------
 \
@@ -8175,6 +8213,8 @@ ENDMACRO
 \       Type: Variable
 \   Category: Text
 \    Summary: The criteria for systems with special extended descriptions
+\  Deep dive: Extended system descriptions
+\             Extended text tokens
 \
 \ ------------------------------------------------------------------------------
 \
@@ -8236,6 +8276,8 @@ ENDMACRO
 \       Type: Variable
 \   Category: Text
 \    Summary: The second extended token table for recursive tokens 0-26 (DETOK3)
+\  Deep dive: Extended system descriptions
+\             Extended text tokens
 \
 \ ------------------------------------------------------------------------------
 \
