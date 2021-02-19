@@ -30,19 +30,6 @@ CPU 1                   \ Switch to 65SC12 assembly, as this code runs on the
 N% = 67                 \ N% is set to the number of bytes in the VDU table, so
                         \ we can loop through them below
 
-ZP = &70                \ Temporary storage, used all over the place
-
-P = &72                 \ Temporary storage, used all over the place
-
-Q = &73                 \ Temporary storage, used all over the place
-
-YY = &74                \ Temporary storage, used when drawing Saturn
-
-T = &75                 \ Temporary storage, used all over the place
-
-LATCH = &00F4           \ The RAM copy of the currently selected paged ROM/RAM
-                        \ in SHEILA+&30
-
 OSWRCH = &FFEE          \ The address for the OSWRCH routine
 OSBYTE = &FFF4          \ The address for the OSBYTE routine
 OSCLI = &FFF7           \ The address for the OSCLI routine
@@ -50,6 +37,51 @@ OSCLI = &FFF7           \ The address for the OSCLI routine
 VIA = &FE00             \ Memory-mapped space for accessing internal hardware,
                         \ such as the video ULA, 6845 CRTC and 6522 VIAs (also
                         \ known as SHEILA)
+
+\ ******************************************************************************
+\
+\       Name: ZP
+\       Type: Workspace
+\    Address: &0070 to &0075
+\   Category: Workspaces
+\    Summary: Important variables used by the loader
+\
+\ ******************************************************************************
+
+ORG &0070
+
+.ZP
+
+ SKIP 2                 \ Stores addresses used for moving content around
+
+.P
+
+ SKIP 1                 \ Temporary storage, used in a number of places
+
+.Q
+
+ SKIP 1                 \ Temporary storage, used in a number of places
+
+.YY
+
+ SKIP 1                 \ Temporary storage, used in a number of places
+
+.T
+
+ SKIP 1                 \ Temporary storage, used in a number of places
+
+ORG &00F4
+
+.LATCH
+
+ SKIP 2                 \ The RAM copy of the currently selected paged ROM/RAM
+                        \ in SHEILA+&30
+
+\ ******************************************************************************
+\
+\ ELITE LOADER
+\
+\ ******************************************************************************
 
 CODE% = &0E00
 LOAD% = &0E00
