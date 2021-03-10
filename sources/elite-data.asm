@@ -185,8 +185,8 @@ SKIP 256                \ These bytes are unused, but they get moved to
 \
 \    * Bit 6: Cop flag (0 = not a cop, 1 = cop)
 \
-\             If we destroy a cop, then we instantly becoime a fugitive (the
-\             transporter isn't actually a cop, but it's clearly under police
+\             If we destroy a cop, then we instantly become a fugitive (the
+\             Transporter isn't actually a cop, but it's clearly under police
 \             protection)
 \
 \             Viper, Transporter
@@ -1092,7 +1092,7 @@ ENDMACRO
 \       Name: SHIP_SHUTTLE
 \       Type: Variable
 \   Category: Drawing ships
-\    Summary: Ship blueprint for a shuttle
+\    Summary: Ship blueprint for a Shuttle
 \  Deep dive: Ship blueprints
 \
 \ ******************************************************************************
@@ -1192,7 +1192,7 @@ ENDMACRO
 \       Name: SHIP_TRANSPORTER
 \       Type: Variable
 \   Category: Drawing ships
-\    Summary: Ship blueprint for a transporter
+\    Summary: Ship blueprint for a Transporter
 \  Deep dive: Ship blueprints
 \
 \ ******************************************************************************
@@ -5167,7 +5167,7 @@ ENDMACRO
  EJMP 2                 \                {sentence case}
  ECHR 'G'               \                GREETINGS {single cap}COMMANDER
  ETWO 'R', 'E'          \                {commander name}, I {lower case}AM
- ETWO 'E', 'T'          \                {sentence case} CAPTAIN {mission 1
+ ETWO 'E', 'T'          \                {sentence case} CAPTAIN {mission
  ETWO 'I', 'N'          \                captain's name} {lower case}OF{sentence
  ECHR 'G'               \                case} HER MAJESTY'S SPACE NAVY{lower
  ECHR 'S'               \                case} AND {single cap}I BEG A MOMENT OF
@@ -5520,7 +5520,7 @@ ENDMACRO
  EJMP 2                 \                {sentence case}
  ECHR ' '               \                  ATTENTION {single cap}COMMANDER
  ECHR ' '               \                {commander name}, I {lower case}AM
- ETWO 'A', 'T'          \                {sentence case} CAPTAIN {mission 1
+ ETWO 'A', 'T'          \                {sentence case} CAPTAIN {mission
  ECHR 'T'               \                captain's name} {lower case}OF{sentence
  ETWO 'E', 'N'          \                case} HER MAJESTY'S SPACE NAVY{lower
  ETWO 'T', 'I'          \                case}. {single cap}WE HAVE NEED OF YOUR
@@ -8156,7 +8156,7 @@ ENDMACRO
 \       Name: RUPLA
 \       Type: Variable
 \   Category: Text
-\    Summary: System numbers that have special extended decriptions
+\    Summary: System numbers that have extended decription overrides
 \  Deep dive: Extended system descriptions
 \             Extended text tokens
 \
@@ -8212,21 +8212,21 @@ ENDMACRO
 \       Name: RUGAL
 \       Type: Variable
 \   Category: Text
-\    Summary: The criteria for systems with special extended descriptions
+\    Summary: The criteria for systems with extended decription overrides
 \  Deep dive: Extended system descriptions
 \             Extended text tokens
 \
 \ ------------------------------------------------------------------------------
 \
-\ This table contains the criteria for printing a special extended description
+\ This table contains the criteria for printing an extended decription override
 \ for a system. The galaxy number is in bits 0-6, while bit 7 determines whether
 \ to show this token during mission 1 only (bit 7 is clear, i.e. a value of &0x
 \ in the table below), or all of the time (bit 7 is set, i.e. a value of &8x in
 \ the table below).
 \
-\ In other words, Teorge, Arredi, Anreer and Lave have special extended
-\ descriptions that are always shown, while the rest only appear when mission 1
-\ is in progress.
+\ In other words, Teorge, Arredi, Anreer and Lave have extended decription
+\ overrides descriptions that are always shown, while the rest only appear when
+\ mission 1 is in progress.
 \
 \ The three variables work as follows:
 \
@@ -8281,7 +8281,7 @@ ENDMACRO
 \
 \ ------------------------------------------------------------------------------
 \
-\ Contains the tokens for special extended descriptions of systems that match
+\ Contains the tokens for extended description overrides of systems that match
 \ the system number in RUPLA and the conditions in RUGAL.
 \
 \ The three variables work as follows:
