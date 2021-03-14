@@ -142,7 +142,7 @@ XX4     = $008D
 XX20    = $008E
 L008F   = $008F
 L0090   = $0090
-L0091   = $0091
+RAT     = $0091
 RAT2    = $0092
 L0093   = $0093
 L0094   = $0094
@@ -217,11 +217,10 @@ QQ8     = $00DF
 L00E0   = $00E0
 QQ9     = $00E1
 QQ10    = $00E2
-L00E3   = $00E3
+NOSTM   = $00E3
 L00F9   = $00F9
 L00FC   = $00FC
 L00FD   = $00FD
-L00FF   = $00FF
 XX3     = $0100
 L0101   = $0101
 L0102   = $0102
@@ -283,13 +282,13 @@ FRIN    = $0E41
 L0E42   = $0E42
 L0E43   = $0E43
 L0E45   = $0E45
-L0E4E   = $0E4E
+MANY    = $0E4E
 SSPR    = $0E50
 L0E58   = $0E58
 L0E5E   = $0E5E
 L0E6B   = $0E6B
 L0E6D   = $0E6D
-L0E70   = $0E70
+JUNK    = $0E70
 auto    = $0E71
 ECMP    = $0E72
 MJ      = $0E73
@@ -299,26 +298,26 @@ MSAR    = $0E76
 VIEW    = $0E77
 LASCT   = $0E78
 GNTMP   = $0E79
-L0E7A   = $0E7A
+HFX     = $0E7A
 L0E7B   = $0E7B
 DLY     = $0E7C
 L0E7D   = $0E7D
 LSX2    = $0E7E
 L0F7D   = $0F7D
 LSY2    = $0F7E
-L107E   = $107E
+LSO     = $107E
 L1145   = $1145
 BUF     = $1146
 L1147   = $1147
 L1164   = $1164
 L1165   = $1165
 SX      = $11A0
-L11B5   = $11B5
+SXL     = $11B5
 SY      = $11CA
 SYL     = $11DF
 L11ED   = $11ED
 SZ      = $11F4
-L1209   = $1209
+SZL     = $1209
 LASX    = $121E
 LASY    = $121F
 ALTIT   = $1221
@@ -401,7 +400,6 @@ RUPLA   = $AF48
 LAF61   = $AF61
 RUGAL   = $AF62
 RUTOK   = $AF7C
-LB0A9   = $B0A9
 LBDB1   = $BDB1
 LDDEB   = $DDEB
 VIA     = $FE00
@@ -527,7 +525,7 @@ LFFFF   = $FFFF
         CLI
         RTS
 
-.L138F
+.BEING_HIT_NOISE
         LDY     #$09
         JSR     NOISE
 
@@ -770,7 +768,7 @@ LFFFF   = $FFFF
         STA     LFE44
         LDA     L153A
         STA     LFE45
-        LDA     L0E7A
+        LDA     HFX
         BNE     L1532
 
         LDA     #$18
@@ -2583,7 +2581,7 @@ L1927 = LI230+1
         STX     T
         LDA     #$82
         STX     Q
-        JSR     DVID4
+        JSR     DVID4_COPY
 
         LDA     P
         CLC
@@ -2736,7 +2734,7 @@ L1927 = LI230+1
 
         RTS
 
-.DVID4
+.DVID4_COPY
         LDX     #$08
         ASL     A
         STA     P
@@ -4640,43 +4638,22 @@ L3000 = L2FFF+1
         CPY     #$A0
         BRA     L3279
 
-        RTI
+        EQUB    $40
 
-        JSR     L0000
+        EQUB    $20,$00,$00
 
 .L321D
-        BRK
+        EQUB    $00,$00,$00,$00,$00,$00,$00,$00
         EQUB    $00
 
-        BRK
-        EQUB    $00
-
-        BRK
-        EQUB    $00
-
-        BRK
-        EQUB    $00
-
-        BRK
 .L3226
         EQUB    $00
 
 .L3227
-        BRK
-        EQUB    $00
+        EQUB    $00,$00,$00,$00,$00,$00,$00,$00
+        EQUB    $00,$00
 
-        BRK
-        EQUB    $00
-
-        BRK
-        EQUB    $00
-
-        BRK
-        EQUB    $00
-
-        BRK
-        EQUB    $00
-
+.MT27
         LDA     #$D9
         BNE     L3237
 
@@ -4698,7 +4675,7 @@ L3000 = L2FFF+1
         LDA     #$7C
         STA     V
         LDA     #$AF
-        BNE     L325F
+        BNE     DTEN
 
 .DETOK
         PHA
@@ -4712,25 +4689,25 @@ L3000 = L2FFF+1
         LDA     #$00
         STA     V
         LDA     #$A4
-.L325F
+.DTEN
         STA     L003B
         LDY     #$00
-.L3263
+.DTL1
         LDA     (V),Y
         EOR     #$57
-        BNE     L326C
+        BNE     DT1
 
         DEX
-        BEQ     L3273
+        BEQ     DTL2
 
-.L326C
+.DT1
         INY
-        BNE     L3263
+        BNE     DTL1
 
         INC     L003B
-        BNE     L3263
+        BNE     DTL1
 
-.L3273
+.DTL2
         INY
         BNE     L3278
 
@@ -4739,13 +4716,13 @@ L3000 = L2FFF+1
         LDA     (V),Y
 L3279 = L3278+1
         EOR     #$57
-        BEQ     L3284
+        BEQ     DTEX
 
         JSR     DETOK2
 
-        JMP     L3273
+        JMP     DTL2
 
-.L3284
+.DTEX
         PLA
         STA     L003B
         PLA
@@ -4757,10 +4734,10 @@ L3279 = L3278+1
 
 .DETOK2
         CMP     #$20
-        BCC     L32DA
+        BCC     DT3
 
-        BIT     L3B68
-        BPL     L32A7
+        BIT     DTW3
+        BPL     DT8
 
         TAX
         TYA
@@ -4772,14 +4749,14 @@ L3279 = L3278+1
         TXA
         JSR     TT27
 
-        JMP     L32F7
+        JMP     DT7
 
-.L32A7
+.DT8
         CMP     #$5B
-        BCC     L32C3
+        BCC     DTS
 
         CMP     #$81
-        BCC     L3300
+        BCC     DT6
 
         CMP     #$D7
         BCC     DETOK
@@ -4788,30 +4765,30 @@ L3279 = L3278+1
         ASL     A
         PHA
         TAX
-        LDA     L3409,X
-        JSR     L32C3
+        LDA     TKN2,X
+        JSR     DTS
 
         PLA
         TAX
         LDA     L340A,X
-.L32C3
+.DTS
         CMP     #$41
-        BCC     L32D7
+        BCC     DT9
 
-        BIT     L3B6B
-        BMI     L32D1
+        BIT     DTW6
+        BMI     DT10
 
         BIT     DTW2
-        BMI     L32D4
+        BMI     DT5
 
-.L32D1
+.DT10
         ORA     L3B66
-.L32D4
-        AND     L3B6C
-.L32D7
-        JMP     L3B72
+.DT5
+        AND     DTW8
+.DT9
+        JMP     DASC
 
-.L32DA
+.DT3
         TAX
         TYA
         PHA
@@ -4824,16 +4801,16 @@ L3279 = L3278+1
         TAX
         LDA     L33C7,X
         STA     L32F5
-        LDA     L33C8,X
+        LDA     VRTS,X
         STA     L32F6
         TXA
         LSR     A
-.L32F4
-        JSR     L3B72
+.DTM
+        JSR     DASC
 
-L32F5 = L32F4+1
-L32F6 = L32F4+2
-.L32F7
+L32F5 = DTM+1
+L32F6 = DTM+2
+.DT7
         PLA
         STA     L003B
         PLA
@@ -4842,7 +4819,7 @@ L32F6 = L32F4+2
         TAY
         RTS
 
-.L3300
+.DT6
         STA     SC
         TYA
         PHA
@@ -4865,16 +4842,16 @@ L32F6 = L32F4+2
         ADC     L49C1,X
         JSR     DETOK
 
-        JMP     L32F7
+        JMP     DT7
 
         LDA     #$00
         EQUB    $2C
 
-.L332C
+.MT2
         LDA     #$20
         STA     L3B66
         LDA     #$00
-        STA     L3B6B
+        STA     DTW6
         RTS
 
         LDA     #$06
@@ -4890,7 +4867,7 @@ L32F6 = L32F4+2
 
 .MT13
         LDA     #$80
-        STA     L3B6B
+        STA     DTW6
         LDA     #$20
         STA     L3B66
         RTS
@@ -4900,9 +4877,9 @@ L32F6 = L32F4+2
         LDA     #$FF
         EQUB    $2C
 
-.L335B
+.MT5
         LDA     #$00
-        STA     L3B68
+        STA     DTW3
         RTS
 
 .MT14
@@ -4911,7 +4888,7 @@ L32F6 = L32F4+2
 
 .MT15
         LDA     #$00
-        STA     L3B69
+        STA     DTW4
         ASL     A
         STA     DTW5
         RTS
@@ -4924,64 +4901,65 @@ L32F6 = L32F4+2
 
         LDX     DTW5
         LDA     L1145,X
-        JSR     L33B1
+        JSR     VOWEL
 
-        BCC     L3387
+        BCC     MT171
 
         DEC     DTW5
-.L3387
+.MT171
         LDA     #$99
         JMP     DETOK
 
-        JSR     L33AB
+        JSR     MT19
 
         JSR     DORND
 
         AND     #$03
         TAY
-.L3395
+.MT18L
         JSR     DORND
 
         AND     #$3E
         TAX
         LDA     L340B,X
-        JSR     L32C3
+        JSR     DTS
 
         LDA     L340C,X
-        JSR     L32C3
+        JSR     DTS
 
         DEY
-        BPL     L3395
+        BPL     MT18L
 
         RTS
 
-.L33AB
+.MT19
         LDA     #$DF
-        STA     L3B6C
+        STA     DTW8
         RTS
 
-.L33B1
+.VOWEL
         ORA     #$20
         CMP     #$61
-        BEQ     L33C8
+        BEQ     VRTS
 
         CMP     #$65
-        BEQ     L33C8
+        BEQ     VRTS
 
         CMP     #$69
-        BEQ     L33C8
+        BEQ     VRTS
 
         CMP     #$6F
-        BEQ     L33C8
+        BEQ     VRTS
 
         CMP     #$75
-        BEQ     L33C8
+        BEQ     VRTS
 
 .L33C7
         CLC
-.L33C8
+.VRTS
         RTS
 
+.L33C9
         EQUB    $29,$33,$2C,$33,$E6,$57,$E6,$57
         EQUB    $5B,$33,$54,$33,$72,$3B,$37,$33
         EQUB    $42,$33,$72,$3B,$97,$35,$72,$3B
@@ -4991,7 +4969,7 @@ L32F6 = L32F4+2
         EQUB    $B3,$49,$0A,$69,$31,$32,$35,$32
         EQUB    $D6,$49,$60,$69,$69,$69,$72,$3B
 
-.L3409
+.TKN2
         EQUB    $0C
 
 .L340A
@@ -5005,7 +4983,7 @@ L32F6 = L32F4+2
         EQUB    $4C,$45,$54,$53,$54,$4F,$4E,$4C
         EQUB    $4F,$4E,$55,$54,$48,$4E,$4F
 
-.L3423
+.QQ16
         EQUB    $41
 
 .L3424
@@ -5088,21 +5066,21 @@ L32F6 = L32F4+2
         EQUB    $05,$4D,$05,$72,$05,$97,$05,$BC
         EQUB    $05
 
-.L3593
-        EQUB    $60
+.FLKB
+        RTS
 
 .NLIN3
         JSR     TT27
 
 .NLIN4
         LDA     #$13
-        BNE     L359F
+        BNE     NLIN2
 
 .NLIN
         LDA     #$17
-.NLIN2
+.L359D
         INC     YC
-.L359F
+.NLIN2
         STA     Y1
         LDA     #$0F
         STA     COL
@@ -5116,12 +5094,12 @@ L32F6 = L32F4+2
         STA     COL
         RTS
 
-.L35B5
-        JSR     L60A4
+.HLOIN2
+        JSR     EDGES
 
         STY     Y1
         LDA     #$00
-        STA     L107E,Y
+        STA     LSO,Y
         JMP     HLOIN
 
 .BLINE
@@ -5135,15 +5113,15 @@ L32F6 = L32F4+2
         BEQ     BL1
 
         INC     FLAG
-.L35D3
+.BL5
         LDY     LSP
         LDA     #$FF
         CMP     L0F7D,Y
-        BEQ     L3645
+        BEQ     BL7
 
         STA     LSY2,Y
         INC     LSP
-        BNE     L3645
+        BNE     BL7
 
 .BL1
         LDA     XX18
@@ -5164,10 +5142,10 @@ L32F6 = L32F4+2
         STA     L0051
         JSR     LL145
 
-        BCS     L35D3
+        BCS     BL5
 
         LDA     SWAP
-        BEQ     L361D
+        BEQ     BL9
 
         LDA     XX15
         LDY     X2
@@ -5177,18 +5155,18 @@ L32F6 = L32F4+2
         LDY     Y2
         STA     Y2
         STY     Y1
-.L361D
+.BL9
         LDY     LSP
         LDA     L0F7D,Y
         CMP     #$FF
-        BNE     L3631
+        BNE     BL8
 
         LDA     XX15
         STA     LSX2,Y
         LDA     Y1
         STA     LSY2,Y
         INY
-.L3631
+.BL8
         LDA     X2
         STA     LSX2,Y
         LDA     Y2
@@ -5198,9 +5176,9 @@ L32F6 = L32F4+2
         JSR     LL30
 
         LDA     L0083
-        BNE     L35D3
+        BNE     BL5
 
-.L3645
+.BL7
         LDA     K6
         STA     XX18
         LDA     L0069
@@ -5218,8 +5196,8 @@ L32F6 = L32F4+2
 .FLIP
         LDA     #$FA
         STA     COL
-        LDY     L00E3
-.L3663
+        LDY     NOSTM
+.FLL1
         LDX     SY,Y
         LDA     SX,Y
         STA     Y1
@@ -5232,7 +5210,7 @@ L32F6 = L32F4+2
         JSR     PIXEL2
 
         DEY
-        BNE     L3663
+        BNE     FLL1
 
         RTS
 
@@ -5240,19 +5218,19 @@ L32F6 = L32F4+2
         LDA     #$FA
         STA     COL
         LDX     VIEW
-        BEQ     L3692
+        BEQ     STARS1
 
         DEX
-        BNE     L368F
+        BNE     ST11
 
-        JMP     L377E
+        JMP     STARS6
 
-.L368F
-        JMP     L4396
+.ST11
+        JMP     STARS2
 
-.L3692
-        LDY     L00E3
-.L3694
+.STARS1
+        LDY     NOSTM
+.STL1
         JSR     DV42
 
         LDA     R
@@ -5262,14 +5240,14 @@ L32F6 = L32F4+2
         ROR     A
         ORA     #$01
         STA     Q
-        LDA     L1209,Y
+        LDA     SZL,Y
         SBC     DELT4
-        STA     L1209,Y
+        STA     SZL,Y
         LDA     SZ,Y
         STA     ZZ
         SBC     L0077
         STA     SZ,Y
-        JSR     L453E
+        JSR     MLU1
 
         STA     L003F
         LDA     P
@@ -5282,24 +5260,24 @@ L32F6 = L32F4+2
         STA     S
         LDA     SX,Y
         STA     XX15
-        JSR     L4543
+        JSR     MLU2
 
         STA     L003D
         LDA     P
-        ADC     L11B5,Y
+        ADC     SXL,Y
         STA     XX
         LDA     XX15
         ADC     L003D
         STA     L003D
         EOR     L0049
-        JSR     L44E8
+        JSR     MLS1
 
         JSR     ADD
 
         STA     L003F
         STX     YY
         EOR     ALP2
-        JSR     L44E0
+        JSR     MLS2
 
         JSR     ADD
 
@@ -5323,7 +5301,7 @@ L32F6 = L32F4+2
 
         STA     L003D
         TXA
-        STA     L11B5,Y
+        STA     SXL,Y
         LDA     YY
         STA     R
         LDA     L003F
@@ -5339,32 +5317,32 @@ L32F6 = L32F4+2
         STA     SX,Y
         AND     #$7F
         CMP     #$78
-        BCS     L375B
+        BCS     KILL1
 
         LDA     L003F
         STA     SY,Y
         STA     Y1
         AND     #$7F
         CMP     #$78
-        BCS     L375B
+        BCS     KILL1
 
         LDA     SZ,Y
         CMP     #$10
-        BCC     L375B
+        BCC     KILL1
 
         STA     ZZ
-.L3751
+.STC1
         JSR     PIXEL2
 
         DEY
         BEQ     L375A
 
-        JMP     L3694
+        JMP     STL1
 
 .L375A
         RTS
 
-.L375B
+.KILL1
         JSR     DORND
 
         ORA     #$04
@@ -5381,11 +5359,11 @@ L32F6 = L32F4+2
         STA     SZ,Y
         STA     ZZ
         LDA     Y1
-        JMP     L3751
+        JMP     STC1
 
-.L377E
-        LDY     L00E3
-.L3780
+.STARS6
+        LDY     NOSTM
+.STL6
         JSR     DV42
 
         LDA     R
@@ -5397,16 +5375,16 @@ L32F6 = L32F4+2
         STA     Q
         LDA     SX,Y
         STA     XX15
-        JSR     L4543
+        JSR     MLU2
 
         STA     L003D
-        LDA     L11B5,Y
+        LDA     SXL,Y
         SBC     P
         STA     XX
         LDA     XX15
         SBC     L003D
         STA     L003D
-        JSR     L453E
+        JSR     MLU1
 
         STA     L003F
         LDA     SYL,Y
@@ -5417,23 +5395,23 @@ L32F6 = L32F4+2
         SBC     L003F
         STA     L003F
         STA     S
-        LDA     L1209,Y
+        LDA     SZL,Y
         ADC     DELT4
-        STA     L1209,Y
+        STA     SZL,Y
         LDA     SZ,Y
         STA     ZZ
         ADC     L0077
         STA     SZ,Y
         LDA     L003D
         EOR     ALP2
-        JSR     L44E8
+        JSR     MLS1
 
         JSR     ADD
 
         STA     L003F
         STX     YY
         EOR     L0049
-        JSR     L44E0
+        JSR     MLS2
 
         JSR     ADD
 
@@ -5460,7 +5438,7 @@ L32F6 = L32F4+2
 
         STA     L003D
         TXA
-        STA     L11B5,Y
+        STA     SXL,Y
         LDA     YY
         STA     R
         LDA     L003F
@@ -5478,25 +5456,25 @@ L32F6 = L32F4+2
         STA     Y1
         AND     #$7F
         CMP     #$6E
-        BCS     L3847
+        BCS     KILL6
 
         LDA     SZ,Y
         CMP     #$A0
-        BCS     L3847
+        BCS     KILL6
 
         STA     ZZ
-.L383D
+.STC6
         JSR     PIXEL2
 
         DEY
-        BEQ     L3846
+        BEQ     ST3_UC
 
-        JMP     L3780
+        JMP     STL6
 
-.L3846
+.ST3_UC
         RTS
 
-.L3847
+.KILL6
         JSR     DORND
 
         AND     #$7F
@@ -5504,7 +5482,7 @@ L32F6 = L32F4+2
         STA     SZ,Y
         STA     ZZ
         LSR     A
-        BCS     L386A
+        BCS     ST4_UC
 
         LSR     A
         LDA     #$FC
@@ -5515,9 +5493,9 @@ L32F6 = L32F4+2
 
         STA     Y1
         STA     SY,Y
-        JMP     L383D
+        JMP     STC6
 
-.L386A
+.ST4_UC
         JSR     DORND
 
         STA     XX15
@@ -5527,7 +5505,7 @@ L32F6 = L32F4+2
         ROR     A
         STA     Y1
         STA     SY,Y
-        BNE     L383D
+        BNE     STC6
 
 .MAS1
         LDA     INWK,Y
@@ -5539,7 +5517,7 @@ L32F6 = L32F4+2
         LDA     #$00
         ROR     A
         STA     L0059
-        JSR     L39B7
+        JSR     MVT3
 
         STA     L009E,X
         LDY     L0057
@@ -5567,7 +5545,7 @@ L32F6 = L32F4+2
         JSR     SQUA2
 
         ADC     R
-        BCS     L38CA
+        BCS     MA30
 
         STA     R
         LDA     L0407,Y
@@ -5576,12 +5554,12 @@ L32F6 = L32F4+2
         ADC     R
         BCC     L38CC
 
-.L38CA
+.MA30
         LDA     #$FF
 .L38CC
         RTS
 
-.L38CD
+.wearedocked
         LDA     #$CD
         JSR     DETOK
 
@@ -5589,23 +5567,23 @@ L32F6 = L32F4+2
 
         JMP     L3915
 
-.L38D8
+.st4
         LDX     #$09
         CMP     #$19
-        BCS     L393C
+        BCS     st3
 
         DEX
         CMP     #$0A
-        BCS     L393C
+        BCS     st3
 
         DEX
         CMP     #$02
-        BCS     L393C
+        BCS     st3
 
         DEX
-        BNE     L393C
+        BNE     st3
 
-.L38EB
+.STATUS
         LDA     #$08
         JSR     TRADEMODE
 
@@ -5618,18 +5596,18 @@ L32F6 = L32F4+2
 
         LDA     #$0F
         LDY     QQ12
-        BNE     L38CD
+        BNE     wearedocked
 
         LDA     #$E6
-        LDY     L0E70
+        LDY     JUNK
         LDX     L0E43,Y
-        BEQ     L3912
+        BEQ     st6
 
         LDY     ENERGY
         CPY     #$80
         ADC     #$01
-.L3912
-        JSR     L57DB
+.st6
+        JSR     plf
 
 .L3915
         LDA     #$7D
@@ -5637,18 +5615,18 @@ L32F6 = L32F4+2
 
         LDA     #$13
         LDY     FIST
-        BEQ     L3925
+        BEQ     st5
 
         CPY     #$32
         ADC     #$01
-.L3925
-        JSR     L57DB
+.st5
+        JSR     plf
 
         LDA     #$10
         JSR     spc
 
         LDA     L127C
-        BNE     L38D8
+        BNE     st4
 
         TAX
         LDA     TALLY
@@ -5659,56 +5637,56 @@ L32F6 = L32F4+2
         LSR     A
         BNE     L3938
 
-.L393C
+.st3
         TXA
         CLC
         ADC     #$15
-        JSR     L57DB
+        JSR     plf
 
         LDA     #$12
-        JSR     L39AF
+        JSR     plf2
 
         LDA     ESCP
         BEQ     L3952
 
         LDA     #$70
-        JSR     L39AF
+        JSR     plf2
 
 .L3952
         LDA     BST
         BEQ     L395C
 
         LDA     #$6F
-        JSR     L39AF
+        JSR     plf2
 
 .L395C
         LDA     ECM
         BEQ     L3966
 
         LDA     #$6C
-        JSR     L39AF
+        JSR     plf2
 
 .L3966
         LDA     #$71
         STA     XX4
-.L396A
+.stqv
         TAY
         LDX     L11ED,Y
         BEQ     L3973
 
-        JSR     L39AF
+        JSR     plf2
 
 .L3973
         INC     XX4
         LDA     XX4
         CMP     #$75
-        BCC     L396A
+        BCC     stqv
 
         LDX     #$00
-.L397D
+.st
         STX     CNT
         LDY     LASER,X
-        BEQ     L39A7
+        BEQ     st1
 
         TXA
         CLC
@@ -5733,30 +5711,30 @@ L32F6 = L32F4+2
 
         LDA     #$76
 .L39A4
-        JSR     L39AF
+        JSR     plf2
 
-.L39A7
+.st1
         LDX     CNT
         INX
         CPX     #$04
-        BCC     L397D
+        BCC     st
 
         RTS
 
-.L39AF
-        JSR     L57DB
+.plf2
+        JSR     plf
 
         LDA     #$06
         STA     XC
         RTS
 
-.L39B7
+.MVT3
         LDA     L0059
         STA     S
         AND     #$80
         STA     T
         EOR     L009E,X
-        BMI     L39DB
+        BMI     MV13
 
         LDA     L0057
         CLC
@@ -5772,7 +5750,7 @@ L32F6 = L32F4+2
         STA     L0059
         RTS
 
-.L39DB
+.MV13
         LDA     S
         AND     #$7F
         STA     S
@@ -5789,7 +5767,7 @@ L32F6 = L32F4+2
         ORA     #$80
         EOR     T
         STA     L0059
-        BCS     L3A12
+        BCS     MV14
 
         LDA     #$01
         SBC     L0057
@@ -5802,7 +5780,7 @@ L32F6 = L32F4+2
         AND     #$7F
         ORA     T
         STA     L0059
-.L3A12
+.MV14
         RTS
 
 .MVS5
@@ -5882,30 +5860,28 @@ L32F6 = L32F4+2
         RTS
 
 .L3A9F
-        EQUB    $48
-
-        EQUB    $76,$E8,$00
+        EQUB    $48,$76,$E8,$00
 
 .pr2
         LDA     #$03
 .L3AA5
         LDY     #$00
-.L3AA7
+.TT11
         STA     U
         LDA     #$00
         STA     K
         STA     L0057
         STY     L0058
         STX     L0059
-.L3AB3
+.BPRNT
         LDX     #$0B
         STX     T
         PHP
-        BCC     L3ABE
+        BCC     TT30
 
         DEC     T
         DEC     U
-.L3ABE
+.TT30
         LDA     #$0B
         SEC
         STA     XX17
@@ -5914,20 +5890,20 @@ L32F6 = L32F4+2
         INC     U
         LDY     #$00
         STY     S
-        JMP     L3B0F
+        JMP     TT36
 
-.L3AD0
+.TT35
         ASL     L0059
         ROL     L0058
         ROL     L0057
         ROL     K
         ROL     S
         LDX     #$03
-.L3ADC
+.tt35_lc
         LDA     K,X
         STA     XX15,X
         DEX
-        BPL     L3ADC
+        BPL     tt35_lc
 
         LDA     S
         STA     L004E
@@ -5943,73 +5919,73 @@ L32F6 = L32F4+2
         ROL     S
         CLC
         LDX     #$03
-.L3AFE
+.tt36_lc
         LDA     K,X
         ADC     XX15,X
         STA     K,X
         DEX
-        BPL     L3AFE
+        BPL     tt36_lc
 
         LDA     L004E
         ADC     S
         STA     S
         LDY     #$00
-.L3B0F
+.TT36
         LDX     #$03
         SEC
-.L3B12
+.tt37_lc
         LDA     K,X
         SBC     L3A9F,X
         STA     XX15,X
         DEX
-        BPL     L3B12
+        BPL     tt37_lc
 
         LDA     S
         SBC     #$17
         STA     L004E
-        BCC     L3B35
+        BCC     TT37
 
         LDX     #$03
-.L3B26
+.tt38_lc
         LDA     XX15,X
         STA     K,X
         DEX
-        BPL     L3B26
+        BPL     tt38_lc
 
         LDA     L004E
         STA     S
         INY
-        JMP     L3B0F
+        JMP     TT36
 
-.L3B35
+.TT37
         TYA
-        BNE     L3B44
+        BNE     TT32
 
         LDA     T
-        BEQ     L3B44
+        BEQ     TT32
 
         DEC     U
-        BPL     L3B4E
+        BPL     TT34
 
         LDA     #$20
-        BNE     L3B4B
+        BNE     tt34_lc
 
-.L3B44
+.TT32
         LDY     #$00
         STY     T
         CLC
         ADC     #$30
-.L3B4B
-        JSR     L3B72
+.tt34_lc
+        JSR     DASC
 
-.L3B4E
+.TT34
         DEC     T
         BPL     L3B54
 
         INC     T
 .L3B54
         DEC     XX17
-        BMI     L3B65
+        BMI     rT10
 
         BNE     L3B62
 
@@ -6017,68 +5993,76 @@ L32F6 = L32F4+2
         BCC     L3B62
 
         LDA     #$2E
-        JSR     L3B72
+        JSR     DASC
 
 .L3B62
-        JMP     L3AD0
+        JMP     TT35
 
-.L3B65
+.rT10
         RTS
 
 .L3B66
-        JSR     L00FF
+        EQUB    $20
 
-DTW2 = L3B66+1
-L3B68 = L3B66+2
-.L3B69
-        BRK
+.DTW2
+        EQUB    $FF
+
+.DTW3
+        EQUB    $00
+
+.DTW4
+        EQUB    $00
+
 .DTW5
         EQUB    $00
 
-.L3B6B
-        BRK
-.L3B6C
+.DTW6
+        EQUB    $00
+
+.DTW8
         EQUB    $FF
 
-.L3B6D
+.FEED
         LDA     #$0C
-.L3B6F
-        BIT     L41A9
-L3B71 = L3B6F+2
-.L3B72
+        EQUB    $2C
+
+.MT16
+        LDA     #$41
+L3B71 = MT16+1
+.DASC
         STX     SC
         LDX     #$FF
-        STX     L3B6C
+        STX     DTW8
         CMP     #$2E
-        BEQ     L3B8E
+        BEQ     DA8
 
         CMP     #$3A
-        BEQ     L3B8E
+        BEQ     DA8
 
         CMP     #$0A
-        BEQ     L3B8E
+        BEQ     DA8
 
         CMP     #$0C
-        BEQ     L3B8E
+        BEQ     DA8
 
         CMP     #$20
-        BEQ     L3B8E
+        BEQ     DA8
 
         INX
-.L3B8E
+.DA8
         STX     DTW2
         LDX     SC
-        BIT     L3B69
+        BIT     DTW4
         BMI     L3B9B
 
         JMP     TT26
 
 .L3B9B
-        BIT     L3B69
+        BIT     DTW4
         BVS     L3BA4
 
         CMP     #$0C
-        BEQ     L3BB1
+        BEQ     DA1
 
 .L3BA4
         LDX     DTW5
@@ -6088,20 +6072,20 @@ L3B71 = L3B6F+2
         CLC
         RTS
 
-.L3BB1
+.DA1
         TXA
         PHA
         TYA
         PHA
-.L3BB5
+.DA5
         LDX     DTW5
         BEQ     L3C32
 
         CPX     #$1F
-        BCC     L3C2F
+        BCC     DA6
 
         LSR     L000B
-.L3BC0
+.DA11
         LDA     L000B
         BMI     L3BC8
 
@@ -6109,46 +6093,46 @@ L3B71 = L3B6F+2
         STA     L000B
 .L3BC8
         LDY     #$1D
-.L3BCA
+.DAL1
         LDA     L1164
         CMP     #$20
-        BEQ     L3BFE
+        BEQ     DA2
 
-.L3BD1
+.DAL2
         DEY
-        BMI     L3BC0
+        BMI     DA11
 
-        BEQ     L3BC0
+        BEQ     DA11
 
         LDA     BUF,Y
         CMP     #$20
-        BNE     L3BD1
+        BNE     DAL2
 
         ASL     L000B
-        BMI     L3BD1
+        BMI     DAL2
 
         STY     SC
         LDY     DTW5
-.L3BE6
+.DAL6
         LDA     BUF,Y
         STA     L1147,Y
         DEY
         CPY     SC
-        BCS     L3BE6
+        BCS     DAL6
 
         INC     DTW5
-.L3BF4
+.DAL3
         CMP     BUF,Y
-        BNE     L3BCA
+        BNE     DAL1
 
         DEY
-        BPL     L3BF4
+        BPL     DAL3
 
-        BMI     L3BC0
+        BMI     DA11
 
-.L3BFE
+.DA2
         LDX     #$1E
-        JSR     L3C22
+        JSR     DAS1
 
         LDA     #$0C
         JSR     TT26
@@ -6161,29 +6145,29 @@ L3B71 = L3B6F+2
 
         LDY     #$00
         INX
-.L3C16
+.DAL4
         LDA     L1165,Y
         STA     BUF,Y
         INY
         DEX
-        BNE     L3C16
+        BNE     DAL4
 
-        BEQ     L3BB5
+        BEQ     DA5
 
-.L3C22
+.DAS1
         LDY     #$00
-.L3C24
+.DAL5
         LDA     BUF,Y
         JSR     TT26
 
         INY
         DEX
-        BNE     L3C24
+        BNE     DAL5
 
         RTS
 
-.L3C2F
-        JSR     L3C22
+.DA6
+        JSR     DAS1
 
 .L3C32
         STX     DTW5
@@ -6193,8 +6177,10 @@ L3B71 = L3B6F+2
         TAX
         LDA     #$0C
 .L3C3B
-        BIT     L07A9
-L3C3C = L3C3B+1
+        EQUB    $2C
+
+.BELL
+        LDA     #$07
         JMP     TT26
 
 .ESCAPE
@@ -6204,19 +6190,19 @@ L3C3C = L3C3B+1
         STX     TYPE
         JSR     FRS1
 
-        BCS     L3C52
+        BCS     ES1
 
         LDX     #$18
         JSR     FRS1
 
-.L3C52
+.ES1
         LDA     #$08
         STA     L00B7
         LDA     #$C2
         STA     L00BA
         LSR     A
         STA     L00BC
-.L3C5D
+.ESL1
         JSR     MVEIT
 
         LDA     QQ11
@@ -6227,16 +6213,16 @@ L3C3C = L3C3B+1
 
 .L3C6A
         DEC     L00BC
-        BNE     L3C5D
+        BNE     ESL1
 
         JSR     SCAN
 
         LDA     #$00
         LDX     #$10
-.L3C75
+.ESL2
         STA     QQ20,X
         DEX
-        BPL     L3C75
+        BPL     ESL2
 
         STA     FIST
         STA     ESCP
@@ -6256,7 +6242,7 @@ L3C3C = L3C3B+1
 
         LDA     #$00
         STA     XX20
-.L3C9C
+.HME3
         JSR     MT14
 
         JSR     cpl
@@ -6264,23 +6250,23 @@ L3C3C = L3C3B+1
         LDX     DTW5
         LDA     L00A1,X
         CMP     #$0D
-        BNE     L3CB8
+        BNE     HME6
 
-.L3CAB
+.HME4
         DEX
         LDA     L00A1,X
         ORA     #$20
         CMP     BUF,X
-        BEQ     L3CAB
+        BEQ     HME4
 
         TXA
-        BMI     L3CCD
+        BMI     HME5
 
-.L3CB8
+.HME6
         JSR     TT20
 
         INC     XX20
-        BNE     L3C9C
+        BNE     HME3
 
         JSR     TT111
 
@@ -6291,7 +6277,7 @@ L3C3C = L3C3B+1
         LDA     #$D7
         JMP     DETOK
 
-.L3CCD
+.HME5
         LDA     L0061
         STA     QQ9
         LDA     L005F
@@ -6322,7 +6308,7 @@ L3C3C = L3C3B+1
 
         JSR     DORND
 
-        BPL     L3D3D
+        BPL     HA7
 
         AND     #$03
         STA     T
@@ -6333,14 +6319,14 @@ L3C3C = L3C3B+1
         TAX
         LDY     #$03
         STY     CNT2
-.L3D22
+.HAL8
         LDY     #$02
-.L3D24
+.HAL9
         LDA     L3CE1,X
         STA     XX15,Y
         INX
         DEY
-        BPL     L3D24
+        BPL     HAL9
 
         TXA
         PHA
@@ -6349,12 +6335,12 @@ L3C3C = L3C3B+1
         PLA
         TAX
         DEC     CNT2
-        BNE     L3D22
+        BNE     HAL8
 
         LDY     #$80
-        BNE     L3D53
+        BNE     HA9
 
-.L3D3D
+.HA7
         LSR     A
         STA     Y1
         JSR     DORND
@@ -6368,7 +6354,7 @@ L3C3C = L3C3B+1
         JSR     HAS1
 
         LDY     #$00
-.L3D53
+.HA9
         STY     L1F85
         JMP     HANGER
 
@@ -6393,7 +6379,7 @@ L3C3C = L3C3B+1
         JSR     DORND
 
         STA     XSAV
-.L3D7D
+.HAL5
         LDX     #$15
         LDY     #$09
         JSR     MVS5
@@ -6407,7 +6393,7 @@ L3C3C = L3C3B+1
         JSR     MVS5
 
         DEC     XSAV
-        BNE     L3D7D
+        BNE     HAL5
 
         LDY     X2
         BEQ     HA1
@@ -6440,16 +6426,16 @@ L3C3C = L3C3B+1
 .HA1
         RTS
 
-.TA35
+.TA35_COPY
         LDA     INWK
         ORA     L009F
         ORA     L00A2
-        BNE     TA87
+        BNE     TA87_COPY
 
         LDA     #$50
         JSR     OOPS
 
-.TA87
+.TA87_COPY
         LDX     #$04
         BNE     L3E37
 
@@ -6459,7 +6445,7 @@ L3C3C = L3C3B+1
 
         BEQ     L3DE0
 
-        JMP     TA21
+        JMP     TN4
 
 .L3DE0
         JSR     L3E3A
@@ -6471,7 +6457,7 @@ L3C3C = L3C3B+1
 
 .TA18
         LDA     ECMA
-        BNE     TA35
+        BNE     TA35_COPY
 
         LDA     L00BC
         ASL     A
@@ -6495,25 +6481,25 @@ L3C3C = L3C3B+1
 
         LDA     L00BC
         CMP     #$82
-        BEQ     TA35
+        BEQ     TA35_COPY
 
         LDY     #$1F
         LDA     (V),Y
         BIT     L3E48
-        BNE     L3E24
+        BNE     TA35
 
         ORA     #$80
         STA     (V),Y
-.L3E24
+.TA35
         LDA     INWK
         ORA     L009F
         ORA     L00A2
-        BNE     L3E31
+        BNE     TA87
 
         LDA     #$50
         JSR     OOPS
 
-.L3E31
+.TA87
         LDA     L00BC
         AND     #$7F
         LSR     A
@@ -6525,23 +6511,23 @@ L3C3C = L3C3B+1
         ASL     L00BB
         SEC
         ROR     L00BB
-.L3E3F
+.TA1
         RTS
 
 .TA64
         JSR     DORND
 
         CMP     #$10
-        BCS     L3E4E
+        BCS     TA19S
 
-.L3E47
+.M32
         LDY     #$20
-L3E48 = L3E47+1
+L3E48 = M32+1
         LDA     (V),Y
         LSR     A
         BCS     L3E51
 
-.L3E4E
+.TA19S
         JMP     TA19
 
 .L3E51
@@ -6549,7 +6535,7 @@ L3E48 = L3E47+1
 
 .TACTICS
         LDA     #$03
-        STA     L0091
+        STA     RAT
         LDA     #$04
         STA     RAT2
         LDA     #$16
@@ -6558,48 +6544,48 @@ L3E48 = L3E47+1
         BEQ     TA18
 
         CPX     #$02
-        BNE     L3E96
+        BNE     TA13
 
         LDA     NEWB
         AND     #$04
-        BNE     L3E81
+        BNE     TN5
 
         LDA     L0E58
-        BNE     L3E3F
+        BNE     TA1
 
         JSR     DORND
 
         CMP     #$FD
-        BCC     L3E3F
+        BCC     TA1
 
         AND     #$01
         ADC     #$08
         TAX
-        BNE     L3E91
+        BNE     TN6
 
-.L3E81
+.TN5
         JSR     DORND
 
         CMP     #$F0
-        BCC     L3E3F
+        BCC     TA1
 
         LDA     L0E5E
         CMP     #$06
-        BCS     L3ECF
+        BCS     TA22
 
         LDX     #$10
-.L3E91
+.TN6
         LDA     #$F1
         JMP     SFS1
 
-.L3E96
+.TA13
         CPX     #$0F
-        BNE     L3EB6
+        BNE     TA17
 
         JSR     DORND
 
         CMP     #$C8
-        BCC     L3ECF
+        BCC     TA22
 
         LDX     #$00
         STX     L00BC
@@ -6608,90 +6594,90 @@ L3E48 = L3E47+1
         AND     #$03
         ADC     #$11
         TAX
-        JSR     L3E91
+        JSR     TN6
 
         LDA     #$00
         STA     L00BC
         RTS
 
-.L3EB6
+.TA17
         LDY     #$0E
         LDA     L00BF
         CMP     (XX0),Y
-        BCS     L3EC0
+        BCS     TA21
 
         INC     L00BF
-.L3EC0
+.TA21
         CPX     #$1E
-        BNE     L3ED0
+        BNE     TA14
 
         LDA     L0E6B
-        BNE     L3ED0
+        BNE     TA14
 
         LSR     L00BC
         ASL     L00BC
         LSR     L00B7
-.L3ECF
+.TA22
         RTS
 
-.L3ED0
+.TA14
         JSR     DORND
 
         LDA     NEWB
         LSR     A
-        BCC     L3EDC
+        BCC     TN1
 
         CPX     #$32
-        BCS     L3ECF
+        BCS     TA22
 
-.L3EDC
+.TN1
         LSR     A
-        BCC     L3EEE
+        BCC     TN2
 
         LDX     FIST
         CPX     #$28
-        BCC     L3EEE
+        BCC     TN2
 
         LDA     NEWB
         ORA     #$04
         STA     NEWB
         LSR     A
         LSR     A
-.L3EEE
+.TN2
         LSR     A
-        BCS     L3EFE
+        BCS     TN3
 
         LSR     A
         LSR     A
-        BCC     L3EF8
+        BCC     GOPL
 
-        JMP     L405C
+        JMP     DOCKIT
 
-.L3EF8
+.GOPL
         JSR     SPS1
 
-        JMP     L404C
+        JMP     TA151
 
-.L3EFE
+.TN3
         LSR     A
-        BCC     TA21
+        BCC     TN4
 
         LDA     SSPR
-        BEQ     TA21
+        BEQ     TN4
 
         LDA     L00BC
         AND     #$81
         STA     L00BC
-.TA21
+.TN4
         LDX     #$08
-.L3F0E
+.TAL1
         LDA     INWK,X
         STA     K3,X
         DEX
-        BPL     L3F0E
+        BPL     TAL1
 
 .TA19
-        JSR     L6B97
+        JSR     TAS2
 
         LDY     #$0A
         JSR     TAS3
@@ -6701,16 +6687,16 @@ L3E48 = L3E47+1
         CMP     #$01
         BNE     L3F28
 
-        JMP     L3FEB
+        JMP     TA20
 
 .L3F28
         CMP     #$0E
-        BNE     L3F41
+        BNE     TN7
 
         JSR     DORND
 
         CMP     #$C8
-        BCC     L3F41
+        BCC     TN7
 
         JSR     DORND
 
@@ -6720,38 +6706,38 @@ L3E48 = L3E47+1
 
         LDX     #$11
 .L3F3E
-        JMP     L3E91
+        JMP     TN6
 
-.L3F41
+.TN7
         JSR     DORND
 
         CMP     #$FA
-        BCC     L3F4F
+        BCC     TA7
 
         JSR     DORND
 
         ORA     #$68
         STA     L00B9
-.L3F4F
+.TA7
         LDY     #$0E
         LDA     (XX0),Y
         LSR     A
         CMP     L00BF
-        BCC     L3FA4
+        BCC     TA3
 
         LSR     A
         LSR     A
         CMP     L00BF
-        BCC     L3F7D
+        BCC     ta3_lc
 
         JSR     DORND
 
         CMP     #$E6
-        BCC     L3F7D
+        BCC     ta3_lc
 
         LDX     TYPE
         LDA     L8041,X
-        BPL     L3F7D
+        BPL     ta3_lc
 
         LDA     NEWB
         AND     #$F0
@@ -6760,56 +6746,56 @@ L3E48 = L3E47+1
         STA     (INF),Y
         LDA     #$00
         STA     L00BC
-        JMP     L42A6
+        JMP     SESCP
 
-.L3F7D
+.ta3_lc
         LDA     L00BB
         AND     #$07
-        BEQ     L3FA4
+        BEQ     TA3
 
         STA     T
         JSR     DORND
 
         AND     #$1F
         CMP     T
-        BCS     L3FA4
+        BCS     TA3
 
         LDA     ECMA
-        BNE     L3FA4
+        BNE     TA3
 
         DEC     L00BB
         LDA     TYPE
         CMP     #$1D
-        BNE     L3FA1
+        BNE     TA16
 
         LDX     #$1E
         LDA     L00BC
         JMP     SFS1
 
-.L3FA1
+.TA16
         JMP     SFRMIS
 
-.L3FA4
+.TA3
         LDA     #$00
         JSR     MAS4
 
         AND     #$E0
-        BNE     L3FD4
+        BNE     TA4
 
         LDX     CNT
         CPX     #$A0
-        BCC     L3FD4
+        BCC     TA4
 
         LDY     #$13
         LDA     (XX0),Y
         AND     #$F8
-        BEQ     L3FD4
+        BEQ     TA4
 
         LDA     L00BB
         ORA     #$40
         STA     L00BB
         CPX     #$A3
-        BCC     L3FD4
+        BCC     TA4
 
         LDA     (XX0),Y
         LSR     A
@@ -6819,33 +6805,33 @@ L3E48 = L3E47+1
         LDA     ECMA
         BNE     L4039
 
-        JSR     L138F
+        JSR     BEING_HIT_NOISE
 
-.L3FD4
+.TA4
         LDA     L00A3
         CMP     #$03
-        BCS     L3FE2
+        BCS     TA5
 
         LDA     L009D
         ORA     L00A0
         AND     #$FE
-        BEQ     L3FF4
+        BEQ     TA15
 
-.L3FE2
+.TA5
         JSR     DORND
 
         ORA     #$80
         CMP     L00BC
-        BCS     L3FF4
+        BCS     TA15
 
-.L3FEB
-        JSR     L4175
+.TA20
+        JSR     TAS6
 
         LDA     CNT
         EOR     #$80
-.L3FF2
+.TA152
         STA     CNT
-.L3FF4
+.TA15
         LDY     #$10
         JSR     TAS3
 
@@ -6857,16 +6843,16 @@ L3E48 = L3E47+1
         TXA
         ASL     A
         CMP     RAT2
-        BCC     L400C
+        BCC     TA11
 
-        LDA     L0091
+        LDA     RAT
         ORA     L00BA
         STA     L00BA
-.L400C
+.TA11
         LDA     L00B9
         ASL     A
         CMP     #$20
-        BCS     L402D
+        BCS     TA12
 
         LDY     #$16
         JSR     TAS3
@@ -6879,27 +6865,27 @@ L3E48 = L3E47+1
         TXA
         ASL     A
         CMP     RAT2
-        BCC     L402D
+        BCC     TA12
 
-        LDA     L0091
+        LDA     RAT
         ORA     L00B9
         STA     L00B9
-.L402D
+.TA12
         LDA     CNT
-        BMI     L403A
+        BMI     TA9
 
         CMP     CNT2
-        BCC     L403A
+        BCC     TA9
 
         LDA     #$03
         STA     L00B8
 .L4039
         RTS
 
-.L403A
+.TA9
         AND     #$7F
         CMP     #$12
-        BCC     L404B
+        BCC     TA10
 
         LDA     #$FF
         LDX     TYPE
@@ -6909,107 +6895,107 @@ L3E48 = L3E47+1
         ASL     A
 .L4049
         STA     L00B8
-.L404B
+.TA10
         RTS
 
-.L404C
+.TA151
         LDY     #$0A
         JSR     TAS3
 
         CMP     #$98
-        BCC     L4059
+        BCC     ttt
 
         LDX     #$00
         STX     RAT2
-.L4059
-        JMP     L3FF2
+.ttt
+        JMP     TA152
 
-.L405C
+.DOCKIT
         LDA     #$06
         STA     RAT2
         LSR     A
-        STA     L0091
+        STA     RAT
         LDA     #$1D
         STA     CNT2
         LDA     SSPR
         BNE     L406F
 
-.L406C
-        JMP     L3EF8
+.GOPLS
+        JMP     GOPL
 
 .L406F
-        JSR     L411B
+        JSR     VCSU1
 
         LDA     L0016
         ORA     L0019
         ORA     L001C
         AND     #$7F
-        BNE     L406C
+        BNE     GOPLS
 
-        JSR     L6BBA
+        JSR     TA2
 
         LDA     Q
         STA     K
-        JSR     L6B97
+        JSR     TAS2
 
         LDY     #$0A
-        JSR     L4153
+        JSR     TAS4
 
-        BMI     L40B2
+        BMI     PH1
 
         CMP     #$23
-        BCC     L40B2
+        BCC     PH1
 
         LDY     #$0A
         JSR     TAS3
 
         CMP     #$A2
-        BCS     L40CC
+        BCS     PH3
 
         LDA     K
         CMP     #$9D
-        BCC     L40A4
+        BCC     PH2
 
         LDA     TYPE
-        BMI     L40CC
+        BMI     PH3
 
-.L40A4
-        JSR     L4175
+.PH2
+        JSR     TAS6
 
-        JSR     L404C
+        JSR     TA151
 
-.L40AA
+.PH22
         LDX     #$00
         STX     L00B8
         INX
         STX     L00B7
         RTS
 
-.L40B2
-        JSR     L411B
+.PH1
+        JSR     VCSU1
 
-        JSR     L4188
+        JSR     DCS1
 
-        JSR     L4188
+        JSR     DCS1
 
-        JSR     L6B97
+        JSR     TAS2
 
-        JSR     L4175
+        JSR     TAS6
 
-        JMP     L404C
+        JMP     TA151
 
-.L40C4
+.TN11
         INC     L00B8
         LDA     #$7F
         STA     L00B9
-        BNE     L4111
+        BNE     TN13
 
-.L40CC
+.PH3
         LDX     #$00
         STX     RAT2
         STX     L00BA
         LDA     TYPE
-        BPL     L40F6
+        BPL     PH32
 
         EOR     XX15
         EOR     Y1
@@ -7020,7 +7006,7 @@ L3E48 = L3E47+1
         LDA     XX15
         ASL     A
         CMP     #$0C
-        BCS     L40AA
+        BCS     PH22
 
         LDA     Y1
         ASL     A
@@ -7030,9 +7016,9 @@ L3E48 = L3E47+1
         LDA     Y1
         ASL     A
         CMP     #$0C
-        BCS     L40AA
+        BCS     PH22
 
-.L40F6
+.PH32
         STX     L00B9
         LDA     L00B2
         STA     XX15
@@ -7041,38 +7027,38 @@ L3E48 = L3E47+1
         LDA     L00B6
         STA     X2
         LDY     #$10
-        JSR     L4153
+        JSR     TAS4
 
         ASL     A
         CMP     #$42
-        BCS     L40C4
+        BCS     TN11
 
-        JSR     L40AA
+        JSR     PH22
 
-.L4111
+.TN13
         LDA     L001E
-        BNE     L411A
+        BNE     TNRTS
 
         ASL     NEWB
         SEC
         ROR     NEWB
-.L411A
+.TNRTS
         RTS
 
-.L411B
+.VCSU1
         LDA     #$25
         STA     V
         LDA     #$04
 .VCSUB
         STA     L003B
         LDY     #$02
-        JSR     L412F
+        JSR     TAS1
 
         LDY     #$05
-        JSR     L412F
+        JSR     TAS1
 
         LDY     #$08
-.L412F
+.TAS1
         LDA     (V),Y
         EOR     #$80
         STA     L0059
@@ -7084,7 +7070,7 @@ L3E48 = L3E47+1
         STA     L0057
         STY     U
         LDX     U
-        JSR     L39B7
+        JSR     MVT3
 
         LDY     U
         STA     L0016,X
@@ -7094,7 +7080,7 @@ L3E48 = L3E47+1
         STA     K3,X
         RTS
 
-.L4153
+.TAS4
         LDX     L0425,Y
         STX     Q
         LDA     XX15
@@ -7112,7 +7098,7 @@ L3E48 = L3E47+1
         LDA     X2
         JMP     MAD
 
-.L4175
+.TAS6
         LDA     XX15
         EOR     #$80
         STA     XX15
@@ -7124,41 +7110,39 @@ L3E48 = L3E47+1
         STA     X2
         RTS
 
-.L4188
+.DCS1
         JSR     L418B
 
 .L418B
         LDA     L042F
         LDX     #$00
-        JSR     L41A0
+        JSR     TAS7
 
         LDA     L0431
         LDX     #$03
-        JSR     L41A0
+        JSR     TAS7
 
         LDA     L0433
         LDX     #$06
-.L41A0
+.TAS7
         ASL     A
         STA     R
         LDA     #$00
         ROR     A
         EOR     #$80
-.L41A8
         EOR     L0016,X
-L41A9 = L41A8+1
-        BMI     L41B7
+        BMI     TS71
 
         LDA     R
         ADC     K3,X
         STA     K3,X
-        BCC     L41B6
+        BCC     TS72
 
         INC     L0015,X
-.L41B6
+.TS72
         RTS
 
-.L41B7
+.TS71
         LDA     K3,X
         SEC
         SBC     R
@@ -7166,7 +7150,7 @@ L41A9 = L41A8+1
         LDA     L0015,X
         SBC     #$00
         STA     L0015,X
-        BCS     L41B6
+        BCS     TS72
 
         LDA     K3,X
         EOR     #$FF
@@ -7179,21 +7163,21 @@ L41A9 = L41A8+1
         LDA     L0016,X
         EOR     #$80
         STA     L0016,X
-        JMP     L41B6
+        JMP     TS72
 
 .HITCH
         CLC
         LDA     L00A4
-        BNE     L421D
+        BNE     HI1
 
         LDA     TYPE
-        BMI     L421D
+        BMI     HI1
 
         LDA     L00BB
         AND     #$20
         ORA     L009D
         ORA     L00A0
-        BNE     L421D
+        BNE     HI1
 
         LDA     INWK
         JSR     SQUA2
@@ -7212,21 +7196,21 @@ L41F8 = L41F7+1
         STA     R
         TXA
         ADC     S
-        BCS     L421E
+        BCS     TN10
 
         STA     S
         LDY     #$02
         LDA     (XX0),Y
         CMP     S
-        BNE     L421D
+        BNE     HI1
 
         DEY
         LDA     (XX0),Y
         CMP     R
-.L421D
+.HI1
         RTS
 
-.L421E
+.TN10
         CLC
         RTS
 
@@ -7243,7 +7227,7 @@ L41F8 = L41F7+1
         ASL     A
         ORA     #$80
         STA     L00BC
-.L4235
+.fq1
         LDA     #$60
         STA     L00AA
         ORA     #$80
@@ -7258,7 +7242,7 @@ L41F8 = L41F7+1
         LDX     #$01
         JSR     FRS1
 
-        BCC     L42A1
+        BCC     FR1
 
         LDX     MSTG
         JSR     GINF
@@ -7275,19 +7259,19 @@ L41F8 = L41F7+1
 
 .ANGRY
         CMP     #$02
-        BEQ     L4298
+        BEQ     AN2
 
         LDY     #$24
         LDA     (INF),Y
         AND     #$20
         BEQ     L4274
 
-        JSR     L4298
+        JSR     AN2
 
 .L4274
         LDY     #$20
         LDA     (INF),Y
-        BEQ     L421D
+        BEQ     HI1
 
         ORA     #$80
         STA     (INF),Y
@@ -7299,26 +7283,26 @@ L41F8 = L41F7+1
         STA     (INF),Y
         LDA     TYPE
         CMP     #$0B
-        BCC     L4297
+        BCC     AN3
 
         LDY     #$24
         LDA     (INF),Y
         ORA     #$04
         STA     (INF),Y
-.L4297
+.AN3
         RTS
 
-.L4298
+.AN2
         LDA     L0449
         ORA     #$04
         STA     L0449
         RTS
 
-.L42A1
+.FR1
         LDA     #$C9
         JMP     MESS
 
-.L42A6
+.SESCP
         LDX     #$03
 .L42A8
         LDA     #$FE
@@ -7335,17 +7319,17 @@ L41F8 = L41F7+1
         LDA     L0039
         PHA
         LDY     #$24
-.L42BC
+.FRL2
         LDA     INWK,Y
         STA     XX3,Y
         LDA     (INF),Y
         STA     INWK,Y
         DEY
-        BPL     L42BC
+        BPL     FRL2
 
         LDA     TYPE
         CMP     #$02
-        BNE     L42ED
+        BNE     rx
 
         TXA
         PHA
@@ -7353,29 +7337,29 @@ L41F8 = L41F7+1
         STA     L00B7
         LDX     #$00
         LDA     L00A6
-        JSR     L432C
+        JSR     SFS2
 
         LDX     #$03
         LDA     L00A8
-        JSR     L432C
+        JSR     SFS2
 
         LDX     #$06
         LDA     L00AA
-        JSR     L432C
+        JSR     SFS2
 
         PLA
         TAX
-.L42ED
+.rx
         LDA     T1
         STA     L00BC
         LSR     L00B9
         ASL     L00B9
         TXA
         CMP     #$09
-        BCS     L4310
+        BCS     NOIL
 
         CMP     #$04
-        BCC     L4310
+        BCC     NOIL
 
         PHA
         JSR     DORND
@@ -7389,7 +7373,7 @@ L41F8 = L41F7+1
         ROR     A
         STA     L00B9
         PLA
-.L4310
+.NOIL
         JSR     NWSHP
 
         PLA
@@ -7397,11 +7381,11 @@ L41F8 = L41F7+1
         PLA
         STA     INF
         LDX     #$24
-.L431B
+.FRL3
         LDA     XX3,X
         STA     INWK,X
         DEX
-        BPL     L431B
+        BPL     FRL3
 
         PLA
         STA     L0037
@@ -7411,14 +7395,14 @@ L41F8 = L41F7+1
         TAX
         RTS
 
-.L432C
+.SFS2
         ASL     A
         STA     R
         LDA     #$00
         ROR     A
-        JMP     L7AE1
+        JMP     MVT1
 
-.L4335
+.LL164
         LDY     #$0A
         JSR     NOISE
 
@@ -7426,10 +7410,10 @@ L41F8 = L41F7+1
         JSR     NOISE
 
         LDA     #$04
-        STA     L0E7A
+        STA     HFX
         JSR     HFS2
 
-        STZ     L0E7A
+        STZ     HFX
         RTS
 
 .LAUN
@@ -7446,7 +7430,7 @@ L41F8 = L41F7+1
 
         PLA
         STA     QQ11
-.L435F
+.HFS1
         LDX     #$80
         STX     K3
         LDX     #$60
@@ -7455,48 +7439,48 @@ L41F8 = L41F7+1
         STX     XX4
         STX     L0015
         STX     L0023
-.L436F
-        JSR     L437B
+.HFL5
+        JSR     HFL1
 
         INC     XX4
         LDX     XX4
         CPX     #$08
-        BNE     L436F
+        BNE     HFL5
 
         RTS
 
-.L437B
+.HFL1
         LDA     XX4
         AND     #$07
         CLC
         ADC     #$08
         STA     K
-.L4384
+.HFL2
         LDA     #$01
         STA     LSP
         JSR     CIRCLE2
 
         ASL     K
-        BCS     L4395
+        BCS     HF8
 
         LDA     K
         CMP     #$A0
-        BCC     L4384
+        BCC     HFL2
 
-.L4395
+.HF8
         RTS
 
-.L4396
+.STARS2
         LDA     #$00
         CPX     #$02
         ROR     A
-        STA     L0091
+        STA     RAT
         EOR     #$80
         STA     RAT2
-        JSR     L444F
+        JSR     ST2
 
-        LDY     L00E3
-.L43A6
+        LDY     NOSTM
+.STL2
         LDA     SZ,Y
         STA     ZZ
         LSR     A
@@ -7508,7 +7492,7 @@ L41F8 = L41F7+1
         STA     L009B
         EOR     RAT2
         STA     S
-        LDA     L11B5,Y
+        LDA     SXL,Y
         STA     P
         LDA     SX,Y
         STA     XX15
@@ -7552,7 +7536,7 @@ L41F8 = L41F7+1
 
         STA     L003D
         TXA
-        STA     L11B5,Y
+        STA     SXL,Y
         LDA     YY
         STA     R
         LDA     L003F
@@ -7572,53 +7556,53 @@ L41F8 = L41F7+1
         AND     #$7F
         EOR     #$7F
         CMP     L009B
-        BCC     L446A
+        BCC     KILL2
 
-        BEQ     L446A
+        BEQ     KILL2
 
         LDA     L003F
         STA     SY,Y
         STA     Y1
         AND     #$7F
         CMP     #$74
-        BCS     L447D
+        BCS     ST5_UC
 
-.L4446
+.STC2
         JSR     PIXEL2
 
         DEY
-        BEQ     L444F
+        BEQ     ST2
 
-        JMP     L43A6
+        JMP     STL2
 
-.L444F
+.ST2
         LDA     ALPHA
-        EOR     L0091
+        EOR     RAT
         STA     ALPHA
         LDA     ALP2
-        EOR     L0091
+        EOR     RAT
         STA     ALP2
         EOR     #$80
         STA     L0049
         LDA     BET2
-        EOR     L0091
+        EOR     RAT
         STA     BET2
         EOR     #$80
         STA     L0074
         RTS
 
-.L446A
+.KILL2
         JSR     DORND
 
         STA     Y1
         STA     SY,Y
         LDA     #$73
-        ORA     L0091
+        ORA     RAT
         STA     XX15
         STA     SX,Y
-        BNE     L448E
+        BNE     STF1
 
-.L447D
+.ST5_UC
         JSR     DORND
 
         STA     XX15
@@ -7627,15 +7611,15 @@ L41F8 = L41F7+1
         ORA     L0049
         STA     Y1
         STA     SY,Y
-.L448E
+.STF1
         JSR     DORND
 
         ORA     #$08
         STA     ZZ
         STA     SZ,Y
-        BNE     L4446
+        BNE     STC2
 
-.L449A
+.MU5
         STA     K
         STA     L0057
         STA     L0058
@@ -7643,13 +7627,13 @@ L41F8 = L41F7+1
         CLC
         RTS
 
-.L44A4
+.MULT3
         STA     R
         AND     #$7F
         STA     L0058
         LDA     Q
         AND     #$7F
-        BEQ     L449A
+        BEQ     MU5
 
         SEC
         SBC     #$01
@@ -7663,7 +7647,7 @@ L41F8 = L41F7+1
         STA     K
         LDA     #$00
         LDX     #$18
-.L44C5
+.MUL2
         BCC     L44C9
 
         ADC     T
@@ -7673,7 +7657,7 @@ L41F8 = L41F7+1
         ROR     L0057
         ROR     K
         DEX
-        BNE     L44C5
+        BNE     MUL2
 
         STA     T
         LDA     R
@@ -7683,12 +7667,12 @@ L41F8 = L41F7+1
         STA     L0059
         RTS
 
-.L44E0
+.MLS2
         LDX     XX
         STX     R
         LDX     L003D
         STX     S
-.L44E8
+.MLS1
         LDX     ALP1
 .L44EA
         STX     P
@@ -7697,7 +7681,7 @@ L41F8 = L41F7+1
         STA     T
         TXA
         AND     #$7F
-        BEQ     L452D
+        BEQ     MU6
 
         TAX
         DEX
@@ -7743,35 +7727,35 @@ L41F8 = L41F7+1
         ORA     T
         RTS
 
-.L452D
+.MU6
         STA     L000D
         STA     P
         RTS
 
-.L4532
+.SQUA
         AND     #$7F
 .SQUA2
         STA     P
         TAX
-        BNE     L454B
+        BNE     MU11
 
-.L4539
+.MU1
         CLC
         STX     P
         TXA
         RTS
 
-.L453E
+.MLU1
         LDA     SY,Y
         STA     Y1
-.L4543
+.MLU2
         AND     #$7F
         STA     P
 .MULTU
         LDX     Q
-        BEQ     L4539
+        BEQ     MU1
 
-.L454B
+.MU11
         DEX
         STX     T
         LDA     #$00
@@ -7837,27 +7821,27 @@ L41F8 = L41F7+1
         STX     P
         STA     widget
         TAX
-        BEQ     L45BB
+        BEQ     MU3
 
         LDA     logL,X
         LDX     Q
-        BEQ     L45B9
+        BEQ     MU3again
 
         CLC
         ADC     logL,X
         LDA     log,X
         LDX     widget
         ADC     log,X
-        BCC     L45B9
+        BCC     MU3again
 
         TAX
         LDA     antilog,X
         LDX     P
         RTS
 
-.L45B9
+.MU3again
         LDA     #$00
-.L45BB
+.MU3
         LDX     P
         RTS
 
@@ -7870,24 +7854,24 @@ L41F8 = L41F7+1
         LDA     #$00
         LDX     #$10
         ROR     P
-.L45CB
-        BCS     L45D8
+.MUL7
+        BCS     MU21
 
         ADC     Q
         ROR     A
         ROR     L000D
         ROR     P
         DEX
-        BNE     L45CB
+        BNE     MUL7
 
         RTS
 
-.L45D8
+.MU21
         LSR     A
         ROR     L000D
         ROR     P
         DEX
-        BNE     L45CB
+        BNE     MUL7
 
         RTS
 
@@ -7910,7 +7894,7 @@ L41F8 = L41F7+1
         STA     T
         LDA     Q
         AND     #$7F
-        BEQ     L463E
+        BEQ     mu10
 
         TAX
         DEX
@@ -7964,7 +7948,7 @@ L41F8 = L41F7+1
         ORA     T
         RTS
 
-.L463E
+.mu10
         STA     P
         RTS
 
@@ -8000,7 +7984,7 @@ L41F8 = L41F7+1
         AND     #$80
         STA     T
         EOR     S
-        BMI     L4681
+        BMI     MU8
 
         LDA     R
         CLC
@@ -8011,7 +7995,7 @@ L41F8 = L41F7+1
         ORA     T
         RTS
 
-.L4681
+.MU8
         LDA     S
         AND     #$7F
         STA     U
@@ -8022,7 +8006,7 @@ L41F8 = L41F7+1
         LDA     T1
         AND     #$7F
         SBC     U
-        BCS     L46A3
+        BCS     MU9
 
         STA     U
         TXA
@@ -8032,7 +8016,7 @@ L41F8 = L41F7+1
         LDA     #$00
         SBC     U
         ORA     #$80
-.L46A3
+.MU9
         EOR     T
         RTS
 
@@ -8048,15 +8032,15 @@ L41F8 = L41F7+1
         AND     #$7F
         LDX     #$FE
         STX     T1
-.L46B9
+.DVL3
         ASL     A
         CMP     #$60
-        BCC     L46C0
+        BCC     DV4
 
         SBC     #$60
-.L46C0
+.DV4
         ROL     T1
-        BCS     L46B9
+        BCS     DVL3
 
         LDA     T1
         ORA     T
@@ -8067,7 +8051,7 @@ L41F8 = L41F7+1
 .DV41
         STA     Q
         LDA     DELTA
-.L46D0
+.DVID4
         ASL     A
         STA     P
         LDA     #$00
@@ -8130,7 +8114,7 @@ L41F8 = L41F7+1
         LDX     #$00
         STA     widget
         TAX
-        BEQ     L473D
+        BEQ     LLfix_COPY
 
         LDA     logL,X
         LDX     Q
@@ -8140,15 +8124,15 @@ L41F8 = L41F7+1
         LDA     log,X
         LDX     Q
         SBC     log,X
-        BCS     L4740
+        BCS     LL2_COPY
 
         TAX
         LDA     antilog,X
-.L473D
+.LLfix_COPY
         STA     R
         RTS
 
-.L4740
+.LL2_COPY
         LDA     #$FF
         STA     R
         RTS
@@ -8172,34 +8156,34 @@ L41F8 = L41F7+1
         LDY     #$00
         LDA     S_COPY
         AND     #$7F
-.L4769
+.DVL9
         CMP     #$40
-        BCS     L4775
+        BCS     DV14
 
         ASL     P
         ROL     L000D
         ROL     A
         INY
-        BNE     L4769
+        BNE     DVL9
 
-.L4775
+.DV14
         STA     S_COPY
         LDA     S
         AND     #$7F
-.L477B
+.DVL6
         DEY
         ASL     Q
         ROL     R
         ROL     A
-        BPL     L477B
+        BPL     DVL6
 
         STA     Q
         LDA     #$FE
         STA     R
         LDA     S_COPY
-.L478B
+.LL31_COPY
         ASL     A
-        BCS     L479B
+        BCS     LL29_COPY
 
         CMP     Q
         BCC     L4794
@@ -8207,33 +8191,33 @@ L41F8 = L41F7+1
         SBC     Q
 .L4794
         ROL     R
-        BCS     L478B
+        BCS     LL31_COPY
 
-        JMP     L47A4
+        JMP     LL31_COPY_RTS
 
-.L479B
+.LL29_COPY
         SBC     Q
         SEC
         ROL     R
-        BCS     L478B
+        BCS     LL31_COPY
 
         LDA     R
-.L47A4
+.LL31_COPY_RTS
         LDA     #$00
         STA     L0057
         STA     L0058
         STA     L0059
         TYA
-        BPL     L47CD
+        BPL     DV12
 
         LDA     R
-.L47B1
+.DVL8
         ASL     A
         ROL     L0057
         ROL     L0058
         ROL     L0059
         INY
-        BNE     L47B1
+        BNE     DVL8
 
         STA     K
         LDA     L0059
@@ -8241,21 +8225,21 @@ L41F8 = L41F7+1
         STA     L0059
         RTS
 
-.L47C4
+.DV13
         LDA     R
         STA     K
         LDA     T
         STA     L0059
         RTS
 
-.L47CD
-        BEQ     L47C4
+.DV12
+        BEQ     DV13
 
         LDA     R
-.L47D1
+.DVL10
         LSR     A
         DEY
-        BNE     L47D1
+        BNE     DVL10
 
         STA     K
         LDA     T
@@ -8264,26 +8248,26 @@ L41F8 = L41F7+1
 
 .cntr
         LDA     auto
-        BNE     L47E6
+        BNE     cnt2_lc
 
         LDA     DAMP
-        BNE     L47F2
+        BNE     RE1
 
-.L47E6
+.cnt2_lc
         TXA
-        BPL     L47EC
+        BPL     BUMP
 
         DEX
         BMI     L485E
 
-.L47EC
+.BUMP
         INX
-        BNE     L47F2
+        BNE     RE1
 
         DEX
-        BEQ     L47EC
+        BEQ     BUMP
 
-.L47F2
+.RE1
         RTS
 
 .BUMP2
@@ -8292,10 +8276,10 @@ L41F8 = L41F7+1
         CLC
         ADC     T
         TAX
-        BCC     L47FE
+        BCC     RE2
 
         LDX     #$FF
-.L47FE
+.RE2
         BPL     djd1
 
 .L4800
@@ -8308,10 +8292,10 @@ L41F8 = L41F7+1
         SEC
         SBC     T
         TAX
-        BCS     L480E
+        BCS     RE3
 
         LDX     #$01
-.L480E
+.RE3
         BPL     L4800
 
 .djd1
@@ -8326,47 +8310,47 @@ L41F8 = L41F7+1
         EOR     Q
         STA     T1
         LDA     Q
-        BEQ     L4848
+        BEQ     AR2
 
         ASL     A
         STA     Q
         LDA     P
         ASL     A
         CMP     Q
-        BCS     L4836
+        BCS     AR1
 
-        JSR     L4852
+        JSR     ARS1
 
         SEC
-.L4831
+.AR4
         LDX     T1
-        BMI     L484B
+        BMI     AR3
 
         RTS
 
-.L4836
+.AR1
         LDX     Q
         STA     Q
         STX     P
         TXA
-        JSR     L4852
+        JSR     ARS1
 
         STA     T
         LDA     #$40
         SBC     T
-        BCS     L4831
+        BCS     AR4
 
-.L4848
+.AR2
         LDA     #$3F
         RTS
 
-.L484B
+.AR3
         STA     T
         LDA     #$80
         SBC     T
         RTS
 
-.L4852
+.ARS1
         JSR     LL28
 
         LDA     R
@@ -8404,13 +8388,13 @@ L41F8 = L41F7+1
         LDY     #$E0
         DEC     LASY
         DEC     LASY
-        JSR     L489D
+        JSR     las_lc
 
         INC     LASY
         INC     LASY
         LDA     #$30
         LDY     #$D0
-.L489D
+.las_lc
         STA     X2
         LDA     LASX
         STA     XX15
@@ -8432,57 +8416,58 @@ L41F8 = L41F7+1
 .PDESC
         LDA     QQ8
         ORA     L00E0
-        BNE     L4901
+        BNE     PD1
 
         LDA     QQ12
-        BPL     L4901
+        BPL     PD1
 
         LDY     #$00
-.L48CF
+.PDL1
         LDA     LAF47,Y
         CMP     ZZ
-        BNE     L48FE
+        BNE     PD2
 
         LDA     LAF61,Y
         AND     #$7F
         CMP     GCNT
-        BNE     L48FE
+        BNE     PD2
 
         LDA     LAF61,Y
-        BMI     L48F1
+        BMI     PD3
 
         LDA     TP
         LSR     A
-        BCC     L4901
+        BCC     PD1
 
         JSR     MT14
 
         LDA     #$01
-.L48F0
-        BIT     LB0A9
-L48F1 = L48F0+1
+        EQUB    $2C
+
+.PD3
+        LDA     #$B0
         JSR     DETOK2
 
         TYA
         JSR     DETOK3
 
         LDA     #$B1
-        BNE     L490C
+        BNE     PD4
 
-.L48FE
+.PD2
         DEY
-        BNE     L48CF
+        BNE     PDL1
 
-.L4901
+.PD1
         LDX     #$03
-.L4903
+.PDL1_BRACES
         LDA     L0060,X
         STA     RAND,X
         DEX
-        BPL     L4903
+        BPL     PDL1_BRACES
 
         LDA     #$05
-.L490C
+.PD4
         JMP     DETOK
 
 .BRIEF2
@@ -8490,7 +8475,7 @@ L48F1 = L48F0+1
         ORA     #$04
         STA     TP
         LDA     #$0B
-.L4919
+.BRP
         LDX     #$FF
         STX     COL
         JSR     DETOK
@@ -8503,7 +8488,7 @@ L48F1 = L48F0+1
         ORA     #$0A
         STA     TP
         LDA     #$DE
-        BNE     L4919
+        BNE     BRP
 
 .DEBRIEF2
         LDA     TP
@@ -8513,7 +8498,7 @@ L48F1 = L48F0+1
         STA     ENGY
         INC     L127C
         LDA     #$DF
-        BNE     L4919
+        BNE     BRP
 
 .DEBRIEF
         LSR     TP
@@ -8523,8 +8508,8 @@ L48F1 = L48F0+1
         JSR     MCASH
 
         LDA     #$0F
-.L4954
-        BNE     L4919
+.BRPS
+        BNE     BRP
 
 .BRIEF
         LSR     TP
@@ -8547,7 +8532,7 @@ L48F1 = L48F0+1
 
         LDA     #$40
         STA     MCNT
-.L497A
+.BRL1
         LDX     #$7F
         STX     L00B9
         STX     L00BA
@@ -8556,15 +8541,15 @@ L48F1 = L48F0+1
         JSR     MVEIT
 
         DEC     MCNT
-        BNE     L497A
+        BNE     BRL1
 
-.L498A
+.BRL2
         LSR     INWK
         INC     L00A2
-        BEQ     L49AA
+        BEQ     BR2
 
         INC     L00A2
-        BEQ     L49AA
+        BEQ     BR2
 
         LDX     L009F
         INX
@@ -8579,14 +8564,14 @@ L48F1 = L48F0+1
         JSR     MVEIT
 
         DEC     MCNT
-        JMP     L498A
+        JMP     BRL2
 
-.L49AA
+.BR2
         INC     L00A3
         JSR     PAS1
 
         LDA     #$0A
-        BNE     L4954
+        BNE     BRPS
 
 .BRIS
         LDA     #$D8
@@ -8602,10 +8587,10 @@ L48F1 = L48F0+1
         BNE     PAUSE
 
 L49C1 = L49C0+1
-.L49C2
+.PAL1
         JSR     PAS1
 
-        BEQ     L49C2
+        BEQ     PAL1
 
         LDA     #$00
         STA     L00BB
@@ -8633,14 +8618,14 @@ L49C1 = L49C0+1
 
         JSR     MVEIT
 
-        JMP     L7ED8
+        JMP     RDKEY
 
 .PAUSE2
-        JSR     L7ED8
+        JSR     RDKEY
 
         BNE     PAUSE2
 
-        JSR     L7ED8
+        JSR     RDKEY
 
         BEQ     PAUSE2
 
@@ -8666,6 +8651,7 @@ L49C1 = L49C0+1
 
         RTS
 
+.L4A1C
         EQUB    $10
 
         EQUB    $15,$1A,$1F,$9B,$A0,$2E,$A5,$24
@@ -8731,7 +8717,7 @@ L49C1 = L49C0+1
 .TRADEMODE
         JSR     TT66
 
-        JSR     L3593
+        JSR     FLKB
 
 .L4A88
         LDA     #$30
@@ -8972,10 +8958,10 @@ L49C1 = L49C0+1
         JSR     TT162
 
         LDA     #$6B
-        JSR     L3B72
+        JSR     DASC
 
         LDA     #$6D
-        JSR     L3B72
+        JSR     DASC
 
         JSR     TTX69
 
@@ -9059,7 +9045,7 @@ L49C1 = L49C0+1
         JSR     NLIN
 
         LDA     #$99
-        JSR     NLIN2
+        JSR     L359D
 
         JSR     TT14
 
@@ -9386,7 +9372,7 @@ L49C1 = L49C0+1
 
 .L4E65
         LDA     Q
-        JSR     L3B72
+        JSR     DASC
 
         DEC     T1
         BNE     L4E2F
@@ -9398,14 +9384,14 @@ L49C1 = L49C0+1
         RTS
 
 .L4E75
-        JSR     L3B72
+        JSR     DASC
 
         LDA     QQ25
         STA     R
         JMP     L4E6E
 
 .NWDAV3
-        JSR     L3B72
+        JSR     DASC
 
         STZ     R
         JMP     L4E6E
@@ -9423,7 +9409,7 @@ L49C1 = L49C0+1
 
 .L4E99
         LDA     Q
-        JSR     L3B72
+        JSR     DASC
 
         SEC
         JMP     L4E6E
@@ -9541,7 +9527,7 @@ L49C1 = L49C0+1
         LDA     #$00
         LDX     L1264
         LDY     L1265
-        JSR     L3AA7
+        JSR     TT11
 
         JSR     DORND
 
@@ -9562,7 +9548,7 @@ L49C1 = L49C0+1
 
 .L4F71
         LDA     #$73
-        JMP     L3B72
+        JMP     DASC
 
 .TT213
         LDA     #$08
@@ -9599,10 +9585,10 @@ L49C1 = L49C0+1
         BEQ     L4FAF
 
         LDA     #$6E
-        JMP     L3B72
+        JMP     DASC
 
 .L4FAF
-        JSR     L3B72
+        JSR     DASC
 
         SEC
         RTS
@@ -10141,13 +10127,13 @@ L527A = L5279+1
         LDY     #$00
         CLC
         LDA     #$03
-        JMP     L3AA7
+        JMP     TT11
 
 .pr6
         CLC
 .pr5
         LDA     #$05
-        JMP     L3AA7
+        JMP     TT11
 
 .TT147
         LDA     #$CA
@@ -10246,17 +10232,17 @@ L527A = L5279+1
 
 .L534C
         LDA     #$74
-        JSR     L3B72
+        JSR     DASC
 
         BCC     TT162
 
 .L5353
         LDA     #$6B
-        JSR     L3B72
+        JSR     DASC
 
 .L5358
         LDA     #$67
-        JMP     L3B72
+        JMP     DASC
 
 .TT163
         LDA     #$11
@@ -10396,7 +10382,7 @@ L527A = L5279+1
         LDA     #$03
         JSR     TT66
 
-        JSR     L4335
+        JSR     LL164
 
         JSR     RES2
 
@@ -10408,9 +10394,9 @@ L527A = L5279+1
         CMP     L0E6B
         BCS     L543C
 
-        STA     L00E3
+        STA     NOSTM
         LDX     #$00
-        JSR     L7D35
+        JSR     LOOK1
 
         LDA     QQ1
         EOR     #$1F
@@ -10434,7 +10420,7 @@ L527A = L5279+1
 
         JSR     TT66
 
-        JSR     L4335
+        JSR     LL164
 
 .L546E
         JSR     CTRL
@@ -10489,12 +10475,12 @@ L527A = L5279+1
         STA     FIST
         LDA     #$FF
         STA     QQ11
-        JSR     L435F
+        JSR     HFS1
 
 .L54C4
         LDX     #$00
         STX     QQ12
-        JMP     L7D35
+        JMP     LOOK1
 
 .L54CB
         BMI     L54D0
@@ -10609,7 +10595,7 @@ L527A = L5279+1
         LDA     #$19
         STA     XC
         LDA     #$06
-        JSR     L3AA7
+        JSR     TT11
 
         LDX     L0083
         INX
@@ -10972,7 +10958,7 @@ L527A = L5279+1
         CMP     #$0D
         BEQ     L578E
 
-        JSR     L3B72
+        JSR     DASC
 
         INY
         BNE     L5781
@@ -11016,7 +11002,7 @@ L527A = L5279+1
         JSR     pr2
 
         LDA     #$C3
-        JSR     L57DB
+        JSR     plf
 
         LDA     #$77
         BNE     TT27
@@ -11032,10 +11018,10 @@ L527A = L5279+1
         LDA     #$09
         STA     U
         SEC
-        JSR     L3AB3
+        JSR     BPRNT
 
         LDA     #$E2
-.L57DB
+.plf
         JSR     TT27
 
         JMP     L4AE0
@@ -11115,7 +11101,7 @@ L527A = L5279+1
 
         ADC     #$20
 .L582F
-        JMP     L3B72
+        JMP     DASC
 
 .L5832
         BIT     QQ17
@@ -11155,7 +11141,7 @@ L527A = L5279+1
         STA     QQ17
         PLA
 .L585E
-        JMP     L3B72
+        JMP     DASC
 
 .L5861
         CMP     #$A0
@@ -11164,7 +11150,7 @@ L527A = L5279+1
         AND     #$7F
         ASL     A
         TAY
-        LDA     L3423,Y
+        LDA     QQ16,Y
         JSR     TT27
 
         LDA     L3424,Y
@@ -11278,7 +11264,7 @@ L527A = L5279+1
         BCS     L58C5
 
         STA     (XX19),Y
-        JSR     L46D0
+        JSR     DVID4
 
         LDA     P
         CMP     #$1C
@@ -11526,14 +11512,14 @@ L527A = L5279+1
         LDA     #$81
         JSR     NWSHP
 
-.L5A78
+.NWSTARS
         LDA     QQ11
-        BNE     L5AA2
+        BNE     WPSHPS
 
 .L5A7C
         LDA     #$FA
         STA     COL
-        LDY     L00E3
+        LDY     NOSTM
 .L5A82
         JSR     DORND
 
@@ -11553,7 +11539,7 @@ L527A = L5279+1
         DEY
         BNE     L5A82
 
-.L5AA2
+.WPSHPS
         LDX     #$00
 .L5AA4
         LDA     FRIN,X
@@ -11593,7 +11579,7 @@ L527A = L5279+1
         LDY     #$C7
         LDA     #$00
 .L5ADB
-        STA     L107E,Y
+        STA     LSO,Y
         DEY
         BNE     L5ADB
 
@@ -11646,7 +11632,7 @@ L527A = L5279+1
         LDA     #$14
         STA     Q
         TXA
-        JSR     L46D0
+        JSR     DVID4
 
         LDX     P
         TYA
@@ -11671,7 +11657,7 @@ L527A = L5279+1
         DEX
         BPL     L5B2C
 
-        JMP     L6B97
+        JMP     TAS2
 
 .L5B37
         JSR     L5B2A
@@ -11876,9 +11862,9 @@ L527A = L5279+1
         BCS     L5C70
 
 .L5C6D
-        INC     L0E70
+        INC     JUNK
 .L5C70
-        INC     L0E4E,X
+        INC     MANY,X
 .L5C73
         LDY     T
         LDA     L8041,Y
@@ -12323,10 +12309,10 @@ L527A = L5279+1
         CPY     L0088
         BEQ     L5F17
 
-        LDA     L107E,Y
+        LDA     LSO,Y
         BEQ     L5F14
 
-        JSR     L35B5
+        JSR     HLOIN2
 
 .L5F14
         DEY
@@ -12357,8 +12343,8 @@ L527A = L5279+1
 
         LDA     #$FF
 .L5F3E
-        LDX     L107E,Y
-        STA     L107E,Y
+        LDX     LSO,Y
+        STA     LSO,Y
         BEQ     L5F90
 
         LDA     L0040
@@ -12366,7 +12352,7 @@ L527A = L5279+1
         LDA     L0041
         STA     L003F
         TXA
-        JSR     L60A4
+        JSR     EDGES
 
         LDA     XX15
         STA     XX
@@ -12376,8 +12362,8 @@ L527A = L5279+1
         STA     YY
         LDA     L0015
         STA     L003F
-        LDA     L107E,Y
-        JSR     L60A4
+        LDA     LSO,Y
+        JSR     EDGES
 
         BCS     L5F75
 
@@ -12414,12 +12400,12 @@ L527A = L5279+1
         STX     YY
         LDX     L0015
         STX     L003F
-        JSR     L60A4
+        JSR     EDGES
 
         BCC     L5F7D
 
         LDA     #$00
-        STA     L107E,Y
+        STA     LSO,Y
         BEQ     L5F80
 
 .L5FA4
@@ -12436,10 +12422,10 @@ L527A = L5279+1
         LDA     L0041
         STA     L003F
 .L5FB7
-        LDA     L107E,Y
+        LDA     LSO,Y
         BEQ     L5FBF
 
-        JSR     L35B5
+        JSR     HLOIN2
 
 .L5FBF
         DEY
@@ -12590,10 +12576,10 @@ L527A = L5279+1
         STA     L003F
         LDY     #$BF
 .L6095
-        LDA     L107E,Y
+        LDA     LSO,Y
         BEQ     L609D
 
-        JSR     L35B5
+        JSR     HLOIN2
 
 .L609D
         DEY
@@ -12603,7 +12589,7 @@ L527A = L5279+1
         STY     L00D4
         RTS
 
-.L60A4
+.EDGES
         STA     T
         CLC
         ADC     YY
@@ -12638,7 +12624,7 @@ L527A = L5279+1
 
 .L60CE
         LDA     #$00
-        STA     L107E,Y
+        STA     LSO,Y
         SEC
         RTS
 
@@ -12962,9 +12948,9 @@ L527A = L5279+1
         BCS     L627B
 
 .L6278
-        DEC     L0E70
+        DEC     JUNK
 .L627B
-        DEC     L0E4E,X
+        DEC     MANY,X
         LDX     XX4
         LDY     #$05
         LDA     (XX0),Y
@@ -13103,7 +13089,7 @@ L527A = L5279+1
 
 .RES2
         LDA     #$14
-        STA     L00E3
+        STA     NOSTM
         LDX     #$FF
         STX     LSX2
         STX     LSY2
@@ -13138,7 +13124,7 @@ L527A = L5279+1
         JSR     ECMOF
 
 .L6389
-        JSR     L5AA2
+        JSR     WPSHPS
 
         JSR     ZERO
 
@@ -13287,7 +13273,7 @@ L527A = L5279+1
         CMP     #$23
         BCS     L64B4
 
-        LDA     L0E70
+        LDA     JUNK
         CMP     #$03
         BCS     L64B4
 
@@ -13525,7 +13511,7 @@ L6542 = L6541+1
         CMP     #$88
         BNE     L65B9
 
-        JMP     L38EB
+        JMP     STATUS
 
 .L65B9
         CMP     #$84
@@ -13616,7 +13602,7 @@ L661D = L661C+1
 .L661F
         BIT     L01A2
 L6620 = L661F+1
-        JMP     L7D35
+        JMP     LOOK1
 
 .L6625
         LDA     L00C3
@@ -13699,7 +13685,7 @@ L6620 = L661F+1
         LDA     #$80
         STA     QQ17
         LDA     #$0C
-        JSR     L3B72
+        JSR     DASC
 
         JMP     TT146
 
@@ -13813,7 +13799,7 @@ L6620 = L661F+1
 
         DEX
 .L6738
-        JSR     L4235
+        JSR     fq1
 
         JSR     DORND
 
@@ -13980,10 +13966,10 @@ L6620 = L661F+1
         LDA     #$06
         STA     XC
         LDA     #$1E
-        JSR     L57DB
+        JSR     plf
 
         LDA     #$0A
-        JSR     L3B72
+        JSR     DASC
 
         LDA     #$06
         STA     XC
@@ -14035,7 +14021,7 @@ L6620 = L661F+1
         AND     #$10
         BEQ     L68A9
 
-        JSR     L7ED8
+        JSR     RDKEY
 
         BEQ     L6881
 
@@ -14120,7 +14106,7 @@ L6620 = L661F+1
         LDY     #$08
         JSR     DELAY
 
-        JSR     L3593
+        JSR     FLKB
 
         LDY     #$00
 .L691B
@@ -14398,7 +14384,7 @@ L694E = L694D+1
         JSR     TT26
 
         PHA
-        JSR     L3B6D
+        JSR     FEED
 
         PLA
         CMP     #$30
@@ -14562,7 +14548,7 @@ L694E = L694D+1
         LDX     #$06
         JSR     L5B98
 
-.L6B97
+.TAS2
         LDA     K3
         ORA     L0017
         ORA     L001A
@@ -14574,7 +14560,7 @@ L694E = L694D+1
 .L6BA7
         ASL     L001D
         ROL     A
-        BCS     L6BBA
+        BCS     TA2
 
         ASL     K3
         ROL     L0015
@@ -14584,7 +14570,7 @@ L694E = L694D+1
         ROL     L001B
         BCC     L6BA7
 
-.L6BBA
+.TA2
         LDA     L0015
         LSR     A
         ORA     L0016
@@ -14599,13 +14585,13 @@ L694E = L694D+1
         STA     X2
 .L6BCF
         LDA     XX15
-        JSR     L4532
+        JSR     SQUA
 
         STA     R
         LDA     P
         STA     Q
         LDA     Y1
-        JSR     L4532
+        JSR     SQUA
 
         STA     T
         LDA     P
@@ -14615,7 +14601,7 @@ L694E = L694D+1
         ADC     R
         STA     R
         LDA     X2
-        JSR     L4532
+        JSR     SQUA
 
         STA     T
         LDA     P
@@ -14641,7 +14627,7 @@ L694E = L694D+1
         RTS
 
 .WARP
-        LDX     L0E70
+        LDX     JUNK
         LDA     L0E43,X
         ORA     SSPR
         ORA     MJ
@@ -14685,7 +14671,7 @@ L694E = L694D+1
         LSR     A
         STA     L0E7B
         LDX     VIEW
-        JMP     L7D35
+        JMP     LOOK1
 
 .L6C6C
         JMP     BEEP_LONG_LOW
@@ -14702,10 +14688,10 @@ L694E = L694D+1
         STA     DAMP,Y
         BPL     L6C83
 
-        JSR     L3C3C
+        JSR     BELL
 
 .L6C83
-        JSR     L3C3C
+        JSR     BELL
 
         TYA
         PHA
@@ -14732,7 +14718,7 @@ L694E = L694D+1
         STA     TYPE
         LDA     DELTA
         STA     L00B7
-        JSR     L405C
+        JSR     DOCKIT
 
         LDA     L00B7
         CMP     #$16
@@ -14845,7 +14831,7 @@ L694E = L694D+1
 .L6D48
         JSR     WSCAN
 
-        JSR     L7ED8
+        JSR     RDKEY
 
         CPX     #$51
         BNE     L6D59
@@ -14897,10 +14883,10 @@ L6D70 = L6D6F+1
         STA     L2C5B
         BPL     L6D9A
 
-        JSR     L3C3C
+        JSR     BELL
 
 .L6D9A
-        JSR     L3C3C
+        JSR     BELL
 
 .L6D9D
         CPX     #$53
@@ -14927,12 +14913,12 @@ L6D70 = L6D6F+1
         LDY     #$02
         JSR     DELAY
 
-        JSR     L7ED8
+        JSR     RDKEY
 
         BNE     L6DB4
 
 .L6DBE
-        JSR     L7ED8
+        JSR     RDKEY
 
         BEQ     L6DBE
 
@@ -14974,7 +14960,7 @@ L6D70 = L6D6F+1
         STY     DLY
         STA     L1281
         LDA     #$C0
-        STA     L3B69
+        STA     DTW4
         LDA     L0E7D
         LSR     A
         LDA     #$00
@@ -17035,7 +17021,7 @@ L712B = L712A+1
         STA     R
         LDA     #$80
         LDX     #$06
-        JSR     L7AE1
+        JSR     MVT1
 
         LDA     TYPE
         AND     #$81
@@ -17119,7 +17105,7 @@ L712B = L712A+1
 
 .L7ADF
         AND     #$80
-.L7AE1
+.MVT1
         ASL     A
         STA     S
         LDA     #$00
@@ -17271,10 +17257,10 @@ L712B = L712A+1
         LDA     L009D
         STA     L000D
         LDA     L009E
-        JSR     L44A4
+        JSR     MULT3
 
         LDX     #$03
-        JSR     L39B7
+        JSR     MVT3
 
         LDA     L0057
         STA     L0094
@@ -17286,10 +17272,10 @@ L712B = L712A+1
         STA     Q
         LDA     L0059
         STA     L0096
-        JSR     L44A4
+        JSR     MULT3
 
         LDX     #$06
-        JSR     L39B7
+        JSR     MVT3
 
         LDA     L0057
         STA     P
@@ -17300,7 +17286,7 @@ L712B = L712A+1
         LDA     L0059
         STA     L00A4
         EOR     #$80
-        JSR     L44A4
+        JSR     MULT3
 
         LDA     L0059
         AND     #$80
@@ -17359,10 +17345,10 @@ L712B = L712A+1
         LDA     L00A0
         STA     L000D
         LDA     L00A1
-        JSR     L44A4
+        JSR     MULT3
 
         LDX     #$00
-        JSR     L39B7
+        JSR     MVT3
 
         LDA     L0057
         STA     INWK
@@ -17377,7 +17363,7 @@ L712B = L712A+1
         BEQ     L7CD1
 
         DEX
-        BNE     L7CD2
+        BNE     PU2
 
         LDA     L009E
         EOR     #$80
@@ -17406,13 +17392,13 @@ L712B = L712A+1
 .L7CD1
         RTS
 
-.L7CD2
+.PU2
         LDA     #$00
         CPX     #$02
         ROR     A
         STA     RAT2
         EOR     #$80
-        STA     L0091
+        STA     RAT
         LDA     INWK
         LDX     L00A2
         STA     L00A2
@@ -17422,39 +17408,39 @@ L712B = L712A+1
         STA     L00A3
         STX     L009D
         LDA     L009E
-        EOR     L0091
+        EOR     RAT
         TAX
         LDA     L00A4
         EOR     RAT2
         STA     L009E
         STX     L00A4
         LDY     #$09
-        JSR     L7D06
+        JSR     PUS1
 
         LDY     #$0F
-        JSR     L7D06
+        JSR     PUS1
 
         LDY     #$15
-.L7D06
+.PUS1
         LDA     INWK,Y
         LDX     L00A0,Y
         STA     L00A0,Y
         STX     INWK,Y
         LDA     L009D,Y
-        EOR     L0091
+        EOR     RAT
         TAX
         LDA     L00A1,Y
         EOR     RAT2
         STA     L009D,Y
         STX     L00A1,Y
-.L7D20
+.LO2
         RTS
 
-.L7D21
+.LQ
         STX     VIEW
         JSR     TT66
 
-        JSR     L7D57
+        JSR     SIGHT
 
         LDA     BOMB
         BPL     L7D32
@@ -17462,17 +17448,17 @@ L712B = L712A+1
         JSR     L31AC
 
 .L7D32
-        JMP     L5A78
+        JMP     NWSTARS
 
-.L7D35
+.LOOK1
         LDA     #$00
         JSR     DOVDU19
 
         LDY     QQ11
-        BNE     L7D21
+        BNE     LQ
 
         CPX     VIEW
-        BEQ     L7D20
+        BEQ     LO2
 
         STX     VIEW
         JSR     TT66
@@ -17485,12 +17471,12 @@ L712B = L712A+1
         JSR     L31AC
 
 .L7D54
-        JSR     L5AA2
+        JSR     WPSHPS
 
-.L7D57
+.SIGHT
         LDY     VIEW
         LDA     LASER,Y
-        BEQ     L7D20
+        BEQ     LO2
 
         LDY     #$00
         CMP     #$0F
@@ -17533,7 +17519,7 @@ L712B = L712A+1
         STA     QQ11
         JSR     TTX66
 
-        JSR     L332C
+        JSR     MT2
 
         LDA     #$00
         STA     LSP
@@ -17598,7 +17584,7 @@ L712B = L712A+1
         EQUB    $52,$60,$62,$65,$66,$67,$68,$70
         EQUB    $F0
 
-.RDKEY
+.RDKEY_REAL
         JSR     U%
 
         LDA     #$10
@@ -17676,10 +17662,10 @@ L712B = L712A+1
 
 .L7ED7
         SED
-.L7ED8
+.RDKEY
         TYA
         PHA
-        JSR     RDKEY
+        JSR     RDKEY_REAL
 
         PLA
         TAY
