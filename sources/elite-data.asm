@@ -8205,7 +8205,7 @@ ENDMACRO
  EQUB 101                \ System 101, Galaxy 2, Mission 1     Xeveon = Token 23
  EQUB 193                \ System 193, Galaxy 1, Mission 1     Orarra = Token 24
  EQUB 41                 \ System  41, Galaxy 2                Anreer = Token 25
- EQUB 1                  \ System   1, Galaxy 16                 Lave = Token 26
+ EQUB 1                  \ System   7, Galaxy 16                 Lave = Token 26
 
 \ ******************************************************************************
 \
@@ -8268,7 +8268,7 @@ ENDMACRO
  EQUB &02                \ System 101, Galaxy 2, Mission 1     Xeveon = Token 23
  EQUB &01                \ System 193, Galaxy 1, Mission 1     Orarra = Token 24
  EQUB &82                \ System  41, Galaxy 2                Anreer = Token 25
- EQUB &90                \ System   1, Galaxy 16                 Lave = Token 26
+ EQUB &90                \ System   7, Galaxy 16                 Lave = Token 26
 
 \ ******************************************************************************
 \
