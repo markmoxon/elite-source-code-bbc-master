@@ -350,8 +350,8 @@ ORG CODE%
 
 .OK
 
- LDA #%00001111         \ Set bits 1 and 2 of the the Access Control Register
- STA VIA+&34            \ at SHEILA+&34 to switch screen memory into &3000-&7FFF
+ LDA #%00001111         \ Set bits 1 and 2 of the Access Control Register at
+ STA VIA+&34            \ SHEILA+&34 to switch screen memory into &3000-&7FFF
 
                         \ We now want to copy &F pages of memory (&F00 bytes)
                         \ from &1300-&21FF to &7000-&7EFF in screen memory
@@ -386,8 +386,8 @@ ORG CODE%
  BNE MPL1               \ Loop back to copy the next page until we have done all
                         \ &F of them
 
- LDA #%00001001         \ Clear bits 1 and 2 of the the Access Control Register
- STA VIA+&34            \ at SHEILA+&34 to switch main memory into &3000-&7FFF
+ LDA #%00001001         \ Clear bits 1 and 2 of the Access Control Register at
+ STA VIA+&34            \ SHEILA+&34 to switch main memory back into &3000-&7FFF
 
                         \ We now want to copy &33 pages of memory (&3300 bytes)
                         \ from &2200-&54FF to &7F00-&B1FF in main memory
