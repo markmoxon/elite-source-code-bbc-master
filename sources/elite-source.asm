@@ -118,6 +118,7 @@ WRCHV = &20E            \ The WRCHV vector that we intercept to implement our
 X = 128                 \ The centre x-coordinate of the 256 x 192 space view
 Y = 96                  \ The centre y-coordinate of the 256 x 192 space view
 
+\ Incorrect?
 f0 = &20                \ Internal key number for red key f0 (Launch, Front)
 f1 = &71                \ Internal key number for red key f1 (Buy Cargo, Rear)
 f2 = &72                \ Internal key number for red key f2 (Sell Cargo, Left)
@@ -127,7 +128,9 @@ f5 = &74                \ Internal key number for red key f5 (Short-range Chart)
 f6 = &75                \ Internal key number for red key f6 (Data on System)
 f7 = &16                \ Internal key number for red key f7 (Market Price)
 f8 = &76                \ Internal key number for red key f8 (Status Mode)
-f9 = &77                \ Internal key number for red key f9 (Inventory)
+
+\ Correct
+f9 = &89                \ Internal key number for red key f9 (Inventory)
 
 YELLOW  = %00001111     \ Four mode 1 pixels of colour 1 (yellow)
 RED     = %11110000     \ Four mode 1 pixels of colour 2 (red, magenta or white)
@@ -12843,7 +12846,7 @@ NEXT
 \   & 17 48 76 E8 00
 \
 \ The TENS variable contains the lowest four bytes in this number, with the
-\ least significant byte first, i.e. 00 E8 76 48. This value is used in the
+\ most significant byte first, i.e. 48 76 E8 00. This value is used in the
 \ BPRNT routine when working out which decimal digits to print when printing a
 \ number.
 \
@@ -14175,9 +14178,6 @@ DTW7 = MT16 + 1         \ Point DTW7 to the second byte of the instruction above
                         \ Hanger group for X = 18
                         \
                         \ Viper (right) and Krait (left)
-                        \
-                        \ (This group consists of a Transporter and Cobra Mk III
-                        \ in the disc version)
 
  EQUB COPS              \ Ship type = COPS = Viper
  EQUB %01100000         \ x_hi = %01100000 =  96, z_hi   = 1    -> x = +96
@@ -16489,7 +16489,7 @@ DTW7 = MT16 + 1         \ Point DTW7 to the second byte of the instruction above
 
  DEC NOMSL              \ Reduce the number of missiles we have by 1
 
- LDY #8                 \ Call the NOISE routine with A = 8 to make the sound
+ LDY #8                 \ Call the NOISE routine with Y = 8 to make the sound
  JSR NOISE              \ of a missile launch ???
 
 \ ******************************************************************************
@@ -16906,7 +16906,7 @@ DTW7 = MT16 + 1         \ Point DTW7 to the second byte of the instruction above
 
 .LAUN
 
- LDY #8                 \ Call the NOISE routine with A = 8 to make the sound
+ LDY #8                 \ Call the NOISE routine with Y = 8 to make the sound
  JSR NOISE              \ of the ship launching from the station
 
  LDA #8                 \ Set the step size for the launch tunnel rings to 8, so
@@ -20779,295 +20779,520 @@ DTW7 = MT16 + 1         \ Point DTW7 to the second byte of the instruction above
  JMP TT162              \ Print a space and return from the subroutine using a
                         \ tail call
 
+\ ******************************************************************************
+\
+\       Name: TT25
+\       Type: Subroutine
+\   Category: Universe
+\    Summary: Show the Data on System screen (red key f6)
+\  Deep dive: Generating system data
+\             Galaxy and system seeds
+\
+\ ------------------------------------------------------------------------------
+\
+\ Other entry points:
+\
+\   TT72                Used by TT70 to re-enter the routine after displaying
+\                       "MAINLY" for the economy type
+\
+\ ******************************************************************************
+
 .TT25
 
- LDA #&01
- JSR TRADEMODE
+ LDA #1                 \ Clear the top part of the screen, draw a white border,
+ JSR TRADEMODE          \ and set up a printable trading screen with a view type
+                        \ in QQ11 of 1
 
- LDA #&09
+ LDA #9                 \ Move the text cursor to column 9
  STA XC
- LDA #&A3
- JSR NLIN3
 
- JSR TTX69
+ LDA #163               \ Print recursive token 3 ("DATA ON {selected system
+ JSR NLIN3              \ name}" and draw a horizontal line at pixel row 19
+                        \ to box in the title
 
- JSR TT146
+ JSR TTX69              \ Print a paragraph break and set Sentence Case
 
- LDA #&C2
- JSR TT68
+ JSR TT146              \ If the distance to this system is non-zero, print
+                        \ "DISTANCE", then the distance, "LIGHT YEARS" and a
+                        \ paragraph break, otherwise just move the cursor down
+                        \ a line
 
- LDA QQ3
- CLC
- ADC #&01
- LSR A
- CMP #&02
+ LDA #194               \ Print recursive token 34 ("ECONOMY") followed by
+ JSR TT68               \ a colon
+
+ LDA QQ3                \ The system economy is determined by the value in QQ3,
+                        \ so fetch it into A. First we work out the system's
+                        \ prosperity as follows:
+                        \
+                        \   QQ3 = 0 or 5 = %000 or %101 = Rich
+                        \   QQ3 = 1 or 6 = %001 or %110 = Average
+                        \   QQ3 = 2 or 7 = %010 or %111 = Poor
+                        \   QQ3 = 3 or 4 = %011 or %100 = Mainly
+
+ CLC                    \ If (QQ3 + 1) >> 1 = %10, i.e. if QQ3 = %011 or %100
+ ADC #1                 \ (3 or 4), then call TT70, which prints "MAINLY " and
+ LSR A                  \ jumps down to TT72 to print the type of economy
+ CMP #%00000010
  BEQ TT70
 
- LDA QQ3
- BCC TT71
+ LDA QQ3                \ The LSR A above shifted bit 0 of QQ3 into the C flag,
+ BCC TT71               \ so this jumps to TT71 if bit 0 of QQ3 is 0, in other
+                        \ words if QQ3 = %000, %001 or %010 (0, 1 or 2)
 
- SBC #&05
- CLC
+ SBC #5                 \ Here QQ3 = %101, %110 or %111 (5, 6 or 7), so subtract
+ CLC                    \ 5 to bring it down to 0, 1 or 2 (the C flag is already
+                        \ set so the SBC will be correct)
 
 .TT71
 
- ADC #&AA
- JSR TT27
+ ADC #170               \ A is now 0, 1 or 2, so print recursive token 10 + A.
+ JSR TT27               \ This means that:
+                        \
+                        \   QQ3 = 0 or 5 prints token 10 ("RICH ")
+                        \   QQ3 = 1 or 6 prints token 11 ("AVERAGE ")
+                        \   QQ3 = 2 or 7 prints token 12 ("POOR ")
 
 .TT72
 
- LDA QQ3
- LSR A
- LSR A
- CLC
- ADC #&A8
- JSR TT60
+ LDA QQ3                \ Now to work out the type of economy, which is
+ LSR A                  \ determined by bit 2 of QQ3, as follows:
+ LSR A                  \
+                        \   QQ3 bit 2 = 0 = Industrial
+                        \   QQ3 bit 2 = 1 = Agricultural
+                        \
+                        \ So we fetch QQ3 into A and set A = bit 2 of QQ3 using
+                        \ two right shifts (which will work as QQ3 is only a
+                        \ 3-bit number)
 
- LDA #&A2
- JSR TT68
+ CLC                    \ Print recursive token 8 + A, followed by a paragraph
+ ADC #168               \ break and Sentence Case, so:
+ JSR TT60               \
+                        \   QQ3 bit 2 = 0 prints token 8 ("INDUSTRIAL")
+                        \   QQ3 bit 2 = 1 prints token 9 ("AGRICULTURAL")
 
- LDA QQ4
- CLC
- ADC #&B1
- JSR TT60
+ LDA #162               \ Print recursive token 2 ("GOVERNMENT") followed by
+ JSR TT68               \ a colon
 
- LDA #&C4
- JSR TT68
+ LDA QQ4                \ The system economy is determined by the value in QQ4,
+                        \ so fetch it into A
 
- LDX QQ5
- INX
- CLC
- JSR pr2
+ CLC                    \ Print recursive token 17 + A, followed by a paragraph
+ ADC #177               \ break and Sentence Case, so:
+ JSR TT60               \
+                        \   QQ4 = 0 prints token 17 ("ANARCHY")
+                        \   QQ4 = 1 prints token 18 ("FEUDAL")
+                        \   QQ4 = 2 prints token 19 ("MULTI-GOVERNMENT")
+                        \   QQ4 = 3 prints token 20 ("DICTATORSHIP")
+                        \   QQ4 = 4 prints token 21 ("COMMUNIST")
+                        \   QQ4 = 5 prints token 22 ("CONFEDERACY")
+                        \   QQ4 = 6 prints token 23 ("DEMOCRACY")
+                        \   QQ4 = 7 prints token 24 ("CORPORATE STATE")
 
- JSR TTX69
+ LDA #196               \ Print recursive token 36 ("TECH.LEVEL") followed by a
+ JSR TT68               \ colon
 
- LDA #&C0
- JSR TT68
+ LDX QQ5                \ Fetch the tech level from QQ5 and increment it, as it
+ INX                    \ is stored in the range 0-14 but the displayed range
+                        \ should be 1-15
 
- SEC
- LDX QQ6
- JSR pr2
+ CLC                    \ Call pr2 to print the technology level as a 3-digit
+ JSR pr2                \ number without a decimal point (by clearing the C
+                        \ flag)
 
- LDA #&C6
- JSR TT60
+ JSR TTX69              \ Print a paragraph break and set Sentence Case
 
- LDA #&28
+ LDA #192               \ Print recursive token 32 ("POPULATION") followed by a
+ JSR TT68               \ colon
+
+ SEC                    \ Call pr2 to print the population as a 3-digit number
+ LDX QQ6                \ with a decimal point (by setting the C flag), so the
+ JSR pr2                \ number printed will be population / 10
+
+ LDA #198               \ Print recursive token 38 (" BILLION"), followed by a
+ JSR TT60               \ paragraph break and Sentence Case
+
+ LDA #'('               \ Print an opening bracket
  JSR TT27
 
- LDA QQ15+4
- BMI TT75
+ LDA QQ15+4             \ Now to calculate the species, so first check bit 7 of
+ BMI TT75               \ s2_lo, and if it is set, jump to TT75 as this is an
+                        \ alien species
 
- LDA #&BC
- JSR TT27
+ LDA #188               \ Bit 7 of s2_lo is clear, so print recursive token 28
+ JSR TT27               \ ("HUMAN COLONIAL")
 
- JMP TT76
+ JMP TT76               \ Jump to TT76 to print "S)" and a paragraph break, so
+                        \ the whole species string is "(HUMAN COLONIALS)"
 
 .TT75
 
- LDA QQ15+5
- LSR A
- LSR A
+ LDA QQ15+5             \ This is an alien species, and we start with the first
+ LSR A                  \ adjective, so fetch bits 2-7 of s2_hi into A and push
+ LSR A                  \ onto the stack so we can use this later
  PHA
- AND #&07
- CMP #&03
+
+ AND #%00000111         \ Set A = bits 0-2 of A (so that's bits 2-4 of s2_hi)
+
+ CMP #3                 \ If A >= 3, jump to TT205 to skip the first adjective,
  BCS TT205
 
- ADC #&E3
- JSR spc
+ ADC #227               \ Otherwise A = 0, 1 or 2, so print recursive token
+ JSR spc                \ 67 + A, followed by a space, so:
+                        \
+                        \   A = 0 prints token 67 ("LARGE") and a space
+                        \   A = 1 prints token 67 ("FIERCE") and a space
+                        \   A = 2 prints token 67 ("SMALL") and a space
 
 .TT205
 
- PLA
+ PLA                    \ Now for the second adjective, so restore A to bits
+ LSR A                  \ 2-7 of s2_hi, and throw away bits 2-4 to leave
+ LSR A                  \ A = bits 5-7 of s2_hi
  LSR A
- LSR A
- LSR A
- CMP #&06
+
+ CMP #6                 \ If A >= 6, jump to TT206 to skip the second adjective
  BCS TT206
 
- ADC #&E6
- JSR spc
+ ADC #230               \ Otherwise A = 0 to 5, so print recursive token
+ JSR spc                \ 70 + A, followed by a space, so:
+                        \
+                        \   A = 0 prints token 70 ("GREEN") and a space
+                        \   A = 1 prints token 71 ("RED") and a space
+                        \   A = 2 prints token 72 ("YELLOW") and a space
+                        \   A = 3 prints token 73 ("BLUE") and a space
+                        \   A = 4 prints token 74 ("BLACK") and a space
+                        \   A = 5 prints token 75 ("HARMLESS") and a space
 
 .TT206
 
- LDA QQ15+3
- EOR QQ15+1
- AND #&07
- STA QQ19
- CMP #&06
+ LDA QQ15+3             \ Now for the third adjective, so EOR the high bytes of
+ EOR QQ15+1             \ s0 and s1 and extract bits 0-2 of the result:
+ AND #%00000111         \
+ STA QQ19               \   A = (s0_hi EOR s1_hi) AND %111
+                        \
+                        \ storing the result in QQ19 so we can use it later
+
+ CMP #6                 \ If A >= 6, jump to TT207 to skip the third adjective
  BCS TT207
 
- ADC #&EC
- JSR spc
+ ADC #236               \ Otherwise A = 0 to 5, so print recursive token
+ JSR spc                \ 76 + A, followed by a space, so:
+                        \
+                        \   A = 0 prints token 76 ("SLIMY") and a space
+                        \   A = 1 prints token 77 ("BUG-EYED") and a space
+                        \   A = 2 prints token 78 ("HORNED") and a space
+                        \   A = 3 prints token 79 ("BONY") and a space
+                        \   A = 4 prints token 80 ("FAT") and a space
+                        \   A = 5 prints token 81 ("FURRY") and a space
 
 .TT207
 
- LDA QQ15+5
- AND #&03
- CLC
+ LDA QQ15+5             \ Now for the actual species, so take bits 0-1 of
+ AND #%00000011         \ s2_hi, add this to the value of A that we used for
+ CLC                    \ the third adjective, and take bits 0-2 of the result
  ADC QQ19
- AND #&07
- ADC #&F2
- JSR TT27
+ AND #%00000111
+
+ ADC #242               \ A = 0 to 7, so print recursive token 82 + A, so:
+ JSR TT27               \
+                        \   A = 0 prints token 76 ("RODENT")
+                        \   A = 1 prints token 76 ("FROG")
+                        \   A = 2 prints token 76 ("LIZARD")
+                        \   A = 3 prints token 76 ("LOBSTER")
+                        \   A = 4 prints token 76 ("BIRD")
+                        \   A = 5 prints token 76 ("HUMANOID")
+                        \   A = 6 prints token 76 ("FELINE")
+                        \   A = 7 prints token 76 ("INSECT")
 
 .TT76
 
- LDA #&53
+ LDA #'S'               \ Print an "S" to pluralise the species
  JSR TT27
 
- LDA #&29
- JSR TT60
+ LDA #')'               \ And finally, print a closing bracket, followed by a
+ JSR TT60               \ paragraph break and Sentence Case, to end the species
+                        \ section
 
- LDA #&C1
- JSR TT68
+ LDA #193               \ Print recursive token 33 ("GROSS PRODUCTIVITY"),
+ JSR TT68               \ followed by colon
 
- LDX QQ7
- LDY QQ7+1
- JSR pr6
+ LDX QQ7                \ Fetch the 16-bit productivity value from QQ7 into
+ LDY QQ7+1              \ (Y X)
 
- JSR TT162
+ JSR pr6                \ Print (Y X) to 5 digits with no decimal point
 
- STZ QQ17
- LDA #&4D
+ JSR TT162              \ Print a space
+
+ STZ QQ17               \ Set QQ17 = 0 to switch to ALL CAPS
+
+ LDA #'M'               \ Print "M"
  JSR TT27
 
- LDA #&E2
- JSR TT60
+ LDA #226               \ Print recursive token 66 (" CR"), followed by a
+ JSR TT60               \ paragraph break and Sentence Case
 
- LDA #&FA
- JSR TT68
+ LDA #250               \ Print recursive token 90 ("AVERAGE RADIUS"), followed
+ JSR TT68               \ by a colon
 
- LDA QQ15+5
- LDX QQ15+3
- AND #&0F
+                        \ The average radius is calculated like this:
+                        \
+                        \   ((s2_hi AND %1111) + 11) * 256 + s1_hi
+                        \
+                        \ or, in terms of memory locations:
+                        \
+                        \   ((QQ15+5 AND %1111) + 11) * 256 + QQ15+3
+                        \
+                        \ Because the multiplication is by 256, this is the
+                        \ same as saying a 16-bit number, with high byte:
+                        \
+                        \   (QQ15+5 AND %1111) + 11
+                        \
+                        \ and low byte:
+                        \
+                        \   QQ15+3
+                        \
+                        \ so we can set this up in (Y X) and call the pr5
+                        \ routine to print it out
+
+ LDA QQ15+5             \ Set A = QQ15+5
+ LDX QQ15+3             \ Set X = QQ15+3
+
+ AND #%00001111         \ Set Y = (A AND %1111) + 11
  CLC
- ADC #&0B
+ ADC #11
  TAY
- JSR pr5
 
- JSR TT162
+ JSR pr5                \ Print (Y X) to 5 digits, not including a decimal
+                        \ point, as the C flag will be clear (as the maximum
+                        \ radius will always fit into 16 bits)
 
- LDA #&6B
- JSR DASC
+ JSR TT162              \ Print a space
 
- LDA #&6D
- JSR DASC
+ LDA #'k'               \ Print "km"
+ JSR TT26
+ LDA #'m'
+ JSR TT26
 
- JSR TTX69
+ JSR TTX69              \ Print a paragraph break and set Sentence Case
 
- JMP PDESC
+                        \ By this point, ZZ contains the current system number
+                        \ which PDESC requires. It gets put there in the TT102
+                        \ routine, which calls TT111 to populate ZZ before
+                        \ calling TT25 (this routine)
+
+ JMP PDESC              \ Jump to PDESC to print the system's extended
+                        \ description, returning from the subroutine using a
+                        \ tail call
+
+\ ******************************************************************************
+\
+\       Name: TT24
+\       Type: Subroutine
+\   Category: Universe
+\    Summary: Calculate system data from the system seeds
+\  Deep dive: Generating system data
+\             Galaxy and system seeds
+\
+\ ------------------------------------------------------------------------------
+\
+\ Calculate system data from the seeds in QQ15 and store them in the relevant
+\ locations. Specifically, this routine calculates the following from the three
+\ 16-bit seeds in QQ15 (using only s0_hi, s1_hi and s1_lo):
+\
+\   QQ3 = economy (0-7)
+\   QQ4 = government (0-7)
+\   QQ5 = technology level (0-14)
+\   QQ6 = population * 10 (1-71)
+\   QQ7 = productivity (96-62480)
+\
+\ The ranges of the various values are shown in brackets. Note that the radius
+\ and type of inhabitant are calculated on-the-fly in the TT25 routine when
+\ the system data gets displayed, so they aren't calculated here.
+\
+\ ******************************************************************************
 
 .TT24
 
- LDA QQ15+1
- AND #&07
+ LDA QQ15+1             \ Fetch s0_hi and extract bits 0-2 to determine the
+ AND #%00000111         \ system's economy, and store in QQ3
  STA QQ3
- LDA QQ15+2
- LSR A
- LSR A
- LSR A
- AND #&07
- STA QQ4
- LSR A
- BNE TT77
 
- LDA QQ3
- ORA #&02
+ LDA QQ15+2             \ Fetch s1_lo and extract bits 3-5 to determine the
+ LSR A                  \ system's government, and store in QQ4
+ LSR A
+ LSR A
+ AND #%00000111
+ STA QQ4
+
+ LSR A                  \ If government isn't anarchy or feudal, skip to TT77,
+ BNE TT77               \ as we need to fix the economy of anarchy and feudal
+                        \ systems so they can't be rich
+
+ LDA QQ3                \ Set bit 1 of the economy in QQ3 to fix the economy
+ ORA #%00000010         \ for anarchy and feudal governments
  STA QQ3
 
 .TT77
 
- LDA QQ3
- EOR #&07
- CLC
- STA QQ5
- LDA QQ15+3
- AND #&03
+ LDA QQ3                \ Now to work out the tech level, which we do like this:
+ EOR #%00000111         \
+ CLC                    \   flipped_economy + (s1_hi AND %11) + (government / 2)
+ STA QQ5                \
+                        \ or, in terms of memory locations:
+                        \
+                        \   QQ5 = (QQ3 EOR %111) + (QQ15+3 AND %11) + (QQ4 / 2)
+                        \
+                        \ We start by setting QQ5 = QQ3 EOR %111
+
+ LDA QQ15+3             \ We then take the first 2 bits of s1_hi (QQ15+3) and
+ AND #%00000011         \ add it into QQ5
  ADC QQ5
  STA QQ5
- LDA QQ4
- LSR A
- ADC QQ5
+
+ LDA QQ4                \ And finally we add QQ4 / 2 and store the result in
+ LSR A                  \ QQ5, using LSR then ADC to divide by 2, which rounds
+ ADC QQ5                \ up the result for odd-numbered government types
  STA QQ5
- ASL A
- ASL A
- ADC QQ3
- ADC QQ4
- ADC #&01
- STA QQ6
- LDA QQ3
- EOR #&07
- ADC #&03
- STA P
- LDA QQ4
- ADC #&04
- STA Q
- JSR MULTU
 
- LDA QQ6
- STA Q
- JSR MULTU
+ ASL A                  \ Now to work out the population, like so:
+ ASL A                  \
+ ADC QQ3                \   (tech level * 4) + economy + government + 1
+ ADC QQ4                \
+ ADC #1                 \ or, in terms of memory locations:
+ STA QQ6                \
+                        \   QQ6 = (QQ5 * 4) + QQ3 + QQ4 + 1
 
+ LDA QQ3                \ Finally, we work out productivity, like this:
+ EOR #%00000111         \
+ ADC #3                 \  (flipped_economy + 3) * (government + 4)
+ STA P                  \                        * population
+ LDA QQ4                \                        * 8
+ ADC #4                 \
+ STA Q                  \ or, in terms of memory locations:
+ JSR MULTU              \
+                        \   QQ7 = (QQ3 EOR %111 + 3) * (QQ4 + 4) * QQ6 * 8
+                        \
+                        \ We do the first step by setting P to the first
+                        \ expression in brackets and Q to the second, and
+                        \ calling MULTU, so now (A P) = P * Q. The highest this
+                        \ can be is 10 * 11 (as the maximum values of economy
+                        \ and government are 7), so the high byte of the result
+                        \ will always be 0, so we actually have:
+                        \
+                        \   P = P * Q
+                        \     = (flipped_economy + 3) * (government + 4)
+
+ LDA QQ6                \ We now take the result in P and multiply by the
+ STA Q                  \ population to get the productivity, by setting Q to
+ JSR MULTU              \ the population from QQ6 and calling MULTU again, so
+                        \ now we have:
+                        \
+                        \   (A P) = P * population
+
+ ASL P                  \ Next we multiply the result by 8, as a 16-bit number,
+ ROL A                  \ so we shift both bytes to the left three times, using
+ ASL P                  \ the C flag to carry bits from bit 7 of the low byte
+ ROL A                  \ into bit 0 of the high byte
  ASL P
  ROL A
- ASL P
- ROL A
- ASL P
- ROL A
- STA QQ7+1
- LDA P
+
+ STA QQ7+1              \ Finally, we store the productivity in two bytes, with
+ LDA P                  \ the low byte in QQ7 and the high byte in QQ7+1
  STA QQ7
- RTS
+
+ RTS                    \ Return from the subroutine
+
+\ ******************************************************************************
+\
+\       Name: TT22
+\       Type: Subroutine
+\   Category: Charts
+\    Summary: Show the Long-range Chart (red key f4)
+\
+\ ******************************************************************************
 
 .TT22
 
- LDA #&40
- JSR TT66
+ LDA #64                \ Clear the top part of the screen, draw a white border,
+ JSR TT66               \ and set the current view type in QQ11 to 32 (Long-
+                        \ range Chart)
 
- LDA #&10
- JSR SETVDU19
+ LDA #16                \ Switch to the mode 1 palette for the trade view, which
+ JSR SETVDU19           \ is yellow (colour 1), magenta (colour 2) and white
+                        \ (colour 3)
 
- LDA #&FF
+ LDA #CYAN              \ Switch to colour 3, which is white in the chart view
  STA COL
- LDA #&07
+
+ LDA #7                 \ Move the text cursor to column 7
  STA XC
- JSR TT81
 
- LDA #&C7
- JSR TT27
+ JSR TT81               \ Set the seeds in QQ15 to those of system 0 in the
+                        \ current galaxy (i.e. copy the seeds from QQ21 to QQ15)
 
- JSR NLIN
+ LDA #199               \ Print recursive token 39 ("GALACTIC CHART{galaxy
+ JSR TT27               \ number right-aligned to width 3}")
 
- LDA #&99
- JSR NLIN2-2
+ JSR NLIN               \ Draw a horizontal line at pixel row 23 to box in the
+                        \ title and act as the top frame of the chart, and move
+                        \ the text cursor down one line
 
- JSR TT14
+ LDA #153               \ Draw a screen-wide horizontal line at pixel row 152
+ JSR NLIN2-2            \ for the bottom edge of the chart, so the chart itself
+                        \ is 128 pixels high, starting on row 24 and ending on
+                        \ row 151 ???
 
- LDX #&00
+ JSR TT14               \ Call TT14 to draw a circle with crosshairs at the
+                        \ current system's galactic coordinates
+
+ LDX #0                 \ We're now going to plot each of the galaxy's systems,
+                        \ so set up a counter in X for each system, starting at
+                        \ 0 and looping through to 255
 
 .TT83
 
- STX XSAV
- LDX QQ15+3
- LDY QQ15+4
- TYA
- ORA #&50
- STA ZZ
- LDA #&0F
+ STX XSAV               \ Store the counter in XSAV
+
+ LDX QQ15+3             \ Fetch the s1_hi seed into X, which gives us the
+                        \ galactic x-coordinate of this system
+
+ LDY QQ15+4             \ Fetch the s2_lo seed and clear all the bits apart
+ TYA                    \ from bits 4 and 6, storing the result in ZZ to give a
+ ORA #%01010000         \ random number out of 0, &10, &40 or &50 (but which
+ STA ZZ                 \ will always be the same for this system). We use this
+                        \ value to determine the size of the point for this
+                        \ system on the chart by passing it as the distance
+                        \ argument to the PIXEL routine below
+
+ LDA #&0F               \ ???
  STA COL
- LDA QQ15+1
- JSR L4A42
 
- CLC
- ADC #&18
- JSR PIXEL
+ LDA QQ15+1             \ Fetch the s0_hi seed into A, which gives us the
+                        \ galactic y-coordinate of this system
 
- JSR TT20
+ JSR L4A42              \ ???
 
- LDX XSAV
- INX
- BNE TT83
+ CLC                    \ Add 24 to the halved y-coordinate ???
+ ADC #24                \ (as the top of the chart is on pixel row 24, just
+                        \ below the line we drew on row 23 above)
 
- LDA QQ9
+ JSR PIXEL              \ Call PIXEL to draw a point at (X, A), with the size of
+                        \ the point dependent on the distance specified in ZZ
+                        \ (so a high value of ZZ will produce a 1-pixel point,
+                        \ a medium value will produce a 2-pixel dash, and a
+                        \ small value will produce a 4-pixel square)
+
+ JSR TT20               \ We want to move on to the next system, so call TT20
+                        \ to twist the three 16-bit seeds in QQ15
+
+ LDX XSAV               \ Restore the loop counter from XSAV
+
+ INX                    \ Increment the counter
+
+ BNE TT83               \ If X > 0 then we haven't done all 256 systems yet, so
+                        \ loop back up to TT83
+
+ LDA QQ9                \ ???
  JSR L4A44
 
  STA QQ19
@@ -21075,26 +21300,61 @@ DTW7 = MT16 + 1         \ Point DTW7 to the second byte of the instruction above
  JSR L4A42
 
  STA QQ19+1
- LDA #&04
+
+ LDA #4                 \ Set QQ19+2 to size 4 for the crosshairs size
  STA QQ19+2
- LDA #&AF
+
+ LDA #&AF               \ ???
  STA COL
+
+                        \ Fall through into TT15 to draw crosshairs of size 4 at
+                        \ the selected system's coordinates
+
+\ ******************************************************************************
+\
+\       Name: TT15
+\       Type: Subroutine
+\   Category: Drawing lines
+\    Summary: Draw a set of crosshairs
+\
+\ ------------------------------------------------------------------------------
+\
+\ For all views except the Short-range Chart, the centre is drawn 24 pixels to
+\ the right of the y-coordinate given.
+\
+\ Arguments:
+\
+\   QQ19                The pixel x-coordinate of the centre of the crosshairs
+\
+\   QQ19+1              The pixel y-coordinate of the centre of the crosshairs
+\
+\   QQ19+2              The size of the crosshairs
+\
+\ ******************************************************************************
 
 .TT15
 
- LDA #&18
- LDX QQ11
- BPL TT178
+ LDA #24                \ Set A to 24, which we will use as the minimum
+                        \ screen indent for the crosshairs (i.e. the minimum
+                        \ distance from the top-left corner of the screen)
 
- LDA #&00
+ LDX QQ11               \ If the current view is not the Short-range Chart,
+ BPL TT178              \ which is the only view with bit 7 set, then jump to
+                        \ TT178 to skip the following instruction
+
+ LDA #0                 \ This is the Short-range Chart, so set A to 0, so the
+                        \ crosshairs can go right up against the screen edges
 
 .TT178
 
- STA QQ19+5
- LDA QQ19
- SEC
- SBC QQ19+2
- BIT QQ11
+ STA QQ19+5             \ Set QQ19+5 to A, which now contains the correct indent
+                        \ for this view
+
+ LDA QQ19               \ Set A = crosshairs x-coordinate - crosshairs size
+ SEC                    \ to get the x-coordinate of the left edge of the
+ SBC QQ19+2             \ crosshairs
+
+ BIT QQ11               \ ???
  BMI TT84
 
  BCC L4CC7
@@ -21108,11 +21368,28 @@ DTW7 = MT16 + 1         \ Point DTW7 to the second byte of the instruction above
 
 .TT84
 
- STA XX15
- LDA QQ19
- CLC
- ADC QQ19+2
- BCS L4CD6
+                        \ In the following, the authors have used XX15 for
+                        \ temporary storage. XX15 shares location with X1, Y1,
+                        \ X2 and Y2, so in the following, you can consider
+                        \ the variables like this:
+                        \
+                        \   XX15   is the same as X1
+                        \   XX15+1 is the same as Y1
+                        \   XX15+2 is the same as X2
+                        \   XX15+3 is the same as Y2
+                        \
+                        \ Presumably this routine was written at a different
+                        \ time to the line-drawing routine, before the two
+                        \ workspaces were merged to save space
+
+ STA XX15               \ Set XX15 (X1) = A (the x-coordinate of the left edge
+                        \ of the crosshairs)
+
+ LDA QQ19               \ Set A = crosshairs x-coordinate + crosshairs size
+ CLC                    \ to get the x-coordinate of the right edge of the
+ ADC QQ19+2             \ crosshairs
+
+ BCS L4CD6              \ ???
 
  CMP #&FE
  BCC TT85
@@ -21123,69 +21400,115 @@ DTW7 = MT16 + 1         \ Point DTW7 to the second byte of the instruction above
 
 .TT85
 
- STA X2
- LDA QQ19+1
- CLC
- ADC QQ19+5
- STA Y1
- JSR HLOIN3
+ STA XX15+2             \ Set XX15+2 (X2) = A (the x-coordinate of the right
+                        \ edge of the crosshairs)
 
- LDA QQ19+1
- SEC
- SBC QQ19+2
- BCS TT86
+ LDA QQ19+1             \ Set XX15+1 (Y1) = crosshairs y-coordinate + indent
+ CLC                    \ to get the y-coordinate of the centre of the
+ ADC QQ19+5             \ crosshairs
+ STA XX15+1
 
- LDA #&00
+ JSR HLOIN3             \ ???
+
+ LDA QQ19+1             \ Set A = crosshairs y-coordinate - crosshairs size
+ SEC                    \ to get the y-coordinate of the top edge of the
+ SBC QQ19+2             \ crosshairs
+
+ BCS TT86               \ If the above subtraction didn't underflow, then A is
+                        \ correct, so skip the next instruction
+
+ LDA #0                 \ The subtraction underflowed, so set A to 0 so the
+                        \ crosshairs don't spill out of the top of the screen
 
 .TT86
 
- CLC
- ADC QQ19+5
- STA Y1
- LDA QQ19+1
- CLC
- ADC QQ19+2
- ADC QQ19+5
- CMP #&98
- BCC TT87
+ CLC                    \ Set XX15+1 (Y1) = A + indent to get the y-coordinate
+ ADC QQ19+5             \ of the top edge of the indented crosshairs
+ STA XX15+1
 
- LDX QQ11
- BMI TT87
+ LDA QQ19+1             \ Set A = crosshairs y-coordinate + crosshairs size
+ CLC                    \ + indent to get the y-coordinate of the bottom edge
+ ADC QQ19+2             \ of the indented crosshairs
+ ADC QQ19+5
 
- LDA #&98
+ CMP #152               \ If A < 152 then skip the following, as the crosshairs
+ BCC TT87               \ won't spill out of the bottom of the screen
+
+ LDX QQ11               \ A >= 152, so we need to check whether this will fit in
+                        \ this view, so fetch the view number
+
+ BMI TT87               \ If this is the Short-range Chart then the y-coordinate
+                        \ is fine, so skip to TT87
+
+ LDA #152               \ Otherwise this is the Long-range Chart, so we need to
+                        \ clip the crosshairs at a maximum y-coordinate of 152
+                        \ ???
 
 .TT87
 
- STA Y2
- LDA QQ19
- STA XX15
- STA X2
- JMP LL30
+ STA XX15+3             \ Set XX15+3 (Y2) = A (the y-coordinate of the bottom
+                        \ edge of the crosshairs)
+
+ LDA QQ19               \ Set XX15 (X1) = the x-coordinate of the centre of the
+ STA XX15               \ crosshairs
+
+ STA XX15+2             \ Set XX15+2 (X2) = the x-coordinate of the centre of
+                        \ the crosshairs
+
+ JMP LL30               \ Draw a vertical line (X1, Y1) to (X2, Y2), which will
+                        \ draw from the top edge of the crosshairs to the bottom
+                        \ edge, through the centre of the crosshairs, returning
+                        \ from the subroutine using a tail call
+
+\ ******************************************************************************
+\
+\       Name: TT14
+\       Type: Subroutine
+\   Category: Drawing circles
+\    Summary: Draw a circle with crosshairs on a chart
+\
+\ ------------------------------------------------------------------------------
+\
+\ Draw a circle with crosshairs at the current system's galactic coordinates.
+\
+\ ******************************************************************************
 
 .TT126
 
- LDA #&68
- STA QQ19
- LDA #&5A
- STA QQ19+1
- LDA #&10
- STA QQ19+2
- LDA #&AF
+ LDA #104               \ Set QQ19 = 104, for the x-coordinate of the centre of
+ STA QQ19               \ the fixed circle on the Short-range Chart
+
+ LDA #90                \ Set QQ19+1 = 90, for the y-coordinate of the centre of
+ STA QQ19+1             \ the fixed circle on the Short-range Chart
+
+ LDA #16                \ Set QQ19+2 = 16, the size of the crosshairs on the
+ STA QQ19+2             \ Short-range Chart
+
+ LDA #&AF               \ ???
  STA COL
- JSR TT15
 
- LDA QQ14
+ JSR TT15               \ Draw the set of crosshairs defined in QQ19, at the
+                        \ exact coordinates as this is the Short-range Chart
+
+ LDA QQ14               \ ???
  JSR L4A43
-
  STA K
- JMP TT128
+
+ JMP TT128              \ Jump to TT128 to draw a circle with the centre at the
+                        \ same coordinates as the crosshairs, (QQ19, QQ19+1),
+                        \ and radius K that reflects the current fuel levels,
+                        \ returning from the subroutine using a tail call
 
 .TT14
 
- LDA QQ11
- BMI TT126
+ LDA QQ11               \ If the current view is the Short-range Chart, which
+ BMI TT126              \ is the only view with bit 7 set, then jump up to TT126
+                        \ to draw the crosshairs and circle for that view
 
- LDA QQ14
+                        \ Otherwise this is the Long-range Chart, so we draw the
+                        \ crosshairs and circle for that view instead
+
+ LDA QQ14               \ ???
  LSR A
  JSR L4A42
 
@@ -21198,99 +21521,179 @@ DTW7 = MT16 + 1         \ Point DTW7 to the second byte of the instruction above
  JSR L4A42
 
  STA QQ19+1
- LDA #&07
- STA QQ19+2
- LDA #&FF
- STA COL
- JSR TT15
 
- LDA QQ19+1
- CLC
- ADC #&18
+ LDA #7                 \ Set QQ19+2 = 7, the size of the crosshairs on the
+ STA QQ19+2             \ Long-range Chart
+
+ LDA #&FF               \ ???
+ STA COL
+
+ JSR TT15               \ Draw the set of crosshairs defined in QQ19, which will
+                        \ be drawn 24 pixels to the right of QQ19+1
+
+ LDA QQ19+1             \ Add 24 to the y-coordinate of the crosshairs in QQ19+1
+ CLC                    \ so that the centre of the circle matches the centre
+ ADC #24                \ of the crosshairs
  STA QQ19+1
+
+                        \ Fall through into TT128 to draw a circle with the
+                        \ centre at the same coordinates as the crosshairs,
+                        \ (QQ19, QQ19+1),  and radius K that reflects the
+                        \ current fuel levels
+
+\ ******************************************************************************
+\
+\       Name: TT128
+\       Type: Subroutine
+\   Category: Drawing circles
+\    Summary: Draw a circle on a chart
+\  Deep dive: Drawing circles
+\
+\ ------------------------------------------------------------------------------
+\
+\ Draw a circle with the centre at (QQ19, QQ19+1) and radius K.
+\
+\ Arguments:
+\
+\   QQ19                The x-coordinate of the centre of the circle
+\
+\   QQ19+1              The y-coordinate of the centre of the circle
+\
+\   K                   The radius of the circle
+\
+\ ******************************************************************************
 
 .TT128
 
- LDA QQ19
+ LDA QQ19               \ Set K3 = the x-coordinate of the centre
  STA K3
- LDA QQ19+1
+
+ LDA QQ19+1             \ Set K4 = the y-coordinate of the centre
  STA K4
- STZ K4+1
+
+ STZ K4+1               \ Set the high bytes of K3(1 0) and K4(1 0) to 0
  STZ K3+1
- LDX #&01
+
+ LDX #1                 \ Set LSP = 1 to reset the ball line heap
  STX LSP
- INX
+
+ INX                    \ Set STP = 2, the step size for the circle
  STX STP
- LDA #&F0
+
+ LDA #RED               \ Switch to colour 2, which is red in the chart view
  STA COL
- JMP CIRCLE2
+
+ JMP CIRCLE2            \ Jump to CIRCLE2 to draw a circle with the centre at
+                        \ (K3(1 0), K4(1 0)) and radius K, returning from the
+                        \ subroutine using a tail call
+
+\ ******************************************************************************
+\
+\       Name: TT219
+\       Type: Subroutine
+\   Category: Market
+\    Summary: Show the Buy Cargo screen (red key f1)
+\
+\ ------------------------------------------------------------------------------
+\
+\ Other entry points:
+\
+\   BAY2                Jump into the main loop at FRCE, setting the key
+\                       "pressed" to red key f9 (so we show the Inventory
+\                       screen)
+\
+\ ******************************************************************************
 
 .TT219
 
- LDA #&02
- JSR TRADEMODE
+ LDA #2                 \ Clear the top part of the screen, draw a white border,
+ JSR TRADEMODE          \ and set up a printable trading screen with a view type
+                        \ in QQ11 of 2 (Buy Cargo screen)
 
- JSR TT163
+ JSR TT163              \ Print the column headers for the prices table
 
- LDA #&80
- STA QQ17
- LDA #&00
- STA QQ29
+ LDA #%10000000         \ Set bit 7 of QQ17 to switch to Sentence Case, with the
+ STA QQ17               \ next letter in capitals
+
+ LDA #0                 \ We're going to loop through all the available market
+ STA QQ29               \ items, so we set up a counter in QQ29 to denote the
+                        \ current item and start it at 0
 
 .TT220
 
- JSR TT151
+ JSR TT151              \ Call TT151 to print the item name, market price and
+                        \ availability of the current item, and set QQ24 to the
+                        \ item's price / 4, QQ25 to the quantity available and
+                        \ QQ19+1 to byte #1 from the market prices table for
+                        \ this item
 
- LDA QQ25
- BNE TT224
+ LDA QQ25               \ If there are some of the current item available, jump
+ BNE TT224              \ to TT224 below to see if we want to buy any
 
- JMP TT222
+ JMP TT222              \ Otherwise there are none available, so jump down to
+                        \ TT222 to skip this item
 
 .TQ4
 
- LDY #&B0
+ LDY #176               \ Set Y to the recursive token 16 ("QUANTITY")
 
 .Tc
 
- JSR TT162
+ JSR TT162              \ Print a space
 
- TYA
- JSR prq
+ TYA                    \ Print the recursive token in Y followed by a question
+ JSR prq                \ mark
 
- JSR dn2
+.TTX224
+
+ JSR dn2                \ Call dn2 to make a short, high beep and delay for 1
+                        \ second
 
 .TT224
 
- JSR CLYNS
+ JSR CLYNS              \ Clear the bottom three text rows of the upper screen,
+                        \ and move the text cursor to column 1 on row 21, i.e.
+                        \ the start of the top row of the three bottom rows
 
- LDA #&CC
+ LDA #204               \ Print recursive token 44 ("QUANTITY OF ")
  JSR TT27
 
- LDA QQ29
- CLC
- ADC #&D0
+ LDA QQ29               \ Print recursive token 48 + QQ29, which will be in the
+ CLC                    \ range 48 ("FOOD") to 64 ("ALIEN ITEMS"), so this
+ ADC #208               \ prints the current item's name
  JSR TT27
 
- LDA #&2F
+ LDA #'/'               \ Print "/"
  JSR TT27
 
- JSR TT152
+ JSR TT152              \ Print the unit ("t", "kg" or "g") for the current item
+                        \ (as the call to TT151 above set QQ19+1 with the
+                        \ appropriate value)
 
- LDA #&3F
+ LDA #'?'               \ Print "?"
  JSR TT27
 
- JSR TT67
+ JSR TT67               \ Print a newline
 
- LDX #&00
- STX R
- LDX #&0C
- STX T1
- JSR gnum
+ LDX #0                 \ These instructions have no effect, as they are
+ STX R                  \ repeated at the start of gnum, which we call next.
+ LDX #12                \ Perhaps they were left behind when code was moved from
+ STX T1                 \ here into gnum, and weren't deleted?
 
- BCS TQ4
+ JSR gnum               \ Call gnum to get a number from the keyboard, which
+                        \ will be the quantity of this item we want to purchase,
+                        \ returning the number entered in A and R
 
- STA P
- JSR tnpr
+ BCS TQ4                \ If gnum set the C flag, the number entered is greater
+                        \ then the quantity available, so jump up to TQ4 to
+                        \ display a "Quantity?" error, beep, clear the number
+                        \ and try again
+
+ STA P                  \ Otherwise we have a valid purchase quantity entered,
+                        \ so store the amount we want to purchase in P
+
+ JSR tnpr               \ Call tnpr to work out whether there is room in the
+                        \ cargo hold for this item
 
  LDY #&CE
  LDA R
@@ -21300,146 +21703,240 @@ DTW7 = MT16 + 1         \ Point DTW7 to the second byte of the instruction above
 
 .L4DD8
 
- LDA QQ24
- STA Q
- JSR GCASH
+ LDA QQ24               \ There is room in the cargo hold, so now to check
+ STA Q                  \ whether we have enough cash, so fetch the item's
+                        \ price / 4, which was returned in QQ24 by the call
+                        \ to TT151 above and store it in Q
 
- JSR LCASH
+ JSR GCASH              \ Call GCASH to calculate
+                        \
+                        \   (Y X) = P * Q * 4
+                        \
+                        \ which will be the total price of this transaction
+                        \ (as P contains the purchase quantity and Q contains
+                        \ the item's price / 4)
 
- LDY #&C5
- BCC Tc
+ JSR LCASH              \ Subtract (Y X) cash from the cash pot in CASH
 
- LDY QQ29
- LDA R
- PHA
- CLC
- ADC QQ20,Y
- STA QQ20,Y
- LDA AVL,Y
- SEC
- SBC R
+ LDY #197               \ If the C flag is clear, we didn't have enough cash,
+ BCC Tc                 \ so set Y to the recursive token 37 ("CASH") and jump
+                        \ up to Tc to print a "Cash?" error, beep, clear the
+                        \ number and try again
+
+ LDY QQ29               \ Fetch the current market item number from QQ29 into Y
+
+ LDA R                  \ Set A to the number of items we just purchased (this
+                        \ was set by gnum above)
+
+ PHA                    \ Store the quantity just purchased on the stack
+
+ CLC                    \ Add the number purchased to the Y-th byte of QQ20,
+ ADC QQ20,Y             \ which contains the number of items of this type in
+ STA QQ20,Y             \ our hold (so this transfers the bought items into our
+                        \ cargo hold)
+
+ LDA AVL,Y              \ Subtract the number of items from the Y-th byte of
+ SEC                    \ AVL, which contains the number of items of this type
+ SBC R                  \ that are available on the market
  STA AVL,Y
- PLA
- BEQ TT222
 
- JSR dn
+ PLA                    \ Restore the quantity just purchased
+
+ BEQ TT222              \ If we didn't buy anything, jump to TT222 to skip the
+                        \ following instruction
+
+ JSR dn                 \ Call dn to print the amount of cash left in the cash
+                        \ pot, then make a short, high beep to confirm the
+                        \ purchase, and delay for 1 second
 
 .TT222
 
- LDA QQ29
- CLC
- ADC #&05
+ LDA QQ29               \ Move the text cursor to row QQ29 + 5 (where QQ29 is
+ CLC                    \ the item number, starting from 0)
+ ADC #5
  JSR DOYC
 
- LDA #&00
+ LDA #0                 \ Move the text cursor to column 0
  JSR DOXC
 
- INC QQ29
- LDA QQ29
- CMP #&11
+ INC QQ29               \ Increment QQ29 to point to the next item
+
+ LDA QQ29               \ If QQ29 >= 17 then jump to BAY2 as we have done the
+ CMP #17                \ last item
  BCS BAY2
 
- JMP TT220
+ JMP TT220              \ Otherwise loop back to TT220 to print the next market
+                        \ item
 
 .BAY2
 
- LDA #&89
- JMP FRCE
+ LDA #f9                \ Jump into the main loop at FRCE, setting the key
+ JMP FRCE               \ "pressed" to red key f9 (so we show the Inventory
+                        \ screen)
+
+\ ******************************************************************************
+\
+\       Name: gnum
+\       Type: Subroutine
+\   Category: Market
+\    Summary: Get a number from the keyboard
+\
+\ ------------------------------------------------------------------------------
+\
+\ Get a number from the keyboard, up to the maximum number in QQ25, for the
+\ buying and selling of cargo and equipment.
+\
+\ Pressing "Y" will return the maximum number (i.e. buy/sell all items), while
+\ pressing "N" will abort the sale and return a 0.
+\
+\ Pressing a key with an ASCII code less than ASCII "0" will return a 0 in A (so
+\ that includes pressing Space or Return), while pressing a key with an ASCII
+\ code greater than ASCII "9" will jump to the Inventory screen (so that
+\ includes all letters and most punctuation).
+\
+\ Arguments:
+\
+\   QQ25                The maximum number allowed
+\
+\ Returns:
+\
+\   A                   The number entered
+\
+\   R                   Also contains the number entered
+\
+\   C flag              Set if the number is too large (> QQ25), clear otherwise
+\
+\ ******************************************************************************
 
 .gnum
 
- LDA #&F0
+ LDA #MAGENTA           \ Switch to colour 2, which is magenta in the trade view
  STA COL
- LDX #&00
- STX R
- LDX #&0C
- STX T1
+
+ LDX #0                 \ We will build the number entered in R, so initialise
+ STX R                  \ it with 0
+
+ LDX #12                \ We will check for up to 12 key presses, so set a
+ STX T1                 \ counter in T1
 
 .TT223
 
- JSR TT217
+ JSR TT217              \ Scan the keyboard until a key is pressed, and return
+                        \ the key's ASCII code in A (and X)
 
- LDX R
- BNE NWDAV2
+ LDX R                  \ If R is non-zero then skip to NWDAV2, as we are
+ BNE NWDAV2             \ already building a number
 
- CMP #&59
- BEQ NWDAV1
+ CMP #'Y'               \ If "Y" was pressed, jump to NWDAV1 to return the
+ BEQ NWDAV1             \ maximum number allowed (i.e. buy/sell the whole stock)
 
- CMP #&4E
- BEQ NWDAV3
+ CMP #'N'               \ If "N" was pressed, jump to NWDAV3 to return from the
+ BEQ NWDAV3             \ subroutine with a result of 0 (i.e. abort transaction)
 
 .NWDAV2
 
- STA Q
- SEC
- SBC #&30
- BCC OUT
+ STA Q                  \ Store the key pressed in Q
 
- CMP #&0A
- BCS BAY2
+ SEC                    \ Subtract ASCII '0' from the key pressed, to leave the
+ SBC #'0'               \ numeric value of the key in A (if it was a number key)
 
- STA S
- LDA R
- CMP #&1A
- BCS OUT_DUPLICATE
+ BCC OUT                \ If A < 0, jump to OUT to return from the subroutine
+                        \ with a result of 0, as the key pressed was not a
+                        \ number or letter and is less than ASCII "0"
 
- ASL A
+ CMP #10                \ If A >= 10, jump to BAY2 to display the Inventory
+ BCS BAY2               \ screen, as the key pressed was a letter or other
+                        \ non-digit and is greater than ASCII "9"
+
+ STA S                  \ Store the numeric value of the key pressed in S
+
+ LDA R                  \ Fetch the result so far into A
+
+ CMP #26                \ If A >= 26, where A is the number entered so far, then
+ BCS OUTX               \ adding a further digit will make it bigger than 256,
+                        \ so jump to OUTX to ???
+
+ ASL A                  \ Set A = (A * 2) + (A * 8) = A * 10
  STA T
  ASL A
  ASL A
  ADC T
- ADC S
- BCS OUT_DUPLICATE
 
+ ADC S                  \ ???
+ BCS OUTX
  STA R
- CMP QQ25
- BEQ TT226
 
- BCS OUT_DUPLICATE
+ CMP QQ25               \ If the result in R = the maximum allowed in QQ25, jump
+ BEQ TT226              \ to TT226 to print the key press and keep looping (the
+                        \ BEQ is needed because the BCS below would jump to OUT
+                        \ if R >= QQ25, which we don't want)
+
+ BCS OUTX               \ If the result in R > QQ25, jump to OUTX to ???
 
 .TT226
 
- LDA Q
- JSR DASC
+ LDA Q                  \ Print the character in Q (i.e. the key that was
+ JSR TT26               \ pressed, as we stored the ASCII value in Q earlier)
 
- DEC T1
- BNE TT223
+ DEC T1                 \ Decrement the loop counter
+
+ BNE TT223              \ Loop back to TT223 until we have checked for 12 digits
 
 .OUT
 
- LDA #&FF
+ LDA #CYAN              \ Switch to colour 3, which is white in the trade view
  STA COL
- LDA R
- RTS
+
+ LDA R                  \ Set A to the result we have been building in R
+
+ RTS                    \ Return from the subroutine
 
 .NWDAV1
 
- JSR DASC
+                        \ If we get here then "Y" was pressed, so we return the
+                        \ maximum number allowed, which is in QQ25
 
- LDA QQ25
+ JSR TT26               \ Print the character for the key that was pressed
+
+ LDA QQ25               \ Set R = QQ25, so we return the maximum value allowed
  STA R
- JMP OUT
+
+ JMP OUT                \ Jump to OUT to return from the subroutine
 
 .NWDAV3
 
- JSR DASC
+                        \ If we get here then "N" was pressed, so we return 0
 
- STZ R
- JMP OUT
+ JSR TT26               \ Print the character for the key that was pressed
+
+ STZ R                  \ Set R = 0, so we return 0
+
+ JMP OUT                \ Jump to OUT to return from the subroutine
+
+\ ******************************************************************************
+\
+\       Name: NWDAV4
+\       Type: Subroutine
+\   Category: Market
+\    Summary: Print an "ITEM?" error, make a beep and rejoin the TT210 routine
+\
+\ ******************************************************************************
 
 .NWDAV4
 
- JSR TT67
+ JSR TT67               \ Print a newline
 
- LDA #&B0
- JSR prq
+ LDA #176               \ Print recursive token 127 ("ITEM") followed by a
+ JSR prq                \ question mark
 
- JSR dn2
+ JSR dn2                \ Call dn2 to make a short, high beep and delay for 1
+                        \ second
 
- LDY QQ29
- JMP NWDAVxx
+ LDY QQ29               \ Fetch the item number we are selling from QQ29
 
-.OUT_DUPLICATE
+ JMP NWDAVxx            \ Jump back into the TT210 routine that called NWDAV4
+
+.OUTX
 
  LDA Q
  JSR DASC
@@ -21447,115 +21944,198 @@ DTW7 = MT16 + 1         \ Point DTW7 to the second byte of the instruction above
  SEC
  JMP OUT
 
+\ ******************************************************************************
+\
+\       Name: TT208
+\       Type: Subroutine
+\   Category: Market
+\    Summary: Show the Sell Cargo screen (red key f2)
+\
+\ ******************************************************************************
+
 .TT208
 
- LDA #&04
- JSR TRADEMODE
+ LDA #4                 \ Clear the top part of the screen, draw a white border,
+ JSR TRADEMODE          \ and set up a printable trading screen with a view type
+                        \ in QQ11 of 4 (Sell Cargo screen)
 
- LDA #&0A
+ LDA #10                \ Move the text cursor to column 10
  STA XC
- LDA #&CD
+
+ LDA #205               \ Print recursive token 45 ("SELL")
  JSR TT27
 
- LDA #&CE
- JSR NLIN3
+ LDA #206               \ Print recursive token 46 (" CARGO{sentence case}")
+ JSR NLIN3              \ draw a horizontal line at pixel row 19 to box in the
+                        \ title
 
- JSR TT67
+ JSR TT67               \ Print a newline
+
+                        \ Fall through into TT210 to show the Inventory screen
+                        \ with the option to sell
+
+\ ******************************************************************************
+\
+\       Name: TT210
+\       Type: Subroutine
+\   Category: Inventory
+\    Summary: Show a list of current cargo in our hold, optionally to sell
+\
+\ ------------------------------------------------------------------------------
+\
+\ Show a list of current cargo in our hold, either with the ability to sell (the
+\ Sell Cargo screen) or without (the Inventory screen), depending on the current
+\ view.
+\
+\ Arguments:
+\
+\   QQ11                The current view:
+\
+\                           * 4 = Sell Cargo
+\
+\                           * 8 = Inventory
+\
+\ Other entry points:
+\
+\   NWDAVxx             Used to rejoin this routine from the call to NWDAV4
+\
+\ ******************************************************************************
 
 .TT210
 
- LDY #&00
+ LDY #0                 \ We're going to loop through all the available market
+                        \ items and check whether we have any in the hold (and,
+                        \ if we are in the Sell Cargo screen, whether we want
+                        \ to sell any items), so we set up a counter in Y to
+                        \ denote the current item and start it at 0
 
 .TT211
 
- STY QQ29
+ STY QQ29               \ Store the current item number in QQ29
 
 .NWDAVxx
 
- LDX QQ20,Y
- BEQ TT212
+ LDX QQ20,Y             \ Fetch into X the amount of the current item that we
+ BEQ TT212              \ have in our cargo hold, which is stored in QQ20+Y,
+                        \ and if there are no items of this type in the hold,
+                        \ jump down to TT212 to skip to the next item
 
- TYA
- ASL A
- ASL A
+ TYA                    \ Set Y = Y * 4, so this will act as an index into the
+ ASL A                  \ market prices table at QQ23 for this item (as there
+ ASL A                  \ are four bytes per item in the table)
  TAY
- LDA L6E6E,Y
- STA QQ19+1
- TXA
- PHA
- JSR TT69
 
- CLC
- LDA QQ29
- ADC #&D0
+ LDA QQ23+1,Y           \ Fetch byte #1 from the market prices table for the
+ STA QQ19+1             \ current item and store it in QQ19+1, for use by the
+                        \ call to TT152 below
+
+ TXA                    \ Store the amount of item in the hold (in X) on the
+ PHA                    \ stack
+
+ JSR TT69               \ Call TT69 to set Sentence Case and print a newline
+
+ CLC                    \ Print recursive token 48 + QQ29, which will be in the
+ LDA QQ29               \ range 48 ("FOOD") to 64 ("ALIEN ITEMS"), so this
+ ADC #208               \ prints the current item's name
  JSR TT27
 
- LDA #&0E
- JSR DOXC
+ LDA #14                \ Move the text cursor to column 14, for the item's
+ JSR DOXC               \ quantity
 
- PLA
+ PLA                    \ Restore the amount of item in the hold into X
  TAX
- STA QQ25
- CLC
- JSR pr2
 
- JSR TT152
+ STA QQ25               \ Store the amount of this item in the hold in QQ25
 
- LDA QQ11
- CMP #&04
- BNE TT212
+ CLC                    \ Print the 8-bit number in X to 3 digits, without a
+ JSR pr2                \ decimal point
 
- LDA #&CD
+ JSR TT152              \ Print the unit ("t", "kg" or "g") for the market item
+                        \ whose byte #1 from the market prices table is in
+                        \ QQ19+1 (which we set up above)
+
+ LDA QQ11               \ If the current view type in QQ11 is not 4 (Sell Cargo
+ CMP #4                 \ screen), jump to TT212 to skip the option to sell
+ BNE TT212              \ items
+
+\JSRTT162               \ This instruction is commented out in the original
+                        \ source
+
+ LDA #205               \ Print recursive token 45 ("SELL")
  JSR TT27
 
- LDA #&CE
+ LDA #206               \ Print extended token 206 ("{all caps}(Y/N)?")
  JSR DETOK
 
- JSR gnum
+ JSR gnum               \ Call gnum to get a number from the keyboard, which
+                        \ will be the number of the item we want to sell,
+                        \ returning the number entered in A and R, and setting
+                        \ the C flag if the number is bigger than the available
+                        \ amount of this item in QQ25
 
- BEQ TT212
+ BEQ TT212              \ If no number was entered, jump to TT212 to move on to
+                        \ the next item
 
- BCS NWDAV4
+ BCS NWDAV4             \ If the number entered was too big, jump to NWDAV4 to
+                        \ print an "ITEM?" error, make a beep and rejoin the
+                        \ routine at NWDAVxx above
 
- LDA QQ29
- LDX #&FF
+ LDA QQ29               \ We are selling this item, so fetch the item number
+                        \ from QQ29
+
+ LDX #255               \ Set QQ17 = 255 to disable printing
  STX QQ17
- JSR TT151
 
- LDY QQ29
- LDA QQ20,Y
- SEC
+ JSR TT151              \ Call TT151 to set QQ24 to the item's price / 4 (the
+                        \ routine doesn't print the item details, as we just
+                        \ disabled printing)
+
+ LDY QQ29               \ Subtract R (the number of items we just asked to buy)
+ LDA QQ20,Y             \ from the available amount of this item in QQ20, as we
+ SEC                    \ just bought them
  SBC R
  STA QQ20,Y
- LDA R
+
+ LDA R                  \ Set P to the amount of this item we just bought
  STA P
- LDA QQ24
+
+ LDA QQ24               \ Set Q to the item's price / 4
  STA Q
- JSR GCASH
 
- JSR MCASH
+ JSR GCASH              \ Call GCASH to calculate
+                        \
+                        \   (Y X) = P * Q * 4
+                        \
+                        \ which will be the total price we make from this sale
+                        \ (as P contains the quantity we're selling and Q
+                        \ contains the item's price / 4)
 
- LDA #&00
- STA QQ17
+ JSR MCASH              \ Add (Y X) cash to the cash pot in CASH
+
+ LDA #0                 \ We've made the sale, so set the amount
+
+ STA QQ17               \ Set QQ17 = 0, which enables printing again
 
 .TT212
 
- LDY QQ29
- INY
- CPY #&11
- BCC TT211
+ LDY QQ29               \ Fetch the item number from QQ29 into Y, and increment
+ INY                    \ Y to point to the next item
 
- LDA QQ11
- CMP #&04
- BNE L4F3E
+ CPY #17                \ Loop back to TT211 to print the next item in the hold
+ BCC TT211              \ until Y = 17 (at which point we have done the last
+                        \ item)
 
- JSR dn2
+ LDA QQ11               \ If the current view type in QQ11 is not 4 (Sell Cargo
+ CMP #4                 \ screen), skip the next two instructions and just
+ BNE P%+8               \ return from the subroutine
 
- JMP BAY2
+ JSR dn2                \ This is the Sell Cargo screen, so call dn2 to make a
+                        \ short, high beep and delay for 1 second
 
-.L4F3E
+ JMP BAY2               \ And then jump to BAY2 to display the Inventory
+                        \ screen, as we have finished selling cargo
 
- JSR TT69
+ JSR TT69               \ ???
 
  LDA L1264
  ORA L1265
@@ -21595,130 +22175,285 @@ DTW7 = MT16 + 1         \ Point DTW7 to the second byte of the instruction above
  LDA #&73
  JMP DASC
 
+\ ******************************************************************************
+\
+\       Name: TT213
+\       Type: Subroutine
+\   Category: Inventory
+\    Summary: Show the Inventory screen (red key f9)
+\
+\ ******************************************************************************
+
 .TT213
 
- LDA #&08
- JSR TRADEMODE
+ LDA #8                 \ Clear the top part of the screen, draw a white border,
+ JSR TRADEMODE          \ and set up a printable trading screen with a view type
+                        \ in QQ11 of 4 (Inventory screen)
 
- LDA #&0B
- STA XC
- LDA #&A4
- JSR TT60
+ LDA #11                \ Move the text cursor to column 11 to print the screen
+ STA XC                 \ title
 
- JSR NLIN4
+ LDA #164               \ Print recursive token 4 ("INVENTORY{crlf}") followed
+ JSR TT60               \ by a paragraph break and Sentence Case
 
- JSR fwl
+ JSR NLIN4              \ Draw a horizontal line at pixel row 19 to box in the
+                        \ title. The authors could have used a call to NLIN3
+                        \ instead and saved the above call to TT60, but you
+                        \ just can't optimise everything
 
- LDA CRGO
- CMP #&1A
- BCC L4F96
+ JSR fwl                \ Call fwl to print the fuel and cash levels on two
+                        \ separate lines
 
- LDA #&6B
- JSR TT27
+ LDA CRGO               \ If our ship's cargo capacity is < 26 (i.e. we do not
+ CMP #26                \ have a cargo bay extension), skip the following two
+ BCC P%+7               \ instructions
 
-.L4F96
+ LDA #107               \ We do have a cargo bay extension, so print recursive
+ JSR TT27               \ token 107 ("LARGE CARGO{sentence case} BAY")
 
- JMP TT210
+ JMP TT210              \ Jump to TT210 to print the contents of our cargo bay
+                        \ and return from the subroutine using a tail call
 
- JSR TT27
+\ ******************************************************************************
+\
+\       Name: TT214
+\       Type: Subroutine
+\   Category: Inventory
+\    Summary: Ask a question with a "Y/N?" prompt and return the response
+\
+\ ------------------------------------------------------------------------------
+\
+\ Arguments:
+\
+\   A                   The text token to print before the "Y/N?" prompt
+\
+\ Returns:
+\
+\   C flag              Set if the response was "yes", clear otherwise
+\
+\ ******************************************************************************
 
- LDA #&CE
+.TT214
+
+.TT221
+
+ JSR TT27               \ Print the text token in A
+
+ LDA #206               \ Print extended token 206 ("{all caps}(Y/N)?")
  JSR DETOK
 
- JSR TT217
+ JSR TT217              \ Scan the keyboard until a key is pressed, and return
+                        \ the key's ASCII code in A and X
 
- ORA #&20
- CMP #&79
+ ORA #%00100000         \ Set bit 5 in the value of the key pressed, which
+                        \ converts it to lower case
+
+ CMP #'y'               \ If "y" was pressed, jump to TT218
  BEQ TT218
 
- LDA #&6E
- JMP DASC
+ LDA #'n'               \ Otherwise jump to TT26 to print "n" and return from
+ JMP TT26               \ the subroutine using a tail call (so all other
+                        \ responses apart from "y" indicate a no)
 
 .TT218
 
- JSR DASC
+ JSR TT26               \ Print the character in A, i.e. print "y"
 
- SEC
+ SEC                    \ Set the C flag to indicate a "yes" response
+
  RTS
+
+\ ******************************************************************************
+\
+\       Name: TT16
+\       Type: Subroutine
+\   Category: Charts
+\    Summary: Move the crosshairs on a chart
+\
+\ ------------------------------------------------------------------------------
+\
+\ Move the chart crosshairs by the amount in X and Y.
+\
+\ Arguments:
+\
+\   X                   The amount to move the crosshairs in the x-axis
+\
+\   Y                   The amount to move the crosshairs in the y-axis
+\
+\ ******************************************************************************
 
 .TT16
 
- TXA
+ TXA                    \ Push the change in X onto the stack (let's call this
+ PHA                    \ the x-delta)
+
+ DEY                    \ Negate the change in Y and push it onto the stack
+ TYA                    \ (let's call this the y-delta)
+ EOR #255
  PHA
- DEY
- TYA
- EOR #&FF
- PHA
- JSR WSCAN
 
- JSR TT103
+ JSR WSCAN              \ Call WSCAN to wait for the vertical sync, so the whole
+                        \ screen gets drawn and we can move the crosshairs with
+                        \ no screen flicker
 
- PLA
- STA QQ19+3
- LDA QQ10
- JSR TT123
+ JSR TT103              \ Draw small crosshairs at coordinates (QQ9, QQ10),
+                        \ which will erase the crosshairs currently there
 
- LDA QQ19+4
- STA QQ10
- STA QQ19+1
- PLA
- STA QQ19+3
- LDA QQ9
- JSR TT123
+ PLA                    \ Store the y-delta in QQ19+3 and fetch the current
+ STA QQ19+3             \ y-coordinate of the crosshairs from QQ10 into A, ready
+ LDA QQ10               \ for the call to TT123
 
- LDA QQ19+4
- STA QQ9
- STA QQ19
+ JSR TT123              \ Call TT123 to move the selected system's galactic
+                        \ y-coordinate by the y-delta, putting the new value in
+                        \ QQ19+4
+
+ LDA QQ19+4             \ Store the updated y-coordinate in QQ10 (the current
+ STA QQ10               \ y-coordinate of the crosshairs)
+
+ STA QQ19+1             \ This instruction has no effect, as QQ19+1 is
+                        \ overwritten below, both in TT103 and TT105
+
+ PLA                    \ Store the x-delta in QQ19+3 and fetch the current
+ STA QQ19+3             \ x-coordinate of the crosshairs from QQ10 into A, ready
+ LDA QQ9                \ for the call to TT123
+
+ JSR TT123              \ Call TT123 to move the selected system's galactic
+                        \ x-coordinate by the x-delta, putting the new value in
+                        \ QQ19+4
+
+ LDA QQ19+4             \ Store the updated x-coordinate in QQ9 (the current
+ STA QQ9                \ x-coordinate of the crosshairs)
+
+ STA QQ19               \ This instruction has no effect, as QQ19 is overwritten
+                        \ below, both in TT103 and TT105
+
+                        \ Now we've updated the coordinates of the crosshairs,
+                        \ fall through into TT103 to redraw them at their new
+                        \ location
+
+\ ******************************************************************************
+\
+\       Name: TT103
+\       Type: Subroutine
+\   Category: Charts
+\    Summary: Draw a small set of crosshairs on a chart
+\
+\ ------------------------------------------------------------------------------
+\
+\ Draw a small set of crosshairs on a galactic chart at the coordinates in
+\ (QQ9, QQ10).
+\
+\ ******************************************************************************
 
 .TT103
 
- LDA #&AF
+ LDA #&AF               \ ???
  STA COL
- LDA QQ11
- BMI TT105
 
- LDA QQ9
+ LDA QQ11               \ Fetch the current view type into A
+
+ BMI TT105              \ If this is the Short-range Chart screen, jump to TT105
+
+ LDA QQ9                \ ???
  JSR L4A44
 
  STA QQ19
  LDA QQ10
  JSR L4A42
-
  STA QQ19+1
- LDA #&04
+
+ LDA #4                 \ Set QQ19+2 to 4 denote crosshairs of size 4
  STA QQ19+2
- JMP TT15
+
+ JMP TT15               \ Jump to TT15 to draw crosshairs of size 4 at the
+                        \ crosshairs coordinates, returning from the subroutine
+                        \ using a tail call
+
+\ ******************************************************************************
+\
+\       Name: TT123
+\       Type: Subroutine
+\   Category: Charts
+\    Summary: Move galactic coordinates by a signed delta
+\
+\ ------------------------------------------------------------------------------
+\
+\ Move an 8-bit galactic coordinate by a certain distance in either direction
+\ (i.e. a signed 8-bit delta), but only if it doesn't cause the coordinate to
+\ overflow. The coordinate is in a single axis, so it's either an x-coordinate
+\ or a y-coordinate.
+\
+\ Arguments:
+\
+\   A                   The galactic coordinate to update
+\
+\   QQ19+3              The delta (can be positive or negative)
+\
+\ Returns:
+\
+\   QQ19+4              The updated coordinate after moving by the delta (this
+\                       will be the same as A if moving by the delta overflows)
+\
+\ Other entry points:
+\
+\   TT180               Contains an RTS
+\
+\ ******************************************************************************
 
 .TT123
 
- STA QQ19+4
- CLC
- ADC QQ19+3
- LDX QQ19+3
+ STA QQ19+4             \ Store the original coordinate in temporary storage at
+                        \ QQ19+4
+
+ CLC                    \ Set A = A + QQ19+3, so A now contains the original
+ ADC QQ19+3             \ coordinate, moved by the delta
+
+ LDX QQ19+3             \ If the delta is negative, jump to TT124
  BMI TT124
 
- BCC TT125
+ BCC TT125              \ If the C flag is clear, then the above addition didn't
+                        \ overflow, so jump to TT125 to return the updated value
 
- RTS
+ RTS                    \ Otherwise the C flag is set and the above addition
+                        \ overflowed, so do not update the return value
 
 .TT124
 
- BCC TT180
+ BCC TT180              \ If the C flag is clear, then because the delta is
+                        \ negative, this indicates the addition (which is
+                        \ effectively a subtraction) underflowed, so jump to
+                        \ TT180 to return from the subroutine without updating
+                        \ the return value
 
 .TT125
 
- STA QQ19+4
+ STA QQ19+4             \ Store the updated coordinate in QQ19+4
 
 .TT180
 
- RTS
+ RTS                    \ Return from the subroutine
+
+\ ******************************************************************************
+\
+\       Name: TT105
+\       Type: Subroutine
+\   Category: Charts
+\    Summary: Draw crosshairs on the Short-range Chart, with clipping
+\
+\ ------------------------------------------------------------------------------
+\
+\ Check whether the crosshairs are close enough to the current system to appear
+\ on the Short-range Chart, and if so, draw them.
+\
+\ ******************************************************************************
 
 .TT105
 
- LDA QQ9
- SEC
+ LDA QQ9                \ Set A = QQ9 - QQ0, the horizontal distance between the
+ SEC                    \ crosshairs (QQ9) and the current system (QQ0)
  SBC QQ0
- BCS L5017
+
+ BCS L5017              \ ???
 
  EOR #&FF
  ADC #&01
@@ -21738,17 +22473,18 @@ DTW7 = MT16 + 1         \ Point DTW7 to the second byte of the instruction above
 
 .TT179
 
- ASL A
+ ASL A                  \ ???
  ASL A
  CLC
  ADC #&68
  JSR L4A43
-
  STA QQ19
- LDA QQ10
- SEC
+
+ LDA QQ10               \ Set A = QQ10 - QQ1, the vertical distance between the
+ SEC                    \ crosshairs (QQ10) and the current system (QQ1)
  SBC QQ1
- BCS L503D
+
+ BCS L503D              \ ???
 
  EOR #&FF
  ADC #&01
@@ -21761,122 +22497,212 @@ DTW7 = MT16 + 1         \ Point DTW7 to the second byte of the instruction above
  LDA QQ10
  SEC
  SBC QQ1
- ASL A
+
+ ASL A                  \ ???
  CLC
  ADC #&5A
  JSR L4A43
-
  STA QQ19+1
- LDA #&08
+
+ LDA #8                 \ Set QQ19+2 to 8 denote crosshairs of size 8
  STA QQ19+2
- LDA #&AF
+
+ LDA #&AF               \ ???
  STA COL
- JMP TT15
+
+ JMP TT15               \ Jump to TT15 to draw crosshairs of size 8 at the
+                        \ crosshairs coordinates, returning from the subroutine
+                        \ using a tail call
+
+\ ******************************************************************************
+\
+\       Name: TT23
+\       Type: Subroutine
+\   Category: Charts
+\    Summary: Show the Short-range Chart (red key f5)
+\
+\ ******************************************************************************
 
 .TT23
 
- LDA #&80
- JSR TT66
+ LDA #128               \ Clear the top part of the screen, draw a white border,
+ JSR TT66               \ and set the current view type in QQ11 to 128 (Short-
+                        \ range Chart)
 
- LDA #&10
- JSR SETVDU19
+ LDA #16                \ Switch to the mode 1 palette for the trade view, which
+ JSR SETVDU19           \ is yellow (colour 1), magenta (colour 2) and white
+                        \ (colour 3)
 
- LDA #&FF
+ LDA #CYAN              \ Switch to colour 3, which is white in the chart view
  STA COL
- LDA #&07
+
+ LDA #7                 \ Move the text cursor to column 7
  STA XC
- LDA #&BE
- JSR NLIN3
 
- JSR TT14
+ LDA #190               \ Print recursive token 30 ("SHORT RANGE CHART") and
+ JSR NLIN3              \ draw a horizontal line at pixel row 19 to box in the
+                        \ title
 
- JSR TT103
+ JSR TT14               \ Call TT14 to draw a circle with crosshairs at the
+                        \ current system's galactic coordinates
 
- JSR TT81
+ JSR TT103              \ Draw small crosshairs at coordinates (QQ9, QQ10),
+                        \ i.e. at the selected system
 
- LDA #&FF
+ JSR TT81               \ Set the seeds in QQ15 to those of system 0 in the
+                        \ current galaxy (i.e. copy the seeds from QQ21 to QQ15)
+
+ LDA #CYAN              \ Switch to colour 3, which is white in the chart view
  STA COL
- LDA #&00
- STA XX20
- LDX #&18
+
+ LDA #0                 \ Set A = 0, which we'll use below to zero out the INWK
+                        \ workspace
+
+ STA XX20               \ We're about to start working our way through each of
+                        \ the galaxy's systems, so set up a counter in XX20 for
+                        \ each system, starting at 0 and looping through to 255
+
+ LDX #24                \ First, though, we need to zero out the 25 bytes at
+                        \ INWK so we can use them to work out which systems have
+                        \ room for a label, so set a counter in X for 25 bytes
 
 .EE3
 
- STA INWK,X
- DEX
- BPL EE3
+ STA INWK,X             \ Set the X-th byte of INWK to zero
+
+ DEX                    \ Decrement the counter
+
+ BPL EE3                \ Loop back to EE3 for the next byte until we've zeroed
+                        \ all 25 bytes
+
+                        \ We now loop through every single system in the galaxy
+                        \ and check the distance from the current system whose
+                        \ coordinates are in (QQ0, QQ1). We get the galactic
+                        \ coordinates of each system from the system's seeds,
+                        \ like this:
+                        \
+                        \   x = s1_hi (which is stored in QQ15+3)
+                        \   y = s0_hi (which is stored in QQ15+1)
+                        \
+                        \ so the following loops through each system in the
+                        \ galaxy in turn and calculates the distance between
+                        \ (QQ0, QQ1) and (s1_hi, s0_hi) to find the closest one
 
 .TT182
 
- LDA QQ15+3
- SEC
+ LDA QQ15+3             \ Set A = s1_hi - QQ0, the horizontal distance between
+ SEC                    \ (s1_hi, s0_hi) and (QQ0, QQ1)
  SBC QQ0
- BCS TT184
 
- EOR #&FF
- ADC #&01
+ BCS TT184              \ If a borrow didn't occur, i.e. s1_hi >= QQ0, then the
+                        \ result is positive, so jump to TT184 and skip the
+                        \ following two instructions
+
+ EOR #&FF               \ Otherwise negate the result in A, so A is always
+ ADC #1                 \ positive (i.e. A = |s1_hi - QQ0|)
 
 .TT184
 
- CMP #&1D
- BCS L50FB
+ CMP #29                \ If the horizontal distance in A is >= 29, then this
+ BCS L50FB              \ system is too far away from the current system to
+                        \ appear in the Short-range Chart, so jump to L50FB to
+                        \ move on to the next system ???
 
- LDA QQ15+1
- SEC
+ LDA QQ15+1             \ Set A = s0_hi - QQ1, the vertical distance between
+ SEC                    \ (s1_hi, s0_hi) and (QQ0, QQ1)
  SBC QQ1
- BCS TT186
 
- EOR #&FF
- ADC #&01
+ BCS TT186              \ If a borrow didn't occur, i.e. s0_hi >= QQ1, then the
+                        \ result is positive, so jump to TT186 and skip the
+                        \ following two instructions
+
+ EOR #&FF               \ Otherwise negate the result in A, so A is always
+ ADC #1                 \ positive (i.e. A = |s0_hi - QQ1|)
 
 .TT186
 
  CMP #&28
  BCS L50FB
 
- LDA QQ15+3
- SEC
- SBC QQ0
- ASL A
- ASL A
- ADC #&68
- JSR L4A43
+                        \ This system should be shown on the Short-range Chart,
+                        \ so now we need to work out where the label should go,
+                        \ and set up the various variables we need to draw the
+                        \ system's filled circle on the chart
 
- STA XX12
- LSR A
- LSR A
+ LDA QQ15+3             \ Set A = s1_hi - QQ0, the horizontal distance between
+ SEC                    \ this system and the current system, where |A| < 20.
+ SBC QQ0                \ Let's call this the x-delta, as it's the horizontal
+                        \ difference between the current system at the centre of
+                        \ the chart, and this system (and this time we keep the
+                        \ sign of A, so it can be negative if it's to the left
+                        \ of the chart's centre, or positive if it's to the
+                        \ right)
+
+ ASL A                  \ Set XX12 = 104 + x-delta * 4
+ ASL A                  \
+ ADC #104               \ 104 is the x-coordinate of the centre of the chart,
+ JSR L4A43              \ so this sets XX12 to the centre 104 +/- 76, the pixel
+ STA XX12               \ x-coordinate of this system ???
+
+ LSR A                  \ Move the text cursor to column x-delta / 2 + 1
+ LSR A                  \ which will be in the range 1-10
  LSR A
  INC A
  STA XC
- LDA QQ15+1
- SEC
- SBC QQ1
- ASL A
- ADC #&5A
- JSR L4A43
 
- STA K4
- LSR A
- LSR A
+ LDA QQ15+1             \ Set A = s0_hi - QQ1, the vertical distance between
+ SEC                    \ this system and the current system, where |A| < 38.
+ SBC QQ1                \ Let's call this the y-delta, as it's the vertical
+                        \ difference between the current system at the centre of
+                        \ the chart, and this system (and this time we keep the
+                        \ sign of A, so it can be negative if it's above the
+                        \ chart's centre, or positive if it's below)
+
+ ASL A                  \ Set K4 = 90 + y-delta * 2
+ ADC #90                \
+ JSR L4A43              \ 90 is the y-coordinate of the centre of the chart,
+ STA K4                 \ so this sets K4 to the centre 90 +/- 74, the pixel
+                        \ y-coordinate of this system ???
+
+ LSR A                  \ Set Y = K4 / 8, so Y contains the number of the text
+ LSR A                  \ row that contains this system
  LSR A
  TAY
- LDX INWK,Y
- BEQ EE4
 
- INY
- LDX INWK,Y
- BEQ EE4
+                        \ Now to see if there is room for this system's label.
+                        \ Ideally we would print the system name on the same
+                        \ text row as the system, but we only want to print one
+                        \ label per row, to prevent overlap, so now we check
+                        \ this system's row, and if that's already occupied,
+                        \ the row above, and if that's already occupied, the
+                        \ row below... and if that's already occupied, we give
+                        \ up and don't print a label for this system
 
- DEY
- DEY
- LDX INWK,Y
- BNE ee1
+ LDX INWK,Y             \ If the value in INWK+Y is 0 (i.e. the text row
+ BEQ EE4                \ containing this system does not already have another
+                        \ system's label on it), jump to EE4 to store this
+                        \ system's label on this row
+
+ INY                    \ If the value in INWK+Y+1 is 0 (i.e. the text row below
+ LDX INWK,Y             \ the one containing this system does not already have
+ BEQ EE4                \ another system's label on it), jump to EE4 to store
+                        \ this system's label on this row
+
+ DEY                    \ If the value in INWK+Y-1 is 0 (i.e. the text row above
+ DEY                    \ the one containing this system does not already have
+ LDX INWK,Y             \ another system's label on it), fall through into to
+ BNE ee1                \ EE4 to store this system's label on this row,
+                        \ otherwise jump to ee1 to skip printing a label for
+                        \ this system (as there simply isn't room)
 
 .EE4
 
- STY YC
- CPY #&03
- BCC TT187
+ STY YC                 \ Now to print the label, so move the text cursor to row
+                        \ Y (which contains the row where we can print this
+                        \ system's label)
+
+ CPY #3                 \ If Y < 3, then the label would clash with the chart
+ BCC TT187              \ title, so jump to TT187 to skip printing the label
 
  CPY #&15
  BCS TT187
@@ -21898,168 +22724,361 @@ DTW7 = MT16 + 1         \ Point DTW7 to the second byte of the instruction above
 
  BCS TT187
 
- LDA #&FF
- STA INWK,Y
- LDA #&80
+ LDA #&FF               \ Store &FF in INWK+Y, to denote that this row is now
+ STA INWK,Y             \ occupied so we don't try to print another system's
+                        \ label on this row
+
+ LDA #%10000000         \ Set bit 7 of QQ17 to switch to Sentence Case
  STA QQ17
- JSR cpl
+
+ JSR cpl                \ Call cpl to print out the system name for the seeds
+                        \ in QQ15 (which now contains the seeds for the current
+                        \ system)
 
 .ee1
 
- LDA #&00
- STA K3+1
+ LDA #0                 \ Now to plot the star, so set the high bytes of K, K3
+ STA K3+1               \ and K4 to 0
  STA K4+1
  STA K+1
- LDA XX12
- STA K3
- LDA QQ15+5
- AND #&01
- ADC #&02
- STA K
- JSR FLFLLS
 
- JSR SUN
+ LDA XX12               \ Set the low byte of K3 to XX12, the pixel x-coordinate
+ STA K3                 \ of this system
 
- JSR FLFLLS
+ LDA QQ15+5             \ Fetch s2_hi for this system from QQ15+5, extract bit 0
+ AND #1                 \ and add 2 to get the size of the star, which we store
+ ADC #2                 \ in K. This will be either 2, 3 or 4, depending on the
+ STA K                  \ value of bit 0, and whether the C flag is set (which
+                        \ will vary depending on what happens in the above call
+                        \ to cpl). Incidentally, the planet's average radius
+                        \ also uses s2_hi, bits 0-3 to be precise, but that
+                        \ doesn't mean the two sizes affect each other
 
- LDA #&FF
+                        \ We now have the following:
+                        \
+                        \   K(1 0)  = radius of star (2, 3 or 4)
+                        \
+                        \   K3(1 0) = pixel x-coordinate of system
+                        \
+                        \   K4(1 0) = pixel y-coordinate of system
+                        \
+                        \ which we can now pass to the SUN routine to draw a
+                        \ small "sun" on the Short-range Chart for this system
+
+ JSR FLFLLS             \ Call FLFLLS to reset the LSO block
+
+ JSR SUN                \ Call SUN to plot a sun with radius K at pixel
+                        \ coordinate (K3, K4)
+
+ JSR FLFLLS             \ Call FLFLLS to reset the LSO block
+
+ LDA #CYAN              \ Switch to colour 3, which is white in the chart view
  STA COL
 
 .TT187
 
- JSR TT20
+ JSR TT20               \ We want to move on to the next system, so call TT20
+                        \ to twist the three 16-bit seeds in QQ15
 
- INC XX20
- BEQ L5134
+ INC XX20               \ Increment the counter
 
- JMP TT182
+ BEQ L5134              \ ???
+
+ JMP TT182              \ Otherwise jump back up to TT182 to process the next
+                        \ system
 
 .L5134
 
  RTS
 
+\ ******************************************************************************
+\
+\       Name: TT81
+\       Type: Subroutine
+\   Category: Universe
+\    Summary: Set the selected system's seeds to those of system 0
+\
+\ ------------------------------------------------------------------------------
+\
+\ Copy the three 16-bit seeds for the current galaxy's system 0 (QQ21) into the
+\ seeds for the selected system (QQ15) - in other words, set the selected
+\ system's seeds to those of system 0.
+\
+\ ******************************************************************************
+
 .TT81
 
- LDX #&05
+ LDX #5                 \ Set up a counter in X to copy six bytes (for three
+                        \ 16-bit numbers)
 
-.L5137
-
- LDA QQ21,X
+ LDA QQ21,X             \ Copy the X-th byte in QQ21 to the X-th byte in QQ15
  STA QQ15,X
- DEX
- BPL L5137
 
- RTS
+ DEX                    \ Decrement the counter
+
+ BPL TT81+2             \ Loop back up to the LDA instruction if we still have
+                        \ more bytes to copy
+
+ RTS                    \ Return from the subroutine
+
+\ ******************************************************************************
+\
+\       Name: TT111
+\       Type: Subroutine
+\   Category: Universe
+\    Summary: Set the current system to the nearest system to a point
+\
+\ ------------------------------------------------------------------------------
+\
+\ Given a set of galactic coordinates in (QQ9, QQ10), find the nearest system
+\ to this point in the galaxy, and set this as the currently selected system.
+\
+\ Arguments:
+\
+\   QQ9                 The x-coordinate near which we want to find a system
+\
+\   QQ10                The y-coordinate near which we want to find a system
+\
+\ Returns:
+\
+\   QQ8(1 0)            The distance from the current system to the nearest
+\                       system to the original coordinates
+\
+\   QQ9                 The x-coordinate of the nearest system to the original
+\                       coordinates
+\
+\   QQ10                The y-coordinate of the nearest system to the original
+\                       coordinates
+\
+\   QQ15 to QQ15+5      The three 16-bit seeds of the nearest system to the
+\                       original coordinates
+\
+\   ZZ                  The system number of the nearest system
+\
+\ Other entry points:
+\
+\   TT111-1             Contains an RTS
+\
+\   L5193               ???
+\
+\ ******************************************************************************
 
 .TT111
 
- JSR TT81
+ JSR TT81               \ Set the seeds in QQ15 to those of system 0 in the
+                        \ current galaxy (i.e. copy the seeds from QQ21 to QQ15)
 
- LDY #&7F
- STY T
- LDA #&00
- STA U
+                        \ We now loop through every single system in the galaxy
+                        \ and check the distance from (QQ9, QQ10). We get the
+                        \ galactic coordinates of each system from the system's
+                        \ seeds, like this:
+                        \
+                        \   x = s1_hi (which is stored in QQ15+3)
+                        \   y = s0_hi (which is stored in QQ15+1)
+                        \
+                        \ so the following loops through each system in the
+                        \ galaxy in turn and calculates the distance between
+                        \ (QQ9, QQ10) and (s1_hi, s0_hi) to find the closest one
+
+ LDY #127               \ Set Y = T = 127 to hold the shortest distance we've
+ STY T                  \ found so far, which we initially set to half the
+                        \ distance across the galaxy, or 127, as our coordinate
+                        \ system ranges from (0,0) to (255, 255)
+
+ LDA #0                 \ Set A = U = 0 to act as a counter for each system in
+ STA U                  \ the current galaxy, which we start at system 0 and
+                        \ loop through to 255, the last system
 
 .TT130
 
- LDA QQ15+3
- SEC
+ LDA QQ15+3             \ Set A = s1_hi - QQ9, the horizontal distance between
+ SEC                    \ (s1_hi, s0_hi) and (QQ9, QQ10)
  SBC QQ9
- BCS TT132
 
- EOR #&FF
- ADC #&01
+ BCS TT132              \ If a borrow didn't occur, i.e. s1_hi >= QQ9, then the
+                        \ result is positive, so jump to TT132 and skip the
+                        \ following two instructions
+
+ EOR #&FF               \ Otherwise negate the result in A, so A is always
+ ADC #1                 \ positive (i.e. A = |s1_hi - QQ9|)
 
 .TT132
 
- LSR A
- STA S
- LDA QQ15+1
- SEC
- SBC QQ10
- BCS TT134
+ LSR A                  \ Set S = A / 2
+ STA S                  \       = |s1_hi - QQ9| / 2
 
- EOR #&FF
- ADC #&01
+ LDA QQ15+1             \ Set A = s0_hi - QQ10, the vertical distance between
+ SEC                    \ (s1_hi, s0_hi) and (QQ9, QQ10)
+ SBC QQ10
+
+ BCS TT134              \ If a borrow didn't occur, i.e. s0_hi >= QQ10, then the
+                        \ result is positive, so jump to TT134 and skip the
+                        \ following two instructions
+
+ EOR #&FF               \ Otherwise negate the result in A, so A is always
+ ADC #1                 \ positive (i.e. A = |s0_hi - QQ10|)
 
 .TT134
 
- LSR A
- CLC
- ADC S
- CMP T
- BCS TT135
+ LSR A                  \ Set A = S + A / 2
+ CLC                    \       = |s1_hi - QQ9| / 2 + |s0_hi - QQ10| / 2
+ ADC S                  \
+                        \ So A now contains the sum of the horizontal and
+                        \ vertical distances, both divided by 2 so the result
+                        \ fits into one byte, and although this doesn't contain
+                        \ the actual distance between the systems, it's a good
+                        \ enough approximation to use for comparing distances
 
- STA T
- LDX #&05
+ CMP T                  \ If A >= T, then this system's distance is bigger than
+ BCS TT135              \ our "minimum distance so far" stored in T, so it's no
+                        \ closer than the systems we have already found, so
+                        \ skip to TT135 to move on to the next system
+
+ STA T                  \ This system is the closest to (QQ9, QQ10) so far, so
+                        \ update T with the new "distance" approximation
+
+ LDX #5                 \ As this system is the closest we have found yet, we
+                        \ want to store the system's seeds in case it ends up
+                        \ being the closest of all, so we set up a counter in X
+                        \ to copy six bytes (for three 16-bit numbers)
 
 .TT136
 
- LDA QQ15,X
- STA QQ19,X
- DEX
- BPL TT136
+ LDA QQ15,X             \ Copy the X-th byte in QQ15 to the X-th byte in QQ19,
+ STA QQ19,X             \ where QQ15 contains the seeds for the system we just
+                        \ found to be the closest so far, and QQ19 is temporary
+                        \ storage
 
- LDA U
- STA ZZ
+ DEX                    \ Decrement the counter
+
+ BPL TT136              \ Loop back to TT136 if we still have more bytes to
+                        \ copy
+
+ LDA U                  \ Store the system number U in ZZ, so when we are done
+ STA ZZ                 \ looping through all the candidates, the winner's
+                        \ number will be in ZZ
 
 .TT135
 
- JSR TT20
+ JSR TT20               \ We want to move on to the next system, so call TT20
+                        \ to twist the three 16-bit seeds in QQ15
 
- INC U
- BNE TT130
+ INC U                  \ Increment the system counter in U
 
- LDX #&05
+ BNE TT130              \ If U > 0 then we haven't done all 256 systems yet, so
+                        \ loop back up to TT130
+
+                        \ We have now finished checking all the systems in the
+                        \ galaxy, and the seeds for the closest system are in
+                        \ QQ19, so now we want to copy these seeds to QQ15,
+                        \ to set the selected system to this closest system
+
+ LDX #5                 \ So we set up a counter in X to copy six bytes (for
+                        \ three 16-bit numbers)
 
 .TT137
 
- LDA QQ19,X
+ LDA QQ19,X             \ Copy the X-th byte in QQ19 to the X-th byte in QQ15,
  STA QQ15,X
- DEX
- BPL TT137
 
- LDA QQ15+1
- STA QQ10
- LDA QQ15+3
- STA QQ9
+ DEX                    \ Decrement the counter
 
-.L5193
+ BPL TT137              \ Loop back to TT137 if we still have more bytes to
+                        \ copy
 
- SEC
- SBC QQ0
- BCS TT139
+ LDA QQ15+1             \ The y-coordinate of the system described by the seeds
+ STA QQ10               \ in QQ15 is in QQ15+1 (s0_hi), so we copy this to QQ10
+                        \ as this is where we store the selected system's
+                        \ y-coordinate
 
- EOR #&FF
- ADC #&01
+ LDA QQ15+3             \ The x-coordinate of the system described by the seeds
+ STA QQ9                \ in QQ15 is in QQ15+3 (s1_hi), so we copy this to QQ9
+                        \ as this is where we store the selected system's
+                        \ x-coordinate
+
+                        \ We have now found the closest system to (QQ9, QQ10)
+                        \ and have set it as the selected system, so now we
+                        \ need to work out the distance between the selected
+                        \ system and the current system
+
+.L5193                  \ ???
+
+ SEC                    \ Set A = QQ9 - QQ0, the horizontal distance between
+ SBC QQ0                \ the selected system's x-coordinate (QQ9) and the
+                        \ current system's x-coordinate (QQ0)
+
+ BCS TT139              \ If a borrow didn't occur, i.e. QQ9 >= QQ0, then the
+                        \ result is positive, so jump to TT139 and skip the
+                        \ following two instructions
+
+ EOR #&FF               \ Otherwise negate the result in A, so A is always
+ ADC #1                 \ positive (i.e. A = |QQ9 - QQ0|)
+
+                        \ A now contains the difference between the two
+                        \ systems' x-coordinates, with the sign removed. We
+                        \ will refer to this as the x-delta ("delta" means
+                        \ change or difference in maths)
 
 .TT139
 
- JSR SQUA2
+ JSR SQUA2              \ Set (A P) = A * A
+                        \           = |QQ9 - QQ0| ^ 2
+                        \           = x_delta ^ 2
 
- STA K+1
+ STA K+1                \ Store (A P) in K(1 0)
  LDA P
  STA K
- LDA QQ15+1
+
+ LDA QQ15+1             \ ???
  SEC
  SBC QQ1
- BCS TT141
 
- EOR #&FF
- ADC #&01
+ BCS TT141              \ If a borrow didn't occur, i.e. QQ10 >= QQ1, then the
+                        \ result is positive, so jump to TT141 and skip the
+                        \ following two instructions
+
+ EOR #&FF               \ Otherwise negate the result in A, so A is always
+ ADC #1                 \ positive (i.e. A = |QQ10 - QQ1|)
 
 .TT141
 
- LSR A
- JSR SQUA2
+ LSR A                  \ Set A = A / 2
 
- PHA
- LDA P
- CLC
+                        \ A now contains the difference between the two
+                        \ systems' y-coordinates, with the sign removed, and
+                        \ halved. We halve the value because the galaxy in
+                        \ in Elite is rectangular rather than square, and is
+                        \ twice as wide (x-axis) as it is high (y-axis), so to
+                        \ get a distance that matches the shape of the
+                        \ long-range galaxy chart, we need to halve the
+                        \ distance between the vertical y-coordinates. We will
+                        \ refer to this as the y-delta
+
+ JSR SQUA2              \ Set (A P) = A * A
+                        \           = (|QQ10 - QQ1| / 2) ^ 2
+                        \           = y_delta ^ 2
+
+                        \ By this point we have the following results:
+                        \
+                        \   K(1 0) = x_delta ^ 2
+                        \    (A P) = y_delta ^ 2
+                        \
+                        \ so to find the distance between the two points, we
+                        \ can use Pythagoras - so first we need to add the two
+                        \ results together, and then take the square root
+
+ PHA                    \ Store the high byte of the y-axis value on the stack,
+                        \ so we can use A for another purpose
+
+ LDA P                  \ Set Q = P + K, which adds the low bytes of the two
+ CLC                    \ calculated values
  ADC K
  STA Q
- PLA
- ADC K+1
+
+ PLA                    \ Restore the high byte of the y-axis value from the
+                        \ stack into A again
+
+ ADC K+1                \ ???
  BCC L51C5
 
  LDA #&FF
@@ -22067,558 +23086,1285 @@ DTW7 = MT16 + 1         \ Point DTW7 to the second byte of the instruction above
 .L51C5
 
  STA R
- JSR LL5
 
- LDA Q
- ASL A
- LDX #&00
- STX QQ8+1
+ JSR LL5                \ Set Q = SQRT(R Q), so Q now contains the distance
+                        \ between the two systems, in terms of coordinates
+
+                        \ We now store the distance to the selected system * 4
+                        \ in the two-byte location QQ8, by taking (0 Q) and
+                        \ shifting it left twice, storing it in (QQ8+1 QQ8)
+
+ LDA Q                  \ First we shift the low byte left by setting
+ ASL A                  \ A = Q * 2, with bit 7 of A going into the C flag
+
+ LDX #0                 \ Now we set the high byte in QQ8+1 to 0 and rotate
+ STX QQ8+1              \ the C flag into bit 0 of QQ8+1
  ROL QQ8+1
- ASL A
+
+ ASL A                  \ And then we repeat the shift left of (QQ8+1 A)
  ROL QQ8+1
- STA QQ8
- JMP TT24
+
+ STA QQ8                \ And store A in the low byte, QQ8, so QQ8(1 0) now
+                        \ contains Q * 4. Given that the width of the galaxy is
+                        \ 256 in coordinate terms, the width of the galaxy
+                        \ would be 1024 in the units we store in QQ8
+
+ JMP TT24               \ Call TT24 to calculate system data from the seeds in
+                        \ QQ15 and store them in the relevant locations, so our
+                        \ new selected system is fully set up, and return from
+                        \ the subroutine using a tail call
+
+\ ******************************************************************************
+\
+\       Type: Subroutine
+\   Category: Flight
+\    Summary: Print a message to say no hyperspacing inside the station
+\
+\ ------------------------------------------------------------------------------
+\
+\ Print "Docked" at the bottom of the screen to indicate we can't hyperspace
+\ when docked.
+\
+\ ******************************************************************************
 
 .hy6
 
- JSR CLYNS
+ JSR CLYNS              \ Clear the bottom three text rows of the upper screen,
+                        \ and move the text cursor to column 1 on row 21, i.e.
+                        \ the start of the top row of the three bottom rows
 
- LDA #&0F
- STA XC
- LDA #&F0
- STA COL
- LDA #&CD
- JMP DETOK
+ LDA #15                \ Move the text cursor to column 15 (the middle of the
+ STA XC                 \ screen), setting A to 15 at the same time for the
+                        \ following call to TT27
+
+ LDA #RED               \ Switch to colour 2, which is magenta in the trade view
+ STA COL                \ or red in the chart view
+
+ LDA #205               \ Print extended token 205 ("DOCKED") and return from
+ JMP DETOK              \ the subroutine using a tail call
+
+\ ******************************************************************************
+\
+\       Name: hyp
+\       Type: Subroutine
+\   Category: Flight
+\    Summary: Start the hyperspace process
+\
+\ ------------------------------------------------------------------------------
+\
+\ Called when "H" or CTRL-H is pressed during flight. Checks the following:
+\
+\   * We are in space
+\
+\   * We are not already in a hyperspace countdown
+\
+\ If CTRL is being held down, we jump to Ghy to engage the galactic hyperdrive,
+\ otherwise we check that:
+\
+\   * The selected system is not the current system
+\
+\   * We have enough fuel to make the jump
+\
+\ and if all the pre-jump checks are passed, we print the destination on-screen
+\ and start the countdown.
+\
+\ Other entry points:
+\
+\   TTX111              Used to rejoin this routine from the call to TTX110
+\
+\ ******************************************************************************
 
 .hyp
 
- LDA QQ12
- BNE hy6
+ LDA QQ12               \ If we are docked (QQ12 = &FF) then jump to hy6 to
+ BNE hy6                \ print an error message and return from the subroutine
+                        \ using a tail call (as we can't hyperspace when docked)
 
- LDA QQ22+1
- BEQ L51F4
+ LDA QQ22+1             \ Fetch QQ22+1, which contains the number that's shown
+                        \ on-screen during hyperspace countdown
 
- RTS
+ BEQ P%+3               \ If it is zero, skip the next instruction
 
-.L51F4
+ RTS                    \ The count is non-zero, so return from the subroutine
 
- LDA #&FF
- STA COL
- JSR CTRL
+ LDA #CYAN              \ The count is zero, so switch to colour 3, which is
+ STA COL                \ cyan in the space view
 
- BMI Ghy
+ JSR CTRL               \ Scan the keyboard to see if CTRL is currently pressed
 
- LDA QQ11
- BEQ TTX110
+ BMI Ghy                \ If it is, then the galactic hyperdrive has been
+                        \ activated, so jump to Ghy to process it
 
- AND #&C0
- BNE L5206
+ LDA QQ11               \ If the current view is 0 (i.e. the space view) then
+ BEQ TTX110             \ jump to TTX110, which calls TT111 to set the current
+                        \ system to the nearest system to (QQ9, QQ10), and jumps
+                        \ back into this routine at TTX111 below
 
- RTS
+ AND #%11000000         \ If either bits 6 or 7 of the view number are set - so
+ BNE P%+3               \ this is either the Short-range or Long-range Chart -
+                        \ then skip the following instruction
 
-.L5206
+ RTS                    \ This is not a chart view, so return from the
+                        \ subroutine
 
- JSR hm
+ JSR hm                 \ This is a chart view, so call hm to redraw the chart
+                        \ crosshairs
 
 .TTX111
 
- LDA QQ8
- ORA QQ8+1
- BNE L5210
+                        \ If we get here then the current view is either the
+                        \ space view or a chart
 
- RTS
+ LDA QQ8                \ If either byte of the distance to the selected system
+ ORA QQ8+1              \ in QQ8 are zero, skip the next instruction to make a
+ BNE P%+3               \ copy of the destination seeds in safehouse
 
-.L5210
+ RTS                    \ The selected system is the same as the current system,
+                        \ so return from the subroutine
 
- LDX #&05
+ LDX #5                 \ We now want to copy those seeds into safehouse, so we
+                        \ so set a counter in X to copy 6 bytes
 
 .sob
 
- LDA QQ15,X
- STA safehouse,X
- DEX
- BPL sob
+ LDA QQ15,X             \ Copy the X-th byte of QQ15 into the X-th byte of
+ STA safehouse,X        \ safehouse
 
- LDA #&07
- STA XC
- LDA #&16
+ DEX                    \ Decrement the loop counter
+
+ BPL sob                \ Loop back to copy the next byte until we have copied
+                        \ all six seed bytes
+
+ LDA #7                 \ Move the text cursor to column 7, row 22 (in the
+ STA XC                 \ middle of the bottom text row)
+ LDA #22
  STA YC
- LDA #&00
+
+ LDA #0                 \ Set QQ17 = 0 to switch to ALL CAPS
  STA QQ17
- LDA #&BD
+
+ LDA #189               \ Print recursive token 29 ("HYPERSPACE ")
  JSR TT27
 
- LDA QQ8+1
- BNE goTT147
+ LDA QQ8+1              \ If the high byte of the distance to the selected
+ BNE goTT147            \ system in QQ8 is > 0, then it is definitely too far to
+                        \ jump (as our maximum range is 7.0 light years, or a
+                        \ value of 70 in QQ8(1 0)), so jump to TT147 via goTT147
+                        \ to print "RANGE?" and return from the subroutine using
+                        \ a tail call
 
- LDA QQ14
- CMP QQ8
- BCS L5239
+ LDA QQ14               \ Fetch our current fuel level from Q114 into A
+
+ CMP QQ8                \ If our fuel reserves are greater then or equal to the
+ BCS P%+5               \ distance to the selected system, then we have enough
+                        \ fuel for this jump, so skip the following instruction
+                        \ to start the hyperspace countdown
 
 .goTT147
 
- JMP TT147
+ JMP TT147              \ We don't have enough fuel to reach the destination, so
+                        \ jump to TT147 to print "RANGE?" and return from the
+                        \ subroutine using a tail call
 
-.L5239
-
- LDA #&2D
+ LDA #'-'               \ Print a hyphen
  JSR TT27
 
- JSR cpl
+ JSR cpl                \ Call cpl to print the name of the selected system
 
- LDA #&0F
+                        \ Fall through into wW to start the hyperspace countdown
+
+\ ******************************************************************************
+\
+\       Name: wW
+\       Type: Subroutine
+\   Category: Flight
+\    Summary: Start a hyperspace countdown
+\
+\ ------------------------------------------------------------------------------
+\
+\ Start the hyperspace countdown (for both inter-system hyperspace and the
+\ galactic hyperdrive).
+\
+\ Other entry points:
+\
+\   wW2                 Start the hyperspace countdown, starting the countdown
+\                       from the value in A
+\ ******************************************************************************
+
+.wW
+
+ LDA #15                \ The hyperspace countdown starts from 15, so set A to
+                        \ to 15 so we can set the two hyperspace counters
 
 .wW2
 
- STA QQ22+1
- STA QQ22
- TAX
- JMP ee3
+ STA QQ22+1             \ Set the number in QQ22+1 to 15, which is the number
+                        \ that's shown on-screen during the hyperspace countdown
+
+ STA QQ22               \ Set the number in QQ22 to 15, which is the internal
+                        \ counter that counts down by 1 each iteration of the
+                        \ main game loop, and each time it reaches zero, the
+                        \ on-screen counter gets decremented, and QQ22 gets set
+                        \ to 5, so setting QQ22 to 15 here makes the first tick
+                        \ of the hyperspace counter longer than subsequent ticks
+
+ TAX                    \ Print the 8-bit number in X (i.e. 15) at text location
+ JMP ee3                \ (0, 1), padded to 5 digits, so it appears in the top
+                        \ left corner of the screen, and return from the
+                        \ subroutine using a tail call
+
+\ ******************************************************************************
+\
+\       Name: TTX110
+\       Type: Subroutine
+\   Category: Flight
+\    Summary: Set the current system to the nearest system and return to hyp
+\
+\ ******************************************************************************
 
 .TTX110
 
- JSR TT111
+                        \ This routine is only called from the hyp routine, and
+                        \ it jumps back into hyp at label TTX111
 
- JMP TTX111
+ JSR TT111              \ Call TT111 to set the current system to the nearest
+                        \ system to (QQ9, QQ10), and put the seeds of the
+                        \ nearest system into QQ15 to QQ15+5
+
+ JMP TTX111             \ Return to TTX111 in the hyp routine
+
+\ ******************************************************************************
+\
+\       Name: Ghy
+\       Type: Subroutine
+\   Category: Flight
+\    Summary: Perform a galactic hyperspace jump
+\  Deep dive: Twisting the system seeds
+\             Galaxy and system seeds
+\
+\ ------------------------------------------------------------------------------
+\
+\ Engage the galactic hyperdrive. Called from the hyp routine above if CTRL-H is
+\ being pressed.
+\
+\ This routine also updates the galaxy seeds to point to the next galaxy. Using
+\ a galactic hyperdrive rotates each seed byte to the left, rolling each byte
+\ left within itself like this:
+\
+\   01234567 -> 12345670
+\
+\ to get the seeds for the next galaxy. So after 8 galactic jumps, the seeds
+\ roll round to those of the first galaxy again.
+\
+\ We always arrive in a new galaxy at galactic coordinates (96, 96), and then
+\ find the nearest system and set that as our location.
+\
+\ Other entry points:
+\
+\   zZ+1                Contains an RTS
+\
+\ ******************************************************************************
 
 .Ghy
 
- LDX GHYP
- BEQ L527A
+ LDX GHYP               \ Fetch GHYP, which tells us whether we own a galactic
+ BEQ zZ+1               \ hyperdrive, and if it is zero, which means we don't,
+                        \ return from the subroutine (as zZ+1 contains an RTS)
 
- INX
- STX GHYP
- STX FIST
- LDA #&02
- JSR wW2
+ INX                    \ We own a galactic hyperdrive, so X is &FF, so this
+                        \ instruction sets X = 0
 
- LDX #&05
- INC GCNT
- LDA GCNT
- AND #&F7
- STA GCNT
+ STX GHYP               \ The galactic hyperdrive is a one-use item, so set GHYP
+                        \ to 0 so we no longer have one fitted
+
+ STX FIST               \ Changing galaxy also clears our criminal record, so
+                        \ set our legal status in FIST to 0 ("clean")
+
+ LDA #2                 \ Call wW2 with A = 2 to start the hyperspace countdown,
+ JSR wW2                \ but starting the countdown from 2
+
+ LDX #5                 \ To move galaxy, we rotate the galaxy's seeds left, so
+                        \ set a counter in X for the 6 seed bytes
+
+ INC GCNT               \ Increment the current galaxy number in GCNT
+
+ LDA GCNT               \ Set GCNT = GCNT mod 8, so we jump from galaxy 7 back
+ AND #&F7               \ to galaxy 0 (shown in-game as going from galaxy 8 back
+ STA GCNT               \ to the starting point in galaxy 1) ???
 
 .G1
 
- LDA QQ21,X
- ASL A
- ROL QQ21,X
- DEX
- BPL G1
+ LDA QQ21,X             \ Load the X-th seed byte into A
+
+ ASL A                  \ Set the C flag to bit 7 of the seed
+
+ ROL QQ21,X             \ Rotate the seed in memory, which will add bit 7 back
+                        \ in as bit 0, so this rolls the seed around on itself
+
+ DEX                    \ Decrement the counter
+
+ BPL G1                 \ Loop back for the next seed byte, until we have
+                        \ rotated them all
+
+\JSR DORND              \ This instruction is commented out in the original
+                        \ source, and would set A and X to random numbers, so
+                        \ perhaps the original plan was to arrive in each new
+                        \ galaxy in a random place?
 
 .zZ
 
- LDA #&60
-L527A = zZ+1
- STA QQ9
- STA QQ10
- JSR TT110
+ LDA #&60               \ Set (QQ9, QQ10) to (96, 96), which is where we always
+ STA QQ9                \ arrive in a new galaxy (the selected system will be
+ STA QQ10               \ set to the nearest actual system later on)
 
- JSR TT111
+ JSR TT110              \ Call TT110 to show the front space view
 
- LDX #&05
+ JSR TT111              \ Call TT111 to set the current system to the nearest
+                        \ system to (QQ9, QQ10), and put the seeds of the
+                        \ nearest system into QQ15 to QQ15+5
+
+ LDX #5                 \ We now want to copy those seeds into safehouse, so we
+                        \ so set a counter in Xto copy 6 bytes
 
 .dumdeedum
 
- LDA QQ15,X
- STA safehouse,X
- DEX
- BPL dumdeedum
+ LDA QQ15,X             \ Copy the X-th byte of QQ15 into the X-th byte of
+ STA safehouse,X        \ safehouse
 
- LDX #&00
- STX QQ8
+ DEX                    \ Decrement the loop counter
+
+ BPL dumdeedum          \ Loop back to copy the next byte until we have copied
+                        \ all six seed bytes
+
+ LDX #0                 \ Set the distance to the selected system in QQ8(1 0)
+ STX QQ8                \ to 0
  STX QQ8+1
- LDA #&74
- JSR MESS
+
+ LDA #116               \ Print recursive token 116 (GALACTIC HYPERSPACE ")
+ JSR MESS               \ as an in-flight message
+
+                        \ Fall through into jmp to set the system to the
+                        \ current system and return from the subroutine there
+
+\ ******************************************************************************
+\
+\       Name: jmp
+\       Type: Subroutine
+\   Category: Universe
+\    Summary: Set the current system to the selected system
+\
+\ ------------------------------------------------------------------------------
+\
+\ Returns:
+\
+\   (QQ0, QQ1)          The galactic coordinates of the new system
+\
+\ Other entry points:
+\
+\   hy5                 Contains an RTS
+\
+\ ******************************************************************************
 
 .jmp
 
- LDA QQ9
- STA QQ0
- LDA QQ10
- STA QQ1
- RTS
+ LDA QQ9                \ Set the current system's galactic x-coordinate to the
+ STA QQ0                \ x-coordinate of the selected system
+
+ LDA QQ10               \ Set the current system's galactic y-coordinate to the
+ STA QQ1                \ y-coordinate of the selected system
+
+.hy5
+
+ RTS                    \ Return from the subroutine
+
+\ ******************************************************************************
+\
+\       Name: ee3
+\       Type: Subroutine
+\   Category: Text
+\    Summary: Print the hyperspace countdown in the top-left of the screen
+\
+\ ------------------------------------------------------------------------------
+\
+\ 5 digits, left-padding with spaces for numbers with fewer than 3 digits (so
+\ numbers < 10000 are right-aligned), with no decimal point.
+\
+\ Arguments:
+\
+\   X                   The number to print
+\
+\ ******************************************************************************
 
 .ee3
 
- LDA #&F0
+ LDA #RED               \ Switch to colour 2, which is red in the space view
  STA COL
- LDA #&01
+
+ LDA #1                 \ Move the text cursor to column 1
  STA XC
- STA YC
- LDY #&00
- CLC
+
+ STA YC                 \ Move the text cursor to row 1
+
+ LDY #0                 \ Set Y = 0 for the high byte in pr6
+
+ CLC                    \ ???
  LDA #&03
  JMP TT11
+
+\ ******************************************************************************
+\
+\       Name: pr6
+\       Type: Subroutine
+\   Category: Text
+\    Summary: Print 16-bit number, left-padded to 5 digits, no point
+\
+\ ------------------------------------------------------------------------------
+\
+\ Print the 16-bit number in (Y X) to 5 digits, left-padding with spaces for
+\ numbers with fewer than 3 digits (so numbers < 10000 are right-aligned),
+\ with no decimal point.
+\
+\ Arguments:
+\
+\   X                   The low byte of the number to print
+\
+\   Y                   The high byte of the number to print
+\
+\ ******************************************************************************
 
 .pr6
 
- CLC
+ CLC                    \ Do not display a decimal point when printing
+
+                        \ Fall through into pr5 to print X to 5 digits
+
+\ ******************************************************************************
+\
+\       Name: pr5
+\       Type: Subroutine
+\   Category: Text
+\    Summary: Print a 16-bit number, left-padded to 5 digits, and optional point
+\
+\ ------------------------------------------------------------------------------
+\
+\ Print the 16-bit number in (Y X) to 5 digits, left-padding with spaces for
+\ numbers with fewer than 3 digits (so numbers < 10000 are right-aligned).
+\ Optionally include a decimal point.
+\
+\ Arguments:
+\
+\   X                   The low byte of the number to print
+\
+\   Y                   The high byte of the number to print
+\
+\   C flag              If set, include a decimal point
+\
+\ ******************************************************************************
 
 .pr5
 
- LDA #&05
- JMP TT11
+ LDA #5                 \ Set the number of digits to print to 5
+
+ JMP TT11               \ Call TT11 to print (Y X) to 5 digits and return from
+                        \ the subroutine using a tail call
+
+\ ******************************************************************************
+\
+\       Name: TT147
+\       Type: Subroutine
+\   Category: Text
+\    Summary: Print an error when a system is out of hyperspace range
+\
+\ ------------------------------------------------------------------------------
+\
+\ Print "RANGE?" for when the hyperspace distance is too far
+\
+\ ******************************************************************************
 
 .TT147
 
- LDA #&CA
+ LDA #202               \ Load A with token 42 ("RANGE") and fall through into
+                        \ prq to print it, followed by a question mark
+
+\ ******************************************************************************
+\
+\       Name: prq
+\       Type: Subroutine
+\   Category: Text
+\    Summary: Print a text token followed by a question mark
+\
+\ ------------------------------------------------------------------------------
+\
+\ Arguments:
+\
+\   A                   The text token to be printed
+\
+\ ******************************************************************************
 
 .prq
 
- JSR TT27
+ JSR TT27               \ Print the text token in A
 
- LDA #&3F
- JMP TT27
+ LDA #'?'               \ Print a question mark and return from the
+ JMP TT27               \ subroutine using a tail call
+
+\ ******************************************************************************
+\
+\       Name: TT151
+\       Type: Subroutine
+\   Category: Market
+\    Summary: Print the name, price and availability of a market item
+\  Deep dive: Market item prices and availability
+\             Galaxy and system seeds
+\
+\ ------------------------------------------------------------------------------
+\
+\ Arguments:
+\
+\   A                   The number of the market item to print, 0-16 (see QQ23
+\                       for details of item numbers)
+\
+\ Returns:
+\
+\   QQ19+1              Byte #1 from the market prices table for this item
+\
+\   QQ24                The item's price / 4
+\
+\   QQ25                The item's availability
+\
+\ ******************************************************************************
 
 .TT151q
 
- PLA
- RTS
+                        \ We jump here from below if we are in witchspace
+
+ PLA                    \ Restore the item number from the stack
+
+ RTS                    \ Return from the subroutine
 
 .TT151
 
- PHA
+ PHA                    \ Store the item number on the stack and in QQ14+4
  STA QQ19+4
- ASL A
- ASL A
- STA QQ19
- LDA MJ
- BNE TT151q
 
- LDA #&01
+ ASL A                  \ Store the item number * 4 in QQ19, so this will act as
+ ASL A                  \ an index into the market prices table at QQ23 for this
+ STA QQ19               \ item (as there are four bytes per item in the table)
+
+ LDA MJ                 \ If we are in witchspace, we can't trade items, so jump
+ BNE TT151q             \ up to TT151q to return from the subroutine
+
+ LDA #1                 \ Move the text cursor to column 1, for the item's name
  JSR DOXC
 
- PLA
- ADC #&D0
- JSR TT27
+ PLA                    \ Restore the item number
 
- LDA #&0E
+ ADC #208               \ Print recursive token 48 + A, which will be in the
+ JSR TT27               \ range 48 ("FOOD") to 64 ("ALIEN ITEMS"), so this
+                        \ prints the item's name
+
+ LDA #14                \ Move the text cursor to column 14, for the price
  STA XC
- LDX QQ19
- LDA L6E6E,X
+
+ LDX QQ19               \ Fetch byte #1 from the market prices table (units and
+ LDA QQ23+1,X           \ economic_factor) for this item and store in QQ19+1
  STA QQ19+1
- LDA QQ26
- AND L6E70,X
- CLC
- ADC L6E6D,X
- STA QQ24
- JSR TT152
 
- JSR var
+ LDA QQ26               \ Fetch the random number for this system visit and
+ AND QQ23+3,X           \ AND with byte #3 from the market prices table (mask)
+                        \ to give:
+                        \
+                        \   A = random AND mask
 
- LDA QQ19+1
- BMI TT155
+ CLC                    \ Add byte #0 from the market prices table (base_price),
+ ADC QQ23,X             \ so we now have:
+ STA QQ24               \
+                        \   A = base_price + (random AND mask)
 
- LDA QQ24
- ADC QQ19+3
- JMP TT156
+ JSR TT152              \ Call TT152 to print the item's unit ("t", "kg" or
+                        \ "g"), padded to a width of two characters
+
+ JSR var                \ Call var to set QQ19+3 = economy * |economic_factor|
+                        \ (and set the availability of Alien Items to 0)
+
+ LDA QQ19+1             \ Fetch the byte #1 that we stored above and jump to
+ BMI TT155              \ TT155 if it is negative (i.e. if the economic_factor
+                        \ is negative)
+
+ LDA QQ24               \ Set A = QQ24 + QQ19+3
+ ADC QQ19+3             \
+                        \       = base_price + (random AND mask)
+                        \         + (economy * |economic_factor|)
+                        \
+                        \ which is the result we want, as the economic_factor
+                        \ is positive
+
+ JMP TT156              \ Jump to TT156 to multiply the result by 4
 
 .TT155
 
- LDA QQ24
- SEC
- SBC QQ19+3
+ LDA QQ24               \ Set A = QQ24 - QQ19+3
+ SEC                    \
+ SBC QQ19+3             \       = base_price + (random AND mask)
+                        \         - (economy * |economic_factor|)
+                        \
+                        \ which is the result we want, as economic_factor
+                        \ is negative
 
 .TT156
 
- STA QQ24
+ STA QQ24               \ Store the result in QQ24 and P
  STA P
- LDA #&00
- JSR GC2
 
- SEC
- JSR pr5
+ LDA #0                 \ Set A = 0 and call GC2 to calculate (Y X) = (A P) * 4,
+ JSR GC2                \ which is the same as (Y X) = P * 4 because A = 0
 
- LDY QQ19+4
- LDA #&05
- LDX AVL,Y
- STX QQ25
- CLC
- BEQ TT172
+ SEC                    \ We now have our final price, * 10, so we can call pr5
+ JSR pr5                \ to print (Y X) to 5 digits, including a decimal
+                        \ point, as the C flag is set
 
- JSR pr2+2
+ LDY QQ19+4             \ We now move on to availability, so fetch the market
+                        \ item number that we stored in QQ19+4 at the start
 
- JMP TT152
+ LDA #5                 \ Set A to 5 so we can print the availability to 5
+                        \ digits (right-padded with spaces)
+
+ LDX AVL,Y              \ Set X to the item's availability, which is given in
+                        \ the AVL table
+
+ STX QQ25               \ Store the availability in QQ25
+
+ CLC                    \ Clear the C flag
+
+ BEQ TT172              \ If none are available, jump to TT172 to print a tab
+                        \ and a "-"
+
+ JSR pr2+2              \ Otherwise print the 8-bit number in X to 5 digits,
+                        \ right-aligned with spaces. This works because we set
+                        \ A to 5 above, and we jump into the pr2 routine just
+                        \ after the first instruction, which would normally
+                        \ set the number of digits to 3
+
+ JMP TT152              \ Print the unit ("t", "kg" or "g") for the market item,
+                        \ with a following space if required to make it two
+                        \ characters long
 
 .TT172
 
- LDA #&19
+ LDA #25                \ Move the text cursor to column 25
  JSR DOXC
 
- LDA #&2D
- BNE L5349
+ LDA #'-'               \ Print a "-" character by jumping to TT162+2, which
+ BNE TT162+2            \ contains JMP TT27 (this BNE is effectively a JMP as A
+                        \ will never be zero), and return from the subroutine
+                        \ using a tail call
+
+\ ******************************************************************************
+\
+\       Name: TT152
+\       Type: Subroutine
+\   Category: Market
+\    Summary: Print the unit ("t", "kg" or "g") for a market item
+\
+\ ------------------------------------------------------------------------------
+\
+\ Print the unit ("t", "kg" or "g") for the market item whose byte #1 from the
+\ market prices table is in QQ19+1, right-padded with spaces to a width of two
+\ characters (so that's "t ", "kg" or "g ").
+\
+\ ******************************************************************************
 
 .TT152
 
- LDA QQ19+1
- AND #&60
- BEQ TT160
+ LDA QQ19+1             \ Fetch the economic_factor from QQ19+1
 
- CMP #&20
- BEQ TT161
+ AND #96                \ If bits 5 and 6 are both clear, jump to TT160 to
+ BEQ TT160              \ print "t" for tonne, followed by a space, and return
+                        \ from the subroutine using a tail call
 
- JSR TT16a
+ CMP #32                \ If bit 5 is set, jump to TT161 to print "kg" for
+ BEQ TT161              \ kilograms, and return from the subroutine using a tail
+                        \ call
+
+ JSR TT16a              \ Otherwise call TT16a to print "g" for grams, and fall
+                        \ through into TT162 to print a space and return from
+                        \ the subroutine
+
+\ ******************************************************************************
+\
+\       Name: TT162
+\       Type: Subroutine
+\   Category: Text
+\    Summary: Print a space
+\
+\ Other entry points:
+\
+\   TT162+2             Jump to TT27 to print the text token in A
+\
+\ ******************************************************************************
 
 .TT162
 
- LDA #&20
+ LDA #' '               \ Load a space character into A
 
-.L5349
+ JMP TT27               \ Print the text token in A and return from the
+                        \ subroutine using a tail call
 
- JMP TT27
+\ ******************************************************************************
+\
+\       Name: TT160
+\       Type: Subroutine
+\   Category: Market
+\    Summary: Print "t" (for tonne) and a space
+\
+\ ******************************************************************************
 
 .TT160
 
- LDA #&74
- JSR DASC
+ LDA #'t'               \ Load a "t" character into A
 
- BCC TT162
+ JSR TT26               \ Print the character, using TT216 so that it doesn't
+                        \ change the character case
+
+ BCC TT162              \ Jump to TT162 to print a space and return from the
+                        \ subroutine using a tail call (this BCC is effectively
+                        \ a JMP as the C flag is cleared by TT26)
+
+\ ******************************************************************************
+\
+\       Name: TT161
+\       Type: Subroutine
+\   Category: Market
+\    Summary: Print "kg" (for kilograms)
+\
+\ ******************************************************************************
 
 .TT161
 
- LDA #&6B
- JSR DASC
+ LDA #'k'               \ Load a "k" character into A
+
+ JSR TT26               \ Print the character, using TT216 so that it doesn't
+                        \ change the character case, and fall through into
+                        \ TT16a to print a "g" character
+
+\ ******************************************************************************
+\
+\       Name: TT16a
+\       Type: Subroutine
+\   Category: Market
+\    Summary: Print "g" (for grams)
+\
+\ ******************************************************************************
 
 .TT16a
 
- LDA #&67
- JMP DASC
+ LDA #&67               \ Load a "k" character into A
+
+ JMP TT26               \ Print the character, using TT216 so that it doesn't
+                        \ change the character case, and return from the
+                        \ subroutine using a tail call
+
+\ ******************************************************************************
+\
+\       Name: TT163
+\       Type: Subroutine
+\   Category: Market
+\    Summary: Print the headers for the table of market prices
+\
+\ ------------------------------------------------------------------------------
+\
+\ Print the column headers for the prices table in the Buy Cargo and Market
+\ Price screens.
+\
+\ ******************************************************************************
 
 .TT163
 
- LDA #&11
+ LDA #17                \ Move the text cursor in XC to column 17
  JSR DOXC
 
- LDA #&FF
- BNE L5349
+ LDA #255               \ Print recursive token 95 token ("UNIT  QUANTITY
+ BNE TT162+2            \ {crlf} PRODUCT   UNIT PRICE FOR SALE{crlf}{lf}") by
+                        \ jumping to TT162+2, which contains JMP TT27 (this BNE
+                        \ is effectively a JMP as A will never be zero), and
+                        \ return from the subroutine using a tail call
+
+\ ******************************************************************************
+\
+\       Name: TT167
+\       Type: Subroutine
+\   Category: Market
+\    Summary: Show the Market Price screen (red key f7)
+\
+\ ******************************************************************************
 
 .TT167
 
- LDA #&10
- JSR TRADEMODE
+ LDA #16                \ Clear the top part of the screen, draw a white border,
+ JSR TRADEMODE          \ and set up a printable trading screen with a view type
+                        \ in QQ11 of 32 (Market Price screen)
 
- LDA #&05
+ LDA #5                 \ Move the text cursor to column 4
  STA XC
- LDA #&A7
- JSR NLIN3
 
- LDA #&03
- STA YC
- JSR TT163
+ LDA #167               \ Print recursive token 7 ("{current system name} MARKET
+ JSR NLIN3              \ PRICES") and draw a horizontal line at pixel row 19
+                        \ to box in the title
 
- LDA #&06
+ LDA #3                 \ Move the text cursor to row 3
  STA YC
- LDA #&00
- STA QQ29
+
+ JSR TT163              \ Print the column headers for the prices table
+
+ LDA #6                 \ Move the text cursor to row 6
+ STA YC
+
+ LDA #0                 \ We're going to loop through all the available market
+ STA QQ29               \ items, so we set up a counter in QQ29 to denote the
+                        \ current item and start it at 0
 
 .TT168
 
- LDX #&80
- STX QQ17
- JSR TT151
+ LDX #%10000000         \ Set bit 7 of QQ17 to switch to Sentence Case, with the
+ STX QQ17               \ next letter in capitals
 
- INC YC
- INC QQ29
- LDA QQ29
- CMP #&11
+ JSR TT151              \ Call TT151 to print the item name, market price and
+                        \ availability of the current item, and set QQ24 to the
+                        \ item's price / 4, QQ25 to the quantity available and
+                        \ QQ19+1 to byte #1 from the market prices table for
+                        \ this item
+
+ INC YC                 \ Move the text cursor down one row
+
+ INC QQ29               \ Increment QQ29 to point to the next item
+
+ LDA QQ29               \ If QQ29 >= 17 then jump to TT168 as we have done the
+ CMP #17                \ last item
  BCC TT168
 
- RTS
+ RTS                    \ Return from the subroutine
+
+\ ******************************************************************************
+\
+\       Name: var
+\       Type: Subroutine
+\   Category: Market
+\    Summary: Calculate QQ19+3 = economy * |economic_factor|
+\
+\ ------------------------------------------------------------------------------
+\
+\ Set QQ19+3 = economy * |economic_factor|, given byte #1 of the market prices
+\ table for an item. Also sets the availability of Alien Items to 0.
+\
+\ This routine forms part of the calculations for market item prices (TT151)
+\ and availability (GVL).
+\
+\ Arguments:
+\
+\   QQ19+1              Byte #1 of the market prices table for this market item
+\                       (which contains the economic_factor in bits 0-5, and the
+\                       sign of the economic_factor in bit 7)
+\
+\ ******************************************************************************
 
 .var
 
- LDA QQ19+1
- AND #&1F
- LDY QQ28
- STA QQ19+2
- CLC
- LDA #&00
- STA AVL+16
+ LDA QQ19+1             \ Extract bits 0-5 from QQ19+1 into A, to get the
+ AND #31                \ economic_factor without its sign, in other words:
+                        \
+                        \   A = |economic_factor|
+
+ LDY QQ28               \ Set Y to the economy byte of the current system
+
+ STA QQ19+2             \ Store A in QQ19+2
+
+ CLC                    \ Clear the C flag so we can do additions below
+
+ LDA #0                 \ Set AVL+16 (availability of Alien Items) to 0,
+ STA AVL+16             \ setting A to 0 in the process
 
 .TT153
 
- DEY
- BMI TT154
+                        \ We now do the multiplication by doing a series of
+                        \ additions in a loop, building the result in A. Each
+                        \ loop adds QQ19+2 (|economic_factor|) to A, and it
+                        \ loops the number of times given by the economy byte;
+                        \ in other words, because A starts at 0, this sets:
+                        \
+                        \   A = economy * |economic_factor|
 
- ADC QQ19+2
- JMP TT153
+ DEY                    \ Decrement the economy in Y, exiting the loop when it
+ BMI TT154              \ becomes negative
+
+ ADC QQ19+2             \ Add QQ19+2 to A
+
+ JMP TT153              \ Loop back to TT153 to do another addition
 
 .TT154
 
- STA QQ19+3
- RTS
+ STA QQ19+3             \ Store the result in QQ19+3
 
- JSR TT111
+ RTS                    \ Return from the subroutine
 
-.L53B5
+\ ******************************************************************************
+\
+\       Name: hyp1
+\       Type: Subroutine
+\   Category: Universe
+\    Summary: Process a jump to the system closest to (QQ9, QQ10)
+\
+\ ------------------------------------------------------------------------------
+\
+\ Do a hyperspace jump to the system closest to galactic coordinates
+\ (QQ9, QQ10), and set up the current system's state to those of the new system.
+\
+\ Returns:
+\
+\   (QQ0, QQ1)          The galactic coordinates of the new system
+\
+\   QQ2 to QQ2+6        The seeds of the new system
+\
+\   EV                  Set to 0
+\
+\   QQ28                The new system's economy
+\
+\   tek                 The new system's tech level
+\
+\   gov                 The new system's government
+\
+\ Other entry points:
+\
+\   hyp1+3              Jump straight to the system at (QQ9, QQ10) without
+\                       first calculating which system is closest. We do this
+\                       if we already know that (QQ9, QQ10) points to a system
+\
+\ ******************************************************************************
 
- JSR jmp
+.hyp1
 
- LDX #&05
+ JSR TT111              \ Select the system closest to galactic coordinates
+                        \ (QQ9, QQ10)
+
+ JSR jmp                \ Set the current system to the selected system
+
+ LDX #5                 \ We now want to copy the seeds for the selected system
+                        \ in QQ15 into QQ2, where we store the seeds for the
+                        \ current system, so set up a counter in X for copying
+                        \ 6 bytes (for three 16-bit seeds)
 
 .TT112
 
- LDA safehouse,X
- STA QQ2,X
- DEX
- BPL TT112
+ LDA safehouse,X        \ Copy the X-th byte in safehouse to the X-th byte in
+ STA QQ2,X              \ QQ2
 
- INX
- STX EV
- LDA QQ3
- STA QQ28
- LDA QQ5
- STA tek
- LDA QQ4
- STA gov
- JSR DORND
+ DEX                    \ Decrement the counter
 
- STA QQ26
- LDX #&00
- STX XX4
+ BPL TT112              \ Loop back to TT112 if we still have more bytes to
+                        \ copy
+
+ INX                    \ Set X = 0 (as we ended the above loop with X = &FF)
+
+ STX EV                 \ Set EV, the extra vessels spawning counter, to 0, as
+                        \ we are entering a new system with no extra vessels
+                        \ spawned
+
+ LDA QQ3                \ Set the current system's economy in QQ28 to the
+ STA QQ28               \ selected system's economy from QQ3
+
+ LDA QQ5                \ Set the current system's tech level in tek to the
+ STA tek                \ selected system's economy from QQ5
+
+ LDA QQ4                \ Set the current system's government in gov to the
+ STA gov                \ selected system's government from QQ4
+
+                        \ Fall through into GVL to calculate the availability of
+                        \ market items in the new system
+
+\ ******************************************************************************
+\
+\       Name: GVL
+\       Type: Subroutine
+\   Category: Universe
+\    Summary: Calculate the availability of market items
+\  Deep dive: Market item prices and availability
+\             Galaxy and system seeds
+\
+\ ------------------------------------------------------------------------------
+\
+\ Calculate the availability for each market item and store it in AVL. This is
+\ called on arrival in a new system.
+\
+\ Other entry points:
+\
+\   hyR                 Contains an RTS
+\
+\ ******************************************************************************
+
+.GVL
+
+ JSR DORND              \ Set A and X to random numbers
+
+ STA QQ26               \ Set QQ26 to the random byte that's used in the market
+                        \ calculations
+
+ LDX #0                 \ We are now going to loop through the market item
+ STX XX4                \ availability table in AVL, so set a counter in XX4
+                        \ (and X) for the market item number, starting with 0
 
 .hy9
 
- LDA L6E6E,X
- STA QQ19+1
- JSR var
+ LDA QQ23+1,X           \ Fetch byte #1 from the market prices table (units and
+ STA QQ19+1             \ economic_factor) for item number X and store it in
+                        \ QQ19+1
 
- LDA L6E70,X
- AND QQ26
- CLC
- ADC L6E6F,X
- LDY QQ19+1
- BMI TT157
+ JSR var                \ Call var to set QQ19+3 = economy * |economic_factor|
+                        \ (and set the availability of Alien Items to 0)
 
- SEC
- SBC QQ19+3
- JMP TT158
+ LDA QQ23+3,X           \ Fetch byte #3 from the market prices table (mask) and
+ AND QQ26               \ AND with the random number for this system visit
+                        \ to give:
+                        \
+                        \   A = random AND mask
+
+ CLC                    \ Add byte #2 from the market prices table
+ ADC QQ23+2,X           \ (base_quantity) so we now have:
+                        \
+                        \   A = base_quantity + (random AND mask)
+
+ LDY QQ19+1             \ Fetch the byte #1 that we stored above and jump to
+ BMI TT157              \ TT157 if it is negative (i.e. if the economic_factor
+                        \ is negative)
+
+ SEC                    \ Set A = A - QQ19+3
+ SBC QQ19+3             \
+                        \       = base_quantity + (random AND mask)
+                        \         - (economy * |economic_factor|)
+                        \
+                        \ which is the result we want, as the economic_factor
+                        \ is positive
+
+ JMP TT158              \ Jump to TT158 to skip TT157
 
 .TT157
 
- CLC
- ADC QQ19+3
+ CLC                    \ Set A = A + QQ19+3
+ ADC QQ19+3             \
+                        \       = base_quantity + (random AND mask)
+                        \         + (economy * |economic_factor|)
+                        \
+                        \ which is the result we want, as the economic_factor
+                        \ is negative
 
 .TT158
 
- BPL TT159
-
- LDA #&00
+ BPL TT159              \ If A < 0, then set A = 0, so we don't have negative
+ LDA #0                 \ availability
 
 .TT159
 
- LDY XX4
- AND #&3F
- STA AVL,Y
- INY
+ LDY XX4                \ Fetch the counter (the market item number) into Y
+
+ AND #%00111111         \ Take bits 0-5 of A, i.e. A mod 64, and store this as
+ STA AVL,Y              \ this item's availability in the Y=th byte of AVL, so
+                        \ each item has a maximum availability of 63t
+
+ INY                    \ Increment the counter into XX44, Y and A
  TYA
  STA XX4
- ASL A
- ASL A
- TAX
- CMP #&3F
- BCC hy9
 
- RTS
+ ASL A                  \ Set X = counter * 4, so that X points to the next
+ ASL A                  \ item's entry in the four-byte market prices table,
+ TAX                    \ ready for the next loop
+
+ CMP #63                \ If A < 63, jump back up to hy9 to set the availability
+ BCC hy9                \ for the next market item
+
+.hyR
+
+ RTS                    \ Return from the subroutine
+
+\ ******************************************************************************
+\
+\       Name: GTHG
+\       Type: Subroutine
+\   Category: Universe
+\    Summary: Spawn a Thargoid ship and a Thargon companion
+\
+\ ******************************************************************************
 
 .GTHG
 
- JSR Ze
+ JSR Ze                 \ Call Ze to initialise INWK
 
- LDA #&FF
- STA INWK+32
- LDA #&1D
- JSR NWSHP
+ LDA #%11111111         \ Set the AI flag in byte #32 so that the ship has AI,
+ STA INWK+32            \ is extremely and aggressively hostile, and has E.C.M.
 
- LDA #&1E
- JMP NWSHP
+ LDA #THG               \ Call NWSHP to add a new Thargoid ship to our local
+ JSR NWSHP              \ bubble of universe
+
+ LDA #TGL               \ Call NWSHP to add a new Thargon ship to our local
+ JMP NWSHP              \ bubble of universe, and return from the subroutine
+                        \ using a tail call
+
+\ ******************************************************************************
+\
+\       Name: MJP
+\       Type: Subroutine
+\   Category: Flight
+\    Summary: Process a mis-jump into witchspace
+\
+\ ------------------------------------------------------------------------------
+\
+\ Process a mis-jump into witchspace (which happens very rarely). Witchspace has
+\ a strange, almost dust-free aspect to it, and it is populated by hostile
+\ Thargoids. Using our escape pod will be fatal, and our position on the
+\ galactic chart is in-between systems. It is a scary place...
+\
+\ There is a 1% chance that this routine is called from TT18 instead of doing
+\ a normal hyperspace, or we can manually trigger a mis-jump by holding down
+\ CTRL after first enabling the "author display" configuration option ("X") when
+\ paused.
+\
+\ Other entry points:
+\
+\   ptg                 Called when the user manually forces a mis-jump
+\
+\   RTS111              Contains an RTS
+\
+\ ******************************************************************************
 
 .ptg
 
- LSR COK
- SEC
- ROL COK
+ LSR COK                \ Set bit 0 of the competition flags in COK, so that the
+ SEC                    \ copmpetition code will include the fact that we have
+ ROL COK                \ manually forced a mis-jump into witchspace
 
 .MJP
 
- LDA #&03
- JSR TT66
+ LDA #3                 \ Clear the top part of the screen, draw a white border,
+ JSR TT66               \ and set the current view type in QQ11 to 3
 
- JSR LL164
+ JSR LL164              \ Call LL164 to show the hyperspace tunnel and make the
+                        \ hyperspace sound for a second time (as we already
+                        \ called LL164 in TT18)
 
- JSR RES2
+ JSR RES2               \ Reset a number of flight variables and workspaces, as
+                        \ well as setting Y to &FF
 
- STY MJ
+ STY MJ                 \ Set the mis-jump flag in MJ to &FF, to indicate that
+                        \ we are now in witchspace
 
 .MJP1
 
- JSR GTHG
+ JSR GTHG               \ Call GTHG to spawn a Thargoid ship
 
- LDA #&02
- CMP L0E6B
- BCS MJP1
+ LDA #2                 \ Fetch the number of Thargoid ships from MANY+THG, and
+ CMP MANY+THG           \ if it is less than 2, loop back to MJP1 to spawn
+ BCS MJP1               \ another one, until we have three Thargoids ???
 
- STA NOSTM
- LDX #&00
+ STA NOSTM              \ Set NOSTM (the maximum number of stardust particles)
+                        \ to 3, so there are fewer bits of stardust in
+                        \ witchspace (normal space has a maximum of 18)
+
+ LDX #0                 \ Initialise the front space view
  JSR LOOK1
 
- LDA QQ1
- EOR #&1F
- STA QQ1
- RTS
+ LDA QQ1                \ Fetch the current system's galactic y-coordinate in
+ EOR #%00011111         \ QQ1 and flip bits 0-5, so we end up somewhere in the
+ STA QQ1                \ vicinity of our original destination, but above or
+                        \ below it in the galactic chart
+
+ RTS                    \ Return from the subroutine
 
 .RTS111
 
- RTS
+ RTS                    \ Return from the subroutine
+
+\ ******************************************************************************
+\
+\       Name: TT18
+\       Type: Subroutine
+\   Category: Flight
+\    Summary: Try to initiate a jump into hyperspace
+\
+\ ------------------------------------------------------------------------------
+\
+\ Try to go through hyperspace. Called from TT102 in the main loop when the
+\ hyperspace countdown has finished.
+\
+\ ******************************************************************************
 
 .TT18
 
- LDA QQ14
- SEC
+ LDA QQ14               \ Subtract the distance to the selected system (in QQ8)
+ SEC                    \ from the amount of fuel in our tank (in QQ14) into A
  SBC QQ8
- BCS L5461
 
- LDA #&00
+ BCS P%+4               \ If the subtraction didn't overflow, skip the next
+                        \ instruction
 
-.L5461
+ LDA #0                 \ The subtraction overflowed, so set A = 0 so we don't
+                        \ end up with a negative amount of fuel
 
- STA QQ14
- LDA QQ11
- BNE ee5
+ STA QQ14               \ Store the updated fuel amount in QQ14
 
- JSR TT66
+ LDA QQ11               \ If the current view is not a space view, jump to ee5
+ BNE ee5                \ to skip the following
 
- JSR LL164
+ JSR TT66               \ Clear the top part of the screen, draw a white border,
+                        \ and set the current view type in QQ11 to 0 (space
+                        \ view)
+
+ JSR LL164              \ Call LL164 to show the hyperspace tunnel and make the
+                        \ hyperspace sound
 
 .ee5
 
- JSR CTRL
+ JSR CTRL               \ Scan the keyboard to see if CTRL is currently pressed,
+                        \ returning a negative value in A if it is
 
- AND PATG
- BMI ptg
+ AND PATG               \ If the game is configured to show the author's names
+                        \ on the start-up screen, then PATG will contain &FF,
+                        \ otherwise it will be 0
 
- JSR DORND
+ BMI ptg                \ By now, A will be negative if we are holding down CTRL
+                        \ and author names are configured, which is what we have
+                        \ to do in order to trigger a manual mis-jump, so jump
+                        \ to ptg to do a mis-jump (ptg not only mis-jumps, but
+                        \ updates the competition flags, so Acornsoft could tell
+                        \ from the competition code whether this feature had
+                        \ been used)
 
- CMP #&FD
- BCS MJP
+ JSR DORND              \ Set A and X to random numbers
 
- JSR L53B5
+ CMP #253               \ If A >= 253 (1% chance) then jump to MJP to trigger a
+ BCS MJP                \ mis-jump into witchspace
 
- JSR RES2
+\JSR TT111              \ This instruction is commented out in the original
+                        \ source. It finds the closest system to coordinates
+                        \ (QQ9, QQ10), but we don't need to do this as the
+                        \ crosshairs will already be on a system by this point
 
- JSR L5A24
+ JSR hyp1+3             \ Jump straight to the system at (QQ9, QQ10) without
+                        \ first calculating which system is closest
 
- LDA QQ11
- AND #&3F
- BNE RTS111
+ JSR RES2               \ Reset a number of flight variables and workspaces
 
- JSR TTX66
+ JSR L5A24              \ ???
 
- LDA QQ11
- BNE TT114
+ LDA QQ11               \ If the current view in QQ11 is not a space view (0) or
+ AND #%00111111         \ one of the charts (64 or 128), return from the
+ BNE RTS111             \ subroutine (as RTS111 contains an RTS)
 
- INC QQ11
+ JSR TTX66              \ Otherwise clear the screen and draw a white border
+
+ LDA QQ11               \ If the current view is one of the charts, jump to
+ BNE TT114              \ TT114 (from which we jump to the correct routine to
+                        \ display the chart)
+
+ INC QQ11               \ This is a space view, so increment QQ11 to 1
+
+                        \ Fall through into TT110 to show the front space view
 
 .TT110
 
@@ -27868,7 +29614,7 @@ L527A = zZ+1
  LDA #&6F
  JMP MESS
 
-.L6E6D
+.QQ23
 
  EQUB &13
 
