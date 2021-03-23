@@ -174,6 +174,7 @@ COL = &0011
 YC = &0012
 QQ17 = &0013
 K3 = &0014
+XX2 = &0014
 K4 = &0022
 XX16 = &0024
 XX0 = &0036
@@ -240,6 +241,7 @@ L0099   = &0099
 messXC  = &009A
 L009B   = &009B
 INWK = &009C
+XX1 = &009C
 XX19 = &00BD
 NEWB = &00C0
 JSTX = &00C1
@@ -373,7 +375,6 @@ gov = &1296
 tek = &1297
 SLSP = &1298
 QQ2 = &129A
-KTRAN   = &129F
 safehouse = &12A0
 L12A6   = &12A6
 L12A7   = &12A7
@@ -627,7 +628,7 @@ LOAD_A% = LOAD%
 
 .L137B
 
- STA L144C,Y
+ STA NS9,Y
  DEY
  BNE L137B
 
@@ -660,79 +661,95 @@ LOAD_A% = LOAD%
 
  LDY #&05
 
+\ ******************************************************************************
+\
+\       Name: NOISE
+\       Type: Subroutine
+\   Category: Sound
+\    Summary: Make the sound whose number is in Y
+\
+\ ******************************************************************************
+
 .NOISE
 
- LDA L2C55
+ LDA DNOIZ
  BNE L1376
 
- LDA L146E,Y
+ LDA SFX2,Y
  LSR A
  CLV
  LDX #&00
- BCS L13B7
+ BCS NS1
 
  INX
- LDA L145A
- CMP L145B
- BCC L13B7
+ LDA SBUF+13
+ CMP SBUF+14
+ BCC NS1
 
  INX
 
-.L13B7
+.NS1
 
- LDA L1462,Y
- CMP L1459,X
+ LDA SFX1,Y
+ CMP SBUF+12,X
  BCC L1376
 
  SEI
- STA L1459,X
+ STA SBUF+12,X
  LSR A
  AND #&07
- STA L1453,X
- LDA L1486,Y
- STA L1456,X
- LDA L146E,Y
- STA L1450,X
+ STA SBUF+6,X
+ LDA SFX4,Y
+ STA SBUF+9,X
+ LDA SFX2,Y
+ STA SBUF+3,X
  AND #&0F
  LSR A
- STA L145C,X
- LDA L147A,Y
- BVC L13E1
+ STA SBUF+15,X
+ LDA SFX3,Y
+ BVC P%+3
 
  ASL A
 
-.L13E1
-
- STA L145F,X
+ STA SBUF+18,X
  LDA #&80
- STA L144D,X
+ STA SBUF,X
  CLI
  SEC
  RTS
 
-.L13EC
+\ ******************************************************************************
+\
+\       Name: NOISE2
+\       Type: Subroutine
+\   Category: Sound
+\    Summary: ???
+\
+\ ******************************************************************************
 
- LDY #&02
+.NOISE2
 
-.L13EE
+ LDY #2
 
- LDA L144D,Y
- BEQ L1449
+.NSL1
 
- BMI L13FB
+ LDA SBUF,Y
+ BEQ NS8
 
- LDA L145C,Y
- BEQ L1416
+ BMI NS2
+
+ LDA SBUF+15,Y
+ BEQ NS3
 
  EQUB &2C
 
-.L13FB
+.NS2
 
  LDA #&00
  CLC
  CLD
- ADC L145F,Y
- STA L145F,Y
+ ADC SBUF+18,Y
+ STA SBUF+18,Y
  PHA
  ASL A
  ASL A
@@ -745,108 +762,119 @@ LOAD_A% = LOAD%
  LSR A
  JSR MASTER_DKSn
 
-.L1416
+.NS3
 
  TYA
  TAX
- LDA L144D,Y
- BMI L1439
+ LDA SBUF,Y
+ BMI NS5
 
- DEC L1450,X
- BEQ L142F
+ DEC SBUF+3,X
+ BEQ NS4
 
- LDA L1450,X
- AND L1456,X
- BNE L1449
+ LDA SBUF+3,X
+ AND SBUF+9,X
+ BNE NS8
 
- DEC L1453,X
- BNE L143C
+ DEC SBUF+6,X
+ BNE NS6
 
-.L142F
+.NS4
 
  LDA #&00
- STA L144D,Y
- STA L1459,Y
- BEQ L1443
+ STA SBUF,Y
+ STA SBUF+12,Y
+ BEQ NS7
 
-.L1439
+.NS5
 
- LSR L144D,X
+ LSR SBUF,X
 
-.L143C
+.NS6
 
- LDA L1453,Y
+ LDA SBUF+6,Y
  CLC
  ADC L2C61
 
-.L1443
+.NS7
 
  EOR L135B,Y
  JSR MASTER_DKSn
 
-.L1449
+.NS8
 
  DEY
- BPL L13EE
+ BPL NSL1
 
-.L144C
+.NS9
 
  RTS
 
-.L144D
+\ ******************************************************************************
+\
+\       Name: 
+\       Type: Variable
+\   Category: Sound
+\    Summary: ???
+\
+\ ******************************************************************************
 
- EQUB &00
+.SBUF
 
- EQUB &00,&00
+ SKIP 21
 
-.L1450
+\ ******************************************************************************
+\
+\       Name: SFX1
+\       Type: Variable
+\   Category: Sound
+\    Summary: ???
+\
+\ ******************************************************************************
 
- EQUB &00,&00,&00
-
-.L1453
-
- EQUB &00,&00,&00
-
-.L1456
-
- EQUB &00,&00,&00
-
-.L1459
-
- EQUB &00
-
-.L145A
-
- EQUB &00
-
-.L145B
-
- EQUB &00
-
-.L145C
-
- EQUB &00,&00,&00
-
-.L145F
-
- EQUB &00,&00,&00
-
-.L1462
+.SFX1
 
  EQUB &4B,&5B,&3F,&EB,&FF,&09,&FF,&8B
  EQUB &CF,&E7,&FF,&EF
 
-.L146E
+\ ******************************************************************************
+\
+\       Name: SFX2
+\       Type: Variable
+\   Category: Sound
+\    Summary: ???
+\
+\ ******************************************************************************
+
+.SFX2
 
  EQUB &40,&10,&01,&FC,&F3,&19,&F9,&7C
  EQUB &F1,&FA,&FE,&FE
 
-.L147A
+\ ******************************************************************************
+\
+\       Name: SFX3
+\       Type: Variable
+\   Category: Sound
+\    Summary: ???
+\
+\ ******************************************************************************
+
+.SFX3
 
  EQUB &F0,&20,&10,&30,&03,&01,&08,&80
  EQUB &16,&38,&00,&80
 
-.L1486
+\ ******************************************************************************
+\
+\       Name: SFX4
+\       Type: Variable
+\   Category: Sound
+\    Summary: ???
+\
+\ ******************************************************************************
+
+.SFX4
 
  EQUB &FF,&FF,&00,&03,&1F,&01,&07,&07
  EQUB &0F,&03,&0F,&0F
@@ -1053,10 +1081,10 @@ LOAD_A% = LOAD%
 .jvec
 
  PHX                    \ ???
- JSR L13EC
+ JSR NOISE2
  PLX
 
- PLA
+ PLA                    \ Restore A from the stack
 
  PLY                    \ Restore Y from the stack
 
@@ -1127,43 +1155,71 @@ LOAD_A% = LOAD%
 
  RTS                    \ Return from the subroutine
 
-.MASTER_MOVE_ZP_3000
+\ ******************************************************************************
+\
+\       Name: SAVEZP
+\       Type: Subroutine
+\   Category: Utility routines
+\    Summary: Save zero page from &0090 to &00FF into the buffer at &3000
+\
+\ ******************************************************************************
 
- LDA #&0F
- STA VIA+&34
+.SAVEZP
+
+ LDA #%00001111         \ Set bits 1 and 2 of the Access Control Register at
+ STA VIA+&34            \ SHEILA+&34 to switch screen memory into &3000-&7FFF
+
  LDX #&90
 
-.L1547
+.SZPL1
 
  LDA ZP,X
  STA &3000,X
- INX
- BNE L1547
 
- LDA #&09
- STA VIA+&34
+ INX
+
+ BNE SZPL1
+
+ LDA #%00001001         \ Clear bits 1 and 2 of the Access Control Register at
+ STA VIA+&34            \ SHEILA+&34 to switch main memory back into &3000-&7FFF
+
  RTS
 
-.MASTER_SWAP_ZP_3000
+\ ******************************************************************************
+\
+\       Name: LOADZP
+\       Type: Subroutine
+\   Category: Utility routines
+\    Summary: Swap zero page from &0090 to &00EF with the buffer at &3000
+\
+\ ******************************************************************************
 
- LDA #&0F
- STA VIA+&34
+.LOADZP
+
+ LDA #%00001111         \ Set bits 1 and 2 of the Access Control Register at
+ STA VIA+&34            \ SHEILA+&34 to switch screen memory into &3000-&7FFF
+
  LDX #&90
 
-.L155C
+.LZPL1
 
  LDA ZP,X
  LDY &3000,X
+
  STY ZP,X
  STA &3000,X
- INX
- CPX #&F0
- BNE L155C
 
- LDA #&09
- STA VIA+&34
+ INX
+
+ CPX #&F0
+ BNE LZPL1
+
+ LDA #%00001001         \ Clear bits 1 and 2 of the Access Control Register at
+ STA VIA+&34            \ SHEILA+&34 to switch main memory back into &3000-&7FFF
+
  LDA #&06
  STA VIA+&30
+
  RTS
 
 \ ******************************************************************************
@@ -6962,13 +7018,24 @@ NEXT
 
  RTS                    \ Return from the subroutine
 
+\ ******************************************************************************
+\
+\       Name: ADD_DUPLICATE
+\       Type: Subroutine
+\   Category: Maths (Arithmetic)
+\    Summary: Calculate (A X) = (A P) + (S R)
+\
+\ ******************************************************************************
+
 .ADD_DUPLICATE
 
  STA T1
  AND #&80
  STA T
  EOR S
- BMI MU8_DUPLICATE
+
+{
+ BMI MU8
 
  LDA R
  CLC
@@ -6979,7 +7046,8 @@ NEXT
  ORA T
  RTS
 
-.MU8_DUPLICATE
+.MU8
+}
 
  LDA S
  AND #&7F
@@ -6991,7 +7059,9 @@ NEXT
  LDA T1
  AND #&7F
  SBC U
- BCS MU9_DUPLICATE
+
+{
+ BCS MU9
 
  STA U
  TXA
@@ -7002,7 +7072,8 @@ NEXT
  SBC U
  ORA #&80
 
-.MU9_DUPLICATE
+.MU9
+}
 
  EOR T
  RTS
@@ -7220,6 +7291,8 @@ NEXT
  EQUB &B5,&B8,&BD,&C1,&C5,&C9,&CE,&D2
  EQUB &D7,&DB,&E0,&E5,&EA,&EF,&F5,&FA
 
+.antilogODD
+
  EQUB &01,&02,&03,&04,&05,&06,&00,&01
  EQUB &02,&03,&04,&05,&06,&00,&01,&02
  EQUB &03,&04,&05,&06,&00,&01,&02,&03
@@ -7305,7 +7378,7 @@ NEXT
 
  EQUB &00,&00
 
-.L2C55
+.DNOIZ
 
  EQUB &00
 
@@ -7329,13 +7402,15 @@ NEXT
 
  EQUB &00
 
-.L2C5B
+.JSTE
 
  EQUB &00
 
 .JSTK
 
- EQUB &00,&00
+ EQUB &00
+
+ EQUB &00
 
 .L2C5E
 
@@ -7349,21 +7424,41 @@ NEXT
 
  EQUB &07
 
-.L2C62
+.CKEYS
 
- EQUB &01,&41,&58,&46,&59,&4A,&4B,&55
- EQUB &54,&60
+ EQUB 1
+ EQUS "AXFYJKUT"
+ EQUB &60
+
+\ ******************************************************************************
+\
+\       Name: S%
+\       Type: Subroutine
+\   Category: Loader
+\    Summary: Move code, set up break handler and start the game
+\
+\ ******************************************************************************
 
 .S%
 
  CLD
- JSR MOVE_CODE
+
+ JSR MVBL
 
  JSR BRKBK
 
  JMP BEGIN
 
-.MOVE_CODE
+\ ******************************************************************************
+\
+\       Name: MVBL
+\       Type: Subroutine
+\   Category: Utility routines
+\    Summary: Move a multi-page block of memory from one location to another
+\
+\ ******************************************************************************
+
+.MVBL
 
  LDA #&C0
  STA FRIN
@@ -7372,7 +7467,7 @@ NEXT
  LDA #&7F
  LDY #&47
  LDX #&19
- JSR MOVE_CODE_L1
+ JSR MVPG
 
  LDA #&FF
  STA FRIN
@@ -7382,14 +7477,14 @@ NEXT
  LDY #&FF
  LDX #&62
 
-.MOVE_CODE_L1
+.MVPG
 
  STX T
  STA SC+1
  LDA #&00
  STA SC
 
-.MOVE_CODE_L2
+.MPL
 
  LDA (SC),Y
  SEC
@@ -7397,23 +7492,22 @@ NEXT
  STA (SC),Y
  STA T
  TYA
- BNE L2CAF
+ BNE P%+4
 
  DEC SC+1
 
-.L2CAF
-
  DEY
  CPY FRIN
- BNE MOVE_CODE_L2
+ BNE MPL
 
  LDA SC+1
  CMP FRIN+1
- BNE MOVE_CODE_L2
+ BNE MPL
 
  RTS
 
- EQUB &B7,&AA,&45,&23
+ EQUB &B7, &AA          \ These bytes appear to be unused
+ EQUB &45, &23
 
 \ ******************************************************************************
 \
@@ -7564,8 +7658,10 @@ NEXT
                         \ so jump to BAY to go to the docking bay (i.e. show the
                         \ Status Mode screen)
 
- EQUB &FB,&04,&F7,&08,&EF,&10,&DF,&20,&BF
- EQUB &40,&7F,&80
+ EQUB &FB, &04, &F7     \ These bytes appear to be unused
+ EQUB &08, &EF, &10
+ EQUB &DF, &20, &BF
+ EQUB &40, &7F, &80
 
 \ ******************************************************************************
 \
@@ -7896,7 +7992,7 @@ NEXT
 
  BEQ MA76               \ ???
 
- JSR L31ED
+ JSR BOMBFX2
 
 .MA76
 
@@ -8813,7 +8909,7 @@ NEXT
  BPL MA77               \ MA24 above), then BOMB is now negative, so this skips
                         \ to MA77 if our energy bomb is not going off
 
- JSR WSCAN_DUPLICATE
+ JSR BOMBFX
 
  ASL BOMB
  BMI MA77
@@ -9354,22 +9450,18 @@ NEXT
 
  RTS
 
-.WSCAN_DUPLICATE
+.BOMBFX
 
- JSR L31E2
+ JSR P%+3
 
-.L31E2
-
- JSR L31E5
-
-.L31E5
+ JSR P%+3
 
  LDY #&06
  JSR NOISE
 
  JSR L31AC
 
-.L31ED
+.BOMBFX2
 
  LDY #&00
 
@@ -9390,34 +9482,37 @@ NEXT
  BCC L31EF
 
  LDX #&00
- STX L3226
+ STX L321D+9
  DEX
  STX L321D
  BCS L31AC
 
 .L3213
 
- CPX #&E0
- CPY #&A0
- BRA &3279
+ EQUB &E0, &E0
+ EQUB &C0, &A0
+ EQUB &80, &60
+ EQUB &40, &20
+ EQUB &00, &00
 
- EQUB &40
-
- EQUB &20,&00,&00
+\ EQUB %11100000
+\ EQUB %11100000
+\ EQUB %11000000
+\ EQUB %10100000
+\ EQUB %10000000
+\ EQUB %01100000
+\ EQUB %01000000
+\ EQUB %00100000
+\ EQUB %00000000
+\ EQUB %00000000
 
 .L321D
 
- EQUB &00,&00,&00,&00,&00,&00,&00,&00
- EQUB &00
-
-.L3226
-
- EQUB &00
+ SKIP 10
 
 .L3227
 
- EQUB &00,&00,&00,&00,&00,&00,&00,&00
- EQUB &00,&00
+ SKIP 10
 
 \ ******************************************************************************
 \
@@ -10363,8 +10458,8 @@ NEXT
  EQUW MT27              \ Token 27: Print mission captain's name (217-219)
  EQUW MT28              \ Token 28: Print mission 1 location hint (220-221)
  EQUW MT29              \ Token 29: Column 6, white text, lower case in words
- EQUW L6960             \ ???
- EQUW L6969             \ ???
+ EQUW MT30              \ Token 30: ???
+ EQUW MT31              \ Token 31: ???
  EQUW DASC              \ Token 32: Unused
 
 \ ******************************************************************************
@@ -10469,6 +10564,15 @@ NEXT
 .S1%
 
  EQUS ":0.E."
+
+\ ******************************************************************************
+\
+\       Name: NA%
+\       Type: Variable
+\   Category: Save and load
+\    Summary: The data block for the last saved commander
+\
+\ ******************************************************************************
 
 .NA%
 
@@ -20333,25 +20437,50 @@ LOAD_D% = LOAD% + P% - CODE%
  EQUB 120               \ Token 36: a random extended token between 120 and 124
  EQUB 125               \ Token 37: a random extended token between 125 and 129
 
-.L4A42
+\ ******************************************************************************
+\
+\       Name: LSR1
+\       Type: Subroutine
+\   Category: Utility routines
+\    Summary: ???
+\
+\ ******************************************************************************
+
+.LSR1
 
  LSR A
 
-.L4A43
+\ ******************************************************************************
+\
+\       Name: LSR2
+\       Type: Subroutine
+\   Category: Utility routines
+\    Summary: ???
+\
+\ ******************************************************************************
+
+.LSR2
 
  RTS
 
-.L4A44
+\ ******************************************************************************
+\
+\       Name: LSR3
+\       Type: Subroutine
+\   Category: Utility routines
+\    Summary: ???
+\
+\ ******************************************************************************
+
+.LSR3
 
  RTS
 
-.L4A45
-
- STA XX15
+ STA X1                 \ This code appears to be unused
  STA X2
- LDA #&18
+ LDA #24
  STA Y1
- LDA #&98
+ LDA #152
  STA Y2
  JMP LL30
 
@@ -21353,7 +21482,7 @@ LOAD_D% = LOAD% + P% - CODE%
  LDA QQ15+1             \ Fetch the s0_hi seed into A, which gives us the
                         \ galactic y-coordinate of this system
 
- JSR L4A42              \ ???
+ JSR LSR1              \ ???
 
  CLC                    \ Add 24 to the halved y-coordinate ???
  ADC #24                \ (as the top of the chart is on pixel row 24, just
@@ -21376,11 +21505,11 @@ LOAD_D% = LOAD% + P% - CODE%
                         \ loop back up to TT83
 
  LDA QQ9                \ ???
- JSR L4A44
+ JSR LSR3
 
  STA QQ19
  LDA QQ10
- JSR L4A42
+ JSR LSR1
 
  STA QQ19+1
 
@@ -21574,7 +21703,7 @@ LOAD_D% = LOAD% + P% - CODE%
                         \ exact coordinates as this is the Short-range Chart
 
  LDA QQ14               \ ???
- JSR L4A43
+ JSR LSR2
  STA K
 
  JMP TT128              \ Jump to TT128 to draw a circle with the centre at the
@@ -21593,16 +21722,15 @@ LOAD_D% = LOAD% + P% - CODE%
 
  LDA QQ14               \ ???
  LSR A
- JSR L4A42
-
+ JSR LSR1
  STA K
+
  LDA QQ0
- JSR L4A44
-
+ JSR LSR3
  STA QQ19
- LDA QQ1
- JSR L4A42
 
+ LDA QQ1
+ JSR LSR1
  STA QQ19+1
 
  LDA #7                 \ Set QQ19+2 = 7, the size of the crosshairs on the
@@ -21889,6 +22017,11 @@ LOAD_D% = LOAD% + P% - CODE%
 \
 \   C flag              Set if the number is too large (> QQ25), clear otherwise
 \
+\ Other entry points:
+\
+\   OUT                 The OUTX routine jumps back here after printing the key
+\                       that was just pressed
+\
 \ ******************************************************************************
 
 .gnum
@@ -21937,7 +22070,8 @@ LOAD_D% = LOAD% + P% - CODE%
 
  CMP #26                \ If A >= 26, where A is the number entered so far, then
  BCS OUTX               \ adding a further digit will make it bigger than 256,
-                        \ so jump to OUTX to ???
+                        \ so jump to OUTX to print the key that was just pressed
+                        \ before jumping to OUT below with the C flag still set
 
  ASL A                  \ Set A = (A * 2) + (A * 8) = A * 10
  STA T
@@ -21945,16 +22079,24 @@ LOAD_D% = LOAD% + P% - CODE%
  ASL A
  ADC T
 
- ADC S                  \ ???
- BCS OUTX
- STA R
+ ADC S                  \ Add the pressed digit to A
+
+ BCS OUTX               \ If the addition overflowed, then jump to OUTX to print
+                        \ the key that was just pressed before jumping to OUT
+                        \ below with the C flag still set
+
+ STA R                  \ Otherwise store the result in R, so R now contains
+                        \ its previous value with the new key press tacked onto
+                        \ the end
 
  CMP QQ25               \ If the result in R = the maximum allowed in QQ25, jump
  BEQ TT226              \ to TT226 to print the key press and keep looping (the
                         \ BEQ is needed because the BCS below would jump to OUT
                         \ if R >= QQ25, which we don't want)
 
- BCS OUTX               \ If the result in R > QQ25, jump to OUTX to ???
+ BCS OUTX               \ If the result in R > QQ25, jump to OUTX to print
+                        \ the key that was just pressed before jumping to OUT
+                        \ below with the C flag still set
 
 .TT226
 
@@ -22019,13 +22161,25 @@ LOAD_D% = LOAD% + P% - CODE%
 
  JMP NWDAVxx            \ Jump back into the TT210 routine that called NWDAV4
 
+\ ******************************************************************************
+\
+\       Name: OUTX
+\       Type: Subroutine
+\   Category: Text
+\    Summary: Print the character in Q before returning to gnum
+\
+\ ******************************************************************************
+
 .OUTX
 
- LDA Q
- JSR DASC
+ LDA Q                  \ Print the character in Q, which is the key that was
+ JSR DASC               \ just pressed in the gnum routine
 
- SEC
- JMP OUT
+ SEC                    \ Set the C flag, as this routine is only called if the
+                        \ key pressed makes the number too high
+
+ JMP OUT                \ Jump back into the gnum routine to return the number
+                        \ that has been built
 
 \ ******************************************************************************
 \
@@ -22438,11 +22592,11 @@ LOAD_D% = LOAD% + P% - CODE%
  BMI TT105              \ If this is the Short-range Chart screen, jump to TT105
 
  LDA QQ9                \ ???
- JSR L4A44
+ JSR LSR3
 
  STA QQ19
  LDA QQ10
- JSR L4A42
+ JSR LSR1
  STA QQ19+1
 
  LDA #4                 \ Set QQ19+2 to 4 denote crosshairs of size 4
@@ -22560,7 +22714,7 @@ LOAD_D% = LOAD% + P% - CODE%
  ASL A
  CLC
  ADC #&68
- JSR L4A43
+ JSR LSR2
  STA QQ19
 
  LDA QQ10               \ Set A = QQ10 - QQ1, the vertical distance between the
@@ -22584,7 +22738,7 @@ LOAD_D% = LOAD% + P% - CODE%
  ASL A                  \ ???
  CLC
  ADC #&5A
- JSR L4A43
+ JSR LSR2
  STA QQ19+1
 
  LDA #8                 \ Set QQ19+2 to 8 denote crosshairs of size 8
@@ -22724,7 +22878,7 @@ LOAD_D% = LOAD% + P% - CODE%
  ASL A                  \ Set XX12 = 104 + x-delta * 4
  ASL A                  \
  ADC #104               \ 104 is the x-coordinate of the centre of the chart,
- JSR L4A43              \ so this sets XX12 to the centre 104 +/- 76, the pixel
+ JSR LSR2              \ so this sets XX12 to the centre 104 +/- 76, the pixel
  STA XX12               \ x-coordinate of this system ???
 
  LSR A                  \ Move the text cursor to column x-delta / 2 + 1
@@ -22743,7 +22897,7 @@ LOAD_D% = LOAD% + P% - CODE%
 
  ASL A                  \ Set K4 = 90 + y-delta * 2
  ADC #90                \
- JSR L4A43              \ 90 is the y-coordinate of the centre of the chart,
+ JSR LSR2              \ 90 is the y-coordinate of the centre of the chart,
  STA K4                 \ so this sets K4 to the centre 90 +/- 74, the pixel
                         \ y-coordinate of this system ???
 
@@ -24433,7 +24587,7 @@ LOAD_D% = LOAD% + P% - CODE%
 
  JSR RES2               \ Reset a number of flight variables and workspaces
 
- JSR L5A24              \ ???
+ JSR SOLARX             \ ???
 
  LDA QQ11               \ If the current view in QQ11 is not a space view (0) or
  AND #%00111111         \ one of the charts (64 or 128), return from the
@@ -26442,7 +26596,7 @@ LOAD_E% = LOAD% + P% - CODE%
 
  RTS                    \ Return from the subroutine
 
- LDX #&15
+ LDX #&15               \ This code appears to be unused
 
 .L58B9
 
@@ -26914,20 +27068,30 @@ LOAD_E% = LOAD% + P% - CODE%
                         \ with an equator and meridian, 130 is a planet with
                         \ a crater)
 
-.L5A24
+\ ******************************************************************************
+\
+\       Name: SOLARX
+\       Type: Subroutine
+\   Category: Universe
+\    Summary: ???
+\
+\ ******************************************************************************
+
+.SOLARX
 
  LDA L1264
  BEQ SOLAR
 
- LDA #&00
+ LDA #0
  STA QQ20
  STA QQ20+6
- JSR DORND
 
+ JSR DORND
  AND #&0F
  ADC L1264
  ORA #&04
  ROL A
+
  STA L1264
  ROL L1265
  BPL SOLAR
@@ -28100,7 +28264,8 @@ LOAD_E% = LOAD% + P% - CODE%
 
  RTS                    \ Return from the subroutine
 
- EQUB &04,&00,&00,&00,&00
+ EQUB 4                 \ These bytes appear to be unused
+ SKIP 4
 
 \ ******************************************************************************
 \
@@ -30326,18 +30491,36 @@ LOAD_E% = LOAD% + P% - CODE%
 
  RTS                    \ Return from the subroutine
 
-.L6174
+\ ******************************************************************************
+\
+\       Name: GETYN
+\       Type: Subroutine
+\   Category: Keyboard
+\    Summary: Wait until either "Y" or "N" is pressed
+\
+\ ------------------------------------------------------------------------------
+\
+\ Returns:
+\
+\   C flag              Set if "Y" was pressed, clear if "N" was pressed
+\
+\ ******************************************************************************
 
- JSR t
+.GETYN
 
- CMP #&59
- BEQ PL6
+ JSR t                  \ Scan the keyboard until a key is pressed, returning
+                        \ the ASCII code in A and X
 
- CMP #&4E
- BNE L6174
+ CMP #'Y'               \ If "Y" was pressed, return from the subroutine with
+ BEQ PL6                \ the C flag set (as the CMP sets the C flag, and PL6
+                        \ contains an RTS)
 
- CLC
- RTS
+ CMP #'N'               \ If "N" was not pressed, loop back to keep scanning
+ BNE GETYN              \ for key presses
+
+ CLC                    \ Clear the C flag
+
+ RTS                    \ Return from the subroutine
 
 \ ******************************************************************************
 \
@@ -30483,8 +30666,6 @@ PRINT "S.ELTE ", ~CODE_E%, " ", ~P%, " ", ~LOAD%, " ", ~LOAD_E%
 \ ******************************************************************************
 \
 \ ELITE F FILE
-\
-\ Produces the binary file ELTF.bin that gets loaded by elite-bcfs.asm.
 \
 \ ******************************************************************************
 
@@ -31057,25 +31238,21 @@ LOAD_F% = LOAD% + P% - CODE%
 
  RTS                    \ Return from the subroutine
 
- PHA
+ PHA                    \ This code appears to be unused
  LSR A
  LSR A
  LSR A
  LSR A
- JSR L6324
+ JSR P%+6
 
  PLA
  AND #&0F
 
-.L6324
-
  CMP #&0A
- BCS L632D
+ BCS P%+7
 
  ADC #&30
  JMP CHPR
-
-.L632D
 
  ADC #&36
  JMP CHPR
@@ -32585,7 +32762,7 @@ LOAD_F% = LOAD% + P% - CODE%
 
  LDX brkd               \ ???
  TXS
- JSR MASTER_SWAP_ZP_3000
+ JSR LOADZP
 
  STZ CATF
  LDY #&00
@@ -32816,7 +32993,7 @@ LOAD_F% = LOAD% + P% - CODE%
  LDA XX21+SST*2-1       \ spasto(1 0) points to the Coriolis blueprint)
  STA spasto+1
 
- JSR L68BB              \ ??? Could also be at start of TT170
+ JSR JAMESON            \ ??? Could also be at start of TT170
 
                         \ Fall through into TT170 to start the game
 
@@ -33302,19 +33479,29 @@ ENDIF
 
  RTS                    \ Return from the subroutine
 
-.L68BB
+\ ******************************************************************************
+\
+\       Name: JAMESON
+\       Type: Subroutine
+\   Category: Save and load
+\    Summary: Restore the default JAMESON commander file
+\
+\ ******************************************************************************
 
- LDY #&60               \ Restore default commander
+.JAMESON
 
-.L68BD
+ LDY #&60
+
+.JAMESL
 
  LDA DEFAULT%,Y
  STA NA%,Y
  DEY
- BPL L68BD
+ BPL JAMESL
 
- LDY #&07
- STY L6A8B
+ LDY #7
+ STY NAMELEN2
+
  RTS
 
 \ ******************************************************************************
@@ -33332,8 +33519,8 @@ ENDIF
                         \ characters, and is terminated by a carriage return,
                         \ so set up a counter in X to copy 8 characters
 
- LDA L6A8A              \ ???
- STA L6A8B
+ LDA NAMELEN1           \ ???
+ STA NAMELEN2
 
 .GTL1
 
@@ -33441,7 +33628,7 @@ ENDIF
                         \ the last saved commander's name from NA% to INWK
                         \ and return from the subroutine there
 
- STY L6A8A              \ ???
+ STY NAMELEN1           \ ???
 
  RTS                    \ Return from the subroutine
 
@@ -33561,16 +33748,36 @@ ENDIF
  EQUB '!'               \ Allow ASCII characters from "!" through to "{" in
  EQUB '{'               \ the input
 
-.L6960                    \ See JMTB
+\ ******************************************************************************
+\
+\       Name: MT30
+\       Type: Subroutine
+\   Category: Text
+\    Summary: ???
+\  Deep dive: Extended text tokens
+\
+\ ******************************************************************************
 
- LDA #&03
+.MT30
+
+ LDA #3
  CLC
  ADC L2C5E
  JMP DETOK
 
-.L6969                    \ See JMTB
+\ ******************************************************************************
+\
+\       Name: MT31
+\       Type: Subroutine
+\   Category: Text
+\    Summary: ???
+\  Deep dive: Extended text tokens
+\
+\ ******************************************************************************
 
- LDA #&02
+.MT31
+
+ LDA #2
  SEC
  SBC L2C5E
  JMP DETOK
@@ -33659,7 +33866,7 @@ ENDIF
 
  STA XC                 \ Move the text cursor to column 1
 
- JSR MASTER_SWAP_ZP_3000 \ ???
+ JSR LOADZP \ ???
 
  LDX #LO(CTLI)          \ Set (Y X) to point to the OS command at CTLI, which
  LDY #HI(CTLI)          \ contains a dot and the drive number, which is the
@@ -33669,7 +33876,7 @@ ENDIF
  JSR OSCLI              \ Call OSCLI to execute the OS command at (Y X), which
                         \ catalogues the disc
 
- JSR MASTER_SWAP_ZP_3000 \ ???
+ JSR LOADZP             \ ???
 
  STZ CATF               \ Set the CATF flag to 0, so the TT26 routine reverts to
                         \ standard formatting
@@ -33740,7 +33947,7 @@ ENDIF
  BNE DELL1              \ Loop back to DELL1 to copy the next character until we
                         \ have copied the whole filename
 
- JSR MASTER_SWAP_ZP_3000 \ ???
+ JSR LOADZP             \ ???
 
  LDX #LO(DELI)          \ Set (Y X) to point to the OS command at DELI, which
  LDY #HI(DELI)          \ contains the DFS command for deleting this file
@@ -33748,7 +33955,7 @@ ENDIF
  JSR OSCLI              \ Call OSCLI to execute the OS command at (Y X), which
                         \ catalogues the disc
 
- JSR MASTER_SWAP_ZP_3000 \ ???
+ JSR LOADZP             \ ???
 
  JMP SVE                \ Jump to SVE to display the disc access menu and return
                         \ from the subroutine using a tail call
@@ -33799,11 +34006,11 @@ ENDIF
  LDA #&E0
  JSR DETOK
 
- JSR L6174
+ JSR GETYN
 
  BCC L6A0F
 
- JSR L68BB
+ JSR JAMESON
 
  JMP DFAULT
 
@@ -33910,7 +34117,7 @@ ENDIF
  BCS L6A85
 
  STA SVLI+6
- JSR L6B16
+ JSR SAVE
 
 .L6A85
 
@@ -33918,13 +34125,31 @@ ENDIF
  CLC
  RTS
 
-.L6A8A
+\ ******************************************************************************
+\
+\       Name: NAMELEN1
+\       Type: Variable
+\   Category: Save and load
+\    Summary: ???
+\
+\ ******************************************************************************
 
- EQUB &07
+.NAMELEN1
 
-.L6A8B
+ EQUB 7
 
- EQUB &07
+\ ******************************************************************************
+\
+\       Name: NAMELEN2
+\       Type: Variable
+\   Category: Save and load
+\    Summary: ???
+\
+\ ******************************************************************************
+
+.NAMELEN2
+
+ EQUB 7
 
 \ ******************************************************************************
 \
@@ -33993,7 +34218,7 @@ ENDIF
 
 .LOD
 
- JSR L6B53              \ ???
+ JSR LOAD               \ ???
 
  LDA L0791              \ ???
  BMI ELT2F
@@ -34056,104 +34281,140 @@ ENDIF
  EQUS "DELETE :1.1234567"
  EQUB 13
 
+\ ******************************************************************************
+\
+\       Name: SVLI
+\       Type: Variable
+\   Category: Save and load
+\    Summary: The OS command string for saving a commander file
+\
+\ ******************************************************************************
+
 .SVLI
 
  EQUS "SAVE :1.E.JAMESON  E7E +100 0 0"
- EQUB &0D
+ EQUB 13
+
+\ ******************************************************************************
+\
+\       Name: LDLI
+\       Type: Variable
+\   Category: Save and load
+\    Summary: The OS command string for loading a commander file
+\
+\ ******************************************************************************
 
 .LDLI
 
  EQUS "LOAD :1.E.JAMESON  E7E"
- EQUB &0D
+ EQUB 13
 
-.L6B16
+\ ******************************************************************************
+\
+\       Name: SAVE
+\       Type: Subroutine
+\   Category: Save and load
+\    Summary: Save the commander file
+\
+\ ******************************************************************************
+
+.SAVE
 
  LDY #&4C
 
-.L6B18
+.SAVEL1
 
  LDA NA%+8,Y
  STA LSX2,Y
  DEY
- BPL L6B18
+ BPL SAVEL1
 
  LDA #&00
  LDY #&4C
 
-.L6B25
+.SAVEL2
 
  STA LSX2,Y
  INY
- BNE L6B25
+ BNE SAVEL2
 
  LDY #&00
 
-.L6B2D
+.SAVEL3
 
  LDA NA%,Y
  CMP #&0D
- BEQ L6B3C
+ BEQ SAVEL4
 
  STA SVLI+10,Y
  INY
  CPY #&07
- BCC L6B2D
+ BCC SAVEL3
 
-.L6B3C
+.SAVEL4
 
  LDA #&20
  STA SVLI+10,Y
  INY
  CPY #&07
- BCC L6B3C
+ BCC SAVEL4
 
- JSR MASTER_SWAP_ZP_3000
+ JSR LOADZP
 
  LDX #&DF
  LDY #&6A
  JSR OSCLI
 
- JMP MASTER_SWAP_ZP_3000
+ JMP LOADZP
 
-.L6B53
+\ ******************************************************************************
+\
+\       Name: LOAD
+\       Type: Subroutine
+\   Category: Save and load
+\    Summary: Load the commander file
+\
+\ ******************************************************************************
 
- LDY #&00
+.LOAD
 
-.L6B55
+ LDY #0
+
+.LOADL1
 
  LDA INWK+5,Y
  CMP #&0D
- BEQ L6B64
+ BEQ LOADL2
 
  STA LDLI+10,Y
  INY
  CPY #&07
- BCC L6B55
+ BCC LOADL1
 
-.L6B64
+.LOADL2
 
  LDA #&20
  STA LDLI+10,Y
  INY
  CPY #&07
- BCC L6B64
+ BCC LOADL2
 
- JSR MASTER_SWAP_ZP_3000
+ JSR LOADZP
 
  LDX #&FF
  LDY #&6A
  JSR OSCLI
 
- JSR MASTER_SWAP_ZP_3000
+ JSR LOADZP
 
  LDY #&4C
 
-.L6B7D
+.LOADL3
 
  LDA LSX2,Y
  STA L0791,Y
  DEY
- BPL L6B7D
+ BPL LOADL3
 
  RTS
 
@@ -34638,7 +34899,7 @@ ENDIF
 .DKS3
 
  TXA                    \ ???
- CMP L2C62,Y
+ CMP CKEYS,Y
  BNE Dk3
 
  LDA DAMP,Y             \ ???
@@ -34696,7 +34957,7 @@ ENDIF
 
 .DOKEY
 
- JSR L7ED7              \ ???
+ JSR RDKEY-1            \ ???
 
  LDA auto               \ ???
  BEQ L6CF2
@@ -34838,12 +35099,12 @@ ENDIF
  BEQ DK15
 
  LDA L12A7
- EOR L2C5B
+ EOR JSTE
  ORA #&01
  STA JSTX
  LDA L12A8
  EOR #&FF
- EOR L2C5B
+ EOR JSTE
  EOR L2C5A
  STA JSTY
  LDA VIA+&40
@@ -34893,38 +35154,72 @@ ENDIF
 
                         \ Fall through into DK4 to scan for other keys
 
+\ ******************************************************************************
+\
+\       Name: DK4
+\       Type: Subroutine
+\   Category: Keyboard
+\    Summary: Scan for pause, configuration and secondary flight keys
+\  Deep dive: The key logger
+\
+\ ------------------------------------------------------------------------------
+\
+\ Scan for pause and configuration keys, and if this is a space view, also scan
+\ for secondary flight controls.
+\
+\ Specifically:
+\
+\   * Scan for the pause button (COPY) and if it's pressed, pause the game and
+\     process any configuration key presses until the game is unpaused (DELETE)
+\
+\   * If this is a space view, scan for secondary flight keys and update the
+\     relevant bytes in the key logger
+\
+\ ******************************************************************************
+
 .DK4
 
- LDX KL
+ LDX KL                 \ ???
  CPX #&8B
  BNE DK2
 
 .FREEZE
 
- JSR WSCAN
+                        \ COPY is being pressed, so we enter a loop that
+                        \ listens for configuration keys, and we keep looping
+                        \ until we detect a DELETE key press. This effectively
+                        \ pauses the game when COPY is pressed, and unpauses
+                        \ it when DELETE is pressed
 
- JSR RDKEY
+ JSR WSCAN              \ Call WSCAN to wait for the vertical sync, so the whole
+                        \ screen gets drawn
 
- CPX #&51
+ JSR RDKEY              \ Scan the keyboard for a key press and return the
+                        \ internal key number in X (or 0 for no key press)
+
+ CPX #&51               \ If S is not being pressed, skip to DK6
  BNE DK6
 
- LDX #&FF
- STX L2C55
+ LDX #&FF               \ ???
+ STX DNOIZ
  LDX #&51
 
 .DK6
 
- LDY #&00
+ LDY #0                 \ ???
 
 .DKL4
 
- JSR DKS3
+ JSR DKS3               \ Call DKS3 to scan for the key given in Y, and toggle
+                        \ the relevant setting if it is pressed
 
- INY
- CPY #&09
- BNE DKL4
+ INY                    \ Increment Y to point to the next toggle key
 
- LDA L2C61
+ CPY #&09               \ ???
+
+ BNE DKL4               \ If not, loop back to check for the next toggle key
+
+ LDA L2C61              \ ???
  CPX #&2E
  BEQ L6D70
 
@@ -34955,15 +35250,21 @@ ENDIF
 
 .L6D83
 
- CPX #&42
+ CPX #&42               \ ???
  BNE nobit
 
- LDA BSTK
+ LDA BSTK               \ Toggle the value of BSTK between 0 and &FF
  EOR #&FF
  STA BSTK
- STA JSTK
- STA L2C5B
- BPL L6D9A
+
+ STA JSTK               \ Configure JSTK to the same value, so when the Bitstik
+                        \ is enabled, so is the joystick
+
+ STA JSTE               \ Configure JSTE to the same value, so when the Bitstik
+                        \ is enabled, the joystick is configured with reversed
+                        \ channels
+
+ BPL L6D9A              \ ???
 
  JSR BELL
 
@@ -34973,11 +35274,11 @@ ENDIF
 
 .nobit
 
- CPX #&53
+ CPX #&53               \ ???
  BNE DK7
 
  LDA #&00
- STA L2C55
+ STA DNOIZ
 
 .DK7
 
@@ -34988,53 +35289,131 @@ ENDIF
 
 .L6DAD
 
- CPX #&7F
+ CPX #&7F               \ ???
  BNE FREEZE
 
 .DK2
 
- RTS
+ RTS                    \ Return from the subroutine
+
+\ ******************************************************************************
+\
+\       Name: TT217
+\       Type: Subroutine
+\   Category: Keyboard
+\    Summary: Scan the keyboard until a key is pressed
+\
+\ ------------------------------------------------------------------------------
+\
+\ Scan the keyboard until a key is pressed, and return the key's ASCII code.
+\ If, on entry, a key is already being held down, then wait until that key is
+\ released first (so this routine detects the first key down event following
+\ the subroutine call).
+\
+\ Returns:
+\
+\   X                   The ASCII code of the key that was pressed
+\
+\   A                   Contains the same as X
+\
+\   Y                   Y is preserved
+\
+\ Other entry points:
+\
+\   out                 Contains an RTS
+\
+\   t                   As TT217 but don't preserve Y, set it to YSAV instead
+\
+\ ******************************************************************************
 
 .TT217
 
- STY YSAV
+ STY YSAV               \ Store Y in temporary storage, so we can restore it
+                        \ later
 
 .t
 
- LDY #&02
- JSR DELAY
+ LDY #2                 \ Delay for 2 vertical syncs (2/50 = 0.04 seconds) so we
+ JSR DELAY              \ don't take up too much CPU time while looping round
 
- JSR RDKEY
+ JSR RDKEY              \ Scan the keyboard for a key press and return the
+                        \ internal key number in X (or 0 for no key press)
 
- BNE t
+ BNE t                  \ If a key was already being held down when we entered
+                        \ this routine, keep looping back up to t, until the
+                        \ key is released
 
 .t2
 
- JSR RDKEY
+ JSR RDKEY              \ Any pre-existing key press is now gone, so we can
+                        \ start scanning the keyboard again, returning the
+                        \ internal key number in X (or 0 for no key press)
 
- BEQ t2
+ BEQ t2                 \ Keep looping up to t2 until a key is pressed
 
- LDY YSAV
- TAX
+ LDY YSAV               \ Restore the original value of Y we stored above
+
+ TAX                    \ Copy A into X
 
 .out
 
- RTS
+ RTS                    \ Return from the subroutine
+
+\ ******************************************************************************
+\
+\       Name: me1
+\       Type: Subroutine
+\   Category: Text
+\    Summary: Erase an old in-flight message and display a new one
+\
+\ ------------------------------------------------------------------------------
+\
+\ Arguments:
+\
+\   A                   The text token to be printed
+\
+\   X                   Must be set to 0
+\
+\ ******************************************************************************
 
 .me1
 
- STX DLY
- PHA
- LDA #&0F
- STA COL
- LDA MCH
- JSR mes9
+ STX DLY                \ Set the message delay in DLY to 0, so any new
+                        \ in-flight messages will be shown instantly
 
- PLA
+ PHA                    \ Store the new message token we want to print
+
+ LDA #&0F               \ ???
+ STA COL
+
+ LDA MCH                \ Set A to the token number of the message that is
+ JSR mes9               \ currently on-screen, and call mes9 to print it (which
+                        \ will remove it from the screen, as printing is done
+                        \ using EOR logic)
+
+ PLA                    \ Restore the new message token
+
+\ ******************************************************************************
+\
+\       Name: MESS
+\       Type: Subroutine
+\   Category: Text
+\    Summary: Display an in-flight message
+\
+\ ------------------------------------------------------------------------------
+\
+\ Display an in-flight message in capitals at the bottom of the space view,
+\ erasing any existing in-flight message first.
+\
+\ Arguments:
+\
+\   A                   The text token to be printed
+\
+\ ******************************************************************************
 
 .MESS
 
- PHA
+ PHA                    \ ???
  LDX QQ11
  BEQ L6DDE
 
@@ -35046,359 +35425,869 @@ ENDIF
  STA YC
  LDA #&0F
  STA COL
- LDX #&00
+
+ LDX #0                 \ Set QQ17 = 0 to switch to ALL CAPS
  STX QQ17
- LDA messXC
+
+ LDA messXC             \ ???
  STA XC
  PLA
  LDY #&14
- CPX DLY
- BNE me1
 
- STY DLY
- STA MCH
- LDA #&C0
- STA DTW4
- LDA de
+ CPX DLY                \ If the message delay in DLY is not zero, jump up to
+ BNE me1                \ me1 to erase the current message first (whose token
+                        \ number will be in MCH)
+
+ STY DLY                \ Set the message delay in DLY to 22
+
+ STA MCH                \ Set MCH to the token we are about to display
+
+                        \ Before we fall through into mes9 to print the token,
+                        \ we need to work out the starting column for the
+                        \ message we want to print, so it's centred on-screen,
+                        \ so the following doesn't print anything, it just uses
+                        \ the justified text mechanism to work out the number of
+                        \ characters in the message we are going to print
+
+ LDA #%11000000         \ Set the DTW4 flag to %11000000 (justify text, buffer
+ STA DTW4               \ entire token including carriage returns)
+
+ LDA de                 \ Set the C flag to bit 1 of the destruction flag in de
  LSR A
- LDA #&00
- BCC L6E0B
 
- LDA #&0A
+ LDA #0                 \ Set A = 0
 
-.L6E0B
+ BCC P%+4               \ If the destruction flag in de is not set, skip the
+                        \ following instruction
 
- STA DTW5
- LDA MCH
- JSR TT27
+ LDA #10                \ Set A = 10
 
- LDA #&20
- SEC
- SBC DTW5
- LSR A
- STA messXC
- STA XC
- JSR MT15
+ STA DTW5               \ Store A in DTW5, so DTW5 (which holds the size of the
+                        \ justified text buffer at BUF) is set to 0 if the
+                        \ destruction flag is not set, or 10 if it is (10 being
+                        \ the number of characters in the " DESTROYED" token)
 
- LDA MCH
+ LDA MCH                \ Call TT27 to print the token in MCH into the buffer
+ JSR TT27               \ (this doesn't print it on-screen, it just puts it into
+                        \ the buffer and moves the DTW5 pointer along, so DTW5
+                        \ now contains the size of the message we want to print,
+                        \ includint the " DESTROYED" part if that's going to be
+                        \ included)
+
+ LDA #32                \ Set A = (32 - DTW5) / 2
+ SEC                    \
+ SBC DTW5               \ so A now contains the column number we need to print
+ LSR A                  \ our message at for it to be centred on-screen (as
+                        \ there are 32 columns)
+
+ STA messXC             \ Store A in messXC, so when we erase the message via
+                        \ the branch to me1 above, messXC will tell us where to
+                        \ print it
+
+ STA XC                 \ Move the text cursor to column messXC
+
+ JSR MT15               \ Call MT15 to wwitch to left-aligned text when printing
+                        \ extended tokens disabling the justify text setting we
+                        \ set above
+
+ LDA MCH                \ Set MCH to the token we are about to display
+
+                        \ Fall through into mes9 to print the token in A
+
+\ ******************************************************************************
+\
+\       Name: mes9
+\       Type: Subroutine
+\   Category: Text
+\    Summary: Print a text token, possibly followed by " DESTROYED"
+\
+\ ------------------------------------------------------------------------------
+\
+\ Print a text token, followed by " DESTROYED" if the destruction flag is set
+\ (for when a piece of equipment is destroyed).
+\
+\ ******************************************************************************
 
 .mes9
 
- JSR TT27
+ JSR TT27               \ Call TT27 to print the text token in A
 
- LSR de
- BCC out
+ LSR de                 \ If bit 0 of variable de is clear, return from the
+ BCC out                \ subroutine (as out contains an RTS)
 
- LDA #&FD
- JMP TT27
+ LDA #253               \ Print recursive token 93 (" DESTROYED") and return
+ JMP TT27               \ from the subroutine using a tail call
+
+\ ******************************************************************************
+\
+\       Name: OUCH
+\       Type: Subroutine
+\   Category: Flight
+\    Summary: Potentially lose cargo or equipment following damage
+\
+\ ------------------------------------------------------------------------------
+\
+\ Our shields are dead and we are taking damage, so there is a small chance of
+\ losing cargo or equipment.
+\
+\ ******************************************************************************
 
 .OUCH
 
- JSR DORND
+ JSR DORND              \ Set A and X to random numbers
 
- BMI out
+ BMI out                \ If A < 0 (50% chance), return from the subroutine
+                        \ (as out contains an RTS)
 
- CPX #&16
- BCS out
+ CPX #22                \ If X >= 22 (89% chance), return from the subroutine
+ BCS out                \ (as out contains an RTS)
 
- LDA QQ20,X
- BEQ out
+ LDA QQ20,X             \ If we do not have any of item QQ20+X, return from the
+ BEQ out                \ subroutine (as out contains an RTS). X is in the range
+                        \ 0-21, so this not only checks for cargo, but also for
+                        \ E.C.M., fuel scoops, energy bomb, energy unit and
+                        \ docking computer, all of which can be destroyed
 
- LDA DLY
- BNE out
+ LDA DLY                \ If there is already an in-flight message on-screen,
+ BNE out                \ return from the subroutine (as out contains an RTS)
 
- LDY #&03
- STY de
- STA QQ20,X
- CPX #&11
- BCS ou1
+ LDY #3                 \ Set bit 1 of de, the equipment destruction flag, so
+ STY de                 \ that when we call MESS below, " DESTROYED" is appended
+                        \ to the in-flight message
 
- TXA
- ADC #&D0
- JMP MESS
+ STA QQ20,X             \ A is 0 (as we didn't branch with the BNE above), so
+                        \ this sets QQ20+X to 0, which destroys any cargo or
+                        \ equipment we have of that type
+
+ CPX #17                \ If X >= 17 then we just lost a piece of equipment, so
+ BCS ou1                \ jump to ou1 to print the relevant message
+
+ TXA                    \ Print recursive token 48 + A as an in-flight token,
+ ADC #208               \ which will be in the range 48 ("FOOD") to 64 ("ALIEN
+ JMP MESS               \ ITEMS") as the C flag is clear, so this prints the
+                        \ destroyed item's name, followed by " DESTROYED" (as we
+                        \ set bit 1 of the de flag above), and returns from the
+                        \ subroutine using a tail call
 
 .ou1
 
- BEQ ou2
+ BEQ ou2                \ If X = 17, jump to ou2 to print "E.C.M.SYSTEM
+                        \ DESTROYED" and return from the subroutine using a tail
+                        \ call
 
- CPX #&12
- BEQ ou3
+ CPX #18                \ If X = 18, jump to ou3 to print "FUEL SCOOPS
+ BEQ ou3                \ DESTROYED" and return from the subroutine using a tail
+                        \ call
 
- TXA
- ADC #&5D
- JMP MESS
+ TXA                    \ Otherwise X is in the range 19 to 21 and the C flag is
+ ADC #113-20            \ set (as we got here via a BCS to ou1), so we set A as
+                        \ follows:
+                        \
+                        \   A = 113 - 20 + X + C
+                        \     = 113 - 19 + X
+                        \     = 113 to 115
+
+ JMP MESS               \ Print recursive token A ("ENERGY BOMB", "ENERGY UNIT"
+                        \ or "DOCKING COMPUTERS") as an in-flight message,
+                        \ followed by " DESTROYED", and return from the
+                        \ subroutine using a tail call
+
+\ ******************************************************************************
+\
+\       Name: ou2
+\       Type: Subroutine
+\   Category: Text
+\    Summary: Display "E.C.M.SYSTEM DESTROYED" as an in-flight message
+\
+\ ******************************************************************************
 
 .ou2
 
- LDA #&6C
- JMP MESS
+ LDA #108               \ Set A to recursive token 108 ("E.C.M.SYSTEM")
+
+ JMP MESS               \ Print recursive token A as an in-flight message,
+                        \ followed by " DESTROYED", and return from the
+                        \ subroutine using a tail call
+
+\ ******************************************************************************
+\
+\       Name: ou3
+\       Type: Subroutine
+\   Category: Text
+\    Summary: Display "FUEL SCOOPS DESTROYED" as an in-flight message
+\
+\ ******************************************************************************
 
 .ou3
 
- LDA #&6F
- JMP MESS
+ LDA #111               \ Set A to recursive token 111 ("FUEL SCOOPS")
+
+ JMP MESS               \ Print recursive token A as an in-flight message,
+                        \ followed by " DESTROYED", and return from the
+                        \ subroutine using a tail call
+
+\ ******************************************************************************
+\
+\       Name: ITEM
+\       Type: Macro
+\   Category: Market
+\    Summary: Macro definition for the market prices table
+\  Deep dive: Market item prices and availability
+\
+\ ------------------------------------------------------------------------------
+\
+\ The following macro is used to build the market prices table:
+\
+\   ITEM price, factor, units, quantity, mask
+\
+\ It inserts an item into the market prices table at QQ23. See the deep dive on
+\ "Market item prices and availability" for more information on how the market
+\ system works.
+\
+\ Arguments:
+\
+\   price               Base price
+\
+\   factor              Economic factor
+\
+\   units               Units: "t", "g" or "k"
+\
+\   quantity            Base quantity
+\
+\   mask                Fluctuations mask
+\
+\ ******************************************************************************
+
+MACRO ITEM price, factor, units, quantity, mask
+
+  IF factor < 0
+    s = 1 << 7
+  ELSE
+    s = 0
+  ENDIF
+
+  IF units = 't'
+    u = 0
+  ELIF units = 'k'
+    u = 1 << 5
+  ELSE
+    u = 1 << 6
+  ENDIF
+
+  e = ABS(factor)
+
+  EQUB price
+  EQUB s + u + e
+  EQUB quantity
+  EQUB mask
+
+ENDMACRO
+
+\ ******************************************************************************
+\
+\       Name: QQ23
+\       Type: Variable
+\   Category: Market
+\    Summary: Market prices table
+\
+\ ------------------------------------------------------------------------------
+\
+\ Each item has four bytes of data, like this:
+\
+\   Byte #0 = Base price
+\   Byte #1 = Economic factor in bits 0-4, with the sign in bit 7
+\             Unit in bits 5-6
+\   Byte #2 = Base quantity
+\   Byte #3 = Mask to control price fluctuations
+\
+\ To make it easier for humans to follow, we've defined a macro called ITEM
+\ that takes the following arguments and builds the four bytes for us:
+\
+\   ITEM base price, economic factor, units, base quantity, mask
+\
+\ So for food, we have the following:
+\
+\   * Base price = 19
+\   * Economic factor = -2
+\   * Unit = tonnes
+\   * Base quantity = 6
+\   * Mask = %00000001
+\
+\ ******************************************************************************
 
 .QQ23
 
- EQUB &13
+ ITEM 19,  -2, 't',   6, %00000001   \ 0  = Food
 
-.L6E6E
+ ITEM 20,  -1, 't',  10, %00000011   \ 1  = Textiles
 
- EQUB &82
+ ITEM 65,  -3, 't',   2, %00000111   \ 2  = Radioactives
 
-.L6E6F
+ ITEM 40,  -5, 't', 226, %00011111   \ 3  = Slaves
 
- EQUB &06
+ ITEM 83,  -5, 't', 251, %00001111   \ 4  = Liquor/Wines
 
-.L6E70
+ ITEM 196,  8, 't',  54, %00000011   \ 5  = Luxuries
 
- EQUB &01,&14,&81,&0A,&03,&41,&83,&02
- EQUB &07,&28,&85,&E2,&1F,&53,&85,&FB
- EQUB &0F,&C4,&08,&36,&03,&EB,&1D,&08
- EQUB &78,&9A,&0E,&38,&03,&75,&06,&28
- EQUB &07,&4E,&01,&11,&1F,&7C,&0D,&1D
- EQUB &07,&B0,&89,&DC,&3F,&20,&81,&35
- EQUB &03,&61,&A1,&42,&07,&AB,&A2,&37
- EQUB &1F,&2D,&C1,&FA,&0F,&35,&0F,&C0
- EQUB &07
+ ITEM 235, 29, 't',   8, %01111000   \ 6  = Narcotics
+
+ ITEM 154, 14, 't',  56, %00000011   \ 7  = Computers
+
+ ITEM 117,  6, 't',  40, %00000111   \ 8  = Machinery
+
+ ITEM 78,   1, 't',  17, %00011111   \ 9  = Alloys
+
+ ITEM 124, 13, 't',  29, %00000111   \ 10 = Firearms
+
+ ITEM 176, -9, 't', 220, %00111111   \ 11 = Furs
+
+ ITEM 32,  -1, 't',  53, %00000011   \ 12 = Minerals
+
+ ITEM 97,  -1, 'k',  66, %00000111   \ 13 = Gold
+
+ ITEM 171, -2, 'k',  55, %00011111   \ 14 = Platinum
+
+ ITEM 45,  -1, 'g', 250, %00001111   \ 15 = Gem-Stones
+
+ ITEM 53,  15, 't', 192, %00000111   \ 16 = Alien Items
+
+\ ******************************************************************************
+\
+\       Name: TIDY
+\       Type: Subroutine
+\   Category: Maths (Geometry)
+\    Summary: Orthonormalise the orientation vectors for a ship
+\  Deep dive: Tidying orthonormal vectors
+\             Orientation vectors
+\
+\ ------------------------------------------------------------------------------
+\
+\ This routine orthonormalises the orientation vectors for a ship. This means
+\ making the three orientation vectors orthogonal (perpendicular to each other),
+\ and normal (so each of the vectors has length 1).
+\
+\ We do this because we use the small angle approximation to rotate these
+\ vectors in space. It is not completely accurate, so the three vectors tend
+\ to get stretched over time, so periodically we tidy the vectors with this
+\ routine to ensure they remain as orthonormal as possible.
+\
+\ ******************************************************************************
 
 .TI2
 
- TYA
- LDY #&02
- JSR TIS3
+                        \ Called from below with A = 0, X = 0, Y = 4 when
+                        \ nosev_x and nosev_y are small, so we assume that
+                        \ nosev_z is big
 
- STA INWK+20
- JMP TI3
+ TYA                    \ A = Y = 4
+ LDY #2
+ JSR TIS3               \ Call TIS3 with X = 0, Y = 2, A = 4, to set roofv_z =
+ STA INWK+20            \ -(nosev_x * roofv_x + nosev_y * roofv_y) / nosev_z
+
+ JMP TI3                \ Jump to TI3 to keep tidying
 
 .TI1
 
- TAX
- LDA Y1
- AND #&60
+                        \ Called from below with A = 0, Y = 4 when nosev_x is
+                        \ small
+
+ TAX                    \ Set X = A = 0
+
+ LDA XX15+1             \ Set A = nosev_y, and if the top two magnitude bits
+ AND #%01100000         \ are both clear, jump to TI2 with A = 0, X = 0, Y = 4
  BEQ TI2
 
- LDA #&02
- JSR TIS3
+ LDA #2                 \ Otherwise nosev_y is big, so set up the index values
+                        \ to pass to TIS3
 
- STA INWK+18
- JMP TI3
+ JSR TIS3               \ Call TIS3 with X = 0, Y = 4, A = 2, to set roofv_y =
+ STA INWK+18            \ -(nosev_x * roofv_x + nosev_z * roofv_z) / nosev_y
+
+ JMP TI3                \ Jump to TI3 to keep tidying
 
 .TIDY
 
- LDA INWK+10
+ LDA INWK+10            \ Set (XX15, XX15+1, XX15+2) = nosev
  STA XX15
  LDA INWK+12
- STA Y1
+ STA XX15+1
  LDA INWK+14
- STA X2
- JSR NORM
+ STA XX15+2
 
- LDA XX15
+ JSR NORM               \ Call NORM to normalise the vector in XX15, i.e. nosev
+
+ LDA XX15               \ Set nosev = (XX15, XX15+1, XX15+2)
  STA INWK+10
- LDA Y1
+ LDA XX15+1
  STA INWK+12
- LDA X2
+ LDA XX15+2
  STA INWK+14
- LDY #&04
- LDA XX15
- AND #&60
+
+ LDY #4                 \ Set Y = 4
+
+ LDA XX15               \ Set A = nosev_x, and if the top two magnitude bits
+ AND #%01100000         \ are both clear, jump to TI1 with A = 0, Y = 4
  BEQ TI1
 
- LDX #&02
- LDA #&00
- JSR TIS3
+ LDX #2                 \ Otherwise nosev_x is big, so set up the index values
+ LDA #0                 \ to pass to TIS3
 
- STA INWK+16
+ JSR TIS3               \ Call TIS3 with X = 2, Y = 4, A = 0, to set roofv_x =
+ STA INWK+16            \ -(nosev_y * roofv_y + nosev_z * roofv_z) / nosev_x
 
 .TI3
 
- LDA INWK+16
+ LDA INWK+16            \ Set (XX15, XX15+1, XX15+2) = roofv
  STA XX15
  LDA INWK+18
- STA Y1
+ STA XX15+1
  LDA INWK+20
- STA X2
- JSR NORM
+ STA XX15+2
 
- LDA XX15
+ JSR NORM               \ Call NORM to normalise the vector in XX15, i.e. roofv
+
+ LDA XX15               \ Set roofv = (XX15, XX15+1, XX15+2)
  STA INWK+16
- LDA Y1
+ LDA XX15+1
  STA INWK+18
- LDA X2
+ LDA XX15+2
  STA INWK+20
- LDA INWK+12
+
+ LDA INWK+12            \ Set Q = nosev_y
  STA Q
- LDA INWK+20
- JSR MULT12
 
- LDX INWK+14
- LDA INWK+18
- JSR TIS1
+ LDA INWK+20            \ Set A = roofv_z
 
- EOR #&80
- STA INWK+22
- LDA INWK+16
- JSR MULT12
+ JSR MULT12             \ Set (S R) = Q * A = nosev_y * roofv_z
 
- LDX INWK+10
- LDA INWK+20
- JSR TIS1
+ LDX INWK+14            \ Set X = nosev_z
 
- EOR #&80
- STA INWK+24
- LDA INWK+18
- JSR MULT12
+ LDA INWK+18            \ Set A = roofv_y
 
- LDX INWK+12
- LDA INWK+16
- JSR TIS1
+ JSR TIS1               \ Set (A ?) = (-X * A + (S R)) / 96
+                        \        = (-nosev_z * roofv_y + nosev_y * roofv_z) / 96
+                        \
+                        \ This also sets Q = nosev_z
 
- EOR #&80
- STA INWK+26
- LDA #&00
- LDX #&0E
+ EOR #%10000000         \ Set sidev_x = -A
+ STA INWK+22            \        = (nosev_z * roofv_y - nosev_y * roofv_z) / 96
+
+ LDA INWK+16            \ Set A = roofv_x
+
+ JSR MULT12             \ Set (S R) = Q * A = nosev_z * roofv_x
+
+ LDX INWK+10            \ Set X = nosev_x
+
+ LDA INWK+20            \ Set A = roofv_z
+
+ JSR TIS1               \ Set (A ?) = (-X * A + (S R)) / 96
+                        \        = (-nosev_x * roofv_z + nosev_z * roofv_x) / 96
+                        \
+                        \ This also sets Q = nosev_x
+
+ EOR #%10000000         \ Set sidev_y = -A
+ STA INWK+24            \        = (nosev_x * roofv_z - nosev_z * roofv_x) / 96
+
+ LDA INWK+18            \ Set A = roofv_y
+
+ JSR MULT12             \ Set (S R) = Q * A = nosev_x * roofv_y
+
+ LDX INWK+12            \ Set X = nosev_y
+
+ LDA INWK+16            \ Set A = roofv_x
+
+ JSR TIS1               \ Set (A ?) = (-X * A + (S R)) / 96
+                        \        = (-nosev_y * roofv_x + nosev_x * roofv_y) / 96
+
+ EOR #%10000000         \ Set sidev_z = -A
+ STA INWK+26            \        = (nosev_y * roofv_x - nosev_x * roofv_y) / 96
+
+ LDA #0                 \ Set A = 0 so we can clear the low bytes of the
+                        \ orientation vectors
+
+ LDX #14                \ We want to clear the low bytes, so start from sidev_y
+                        \ at byte #9+14 (we clear all except sidev_z_lo, though
+                        \ I suspect this is in error and that X should be 16)
 
 .TIL1
 
- STA INWK+9,X
- DEX
- DEX
- BPL TIL1
+ STA INWK+9,X           \ Set the low byte in byte #9+X to zero
 
- RTS
+ DEX                    \ Set X = X - 2 to jump down to the next low byte
+ DEX
+
+ BPL TIL1               \ Loop back until we have zeroed all the low bytes
+
+ RTS                    \ Return from the subroutine
+
+\ ******************************************************************************
+\
+\       Name: TIS2
+\       Type: Subroutine
+\   Category: Maths (Arithmetic)
+\    Summary: Calculate A = A / Q
+\  Deep dive: Shift-and-subtract division
+\
+\ ------------------------------------------------------------------------------
+\
+\ Calculate the following division, where A is a sign-magnitude number and Q is
+\ a positive integer:
+\
+\   A = A / Q
+\
+\ The value of A is returned as a sign-magnitude number with 96 representing 1,
+\ and the maximum value returned is 1 (i.e. 96). This routine is used when
+\ normalising vectors, where we represent fractions using integers, so this
+\ gives us an approximation to two decimal places.
+\
+\ ******************************************************************************
 
 .TIS2
 
- TAY
- AND #&7F
- CMP Q
- BCS TI4
+ TAY                    \ Store the argument A in Y
 
- LDX #&FE
- STX T
+ AND #%01111111         \ Strip the sign bit from the argument, so A = |A|
+
+ CMP Q                  \ If A >= Q then jump to TI4 to return a 1 with the
+ BCS TI4                \ correct sign
+
+ LDX #%11111110         \ Set T to have bits 1-7 set, so we can rotate through 7
+ STX T                  \ loop iterations, getting a 1 each time, and then
+                        \ getting a 0 on the 8th iteration... and we can also
+                        \ use T to catch our result bits into bit 0 each time
 
 .TIL2
 
- ASL A
- CMP Q
- BCC L6F65
+ ASL A                  \ Shift A to the left
 
- SBC Q
+ CMP Q                  \ If A < Q skip the following subtraction
+ BCC P%+4
 
-.L6F65
+ SBC Q                  \ A >= Q, so set A = A - Q
+                        \
+                        \ Going into this subtraction we know the C flag is
+                        \ set as we passed through the BCC above, and we also
+                        \ know that A >= Q, so the C flag will still be set once
+                        \ we are done
 
- ROL T
- BCS TIL2
+ ROL T                  \ Rotate the counter in T to the left, and catch the
+                        \ result bit into bit 0 (which will be a 0 if we didn't
+                        \ do the subtraction, or 1 if we did)
 
- LDA T
+ BCS TIL2               \ If we still have set bits in T, loop back to TIL2 to
+                        \ do the next iteration of 7
+
+                        \ We've done the division and now have a result in the
+                        \ range 0-255 here, which we need to reduce to the range
+                        \ 0-96. We can do that by multiplying the result by 3/8,
+                        \ as 256 * 3/8 = 96
+
+ LDA T                  \ Set T = T / 4
  LSR A
  LSR A
  STA T
- LSR A
- ADC T
+
+ LSR A                  \ Set T = T / 8 + T / 4
+ ADC T                  \       = 3T / 8
  STA T
- TYA
- AND #&80
- ORA T
- RTS
+
+ TYA                    \ Fetch the sign bit of the original argument A
+ AND #%10000000
+
+ ORA T                  \ Apply the sign bit to T
+
+ RTS                    \ Return from the subroutine
 
 .TI4
 
- TYA
- AND #&80
- ORA #&60
- RTS
+ TYA                    \ Fetch the sign bit of the original argument A
+ AND #%10000000
+
+ ORA #96                \ Apply the sign bit to 96 (which represents 1)
+
+ RTS                    \ Return from the subroutine
+
+\ ******************************************************************************
+\
+\       Name: TIS3
+\       Type: Subroutine
+\   Category: Maths (Arithmetic)
+\    Summary: Calculate -(nosev_1 * roofv_1 + nosev_2 * roofv_2) / nosev_3
+\
+\ ------------------------------------------------------------------------------
+\
+\ Calculate the following expression:
+\
+\   A = -(nosev_1 * roofv_1 + nosev_2 * roofv_2) / nosev_3
+\
+\ where 1, 2 and 3 are x, y, or z, depending on the values of X, Y and A. This
+\ routine is called with the following values:
+\
+\   X = 0, Y = 2, A = 4 ->
+\         A = -(nosev_x * roofv_x + nosev_y * roofv_y) / nosev_z
+\
+\   X = 0, Y = 4, A = 2 ->
+\         A = -(nosev_x * roofv_x + nosev_z * roofv_z) / nosev_y
+\
+\   X = 2, Y = 4, A = 0 ->
+\         A = -(nosev_y * roofv_y + nosev_z * roofv_z) / nosev_x
+\
+\ Arguments:
+\
+\   X                   Index 1 (0 = x, 2 = y, 4 = z)
+\
+\   Y                   Index 2 (0 = x, 2 = y, 4 = z)
+\
+\   A                   Index 3 (0 = x, 2 = y, 4 = z)
+\
+\ ******************************************************************************
 
 .TIS3
 
- STA P+2
- LDA INWK+10,X
+ STA P+2                \ Store P+2 in A for later
+
+ LDA INWK+10,X          \ Set Q = nosev_x_hi (plus X)
  STA Q
- LDA INWK+16,X
- JSR MULT12
 
+ LDA INWK+16,X          \ Set A = roofv_x_hi (plus X)
+
+ JSR MULT12             \ Set (S R) = Q * A
+                        \           = nosev_x_hi * roofv_x_hi
+
+ LDX INWK+10,Y          \ Set Q = nosev_x_hi (plus Y)
+ STX Q
+
+ LDA INWK+16,Y          \ Set A = roofv_x_hi (plus Y)
+
+ JSR MAD                \ Set (A X) = Q * A + (S R)
+                        \           = (nosev_x,X * roofv_x,X) +
+                        \             (nosev_x,Y * roofv_x,Y)
+
+ STX P                  \ Store low byte of result in P, so result is now in
+                        \ (A P)
+
+ LDY P+2                \ Set Q = roofv_x_hi (plus argument A)
  LDX INWK+10,Y
  STX Q
- LDA INWK+16,Y
- JSR MAD
 
- STX P
- LDY P+2
- LDX INWK+10,Y
- STX Q
- EOR #&80
- STA P+1
- EOR Q
- AND #&80
- STA T
- LDA #&00
- LDX #&10
- ASL P
+ EOR #%10000000         \ Flip the sign of A
+
+                        \ Fall through into DIVDT to do:
+                        \
+                        \   (P+1 A) = (A P) / Q
+                        \
+                        \     = -((nosev_x,X * roofv_x,X) +
+                        \         (nosev_x,Y * roofv_x,Y))
+                        \       / nosev_x,A
+
+\ ******************************************************************************
+\
+\       Name: DVIDT
+\       Type: Subroutine
+\   Category: Maths (Arithmetic)
+\    Summary: Calculate (P+1 A) = (A P) / Q
+\
+\ ------------------------------------------------------------------------------
+\
+\ Calculate the following integer division between sign-magnitude numbers:
+\
+\   (P+1 A) = (A P) / Q
+\
+\ This uses the same shift-and-subtract algorithm as TIS2.
+\
+\ ******************************************************************************
+
+.DVIDT
+
+ STA P+1                \ Set P+1 = A, so P(1 0) = (A P)
+
+ EOR Q                  \ Set T = the sign bit of A EOR Q, so it's 1 if A and Q
+ AND #%10000000         \ have different signs, i.e. it's the sign of the result
+ STA T                  \ of A / Q
+
+ LDA #0                 \ Set A = 0 for us to build a result
+
+ LDX #16                \ Set a counter in X to count the 16 bits in P(1 0)
+
+ ASL P                  \ Shift P(1 0) left
  ROL P+1
- ASL Q
+
+ ASL Q                  \ Clear the sign bit of Q the C flag at the same time
  LSR Q
 
 .DVL2
 
- ROL A
- CMP Q
- BCC L6FBA
+ ROL A                  \ Shift A to the left
 
- SBC Q
+ CMP Q                  \ If A < Q skip the following subtraction
+ BCC P%+4
 
-.L6FBA
+ SBC Q                  \ Set A = A - Q
+                        \
+                        \ Going into this subtraction we know the C flag is
+                        \ set as we passed through the BCC above, and we also
+                        \ know that A >= Q, so the C flag will still be set once
+                        \ we are done
 
- ROL P
- ROL P+1
- DEX
- BNE DVL2
+ ROL P                  \ Rotate P(1 0) to the left, and catch the result bit
+ ROL P+1                \ into the C flag (which will be a 0 if we didn't
+                        \ do the subtraction, or 1 if we did)
 
- LDA P
- ORA T
- RTS
+ DEX                    \ Decrement the loop counter
 
- EQUB &02
+ BNE DVL2               \ Loop back for the next bit until we have done all 16
+                        \ bits of P(1 0)
 
- EQUB &0F,&31,&32,&33,&34,&35,&36,&37
- EQUB &38,&39,&30,&31,&32,&33,&34,&35
- EQUB &36,&37
+ LDA P                  \ Set A = P so the low byte is in the result in A
+
+ ORA T                  \ Set A to the correct sign bit that we set in T above
+
+ RTS                    \ Return from the subroutine
+
+\ ******************************************************************************
+\
+\       Name: KTRAN
+\       Type: Variable
+\   Category: Keyboard
+\    Summary: The key logger buffer that gets updated by the OSWORD 240 command
+\
+\ ------------------------------------------------------------------------------
+\
+\ KTRAN is a buffer that is filled with key logger information by the KEYBOARD
+\ routine in the I/O processor, which is run when the parasite sends an OSWORD
+\ &F0 command to the I/O processor. The buffer contains details of keys being
+\ pressed, with KTRAN being filled with bytes #2 to #14 from the KEYBOARD
+\ routine (because KEYBOARD is called with OSSC pointing to buf, and buf is
+\ equal to KTRAN - 2).
+\
+\ The key logger buffer is filled as follows:
+\
+\   KTRAN + 0           Internal key number of any non-primary flight control
+\                       key that is being pressed
+\
+\   KTRAN + 1           "?" is being pressed (0 = no, &FF = yes)
+\
+\   KTRAN + 2           Space is being pressed (0 = no, &FF = yes)
+\
+\   KTRAN + 3           "<" is being pressed (0 = no, &FF = yes)
+\
+\   KTRAN + 4           ">" is being pressed (0 = no, &FF = yes)
+\
+\   KTRAN + 5           "X" is being pressed (0 = no, &FF = yes)
+\
+\   KTRAN + 6           "S" is being pressed (0 = no, &FF = yes)
+\
+\   KTRAN + 7           "A" is being pressed (0 = no, &FF = yes)
+\
+\   KTRAN + 8           Joystick X value (high byte)
+\
+\   KTRAN + 9           Joystick Y value (high byte)
+\
+\   KTRAN + 10          Bitstik rotation value (high byte)
+\
+\   KTRAN + 12          Joystick 1 fire button is being pressed (Bit 4 set = no,
+\                       Bit 4 clear = yes)
+\
+\ Other entry points:
+\
+\   buf                 The two OSWORD size bytes for transmitting the key
+\                       logger from the I/O processor to the parasite
+\
+\ ******************************************************************************
+
+.buf
+
+ EQUB 2                 \ Transmit 2 bytes as part of this command
+
+ EQUB 15                \ Receive 15 bytes as part of this command
+
+.KTRAN
+
+ EQUS "1234567890"      \ A 17-byte buffer to hold the key logger data from the
+ EQUS "1234567"         \ KEYBOARD routine in the I/O processor (note that only
+                        \ 12 of these bytes are actually updated by the KEYBOARD
+                        \ routine)
+
+\ ******************************************************************************
+\
+\ Save output/ELTF.bin
+\
+\ ******************************************************************************
+
+PRINT "ELITE F"
+PRINT "Assembled at ", ~CODE_F%
+PRINT "Ends at ", ~P%
+PRINT "Code size is ", ~(P% - CODE_F%)
+PRINT "Execute at ", ~LOAD%
+PRINT "Reload at ", ~LOAD_F%
+
+PRINT "S.ELTF ", ~CODE_F%, " ", ~P%, " ", ~LOAD%, " ", ~LOAD_F%
+\SAVE "output/ELTF.bin", CODE_F%, P%, LOAD%
+
+\ ******************************************************************************
+\
+\ ELITE G FILE
+\
+\ ******************************************************************************
+
+CODE_G% = P%
+LOAD_G% = LOAD% + P% - CODE%
+
+\ ******************************************************************************
+\
+\       Name: SHPPT
+\       Type: Subroutine
+\   Category: Drawing ships
+\    Summary: Draw a distant ship as a point rather than a full wireframe
+\
+\ ******************************************************************************
 
 .SHPPT
 
- JSR PROJ
+ JSR PROJ               \ Project the ship onto the screen, returning:
+                        \
+                        \   * K3(1 0) = the screen x-coordinate
+                        \   * K4(1 0) = the screen y-coordinate
+                        \   * A = K4+1
 
- ORA K3+1
- BNE nono
+ ORA K3+1               \ If either of the high bytes of the screen coordinates
+ BNE nono               \ are non-zero, jump to nono as the ship is off-screen
 
- LDA K4
- CMP #&BE
- BCS nono
+ LDA K4                 \ Set A = the y-coordinate of the dot
 
- JSR Shpt
+ CMP #Y*2-2             \ If the y-coordinate is bigger than the y-coordinate of
+ BCS nono               \ the bottom of the screen, jump to nono as the ship's
+                        \ dot is off the bottom of the space view
 
- LDA K4
- CLC
- ADC #&01
- JSR Shpt
+ JSR Shpt               \ ???
 
- LDA #&08
- ORA INWK+31
- STA INWK+31
- JMP LL155
+ LDA K4                 \ Set A = y-coordinate of dot + 1 (so this is the second
+ CLC                    \ row of the two-pixel-high dot) ???
+ ADC #1
+
+ JSR Shpt               \ ???
+
+ LDA #%00001000         \ Set bit 3 of the ship's byte #31 to record that we
+ ORA XX1+31             \ have now drawn something on-screen for this ship
+ STA XX1+31
+
+ JMP LL155              \ ???
 
 .nono
 
- LDA #&F7
- AND INWK+31
- STA INWK+31
- JMP LL155
+ LDA #%11110111         \ Clear bit 3 of the ship's byte #31 to record that
+ AND XX1+31             \ nothing is being drawn on-screen for this ship
+ STA XX1+31
+
+ JMP LL155              \ ???
 
 .Shpt
 
- STA Y1
+ STA Y1                 \ ???
  STA Y2
- LDA K3
+
+ LDA K3                 \ Set A = screen x-coordinate of the ship dot
+
  STA XX15
  CLC
  ADC #&03
@@ -35409,85 +36298,176 @@ ENDIF
 .L7012
 
  STA X2
- JMP L78F8
+ JMP LLX30
+
+\ ******************************************************************************
+\
+\       Name: LL5
+\       Type: Subroutine
+\   Category: Maths (Arithmetic)
+\    Summary: Calculate Q = SQRT(R Q)
+\  Deep dive: Calculating square roots
+\
+\ ------------------------------------------------------------------------------
+\
+\ Calculate the following square root:
+\
+\   Q = SQRT(R Q)
+\
+\ ******************************************************************************
 
 .LL5
 
- LDY R
+ LDY R                  \ Set (Y S) = (R Q)
  LDA Q
  STA S
- LDX #&00
- STX Q
- LDA #&08
+
+                        \ So now to calculate Q = SQRT(Y S)
+
+ LDX #0                 \ Set X = 0, to hold the remainder
+
+ STX Q                  \ Set Q = 0, to hold the result
+
+ LDA #8                 \ Set T = 8, to use as a loop counter
  STA T
 
 .LL6
 
- CPX Q
+ CPX Q                  \ If X < Q, jump to LL7
  BCC LL7
 
- BNE LL8
+ BNE LL8                \ If X > Q, jump to LL8
 
- CPY #&40
- BCC LL7
+ CPY #64                \ If Y < 64, jump to LL7 with the C flag clear,
+ BCC LL7                \ otherwise fall through into LL8 with the C flag set
 
 .LL8
 
- TYA
- SBC #&40
- TAY
- TXA
+ TYA                    \ Set Y = Y - 64
+ SBC #64                \
+ TAY                    \ This subtraction will work as we know C is set from
+                        \ the BCC above, and the result will not underflow as we
+                        \ already checked that Y >= 64, so the C flag is also
+                        \ set for the next subtraction
+
+ TXA                    \ Set X = X - Q
  SBC Q
  TAX
 
 .LL7
 
- ROL Q
- ASL S
- TYA
- ROL A
- TAY
- TXA
- ROL A
- TAX
- ASL S
- TYA
- ROL A
- TAY
- TXA
- ROL A
- TAX
- DEC T
- BNE LL6
+ ROL Q                  \ Shift the result in Q to the left, shifting the C flag
+                        \ into bit 0 and bit 7 into the C flag
 
- RTS
+ ASL S                  \ Shift the dividend in (Y S) to the left, inserting
+ TYA                    \ bit 7 from above into bit 0
+ ROL A
+ TAY
+
+ TXA                    \ Shift the remainder in X to the left
+ ROL A
+ TAX
+
+ ASL S                  \ Shift the dividend in (Y S) to the left
+ TYA
+ ROL A
+ TAY
+
+ TXA                    \ Shift the remainder in X to the left
+ ROL A
+ TAX
+
+ DEC T                  \ Decrement the loop counter
+
+ BNE LL6                \ Loop back to LL6 until we have done 8 loops
+
+ RTS                    \ Return from the subroutine
+
+\ ******************************************************************************
+\
+\       Name: LL28
+\       Type: Subroutine
+\   Category: Maths (Arithmetic)
+\    Summary: Calculate R = 256 * A / Q
+\  Deep dive: Shift-and-subtract division
+\
+\ ------------------------------------------------------------------------------
+\
+\ Calculate the following, where A < Q:
+\
+\   R = 256 * A / Q
+\
+\ This is a sister routine to LL61, which does the division when A >= Q.
+\
+\ If A >= Q then 255 is returned and the C flag is set to indicate an overflow
+\ (the C flag is clear if the division was a success).
+\
+\ The result is returned in one byte as the result of the division multiplied
+\ by 256, so we can return fractional results using integers.
+\
+\ This routine uses the same logarithm algorithm that's documented in FMLTU,
+\ except it subtracts the logarithm values, to do a division instead of a
+\ multiplication.
+\
+\ Returns:
+\
+\   C flag              Set if the answer is too big for one byte, clear if the
+\                       division was a success
+\
+\ Other entry points:
+\
+\   LL28+4              Skips the A >= Q check and always returns with C flag
+\                       cleared, so this can be called if we know the division
+\                       will work
+\
+\   LL31                Skips the A >= Q check and does not set the R counter,
+\                       so this can be used for jumping straight into the
+\                       division loop if R is already set to 254 and we know the
+\                       division will work
+\
+\ ******************************************************************************
 
 .LL28
 
- CMP Q
- BCS LL2
+ CMP Q                  \ If A >= Q, then the answer will not fit in one byte,
+ BCS LL2                \ so jump to LL2 to return 255
 
- STA widget
- TAX
- BEQ LLfix
+ STA widget             \ Store A in widget, so now widget = argument A
 
- LDA logL,X
- LDX Q
- SEC
- SBC logL,X
- LDX widget
+ TAX                    \ Transfer A into X, so now X = argument A
+
+ BEQ LLfix              \ If A = 0, jump to LLfix to return a result of 0, as
+                        \ 0 * Q / 256 is always 0
+
+                        \ We now want to calculate log(A) + log(Q), first adding
+                        \ the low bytes (from the logL table), and then the high
+                        \ bytes (from the log table)
+
+ LDA logL,X             \ Set A = low byte of log(X)
+                        \       = low byte of log(A) (as we set X to A above)
+
+ LDX Q                  \ Set X = Q
+
+ SEC                    \ Set A = A - low byte of log(Q)
+ SBC logL,X             \       = low byte of log(A) - low byte of log(Q)
+
+ LDX widget             \ Set A = high byte of log(A) - high byte of log(Q)
  LDA log,X
  LDX Q
  SBC log,X
- BCS LL2
 
- TAX
- LDA antilog,X
+ BCS LL2                \ If the subtraction fitted into one byte and didn't
+                        \ underflow, then log(A) - log(Q) < 256, so we jump to
+                        \ LL2 return a result of 255
+
+ TAX                    \ Otherwise we return the A-th entry from the antilog
+ LDA antilog,X          \ table
 
 .LLfix
 
- STA R
- RTS
+ STA R                  \ Set the result in R to the value of A
+
+ RTS                    \ Return from the subroutine
 
  BCS LL2
 
@@ -35496,137 +36476,326 @@ ENDIF
 
 .LL31
 
- ASL A
- BCS LL29
+ ASL A                  \ Shift A to the left
 
- CMP Q
- BCC L7082
+ BCS LL29               \ If bit 7 of A was set, then jump straight to the
+                        \ subtraction
 
- SBC Q
+ CMP Q                  \ If A < Q, skip the following subtraction
+ BCC P%+4
 
-.L7082
+ SBC Q                  \ A >= Q, so set A = A - Q
 
- ROL R
- BCS LL31
+ ROL R                  \ Rotate the counter in R to the left, and catch the
+                        \ result bit into bit 0 (which will be a 0 if we didn't
+                        \ do the subtraction, or 1 if we did)
 
- RTS
+ BCS LL31               \ If we still have set bits in R, loop back to LL31 to
+                        \ do the next iteration of 7
+
+ RTS                    \ R left with remainder of division
 
 .LL29
 
- SBC Q
- SEC
- ROL R
- BCS LL31
+ SBC Q                  \ A >= Q, so set A = A - Q
 
- LDA R
- RTS
+ SEC                    \ Set the C flag to rotate into the result in R
+
+ ROL R                  \ Rotate the counter in R to the left, and catch the
+                        \ result bit into bit 0 (which will be a 0 if we didn't
+                        \ do the subtraction, or 1 if we did)
+
+ BCS LL31               \ If we still have set bits in R, loop back to LL31 to
+                        \ do the next iteration of 7
+
+ LDA R                  \ Set A to the remainder in R
+
+ RTS                    \ Return from the subroutine with R containing the
+                        \ remainder of the division
 
 .LL2
 
- LDA #&FF
- STA R
- RTS
+ LDA #255               \ The division is very close to 1, so return the closest
+ STA R                  \ possible answer to 256, i.e. R = 255
+
+ RTS                    \ Return from the subroutine
+
+\ ******************************************************************************
+\
+\       Name: LL38
+\       Type: Subroutine
+\   Category: Maths (Arithmetic)
+\    Summary: Calculate (S A) = (S R) + (A Q)
+\
+\ ------------------------------------------------------------------------------
+\
+\ Calculate the following between sign-magnitude numbers:
+\
+\   (S A) = (S R) + (A Q)
+\
+\ where the sign bytes only contain the sign bits, not magnitudes.
+\
+\ Returns:
+\
+\   C flag              Set if the addition overflowed, clear otherwise
+\
+\ ******************************************************************************
 
 .LL38
 
- EOR S
- BMI LL39
+ EOR S                  \ If the sign of A * S is negative, skip to LL35, as
+ BMI LL39               \ A and S have different signs so we need to subtract
 
- LDA Q
- CLC
+ LDA Q                  \ Otherwise set A = R + Q, which is the result we need,
+ CLC                    \ as S already contains the correct sign
  ADC R
- RTS
+
+ RTS                    \ Return from the subroutine
 
 .LL39
 
- LDA R
+ LDA R                  \ Set A = R - Q
  SEC
  SBC Q
- BCC L70A9
 
- CLC
- RTS
+ BCC P%+4               \ If the subtraction underflowed, skip the next two
+                        \ instructions so we can negate the result
 
-.L70A9
+ CLC                    \ Otherwise the result is correct, and S contains the
+                        \ correct sign of the result as R is the dominant side
+                        \ of the subtraction, so clear the C flag
 
- PHA
- LDA S
- EOR #&80
+ RTS                    \ And return from the subroutine
+
+                        \ If we get here we need to negate both the result and
+                        \ the sign in S, as both are the wrong sign
+
+ PHA                    \ Store the result of the subtraction on the stack
+
+ LDA S                  \ Flip the sign of S
+ EOR #%10000000
  STA S
- PLA
- EOR #&FF
- ADC #&01
- RTS
+
+ PLA                    \ Restore the subtraction result into A
+
+ EOR #%11111111         \ Negate the result in A using two's complement, i.e.
+ ADC #1                 \ set A = ~A + 1
+
+ RTS                    \ Return from the subroutine
+
+\ ******************************************************************************
+\
+\       Name: LL51
+\       Type: Subroutine
+\   Category: Maths (Geometry)
+\    Summary: Calculate the dot product of XX15 and XX16
+\
+\ ------------------------------------------------------------------------------
+\
+\ Calculate following dot products:
+\
+\   XX12(1 0) = XX15(5 0) . XX16(5 0)
+\   XX12(3 2) = XX15(5 0) . XX16(11 6)
+\   XX12(5 4) = XX15(5 0) . XX16(12 17)
+\
+\ storing the results as sign-magnitude numbers in XX12 through XX12+5.
+\
+\ When called from part 5 of LL9, XX12 contains the vector [x y z] to the ship
+\ we're drawing, and XX16 contains the orientation vectors, so it returns:
+\
+\   [ x ]   [ sidev_x ]         [ x ]   [ roofv_x ]         [ x ]   [ nosev_x ]
+\   [ y ] . [ sidev_y ]         [ y ] . [ roofv_y ]         [ y ] . [ nosev_y ]
+\   [ z ]   [ sidev_z ]         [ z ]   [ roofv_z ]         [ z ]   [ nosev_z ]
+\
+\ When called from part 6 of LL9, XX12 contains the vector [x y z] of the vertex
+\ we're analysing, and XX16 contains the transposed orientation vectors with
+\ each of them containing the x, y and z elements of the original vectors, so it
+\ returns:
+\
+\   [ x ]   [ sidev_x ]         [ x ]   [ sidev_y ]         [ x ]   [ sidev_z ]
+\   [ y ] . [ roofv_x ]         [ y ] . [ roofv_y ]         [ y ] . [ roofv_z ]
+\   [ z ]   [ nosev_x ]         [ z ]   [ nosev_y ]         [ z ]   [ nosev_z ]
+\
+\ Arguments:
+\
+\   XX15(1 0)           The ship (or vertex)'s x-coordinate as (x_sign x_lo)
+\
+\   XX15(3 2)           The ship (or vertex)'s y-coordinate as (y_sign y_lo)
+\
+\   XX15(5 4)           The ship (or vertex)'s z-coordinate as (z_sign z_lo)
+\
+\   XX16 to XX16+5      The scaled sidev (or _x) vector, with:
+\
+\                         * x, y, z magnitudes in XX16, XX16+2, XX16+4
+\
+\                         * x, y, z signs in XX16+1, XX16+3, XX16+5
+\
+\   XX16+6 to XX16+11   The scaled roofv (or _y) vector, with:
+\
+\                         * x, y, z magnitudes in XX16+6, XX16+8, XX16+10
+\
+\                         * x, y, z signs in XX16+7, XX16+9, XX16+11
+\
+\   XX16+12 to XX16+17  The scaled nosev (or _z) vector, with:
+\
+\                         * x, y, z magnitudes in XX16+12, XX16+14, XX16+16
+\
+\                         * x, y, z signs in XX16+13, XX16+15, XX16+17
+\
+\ Returns:
+\
+\   XX12(1 0)           The dot product of [x y z] vector with the sidev (or _x)
+\                       vector, with the sign in XX12+1 and magnitude in XX12
+\
+\   XX12(3 2)           The dot product of [x y z] vector with the roofv (or _y)
+\                       vector, with the sign in XX12+3 and magnitude in XX12+2
+\
+\   XX12(5 4)           The dot product of [x y z] vector with the nosev (or _z)
+\                       vector, with the sign in XX12+5 and magnitude in XX12+4
+\
+\ ******************************************************************************
 
 .LL51
 
- LDX #&00
- LDY #&00
+ LDX #0                 \ Set X = 0, which will contain the offset of the vector
+                        \ to use in the calculation, increasing by 6 for each
+                        \ new vector
+
+ LDY #0                 \ Set Y = 0, which will contain the offset of the
+                        \ result bytes in XX12, increasing by 2 for each new
+                        \ result
 
 .ll51
 
- LDA XX15
+ LDA XX15               \ Set Q = x_lo
  STA Q
- LDA XX16,X
- JSR FMLTU
 
- STA T
- LDA Y1
+ LDA XX16,X             \ Set A = |sidev_x|
+
+ JSR FMLTU              \ Set T = A * Q / 256
+ STA T                  \       = |sidev_x| * x_lo / 256
+
+ LDA XX15+1             \ Set S to the sign of x_sign * sidev_x
  EOR XX16+1,X
  STA S
- LDA X2
- STA Q
- LDA XX16+2,X
- JSR FMLTU
 
+ LDA XX15+2             \ Set Q = y_lo
  STA Q
- LDA T
- STA R
- LDA Y2
+
+ LDA XX16+2,X           \ Set A = |sidev_y|
+
+ JSR FMLTU              \ Set Q = A * Q / 256
+ STA Q                  \       = |sidev_y| * y_lo / 256
+
+ LDA T                  \ Set R = T
+ STA R                  \       = |sidev_x| * x_lo / 256
+
+ LDA XX15+3             \ Set A to the sign of y_sign * sidev_y
  EOR XX16+3,X
- JSR LL38
 
- STA T
- LDA XX15+4
- STA Q
- LDA XX16+4,X
- JSR FMLTU
+ JSR LL38               \ Set (S T) = (S R) + (A Q)
+ STA T                  \           = |sidev_x| * x_lo + |sidev_y| * y_lo
 
+ LDA XX15+4             \ Set Q = z_lo
  STA Q
- LDA T
- STA R
- LDA XX15+5
+
+ LDA XX16+4,X           \ Set A = |sidev_z|
+
+ JSR FMLTU              \ Set Q = A * Q / 256
+ STA Q                  \       = |sidev_z| * z_lo / 256
+
+ LDA T                  \ Set R = T
+ STA R                  \       = |sidev_x| * x_lo + |sidev_y| * y_lo
+
+ LDA XX15+5             \ Set A to the sign of z_sign * sidev_z
  EOR XX16+5,X
- JSR LL38
 
- STA XX12,Y
+ JSR LL38               \ Set (S A) = (S R) + (A Q)
+                        \           = |sidev_x| * x_lo + |sidev_y| * y_lo
+                        \             + |sidev_z| * z_lo
+
+ STA XX12,Y             \ Store the result in XX12+Y(1 0)
  LDA S
  STA XX12+1,Y
+
+ INY                    \ Set Y = Y + 2
  INY
- INY
- TXA
+
+ TXA                    \ Set X = X + 6
  CLC
- ADC #&06
+ ADC #6
  TAX
- CMP #&11
+
+ CMP #17                \ If X < 17, loop back to ll51 for the next vector
  BCC ll51
 
- RTS
+ RTS                    \ Return from the subroutine
+
+\ ******************************************************************************
+\
+\       Name: LL9 (Part 1 of 12)
+\       Type: Subroutine
+\   Category: Drawing ships
+\    Summary: Draw ship: Check if ship is exploding, check if ship is in front
+\  Deep dive: Drawing ships
+\
+\ ------------------------------------------------------------------------------
+\
+\ This routine draws the current ship on the screen. This part checks to see if
+\ the ship is exploding, or if it should start exploding, and if it does it sets
+\ things up accordingly. It also does some basic checks to see if we can see the
+\ ship, and if not it removes it from the screen.
+\
+\ In this code, XX1 is used to point to the current ship's data block at INWK
+\ (the two labels are interchangeable).
+\
+\ Arguments:
+\
+\   XX1                 XX1 shares its location with INWK, which contains the
+\                       zero-page copy of the data block for this ship from the
+\                       K% workspace
+\
+\   INF                 The address of the data block for this ship in workspace
+\                       K%
+\
+\   XX19(1 0)           XX19(1 0) shares its location with INWK(34 33), which
+\                       contains the ship line heap address pointer
+\
+\   XX0                 The address of the blueprint for this ship
+\
+\ Other entry points:
+\
+\   EE51                Remove the current ship from the screen, called from
+\                       SHPPT before drawing the ship as a point
+\
+\   LL81+2              Draw the contents of the ship lone heap, used to draw
+\                       the ship as a dot from SHPPT
+\
+\   LL10-1              Contains an RTS
+\
+\ ******************************************************************************
 
 .LL25
 
- JMP PLANET
+ JMP PLANET             \ Jump to the PLANET routine, returning from the
+                        \ subroutine using a tail call
 
 .LL9
 
- LDX TYPE
- BMI LL25
+ LDX TYPE               \ If the ship type is negative then this indicates a
+ BMI LL25               \ planet or sun, so jump to PLANET via LL25 above
 
- LDA shpcol,X
- STA COL
- LDA #&1F
- STA XX4
- LDY #&01
+ LDA shpcol,X           \ Set A to the ship colour for this type, from the X-th
+                        \ entry in the shpcol table
+
+ STA COL                \ Switch to this colour
+
+ LDA #31                \ Set XX4 = 31 to store the ship's distance for later
+ STA XX4                \ comparison with the visibility distance. We will
+                        \ update this value below with the actual ship's
+                        \ distance if it turns out to be visible on-screen
+
+ LDY #&01               \ ???
  STY XX14
  DEY
  LDA #&08
@@ -35640,1438 +36809,3088 @@ ENDIF
 
  LDA (XX19),Y
  STA XX14+1
- LDA NEWB
- BMI EE51
 
- LDA #&20
- BIT INWK+31
+ LDA NEWB               \ If bit 7 of the ship's NEWB flags is set, then the
+ BMI EE51               \ ship has been scooped or has docked, so jump down to
+                        \ EE51 to redraw its wireframe, to remove it from the
+                        \ screen
+
+ LDA #%00100000         \ If bit 5 of the ship's byte #31 is set, then the ship
+ BIT XX1+31             \ is currently exploding, so jump down to EE28
  BNE EE28
 
- BPL EE28
+ BPL EE28               \ If bit 7 of the ship's byte #31 is clear then the ship
+                        \ has not just been killed, so jump down to EE28
 
- ORA INWK+31
- AND #&3F
- STA INWK+31
- LDA #&00
- LDY #&1C
- STA (INF),Y
- LDY #&1E
- STA (INF),Y
- JSR EE51
+                        \ Otherwise bit 5 is clear and bit 7 is set, so the ship
+                        \ is not yet exploding but it has been killed, so we
+                        \ need to start an explosion
 
- LDY #&01
- LDA #&12
+ ORA XX1+31             \ Clear bits 6 and 7 of the ship's byte #31, to stop the
+ AND #%00111111         \ ship from firing its laser and to mark it as no longer
+ STA XX1+31             \ having just been killed
+
+ LDA #0                 \ Set the ship's acceleration in byte #31 to 0, updating
+ LDY #28                \ the byte in the workspace K% data block so we don't
+ STA (INF),Y            \ have to copy it back from INWK later
+
+ LDY #30                \ Set the ship's pitch counter in byte #30 to 0, to stop
+ STA (INF),Y            \ the ship from pitching
+
+ JSR EE51               \ Call EE51 to remove the ship from the screen
+
+                        \ We now need to set up a new explosion cloud. We
+                        \ initialise it with a size of 18 (which gets increased
+                        \ by 4 every time the cloud gets redrawn), and the
+                        \ explosion count (i.e. the number of particles in the
+                        \ explosion), which go into bytes 1 and 2 of the ship
+                        \ line heap. See DOEXP for more details of explosion
+                        \ clouds
+
+ LDY #1                 \ Set byte #1 of the ship line heap to 18, the initial
+ LDA #18                \ size of the explosion cloud
  STA (XX19),Y
- LDY #&07
- LDA (XX0),Y
- LDY #&02
- STA (XX19),Y
+
+ LDY #7                 \ Fetch byte #7 from the ship's blueprint, which
+ LDA (XX0),Y            \ determines the explosion count (i.e. the number of
+ LDY #2                 \ vertices used as origins for explosion clouds), and
+ STA (XX19),Y           \ store it in byte #2 of the ship line heap
+
+\LDA XX1+32             \ These instructions are commented out in the original
+\AND #&7F               \ source
+
+                        \ The following loop sets bytes 3-6 of the of the ship
+                        \ line heap to random numbers
 
 .EE55
 
- INY
- JSR DORND
+ INY                    \ Increment Y (so the loop starts at 3)
 
- STA (XX19),Y
- CPY #&06
+ JSR DORND              \ Set A and X to random numbers
+
+ STA (XX19),Y           \ Store A in the Y-th byte of the ship line heap
+
+ CPY #6                 \ Loop back until we have randomised the 6th byte
  BNE EE55
 
 .EE28
 
- LDA INWK+8
- BPL LL10
+ LDA XX1+8              \ Set A = z_sign
+
+.EE49
+
+ BPL LL10               \ If A is positive, i.e. the ship is in front of us,
+                        \ jump down to LL10
 
 .LL14
 
- LDA INWK+31
- AND #&20
- BEQ EE51
+                        \ The following removes the ship from the screen by
+                        \ redrawing it (or, if it is exploding, by redrawing the
+                        \ explosion cloud). We call it when the ship is no
+                        \ longer on-screen, is too far away to be fully drawn,
+                        \ and so on
 
- LDA INWK+31
- AND #&F7
- STA INWK+31
- JMP DOEXP
+ LDA XX1+31             \ If bit 5 of the ship's byte #31 is clear, then the
+ AND #%00100000         \ ship is not currently exploding, so jump down to EE51
+ BEQ EE51               \ to redraw its wireframe
+
+ LDA XX1+31             \ The ship is exploding, so clear bit 3 of the ship's
+ AND #%11110111         \ byte #31 to denote that the ship is no longer being
+ STA XX1+31             \ drawn on-screen
+
+ JMP DOEXP              \ Jump to DOEXP to display the explosion cloud, which
+                        \ will remove it from the screen, returning from the
+                        \ subroutine using a tail call
 
 .EE51
 
- LDA #&08
- BIT INWK+31
- BEQ L7186
+ LDA #%00001000         \ If bit 3 of the ship's byte #31 is clear, then there
+ BIT XX1+31             \ is already nothing being shown for this ship, so
+ BEQ LL10-1             \ return from the subroutine (as LL10-1 contains an RTS)
 
- EOR INWK+31
- STA INWK+31
- JMP LL155
+ EOR XX1+31             \ Otherwise flip bit 3 of byte #31 and store it (which
+ STA XX1+31             \ clears bit 3 as we know it was set before the EOR), so
+                        \ this sets this ship as no longer being drawn on-screen
 
-.L7186
+ JMP LL155              \ Jump to LL155 to draw the ship, which removes it from
+                        \ the screen, returning from the subroutine using a
+                        \ tail call
 
- RTS
+\LL24                   \ This label is commented out in the original source,
+                        \ and was presumably used to label the RTS which is
+                        \ actually called by LL10-1 above, not LL24
+
+ RTS                    \ Return from the subroutine
+
+\ ******************************************************************************
+\
+\       Name: LL9 (Part 2 of 12)
+\       Type: Subroutine
+\   Category: Drawing ships
+\    Summary: Draw ship: Check if ship is in field of view, close enough to draw
+\  Deep dive: Drawing ships
+\
+\ ------------------------------------------------------------------------------
+\
+\ This part checks whether the ship is in our field of view, and whether it is
+\ close enough to be fully drawn (if not, we jump to SHPPT to draw it as a dot).
+\
+\ ******************************************************************************
 
 .LL10
 
- LDA INWK+7
- CMP #&C0
- BCS LL14
+ LDA XX1+7              \ Set A = z_hi
 
- LDA INWK
- CMP INWK+6
- LDA INWK+1
- SBC INWK+7
- BCS LL14
+ CMP #192               \ If A >= 192 then the ship is a long way away, so jump
+ BCS LL14               \ to LL14 to remove the ship from the screen
 
- LDA INWK+3
- CMP INWK+6
- LDA INWK+4
- SBC INWK+7
- BCS LL14
+ LDA XX1                \ If x_lo >= z_lo, set the C flag, otherwise clear it
+ CMP XX1+6
 
- LDY #&06
- LDA (XX0),Y
- TAX
- LDA #&FF
- STA XX3,X
- STA XX3+1,X
- LDA INWK+6
+ LDA XX1+1              \ Set A = x_hi - z_hi using the carry from the low
+ SBC XX1+7              \ bytes, which sets the C flag as if we had done a full
+                        \ two-byte subtraction (x_hi x_lo) - (z_hi z_lo)
+
+ BCS LL14               \ If the C flag is set then x >= z, so the ship is
+                        \ further to the side than it is in front of us, so it's
+                        \ outside our viewing angle of 45 degrees, and we jump
+                        \ to LL14 to remove it from the screen
+
+ LDA XX1+3              \ If y_lo >= z_lo, set the C flag, otherwise clear it
+ CMP XX1+6
+
+ LDA XX1+4              \ Set A = y_hi - z_hi using the carry from the low
+ SBC XX1+7              \ bytes, which sets the C flag as if we had done a full
+                        \ two-byte subtraction (y_hi y_lo) - (z_hi z_lo)
+
+ BCS LL14               \ If the C flag is set then y >= z, so the ship is
+                        \ further above us than it is in front of us, so it's
+                        \ outside our viewing angle of 45 degrees, and we jump
+                        \ to LL14 to remove it from the screen
+
+ LDY #6                 \ Fetch byte #6 from the ship's blueprint into X, which
+ LDA (XX0),Y            \ is the number * 4 of the vertex used for the ship's
+ TAX                    \ laser
+
+ LDA #255               \ Set bytes X and X+1 of the XX3 heap to 255. We're
+ STA XX3,X              \ going to use XX3 to store the screen coordinates of
+ STA XX3+1,X            \ all the visible vertices of this ship, so setting the
+                        \ laser vertex to 255 means that if we don't update this
+                        \ vertex with its screen coordinates in parts 6 and 7,
+                        \ this vertex's entry in the XX3 heap will still be 255,
+                        \ which we can check in part 9 to see if the laser
+                        \ vertex is visible (and therefore whether we should
+                        \ draw laser lines if the ship is firing on us)
+
+ LDA XX1+6              \ Set (A T) = (z_hi z_lo)
  STA T
- LDA INWK+7
- LSR A
- ROR T
- LSR A
- ROR T
- LSR A
- ROR T
- LSR A
- BNE LL13
+ LDA XX1+7
 
- LDA T
- ROR A
+ LSR A                  \ Set (A T) = (A T) / 8
+ ROR T
  LSR A
+ ROR T
  LSR A
+ ROR T
+
+ LSR A                  \ If A >> 4 is non-zero, i.e. z_hi >= 16, jump to LL13
+ BNE LL13               \ as the ship is possibly far away enough to be shown as
+                        \ a dot
+
+ LDA T                  \ Otherwise the C flag contains the previous bit 0 of A,
+ ROR A                  \ which could have been set, so rotate A right four
+ LSR A                  \ times so it's in the form %000xxxxx, i.e. z_hi reduced
+ LSR A                  \ to a maximum value of 31
  LSR A
- STA XX4
- BPL LL17
+
+ STA XX4                \ Store A in XX4, which is now the distance of the ship
+                        \ we can use for visibility testing
+
+ BPL LL17               \ Jump down to LL17 (this BPL is effectively a JMP as we
+                        \ know bit 7 of A is definitely clear)
 
 .LL13
 
- LDY #&0D
- LDA (XX0),Y
- CMP INWK+7
- BCS LL17
+                        \ If we get here then the ship is possibly far enough
+                        \ away to be shown as a dot
 
- LDA #&20
- AND INWK+31
- BNE LL17
+ LDY #13                \ Fetch byte #13 from the ship's blueprint, which gives
+ LDA (XX0),Y            \ the ship's visibility distance, beyond which we show
+                        \ the ship as a dot
 
- JMP SHPPT
+ CMP XX1+7              \ If z_hi <= the visibility distance, skip to LL17 to
+ BCS LL17               \ draw the ship fully, rather than as a dot, as it is
+                        \ closer than the visibility distance
+
+ LDA #%00100000         \ If bit 5 of the ship's byte #31 is set, then the
+ AND XX1+31             \ ship is currently exploding, so skip to LL17 to draw
+ BNE LL17               \ the ship's explosion cloud
+
+ JMP SHPPT              \ Otherwise jump to SHPPT to draw the ship as a dot,
+                        \ returning from the subroutine using a tail call
+
+\ ******************************************************************************
+\
+\       Name: LL9 (Part 3 of 12)
+\       Type: Subroutine
+\   Category: Drawing ships
+\    Summary: Draw ship: Set up orientation vector, ship coordinate variables
+\  Deep dive: Drawing ships
+\
+\ ------------------------------------------------------------------------------
+\
+\ This part sets up the following variable blocks:
+\
+\   * XX16 contains the orientation vectors, divided to normalise them
+\
+\   * XX18 contains the ship's x, y and z coordinates in space
+\
+\ ******************************************************************************
 
 .LL17
 
- LDX #&05
+ LDX #5                 \ First we copy the three orientation vectors into XX16,
+                        \ so set up a counter in X for the 6 bytes in each
+                        \ vector
 
 .LL15
 
- LDA INWK+21,X
+ LDA XX1+21,X           \ Copy the X-th byte of sidev to the X-th byte of XX16
  STA XX16,X
- LDA INWK+15,X
- STA XX16+6,X
- LDA INWK+9,X
- STA XX16+12,X
- DEX
- BPL LL15
 
- LDA #&C5
+ LDA XX1+15,X           \ Copy the X-th byte of roofv to XX16+6 to the X-th byte
+ STA XX16+6,X           \ of XX16+6
+
+ LDA XX1+9,X            \ Copy the X-th byte of nosev to XX16+12 to the X-th
+ STA XX16+12,X          \ byte of XX16+12
+
+ DEX                    \ Decrement the counter
+
+ BPL LL15               \ Loop back to copy the next byte of each vector, until
+                        \ we have the following:
+                        \
+                        \   * XX16(1 0) = sidev_x
+                        \   * XX16(3 2) = sidev_y
+                        \   * XX16(5 4) = sidev_z
+                        \
+                        \   * XX16(7 6) = roofv_x
+                        \   * XX16(9 8) = roofv_y
+                        \   * XX16(11 10) = roofv_z
+                        \
+                        \   * XX16(13 12) = nosev_x
+                        \   * XX16(15 14) = nosev_y
+                        \   * XX16(17 16) = nosev_z
+
+ LDA #197               \ Set Q = 197
  STA Q
- LDY #&10
+
+ LDY #16                \ Set Y to be a counter that counts down by 2 each time,
+                        \ starting with 16, then 14, 12 and so on. We use this
+                        \ to work through each of the coordinates in each of the
+                        \ orientation vectors
 
 .LL21
 
- LDA XX16,Y
- ASL A
- LDA XX16+1,Y
- ROL A
- JSR LL28
+ LDA XX16,Y             \ Set A = the low byte of the vector coordinate, e.g.
+                        \ nosev_z_lo when Y = 16
 
- LDX R
- STX XX16,Y
- DEY
- DEY
- BPL LL21
+ ASL A                  \ Shift bit 7 into the C flag
 
- LDX #&08
+ LDA XX16+1,Y           \ Set A = the high byte of the vector coordinate, e.g.
+                        \ nosev_z_hi when Y = 16
+
+ ROL A                  \ Rotate A left, incorporating the C flag, so A now
+                        \ contains the original high byte, doubled, and without
+                        \ a sign bit, e.g. A = |nosev_z_hi| * 2
+
+ JSR LL28               \ Call LL28 to calculate:
+                        \
+                        \   R = 256 * A / Q
+                        \
+                        \ so, for nosev, this would be:
+                        \
+                        \   R = 256 * |nosev_z_hi| * 2 / 197
+                        \     = 2.6 * |nosev_z_hi|
+
+ LDX R                  \ Store R in the low byte's location, so we can keep the
+ STX XX16,Y             \ old, unscaled high byte intact for the sign
+
+ DEY                    \ Decrement the loop counter twice
+ DEY
+
+ BPL LL21               \ Loop back for the next vector coordinate until we have
+                        \ divided them all
+
+                        \ By this point, the vectors have been turned into
+                        \ scaled magnitudes, so we have the following:
+                        \
+                        \   * XX16   = scaled |sidev_x|
+                        \   * XX16+2 = scaled |sidev_y|
+                        \   * XX16+4 = scaled |sidev_z|
+                        \
+                        \   * XX16+6  = scaled |roofv_x|
+                        \   * XX16+8  = scaled |roofv_y|
+                        \   * XX16+10 = scaled |roofv_z|
+                        \
+                        \   * XX16+12 = scaled |nosev_x|
+                        \   * XX16+14 = scaled |nosev_y|
+                        \   * XX16+16 = scaled |nosev_z|
+
+ LDX #8                 \ Next we copy the ship's coordinates into XX18, so set
+                        \ up a counter in X for 9 bytes
 
 .ll91
 
- LDA INWK,X
+ LDA XX1,X              \ Copy the X-th byte from XX1 to XX18
  STA XX18,X
- DEX
- BPL ll91
 
- LDA #&FF
- STA K4+1
- LDY #&0C
- LDA INWK+31
- AND #&20
- BEQ EE29
+ DEX                    \ Decrement the loop counter
 
- LDA (XX0),Y
- LSR A
- LSR A
+ BPL ll91               \ Loop back for the next byte until we have copied all
+                        \ three coordinates
+
+                        \ So we now have the following:
+                        \
+                        \   * XX18(2 1 0) = (x_sign x_hi x_lo)
+                        \
+                        \   * XX18(5 4 3) = (y_sign y_hi y_lo)
+                        \
+                        \   * XX18(8 7 6) = (z_sign z_hi z_lo)
+
+ LDA #255               \ Set the 15th byte of XX2 to 255, so that face 15 is
+ STA XX2+15             \ always visible. No ship definitions actually have this
+                        \ number of faces in the cassette version, but this
+                        \ allows us to force a vertex to always be visible by
+                        \ associating it with face 15 (see the blueprints for
+                        \ the Cobra Mk III at SHIP_COBRA_MK_3 and asteroid at
+                        \ SHIP_ASTEROID for examples)
+
+ LDY #12                \ Set Y = 12 to point to the ship blueprint byte #12,
+
+ LDA XX1+31             \ If bit 5 of the ship's byte #31 is clear, then the
+ AND #%00100000         \ ship is not currently exploding, so jump down to EE29
+ BEQ EE29               \ to skip the following
+
+                        \ Otherwise we fall through to set up the visibility
+                        \ block for an exploding ship
+
+\ ******************************************************************************
+\
+\       Name: LL9 (Part 4 of 12)
+\       Type: Subroutine
+\   Category: Drawing ships
+\    Summary: Draw ship: Set visibility for exploding ship (all faces visible)
+\  Deep dive: Drawing ships
+\
+\ ------------------------------------------------------------------------------
+\
+\ This part sets up the visibility block in XX2 for a ship that is exploding.
+\
+\ The XX2 block consists of one byte for each face in the ship's blueprint,
+\ which holds the visibility of that face. Because the ship is exploding, we
+\ want to set all the faces to be visible. A value of 255 in the visibility
+\ table means the face is visible, so the following code sets each face to 255
+\ and then skips over the face visibility calculations that we would apply to a
+\ non-exploding ship.
+\
+\ ******************************************************************************
+
+ LDA (XX0),Y            \ Fetch byte #12 of the ship's blueprint, which contains
+                        \ the number of faces * 4
+
+ LSR A                  \ Set X = A / 4
+ LSR A                  \       = the number of faces
  TAX
- LDA #&FF
+
+ LDA #255               \ Set A = 255
 
 .EE30
 
- STA K3,X
- DEX
- BPL EE30
+ STA XX2,X              \ Set the X-th byte of XX2 to 255
 
- INX
- STX XX4
+ DEX                    \ Decrement the loop counter
+
+ BPL EE30               \ Loop back for the next byte until there is one byte
+                        \ set to 255 for each face
+
+ INX                    \ Set XX4 = 0 for the distance value we use to test
+ STX XX4                \ for visibility, so we always shows everything
 
 .LL41
 
- JMP LL42
+ JMP LL42               \ Jump to LL42 to skip the face visibility calculations
+                        \ as we don't need to do them now we've set up the XX2
+                        \ block for the explosion
+
+\ ******************************************************************************
+\
+\       Name: LL9 (Part 5 of 12)
+\       Type: Subroutine
+\   Category: Drawing ships
+\    Summary: Draw ship: Calculate the visibility of each of the ship's faces
+\  Deep dive: Drawing ships
+\             Back-face culling
+\
+\ ******************************************************************************
 
 .EE29
 
- LDA (XX0),Y
- BEQ LL41
+ LDA (XX0),Y            \ We set Y to 12 above before jumping down to EE29, so
+                        \ this fetches byte #12 of the ship's blueprint, which
+                        \ contains the number of faces * 4
 
- STA XX20
- LDY #&12
- LDA (XX0),Y
+ BEQ LL41               \ If there are no faces in this ship, jump to LL42 (via
+                        \ LL41) to skip the face visibility calculations
+
+ STA XX20               \ Set A = the number of faces * 4
+
+ LDY #18                \ Fetch byte #18 of the ship's blueprint, which contains
+ LDA (XX0),Y            \ the factor by which we scale the face normals, into X
  TAX
- LDA XX18+7
- TAY
- BEQ LL91
 
-.L723C
+ LDA XX18+7             \ Set A = z_hi
 
- INX
- LSR XX18+4
+.LL90
+
+ TAY                    \ Set Y = z_hi
+
+ BEQ LL91               \ If z_hi = 0 then jump to LL91
+
+                        \ The following is a loop that jumps back to LL90+3,
+                        \ i.e. here. LL90 is only used for this loop, so it's a
+                        \ bit of a strange use of the label here
+
+ INX                    \ Increment the scale factor in X
+
+ LSR XX18+4             \ Divide (y_hi y_lo) by 2
  ROR XX18+3
- LSR XX18+1
+
+ LSR XX18+1             \ Divide (x_hi x_lo) by 2
  ROR XX18
- LSR A
+
+ LSR A                  \ Divide (z_hi z_lo) by 2 (as A contains z_hi)
  ROR XX18+6
- TAY
- BNE L723C
+
+ TAY                    \ Set Y = z_hi
+
+ BNE LL90+3             \ If Y is non-zero, loop back to LL90+3 to divide the
+                        \ three coordinates until z_hi is 0
 
 .LL91
 
- STX XX17
- LDA XX18+8
+                        \ By this point z_hi is 0 and X contains the number of
+                        \ right shifts we had to do, plus the scale factor from
+                        \ the blueprint
+
+ STX XX17               \ Store the updated scale factor in XX17
+
+ LDA XX18+8             \ Set XX15+5 = z_sign
  STA XX15+5
- LDA XX18
+
+ LDA XX18               \ Set XX15(1 0) = (x_sign x_lo)
  STA XX15
  LDA XX18+2
- STA Y1
- LDA XX18+3
- STA X2
- LDA XX18+5
- STA Y2
- LDA XX18+6
- STA XX15+4
- JSR LL51
+ STA XX15+1
 
- LDA XX12
+ LDA XX18+3             \ Set XX15(3 2) = (y_sign y_lo)
+ STA XX15+2
+ LDA XX18+5
+ STA XX15+3
+
+ LDA XX18+6             \ Set XX15+4 = z_lo, so now XX15(5 4) = (z_sign z_lo)
+ STA XX15+4
+
+ JSR LL51               \ Call LL51 to set XX12 to the dot products of XX15 and
+                        \ XX16, which we'll call dot_sidev, dot_roofv and
+                        \ dot_nosev:
+                        \
+                        \   XX12(1 0) = [x y z] . sidev
+                        \             = (dot_sidev_sign dot_sidev_lo)
+                        \             = dot_sidev
+                        \
+                        \   XX12(3 2) = [x y z] . roofv
+                        \             = (dot_roofv_sign dot_roofv_lo)
+                        \             = dot_roofv
+                        \
+                        \   XX12(5 4) = [x y z] . nosev
+                        \             = (dot_nosev_sign dot_nosev_lo)
+                        \             = dot_nosev
+
+ LDA XX12               \ Set XX18(2 0) = dot_sidev
  STA XX18
  LDA XX12+1
  STA XX18+2
- LDA XX12+2
+
+ LDA XX12+2             \ Set XX18(5 3) = dot_roofv
  STA XX18+3
  LDA XX12+3
  STA XX18+5
- LDA XX12+4
+
+ LDA XX12+4             \ Set XX18(8 6) = dot_nosev
  STA XX18+6
  LDA XX12+5
  STA XX18+8
- LDY #&04
- LDA (XX0),Y
- CLC
+
+ LDY #4                 \ Fetch byte #4 of the ship's blueprint, which contains
+ LDA (XX0),Y            \ the low byte of the offset to the faces data
+
+ CLC                    \ Set V = low byte faces offset + XX0
  ADC XX0
  STA V
- LDY #&11
- LDA (XX0),Y
- ADC XX0+1
- STA V+1
- LDY #&00
+
+ LDY #17                \ Fetch byte #17 of the ship's blueprint, which contains
+ LDA (XX0),Y            \ the high byte of the offset to the faces data
+
+ ADC XX0+1              \ Set V+1 = high byte faces offset + XX0+1
+ STA V+1                \
+                        \ So V(1 0) now points to the start of the faces data
+                        \ for this ship
+
+ LDY #0                 \ We're now going to loop through all the faces for this
+                        \ ship, so set a counter in Y, starting from 0, which we
+                        \ will increment by 4 each loop to step through the
+                        \ four bytes of data for each face
 
 .LL86
 
- LDA (V),Y
- STA XX12+1
- AND #&1F
- CMP XX4
- BCS LL87
+ LDA (V),Y              \ Fetch byte #0 for this face into A, so:
+                        \
+                        \   A = %xyz vvvvv, where:
+                        \
+                        \     * Bits 0-4 = visibility distance, beyond which the
+                        \       face is always shown
+                        \
+                        \     * Bits 7-5 = the sign bits of normal_x, normal_y
+                        \       and normal_z
 
- TYA
- LSR A
- LSR A
+ STA XX12+1             \ Store byte #0 in XX12+1, so XX12+1 now has the sign of
+                        \ normal_x
+
+ AND #%00011111         \ Extract bits 0-4 to give the visibility distance
+
+ CMP XX4                \ If XX4 <= the visibility distance, where XX4 contains
+ BCS LL87               \ the ship's z-distance reduced to 0-31 (which we set in
+                        \ part 2), skip to LL87 as this face is close enough
+                        \ that we have to test its visibility using the face
+                        \ normals
+
+                        \ Otherwise this face is within range and is therefore
+                        \ always shown
+
+ TYA                    \ Set X = Y / 4
+ LSR A                  \       = the number of this face * 4 /4
+ LSR A                  \       = the number of this face
  TAX
- LDA #&FF
- STA K3,X
- TYA
- ADC #&04
+
+ LDA #255               \ Set the X-th byte of XX2 to 255 to denote that this
+ STA XX2,X              \ face is visible
+
+ TYA                    \ Set Y = Y + 4 to point to the next face
+ ADC #4
  TAY
- JMP LL88
+
+ JMP LL88               \ Jump down to LL88 to skip the following, as we don't
+                        \ need to test the face normals
 
 .LL87
 
- LDA XX12+1
- ASL A
- STA XX12+3
- ASL A
- STA XX12+5
- INY
- LDA (V),Y
- STA XX12
- INY
- LDA (V),Y
- STA XX12+2
- INY
- LDA (V),Y
- STA XX12+4
- LDX XX17
- CPX #&04
+ LDA XX12+1             \ Fetch byte #0 for this face into A
+
+ ASL A                  \ Shift A left and store it, so XX12+3 now has the sign
+ STA XX12+3             \ of normal_y
+
+ ASL A                  \ Shift A left and store it, so XX12+5 now has the sign
+ STA XX12+5             \ of normal_z
+
+ INY                    \ Increment Y to point to byte #1
+
+ LDA (V),Y              \ Fetch byte #1 for this face and store in XX12, so
+ STA XX12               \ XX12 = normal_x
+
+ INY                    \ Increment Y to point to byte #2
+
+ LDA (V),Y              \ Fetch byte #2 for this face and store in XX12+2, so
+ STA XX12+2             \ XX12+2 = normal_y
+
+ INY                    \ Increment Y to point to byte #3
+
+ LDA (V),Y              \ Fetch byte #3 for this face and store in XX12+4, so
+ STA XX12+4             \ XX12+4 = normal_z
+
+                        \ So we now have:
+                        \
+                        \   XX12(1 0) = (normal_x_sign normal_x)
+                        \
+                        \   XX12(3 2) = (normal_y_sign normal_y)
+                        \
+                        \   XX12(5 4) = (normal_z_sign normal_z)
+
+ LDX XX17               \ If XX17 < 4 then jump to LL92, otherwise we stored a
+ CPX #4                 \ larger scale factor above
  BCC LL92
 
- LDA XX18
- STA XX15
+.LL143
+
+ LDA XX18               \ Set XX15(1 0) = XX18(2 0)
+ STA XX15               \               = dot_sidev
  LDA XX18+2
- STA Y1
- LDA XX18+3
- STA X2
+ STA XX15+1
+
+ LDA XX18+3             \ Set XX15(3 2) = XX18(5 3)
+ STA XX15+2             \               = dot_roofv
  LDA XX18+5
- STA Y2
- LDA XX18+6
- STA XX15+4
+ STA XX15+3
+
+ LDA XX18+6             \ Set XX15(5 4) = XX18(8 6)
+ STA XX15+4             \               = dot_nosev
  LDA XX18+8
  STA XX15+5
- JMP LL89
+
+ JMP LL89               \ Jump down to LL89
 
 .ovflw
 
- LSR XX18
- LSR XX18+6
- LSR XX18+3
- LDX #&01
+                        \ If we get here then the addition below overflowed, so
+                        \ we halve the dot products and normal vector
+
+ LSR XX18               \ Divide dot_sidev_lo by 2, so dot_sidev = dot_sidev / 2
+
+ LSR XX18+6             \ Divide dot_nosev_lo by 2, so dot_nosev = dot_nosev / 2
+
+ LSR XX18+3             \ Divide dot_roofv_lo by 2, so dot_roofv = dot_roofv / 2
+
+ LDX #1                 \ Set X = 1 so when we fall through into LL92, we divide
+                        \ the normal vector by 2 as well
 
 .LL92
 
- LDA XX12
+                        \ We jump here from above with the scale factor in X,
+                        \ and now we apply it by scaling the normal vector down
+                        \ by a factor of 2^X (i.e. divide by 2^X)
+
+ LDA XX12               \ Set XX15 = normal_x
  STA XX15
- LDA XX12+2
- STA X2
- LDA XX12+4
- DEX
- BMI LL94
 
-.L72F9
+ LDA XX12+2             \ Set XX15+2 = normal_y
+ STA XX15+2
 
- LSR XX15
- LSR X2
- LSR A
- DEX
- BPL L72F9
+ LDA XX12+4             \ Set A = normal_z
+
+.LL93
+
+ DEX                    \ Decrement the scale factor in X
+
+ BMI LL94               \ If X was 0 before the decrement, there is no scaling
+                        \ to do, so jump to LL94 to exit the loop
+
+ LSR XX15               \ Set XX15 = XX15 / 2
+                        \          = normal_x / 2
+
+ LSR XX15+2             \ Set XX15+2 = XX15+2 / 2
+                        \            = normal_y / 2
+
+ LSR A                  \ Set A = A / 2
+                        \       = normal_z / 2
+
+ DEX                    \ Decrement the scale factor in X
+
+ BPL LL93+3             \ If we have more scaling to do, loop back up to the
+                        \ first LSR above until the normal vector is scaled down
 
 .LL94
 
- STA R
- LDA XX12+5
+ STA R                  \ Set R = normal_z
+
+ LDA XX12+5             \ Set S = normal_z_sign
  STA S
- LDA XX18+6
+
+ LDA XX18+6             \ Set Q = dot_nosev_lo
  STA Q
- LDA XX18+8
- JSR LL38
 
- BCS ovflw
+ LDA XX18+8             \ Set A = dot_nosev_sign
 
- STA XX15+4
- LDA S
+ JSR LL38               \ Set (S A) = (S R) + (A Q)
+                        \           = normal_z + dot_nosev
+                        \
+                        \ setting the sign of the result in S
+
+ BCS ovflw              \ If the addition overflowed, jump up to ovflw to divide
+                        \ both the normal vector and dot products by 2 and try
+                        \ again
+
+ STA XX15+4             \ Set XX15(5 4) = (S A)
+ LDA S                  \               = normal_z + dot_nosev
  STA XX15+5
- LDA XX15
+
+ LDA XX15               \ Set R = normal_x
  STA R
- LDA XX12+1
+
+ LDA XX12+1             \ Set S = normal_x_sign
  STA S
- LDA XX18
+
+ LDA XX18               \ Set Q = dot_sidev_lo
  STA Q
- LDA XX18+2
- JSR LL38
 
- BCS ovflw
+ LDA XX18+2             \ Set A = dot_sidev_sign
 
- STA XX15
- LDA S
- STA Y1
- LDA X2
+ JSR LL38               \ Set (S A) = (S R) + (A Q)
+                        \           = normal_x + dot_sidev
+                        \
+                        \ setting the sign of the result in S
+
+ BCS ovflw              \ If the addition overflowed, jump up to ovflw to divide
+                        \ both the normal vector and dot products by 2 and try
+                        \ again
+
+ STA XX15               \ Set XX15(1 0) = (S A)
+ LDA S                  \               = normal_x + dot_sidev
+ STA XX15+1
+
+ LDA XX15+2             \ Set R = normal_y
  STA R
- LDA XX12+3
+
+ LDA XX12+3             \ Set S = normal_y_sign
  STA S
- LDA XX18+3
+
+ LDA XX18+3             \ Set Q = dot_roofv_lo
  STA Q
- LDA XX18+5
- JSR LL38
 
- BCS ovflw
+ LDA XX18+5             \ Set A = dot_roofv_sign
 
- STA X2
- LDA S
- STA Y2
+ JSR LL38               \ Set (S A) = (S R) + (A Q)
+                        \           = normal_y + dot_roofv
+
+ BCS ovflw              \ If the addition overflowed, jump up to ovflw to divide
+                        \ both the normal vector and dot products by 2 and try
+                        \ again
+
+ STA XX15+2             \ Set XX15(3 2) = (S A)
+ LDA S                  \               = normal_y + dot_roofv
+ STA XX15+3
 
 .LL89
 
- LDA XX12
- STA Q
- LDA XX15
- JSR FMLTU
+                        \ When we get here, we have set up the following:
+                        \
+                        \   XX15(1 0) = normal_x + dot_sidev
+                        \             = normal_x + [x y z] . sidev
+                        \
+                        \   XX15(3 2) = normal_y + dot_roofv
+                        \             = normal_y + [x y z] . roofv
+                        \
+                        \   XX15(5 4) = normal_z + dot_nosev
+                        \             = normal_z + [x y z] . nosev
+                        \
+                        \ and:
+                        \
+                        \   XX12(1 0) = (normal_x_sign normal_x)
+                        \
+                        \   XX12(3 2) = (normal_y_sign normal_y)
+                        \
+                        \   XX12(5 4) = (normal_z_sign normal_z)
+                        \
+                        \ We now calculate the dot product XX12 . XX15 to tell
+                        \ us whether or not this face is visible
 
- STA T
- LDA XX12+1
- EOR Y1
- STA S
- LDA XX12+2
+ LDA XX12               \ Set Q = XX12
  STA Q
- LDA X2
- JSR FMLTU
 
+ LDA XX15               \ Set A = XX15
+
+ JSR FMLTU              \ Set T = A * Q / 256
+ STA T                  \       = XX15 * XX12 / 256
+
+ LDA XX12+1             \ Set S = sign of XX15(1 0) * XX12(1 0), so:
+ EOR XX15+1             \
+ STA S                  \   (S T) = XX15(1 0) * XX12(1 0) / 256
+
+ LDA XX12+2             \ Set Q = XX12+2
  STA Q
- LDA T
- STA R
- LDA XX12+3
- EOR Y2
- JSR LL38
 
- STA T
- LDA XX12+4
+ LDA XX15+2             \ Set A = XX15+2
+
+ JSR FMLTU              \ Set Q = A * Q
+ STA Q                  \       = XX15+2 * XX12+2 / 256
+
+ LDA T                  \ Set T = R, so now:
+ STA R                  \
+                        \   (S R) = XX15(1 0) * XX12(1 0) / 256
+
+ LDA XX12+3             \ Set A = sign of XX15+3 * XX12+3, so:
+ EOR XX15+3             \
+                        \   (A Q) = XX15(3 2) * XX12(3 2) / 256
+
+ JSR LL38               \ Set (S T) = (S R) + (A Q)
+ STA T                  \           =   XX15(1 0) * XX12(1 0) / 256
+                        \             + XX15(3 2) * XX12(3 2) / 256
+
+ LDA XX12+4             \ Set Q = XX12+4
  STA Q
- LDA XX15+4
- JSR FMLTU
 
- STA Q
- LDA T
- STA R
- LDA XX15+5
- EOR XX12+5
- JSR LL38
+ LDA XX15+4             \ Set A = XX15+4
 
- PHA
- TYA
- LSR A
- LSR A
+ JSR FMLTU              \ Set Q = A * Q
+ STA Q                  \       = XX15+4 * XX12+4 / 256
+
+ LDA T                  \ Set T = R, so now:
+ STA R                  \
+                        \   (S R) =   XX15(1 0) * XX12(1 0) / 256
+                        \           + XX15(3 2) * XX12(3 2) / 256
+
+ LDA XX15+5             \ Set A = sign of XX15+5 * XX12+5, so:
+ EOR XX12+5             \
+                        \   (A Q) = XX15(5 4) * XX12(5 4) / 256
+
+ JSR LL38               \ Set (S A) = (S R) + (A Q)
+                        \           =   XX15(1 0) * XX12(1 0) / 256
+                        \             + XX15(3 2) * XX12(3 2) / 256
+                        \             + XX15(5 4) * XX12(5 4) / 256
+
+ PHA                    \ Push the result A onto the stack, so the stack now
+                        \ contains the dot product XX12 . XX15
+
+ TYA                    \ Set X = Y / 4
+ LSR A                  \       = the number of this face * 4 /4
+ LSR A                  \       = the number of this face
  TAX
- PLA
- BIT S
- BMI L7395
 
- LDA #&00
+ PLA                    \ Pull the dot product off the stack into A
 
-.L7395
+ BIT S                  \ If bit 7 of S is set, i.e. the dot product is
+ BMI P%+4               \ negative, then this face is visible as its normal is
+                        \ pointing towards us, so skip the following instruction
 
- STA K3,X
- INY
+ LDA #0                 \ Otherwise the face is not visible, so set A = 0 so we
+                        \ can store this to mean "not visible"
+
+ STA XX2,X              \ Store the face's visibility in the X-th byte of XX2
+
+ INY                    \ Above we incremented Y to point to byte #3, so this
+                        \ increments Y to point to byte #4, i.e. byte #0 of the
+                        \ next face
 
 .LL88
 
- CPY XX20
- BCS LL42
+ CPY XX20               \ If Y >= XX20, the number of faces * 4, jump down to
+ BCS LL42               \ LL42 to move on to the
 
- JMP LL86
+ JMP LL86               \ Otherwise loop back to LL86 to work out the visibility
+                        \ of the next face
+
+\ ******************************************************************************
+\
+\       Name: LL9 (Part 6 of 12)
+\       Type: Subroutine
+\   Category: Drawing ships
+\    Summary: Draw ship: Calculate the visibility of each of the ship's vertices
+\  Deep dive: Drawing ships
+\             Calculating vertex coordinates
+\
+\ ------------------------------------------------------------------------------
+\
+\ This section calculates the visibility of each of the ship's vertices, and for
+\ those that are visible, it starts the process of calculating the screen
+\ coordinates of each vertex
+\
+\ ******************************************************************************
 
 .LL42
 
- LDY XX16+2
- LDX XX16+3
- LDA XX16+6
- STA XX16+2
+                        \ The first task is to set up the inverse matrix, ready
+                        \ for us to send to the dot product routine at LL51.
+                        \ Back up in part 3, we set up the following variables:
+                        \
+                        \   * XX16(1 0) = sidev_x
+                        \   * XX16(3 2) = sidev_y
+                        \   * XX16(5 4) = sidev_z
+                        \
+                        \   * XX16(7 6) = roofv_x
+                        \   * XX16(9 8) = roofv_y
+                        \   * XX16(11 10) = roofv_z
+                        \
+                        \   * XX16(13 12) = nosev_x
+                        \   * XX16(15 14) = nosev_y
+                        \   * XX16(17 16) = nosev_z
+                        \
+                        \ and we then scaled the vectors to give the following:
+                        \
+                        \   * XX16   = scaled |sidev_x|
+                        \   * XX16+2 = scaled |sidev_y|
+                        \   * XX16+4 = scaled |sidev_z|
+                        \
+                        \   * XX16+6  = scaled |roofv_x|
+                        \   * XX16+8  = scaled |roofv_y|
+                        \   * XX16+10 = scaled |roofv_z|
+                        \
+                        \   * XX16+12 = scaled |nosev_x|
+                        \   * XX16+14 = scaled |nosev_y|
+                        \   * XX16+16 = scaled |nosev_z|
+                        \
+                        \ We now need to rearrange these locations so they
+                        \ effectively transpose the matrix into its inverse
+
+ LDY XX16+2             \ Set XX16+2 = XX16+6 = scaled |roofv_x|
+ LDX XX16+3             \ Set XX16+3 = XX16+7 = roofv_x_hi
+ LDA XX16+6             \ Set XX16+6 = XX16+2 = scaled |sidev_y|
+ STA XX16+2             \ Set XX16+7 = XX16+3 = sidev_y_hi
  LDA XX16+7
  STA XX16+3
  STY XX16+6
  STX XX16+7
- LDY XX16+4
- LDX XX16+5
- LDA XX16+12
- STA XX16+4
+
+ LDY XX16+4             \ Set XX16+4 = XX16+12 = scaled |nosev_x|
+ LDX XX16+5             \ Set XX16+5 = XX16+13 = nosev_x_hi
+ LDA XX16+12            \ Set XX16+12 = XX16+4 = scaled |sidev_z|
+ STA XX16+4             \ Set XX16+13 = XX16+5 = sidev_z_hi
  LDA XX16+13
  STA XX16+5
  STY XX16+12
  STX XX16+13
- LDY XX16+10
- LDX XX16+11
- LDA XX16+14
- STA XX16+10
+
+ LDY XX16+10            \ Set XX16+10 = XX16+14 = scaled |nosev_y|
+ LDX XX16+11            \ Set XX16+11 = XX16+15 = nosev_y_hi
+ LDA XX16+14            \ Set XX16+14 = XX16+10 = scaled |roofv_z|
+ STA XX16+10            \ Set XX16+15 = XX16+11 = roofv_z
  LDA XX16+15
  STA XX16+11
  STY XX16+14
  STX XX16+15
- LDY #&08
- LDA (XX0),Y
+
+                        \ So now we have the following sign-magnitude variables
+                        \ containing parts of the scaled orientation vectors:
+                        \
+                        \   XX16(1 0)   = scaled sidev_x
+                        \   XX16(3 2)   = scaled roofv_x
+                        \   XX16(5 4)   = scaled nosev_x
+                        \
+                        \   XX16(7 6)   = scaled sidev_y
+                        \   XX16(9 8)   = scaled roofv_y
+                        \   XX16(11 10) = scaled nosev_y
+                        \
+                        \   XX16(13 12) = scaled sidev_z
+                        \   XX16(15 14) = scaled roofv_z
+                        \   XX16(17 16) = scaled nosev_z
+                        \
+                        \ which is what we want, as the various vectors are now
+                        \ arranged so we can use LL51 to multiply by the
+                        \ transpose (i.e. the inverse of the matrix)
+
+ LDY #8                 \ Fetch byte #8 of the ship's blueprint, which is the
+ LDA (XX0),Y            \ number of vertices * 8, and store it in XX20
  STA XX20
- LDA XX0
+
+                        \ We now set V(1 0) = XX0(1 0) + 20, so V(1 0) points
+                        \ to byte #20 of the ship's blueprint, which is always
+                        \ where the vertex data starts (i.e. just after the 20
+                        \ byte block that define the ship's characteristics)
+
+ LDA XX0                \ We start with the low bytes
  CLC
- ADC #&14
+ ADC #20
  STA V
- LDA XX0+1
- ADC #&00
+
+ LDA XX0+1              \ And then do the high bytes
+ ADC #0
  STA V+1
- LDY #&00
- STY CNT
+
+ LDY #0                 \ We are about to step through all the vertices, using
+                        \ Y as a counter. There are six data bytes for each
+                        \ vertex, so we will increment Y by 6 for each iteration
+                        \ so it can act as an offset from V(1 0) to the current
+                        \ vertex's data
+
+ STY CNT                \ Set CNT = 0, which we will use as a pointer to the
+                        \ heap at XX3, starting it at zero so the heap starts
+                        \ out empty
 
 .LL48
 
- STY XX17
- LDA (V),Y
- STA XX15
- INY
- LDA (V),Y
- STA X2
- INY
- LDA (V),Y
- STA XX15+4
- INY
- LDA (V),Y
- STA T
- AND #&1F
- CMP XX4
- BCC L742F
+ STY XX17               \ Set XX17 = Y, so XX17 now contains the offset of the
+                        \ current vertex's data
 
- INY
- LDA (V),Y
- STA P
- AND #&0F
+ LDA (V),Y              \ Fetch byte #0 for this vertex into XX15, so:
+ STA XX15               \
+                        \   XX15 = magnitude of the vertex's x-coordinate
+
+ INY                    \ Increment Y to point to byte #1
+
+ LDA (V),Y              \ Fetch byte #1 for this vertex into XX15+2, so:
+ STA XX15+2             \
+                        \   XX15+2 = magnitude of the vertex's y-coordinate
+
+ INY                    \ Increment Y to point to byte #2
+
+ LDA (V),Y              \ Fetch byte #2 for this vertex into XX15+4, so:
+ STA XX15+4             \
+                        \   XX15+4 = magnitude of the vertex's z-coordinate
+
+ INY                    \ Increment Y to point to byte #3
+
+ LDA (V),Y              \ Fetch byte #3 for this vertex into T, so:
+ STA T                  \
+                        \   T = %xyz vvvvv, where:
+                        \
+                        \     * Bits 0-4 = visibility distance, beyond which the
+                        \                  vertex is not shown
+                        \
+                        \     * Bits 7-5 = the sign bits of x, y and z
+
+ AND #%00011111         \ Extract bits 0-4 to get the visibility distance
+
+ CMP XX4                \ If XX4 > the visibility distance, where XX4 contains
+ BCC LL49-3             \ the ship's z-distance reduced to 0-31 (which we set in
+                        \ part 2), then this vertex is too far away to be
+                        \ visible, so jump down to LL50 (via the JMP instruction
+                        \ in LL49-3) to move on to the next vertex
+
+ INY                    \ Increment Y to point to byte #4
+
+ LDA (V),Y              \ Fetch byte #4 for this vertex into P, so:
+ STA P                  \
+                        \  P = %ffff ffff, where:
+                        \
+                        \    * Bits 0-3 = the number of face 1
+                        \
+                        \    * Bits 4-7 = the number of face 2
+
+ AND #%00001111         \ Extract the number of face 1 into X
  TAX
- LDA K3,X
- BNE LL49
 
- LDA P
- LSR A
- LSR A
+ LDA XX2,X              \ If XX2+X is non-zero then we decided in part 5 that
+ BNE LL49               \ face 1 is visible, so jump to LL49
+
+ LDA P                  \ Fetch byte #4 for this vertex into A
+
+ LSR A                  \ Shift right four times to extract the number of face 2
+ LSR A                  \ from bits 4-7 into X
  LSR A
  LSR A
  TAX
- LDA K3,X
- BNE LL49
 
- INY
- LDA (V),Y
- STA P
- AND #&0F
+ LDA XX2,X              \ If XX2+X is non-zero then we decided in part 5 that
+ BNE LL49               \ face 2 is visible, so jump to LL49
+
+ INY                    \ Increment Y to point to byte #5
+
+ LDA (V),Y              \ Fetch byte #5 for this vertex into P, so:
+ STA P                  \
+                        \  P = %ffff ffff, where:
+                        \
+                        \    * Bits 0-3 = the number of face 3
+                        \
+                        \    * Bits 4-7 = the number of face 4
+
+ AND #%00001111         \ Extract the number of face 1 into X
  TAX
- LDA K3,X
- BNE LL49
 
- LDA P
- LSR A
- LSR A
+ LDA XX2,X              \ If XX2+X is non-zero then we decided in part 5 that
+ BNE LL49               \ face 3 is visible, so jump to LL49
+
+ LDA P                  \ Fetch byte #5 for this vertex into A
+
+ LSR A                  \ Shift right four times to extract the number of face 4
+ LSR A                  \ from bits 4-7 into X
  LSR A
  LSR A
  TAX
- LDA K3,X
- BNE LL49
 
-.L742F
+ LDA XX2,X              \ If XX2+X is non-zero then we decided in part 5 that
+ BNE LL49               \ face 4 is visible, so jump to LL49
 
- JMP LL50
+ JMP LL50               \ If we get here then none of the four faces associated
+                        \ with this vertex are visible, so this vertex is also
+                        \ not visible, so jump to LL50 to move on to the next
+                        \ vertex
 
 .LL49
 
- LDA T
- STA Y1
- ASL A
- STA Y2
- ASL A
- STA XX15+5
- JSR LL51
+ LDA T                  \ Fetch byte #5 for this vertex into A and store it, so
+ STA XX15+1             \ XX15+1 now has the sign of the vertex's x-coordinate
 
- LDA INWK+2
- STA X2
- EOR XX12+1
- BMI LL52
+ ASL A                  \ Shift A left and store it, so XX15+3 now has the sign
+ STA XX15+3             \ of the vertex's y-coordinate
 
- CLC
- LDA XX12
- ADC INWK
- STA XX15
- LDA INWK+1
- ADC #&00
- STA Y1
- JMP LL53
+ ASL A                  \ Shift A left and store it, so XX15+5 now has the sign
+ STA XX15+5             \ of the vertex's z-coordinate
+
+                        \ By this point we have the following:
+                        \
+                        \   XX15(1 0) = vertex x-coordinate
+                        \   XX15(3 2) = vertex y-coordinate
+                        \   XX15(5 4) = vertex z-coordinate
+                        \
+                        \   XX16(1 0)   = scaled sidev_x
+                        \   XX16(3 2)   = scaled roofv_x
+                        \   XX16(5 4)   = scaled nosev_x
+                        \
+                        \   XX16(7 6)   = scaled sidev_y
+                        \   XX16(9 8)   = scaled roofv_y
+                        \   XX16(11 10) = scaled nosev_y
+                        \
+                        \   XX16(13 12) = scaled sidev_z
+                        \   XX16(15 14) = scaled roofv_z
+                        \   XX16(17 16) = scaled nosev_z
+
+ JSR LL51               \ Call LL51 to set XX12 to the dot products of XX15 and
+                        \ XX16, as follows:
+                        \
+                        \   XX12(1 0) = [ x y z ] . [ sidev_x roofv_x nosev_x ]
+                        \
+                        \   XX12(3 2) = [ x y z ] . [ sidev_y roofv_y nosev_y ]
+                        \
+                        \   XX12(5 4) = [ x y z ] . [ sidev_z roofv_z nosev_z ]
+                        \
+                        \ XX12 contains the vector from the ship's centre to
+                        \ the vertex, transformed from the orientation vector
+                        \ space to the universe orientated around our ship. So
+                        \ we can refer to this vector below, let's call it
+                        \ vertv, so:
+                        \
+                        \   vertv_x = [ x y z ] . [ sidev_x roofv_x nosev_x ]
+                        \
+                        \   vertv_y = [ x y z ] . [ sidev_y roofv_y nosev_y ]
+                        \
+                        \   vertv_z = [ x y z ] . [ sidev_z roofv_z nosev_z ]
+                        \
+                        \ To finish the calculation, we now want to calculate:
+                        \
+                        \   vertv + [ x y z ]
+                        \
+                        \ So let's start with the vertv_x + x
+
+ LDA XX1+2              \ Set A = x_sign of the ship's location
+
+ STA XX15+2             \ Set XX15+2 = x_sign
+
+ EOR XX12+1             \ If the sign of x_sign * the sign of vertv_x is
+ BMI LL52               \ negative (i.e. they have different signs), skip to
+                        \ LL52
+
+ CLC                    \ Set XX15(2 1 0) = XX1(2 1 0) + XX12(1 0)
+ LDA XX12               \                 = (x_sign x_hi x_lo) + vertv_x
+ ADC XX1                \
+ STA XX15               \ Starting with the low bytes
+
+ LDA XX1+1              \ And then doing the high bytes (we can add 0 here as
+ ADC #0                 \ we know the sign byte of vertv_x is 0)
+ STA XX15+1
+
+ JMP LL53               \ We've added the x-coordinates, so jump to LL53 to do
+                        \ the y-coordinates
 
 .LL52
 
- LDA INWK
- SEC
- SBC XX12
- STA XX15
- LDA INWK+1
- SBC #&00
- STA Y1
- BCS LL53
+                        \ If we get here then x_sign and vertv_x have different
+                        \ signs, so we need to subtract them to get the result
 
- EOR #&FF
- STA Y1
- LDA #&01
+ LDA XX1                \ Set XX15(2 1 0) = XX1(2 1 0) - XX12(1 0)
+ SEC                    \                 = (x_sign x_hi x_lo) - vertv_x
+ SBC XX12               \
+ STA XX15               \ Starting with the low bytes
+
+ LDA XX1+1              \ And then doing the high bytes (we can subtract 0 here
+ SBC #0                 \ as we know the sign byte of vertv_x is 0)
+ STA XX15+1
+
+ BCS LL53               \ If the subtraction didn't underflow, then the sign of
+                        \ the result is the same sign as x_sign, and that's what
+                        \ we want, so we can jump down to LL53 to do the
+                        \ y-coordinates
+
+ EOR #%11111111         \ Otherwise we need to negate the result using two's
+ STA XX15+1             \ complement, so first we flip the bits of the high byte
+
+ LDA #1                 \ And then subtract the low byte from 1
  SBC XX15
  STA XX15
- BCC L7474
 
- INC Y1
+ BCC P%+4               \ If the above subtraction underflowed then we need to
+ INC XX15+1             \ bump the high byte of the result up by 1
 
-.L7474
-
- LDA X2
- EOR #&80
- STA X2
+ LDA XX15+2             \ And now we flip the sign of the result to get the
+ EOR #%10000000         \ correct result
+ STA XX15+2
 
 .LL53
 
- LDA INWK+5
- STA XX15+5
- EOR XX12+3
- BMI LL54
+                        \ Now for the y-coordinates, vertv_y + y
 
- CLC
- LDA XX12+2
- ADC INWK+3
- STA Y2
- LDA INWK+4
- ADC #&00
+ LDA XX1+5              \ Set A = y_sign of the ship's location
+
+ STA XX15+5             \ Set XX15+5 = y_sign
+
+ EOR XX12+3             \ If the sign of y_sign * the sign of vertv_y is
+ BMI LL54               \ negative (i.e. they have different signs), skip to
+                        \ LL54
+
+ CLC                    \ Set XX15(5 4 3) = XX1(5 4 3) + XX12(3 2)
+ LDA XX12+2             \                 = (y_sign y_hi y_lo) + vertv_y
+ ADC XX1+3              \
+ STA XX15+3             \ Starting with the low bytes
+
+ LDA XX1+4              \ And then doing the high bytes (we can add 0 here as
+ ADC #0                 \ we know the sign byte of vertv_y is 0)
  STA XX15+4
- JMP LL55
+
+ JMP LL55               \ We've added the y-coordinates, so jump to LL55 to do
+                        \ the z-coordinates
 
 .LL54
 
- LDA INWK+3
- SEC
- SBC XX12+2
- STA Y2
- LDA INWK+4
- SBC #&00
- STA XX15+4
- BCS LL55
+                        \ If we get here then y_sign and vertv_y have different
+                        \ signs, so we need to subtract them to get the result
 
- EOR #&FF
+ LDA XX1+3              \ Set XX15(5 4 3) = XX1(5 4 3) - XX12(3 2)
+ SEC                    \                 = (y_sign y_hi y_lo) - vertv_y
+ SBC XX12+2             \
+ STA XX15+3             \ Starting with the low bytes
+
+ LDA XX1+4              \ And then doing the high bytes (we can subtract 0 here
+ SBC #0                 \ as we know the sign byte of vertv_z is 0)
  STA XX15+4
- LDA Y2
- EOR #&FF
- ADC #&01
- STA Y2
- LDA XX15+5
- EOR #&80
+
+ BCS LL55               \ If the subtraction didn't underflow, then the sign of
+                        \ the result is the same sign as y_sign, and that's what
+                        \ we want, so we can jump down to LL55 to do the
+                        \ z-coordinates
+
+ EOR #%11111111         \ Otherwise we need to negate the result using two's
+ STA XX15+4             \ complement, so first we flip the bits of the high byte
+
+ LDA XX15+3             \ And then flip the bits of the low byte and add 1
+ EOR #%11111111
+ ADC #1
+ STA XX15+3
+
+ LDA XX15+5             \ And now we flip the sign of the result to get the
+ EOR #%10000000         \ correct result
  STA XX15+5
- BCC LL55
 
- INC XX15+4
+ BCC LL55               \ If the above subtraction underflowed then we need to
+ INC XX15+4             \ bump the high byte of the result up by 1
 
 .LL55
 
- LDA XX12+5
+                        \ Now for the z-coordinates, vertv_z + z
+
+ LDA XX12+5             \ If vertv_z_hi is negative, jump down to LL56
  BMI LL56
 
- LDA XX12+4
- CLC
- ADC INWK+6
- STA T
- LDA INWK+7
- ADC #&00
+ LDA XX12+4             \ Set (U T) = XX1(7 6) + XX12(5 4)
+ CLC                    \           = (z_hi z_lo) + vertv_z
+ ADC XX1+6              \
+ STA T                  \ Starting with the low bytes
+
+ LDA XX1+7              \ And then doing the high bytes (we can add 0 here as
+ ADC #0                 \ we know the sign byte of vertv_y is 0)
  STA U
- JMP LL57
+
+ JMP LL57               \ We've added the z-coordinates, so jump to LL57
+
+                        \ The adding process is continued in part 7, after a
+                        \ couple of subroutines that we don't need quite yet
+
+\ ******************************************************************************
+\
+\       Name: LL61
+\       Type: Subroutine
+\   Category: Maths (Arithmetic)
+\    Summary: Calculate (U R) = 256 * A / Q
+\
+\ ------------------------------------------------------------------------------
+\
+\ Calculate the following, where A >= Q:
+\
+\   (U R) = 256 * A / Q
+\
+\ This is a sister routine to LL28, which does the division when A < Q.
+\
+\ ******************************************************************************
 
 .LL61
 
- LDX Q
- BEQ LL84
+ LDX Q                  \ If Q = 0, jump down to LL84 to return a division
+ BEQ LL84               \ error
 
- LDX #&00
+                        \ The LL28 routine returns A / Q, but only if A < Q. In
+                        \ our case A >= Q, but we still want to use the LL28
+                        \ routine, so we halve A until it's less than Q, call
+                        \ the division routine, and then double A by the same
+                        \ number of times
+
+ LDX #0                 \ Set X = 0 to count the number of times we halve A
 
 .LL63
 
- LSR A
- INX
- CMP Q
+ LSR A                  \ Halve A by shifting right
+
+ INX                    \ Increment X
+
+ CMP Q                  \ If A >= Q, loop back to LL63 to halve it again
  BCS LL63
 
- STX S
- JSR LL28
+ STX S                  \ Otherwise store the number of times we halved A in S
 
- LDX S
- LDA R
+ JSR LL28               \ Call LL28 to calculate:
+                        \
+                        \   R = 256 * A / Q
+                        \
+                        \ which we can do now as A < Q
+
+ LDX S                  \ Otherwise restore the number of times we halved A
+                        \ above into X
+
+ LDA R                  \ Set A = our division result
 
 .LL64
 
- ASL A
+ ASL A                  \ Double (U A) by shifting left
  ROL U
- BMI LL84
 
- DEX
- BNE LL64
+ BMI LL84               \ If bit 7 of U is set, the doubling has overflowed, so
+                        \ jump to LL84 to return a division error
 
- STA R
- RTS
+ DEX                    \ Decrement X
+
+ BNE LL64               \ If X is not yet zero then we haven't done as many
+                        \ doublings as we did halvings earlier, so loop back for
+                        \ another doubling
+
+ STA R                  \ Store the low byte of the division result in R
+
+ RTS                    \ Return from the subroutine
 
 .LL84
 
- LDA #&32
- STA R
+ LDA #50                \ If we get here then either we tried to divide by 0, or
+ STA R                  \ the result overflowed, so we set U and R to 50
  STA U
- RTS
+
+ RTS                    \ Return from the subroutine
+
+\ ******************************************************************************
+\
+\       Name: LL62
+\       Type: Subroutine
+\   Category: Maths (Arithmetic)
+\    Summary: Calculate 128 - (U R)
+\
+\ ------------------------------------------------------------------------------
+\
+\ Calculate the following for a positive sign-magnitude number (U R):
+\
+\   128 - (U R)
+\
+\ and then store the result, low byte then high byte, on the end of the heap at
+\ XX3, where X points to the first free byte on the heap. Return by jumping down
+\ to LL66.
+\
+\ Returns:
+\
+\   X                   X is incremented by 1
+\
+\ ******************************************************************************
 
 .LL62
 
- LDA #&80
+ LDA #128               \ Calculate 128 - (U R), starting with the low bytes
  SEC
  SBC R
- STA XX3,X
- INX
- LDA #&00
+
+ STA XX3,X              \ Store the low byte of the result in the X-th byte of
+                        \ the heap at XX3
+
+ INX                    \ Increment the heap pointer in X to point to the next
+                        \ byte
+
+ LDA #0                 \ And then subtract the high bytes
  SBC U
- STA XX3,X
- JMP LL66
+
+ STA XX3,X              \ Store the low byte of the result in the X-th byte of
+                        \ the heap at XX3
+
+ JMP LL66               \ Jump down to LL66
+
+\ ******************************************************************************
+\
+\       Name: LL9 (Part 7 of 12)
+\       Type: Subroutine
+\   Category: Drawing ships
+\    Summary: Draw ship: Calculate the visibility of each of the ship's vertices
+\  Deep dive: Drawing ships
+\             Calculating vertex coordinates
+\
+\ ------------------------------------------------------------------------------
+\
+\ This section continues the coordinate adding from part 6 by finishing off the
+\ calculation that we started above:
+\
+\                      [ sidev_x roofv_x nosev_x ]   [ x ]   [ x ]
+\   vector to vertex = [ sidev_y roofv_y nosev_y ] . [ y ] + [ y ]
+\                      [ sidev_z roofv_z nosev_z ]   [ z ]   [ z ]
+\
+\ The gets stored as follows, in sign-magnitude values with the magnitudes
+\ fitting into the low bytes:
+\
+\   XX15(2 0)           [ x y z ] . [ sidev_x roofv_x nosev_x ] + [ x y z ]
+\
+\   XX15(5 3)           [ x y z ] . [ sidev_y roofv_y nosev_y ] + [ x y z ]
+\
+\   (U T)               [ x y z ] . [ sidev_z roofv_z nosev_z ] + [ x y z ]
+\
+\ Finally, because this vector is from our ship to the vertex, and we are at the
+\ origin, this vector is the same as the coordinates of the vertex. In other
+\ words, we have just worked out:
+\
+\   XX15(2 0)           x-coordinate of the current vertex
+\
+\   XX15(5 3)           y-coordinate of the current vertex
+\
+\   (U T)               z-coordinate of the current vertex
+\
+\ ******************************************************************************
 
 .LL56
 
- LDA INWK+6
- SEC
- SBC XX12+4
- STA T
- LDA INWK+7
- SBC #&00
+ LDA XX1+6              \ Set (U T) = XX1(7 6) - XX12(5 4)
+ SEC                    \           = (z_hi z_lo) - vertv_z
+ SBC XX12+4             \
+ STA T                  \ Starting with the low bytes
+
+ LDA XX1+7              \ And then doing the high bytes (we can subtract 0 here
+ SBC #0                 \ as we know the sign byte of vertv_z is 0)
  STA U
- BCC LL140
 
- BNE LL57
+ BCC LL140              \ If the subtraction just underflowed, skip to LL140 to
+                        \ set (U T) to the minimum value of 4
 
- LDA T
- CMP #&04
+ BNE LL57               \ If U is non-zero, jump down to LL57
+
+ LDA T                  \ If T >= 4, jump down to LL57
+ CMP #4
  BCS LL57
 
 .LL140
 
- LDA #&00
- STA U
- LDA #&04
+ LDA #0                 \ If we get here then either (U T) < 4 or the
+ STA U                  \ subtraction underflowed, so set (U T) = 4
+ LDA #4
  STA T
 
 .LL57
 
- LDA U
- ORA Y1
+                        \ By this point we have our results, so now to scale
+                        \ the 16-bit results down into 8-bit values
+
+ LDA U                  \ If the high bytes of the result are all zero, we are
+ ORA XX15+1             \ done, so jump down to LL60 for the next stage
  ORA XX15+4
  BEQ LL60
 
- LSR Y1
+ LSR XX15+1             \ Shift XX15(1 0) to the right
  ROR XX15
- LSR XX15+4
- ROR Y2
- LSR U
+
+ LSR XX15+4             \ Shift XX15(4 3) to the right
+ ROR XX15+3
+
+ LSR U                  \ Shift (U T) to the right
  ROR T
- JMP LL57
+
+ JMP LL57               \ Jump back to LL57 to see if we can shift the result
+                        \ any more
+
+\ ******************************************************************************
+\
+\       Name: LL9 (Part 8 of 12)
+\       Type: Subroutine
+\   Category: Drawing ships
+\    Summary: Draw ship: Calculate the screen coordinates of visible vertices
+\  Deep dive: Drawing ships
+\
+\ ------------------------------------------------------------------------------
+\
+\ This section projects the coordinate of the vertex into screen coordinates and
+\ stores them on the XX3 heap. By the end of this part, the XX3 heap contains
+\ four bytes containing the 16-bit screen coordinates of the current vertex, in
+\ the order: x_lo, x_hi, y_lo, y_hi.
+\
+\ When we reach here, we are looping through the vertices, and we've just worked
+\ out the coordinates of the vertex in our normal coordinate system, as follows
+\
+\   XX15(2 0)           (x_sign x_lo) = x-coordinate of the current vertex
+\
+\   XX15(5 3)           (y_sign y_lo) = y-coordinate of the current vertex
+\
+\   (U T)               (z_sign z_lo) = z-coordinate of the current vertex
+\
+\ Note that U is always zero when we get to this point, as the vertex is always
+\ in front of us (so it has a positive z-coordinate, into the screen).
+\
+\ Other entry points:
+\
+\   LL70+1              Contains an RTS (as the first byte of an LDA
+\                       instruction)
+\
+\ ******************************************************************************
 
 .LL60
 
- LDA T
+ LDA T                  \ Set Q = z_lo
  STA Q
- LDA XX15
- CMP Q
+
+ LDA XX15               \ Set A = x_lo
+
+ CMP Q                  \ If x_lo < z_lo jump to LL69
  BCC LL69
 
- JSR LL61
+ JSR LL61               \ Call LL61 to calculate:
+                        \
+                        \   (U R) = 256 * A / Q
+                        \         = 256 * x / z
+                        \
+                        \ which we can do as x >= z
 
- JMP LL65
+ JMP LL65               \ Jump to LL65 to skip the division for x_lo < z_lo
 
 .LL69
 
- JSR LL28
+ JSR LL28               \ Call LL28 to calculate:
+                        \
+                        \   R = 256 * A / Q
+                        \     = 256 * x / z
+                        \
+                        \ Because x < z, the result fits into one byte, and we
+                        \ also know that U = 0, so (U R) also contains the
+                        \ result
 
 .LL65
 
- LDX CNT
- LDA X2
- BMI LL62
+                        \ At this point we have:
+                        \
+                        \   (U R) = x / z
+                        \
+                        \ so (U R) contains the vertex's x-coordinate projected
+                        \ on screen
+                        \
+                        \ The next task is to convert (U R) to a pixel screen
+                        \ coordinate and stick it on the XX3 heap.
+                        \
+                        \ We start with the x-coordinate. To convert the
+                        \ x-coordinate to a screen pixel we add 128, the
+                        \ x-coordinate of the centre of the screen, because the
+                        \ projected value is relative to an origin at the centre
+                        \ of the screen, but the origin of the screen pixels is
+                        \ at the top-left of the screen
 
- LDA R
+ LDX CNT                \ Fetch the pointer to the end of the XX3 heap from CNT
+                        \ into X
+
+ LDA XX15+2             \ If x_sign is negative, jump up to LL62, which will
+ BMI LL62               \ store 128 - (U R) on the XX3 heap and return by
+                        \ jumping down to LL66 below
+
+ LDA R                  \ Calculate 128 + (U R), starting with the low bytes
  CLC
- ADC #&80
- STA XX3,X
- INX
- LDA U
- ADC #&00
- STA XX3,X
+ ADC #128
+
+ STA XX3,X              \ Store the low byte of the result in the X-th byte of
+                        \ the heap at XX3
+
+ INX                    \ Increment the heap pointer in X to point to the next
+                        \ byte
+
+ LDA U                  \ And then add the high bytes
+ ADC #0
+
+ STA XX3,X              \ Store the high byte of the result in the X-th byte of
+                        \ the heap at XX3
 
 .LL66
 
- TXA
- PHA
- LDA #&00
+                        \ We've just stored the screen x-coordinate of the
+                        \ vertex on the XX3 heap, so now for the y-coordinate
+
+ TXA                    \ Store the heap pointer in X on the stack (at this
+ PHA                    \ it points to the last entry on the heap, not the first
+                        \ free byte)
+
+ LDA #0                 \ Set U = 0
  STA U
- LDA T
+
+ LDA T                  \ Set Q = z_lo
  STA Q
- LDA Y2
- CMP Q
+
+ LDA XX15+3             \ Set A = y_lo
+
+ CMP Q                  \ If y_lo < z_lo jump to LL67
  BCC LL67
 
- JSR LL61
+ JSR LL61               \ Call LL61 to calculate:
+                        \
+                        \   (U R) = 256 * A / Q
+                        \         = 256 * y / z
+                        \
+                        \ which we can do as y >= z
 
- JMP LL68
+ JMP LL68               \ Jump to LL68 to skip the division for y_lo < z_lo
 
 .LL70
 
- LDA #&60
+                        \ This gets called from below when y_sign is negative
+
+ LDA #Y                 \ Calculate #Y + (U R), starting with the low bytes
  CLC
  ADC R
- STA XX3,X
- INX
- LDA #&00
+
+ STA XX3,X              \ Store the low byte of the result in the X-th byte of
+                        \ the heap at XX3
+
+ INX                    \ Increment the heap pointer in X to point to the next
+                        \ byte
+
+ LDA #0                 \ And then add the high bytes
  ADC U
- STA XX3,X
- JMP LL50
+
+ STA XX3,X              \ Store the high byte of the result in the X-th byte of
+                        \ the heap at XX3
+
+ JMP LL50               \ Jump to LL68 to skip the division for y_lo < z_lo
 
 .LL67
 
- JSR LL28
+ JSR LL28               \ Call LL28 to calculate:
+                        \
+                        \   R = 256 * A / Q
+                        \     = 256 * y / z
+                        \
+                        \ Because y < z, the result fits into one byte, and we
+                        \ also know that U = 0, so (U R) also contains the
+                        \ result
 
 .LL68
 
- PLA
- TAX
- INX
- LDA XX15+5
- BMI LL70
+                        \ At this point we have:
+                        \
+                        \   (U R) = y / z
+                        \
+                        \ so (U R) contains the vertex's y-coordinate projected
+                        \ on screen
+                        \
+                        \ We now want to convert this to a screen y-coordinate
+                        \ and stick it on the XX3 heap, much like we did with
+                        \ the x-coordinate above. Again, we convert the
+                        \ coordinate by adding or subtracting the y-coordinate
+                        \ of the centre of the screen, which is in the constant
+                        \ #Y, but this time we do the opposite, as a positive
+                        \ projected y-coordinate, i.e. up the space y-axis and
+                        \ up the screen, converts to a low y-coordinate, which
+                        \ is the opposite way round to the x-coordinates
 
- LDA #&60
+ PLA                    \ Restore the heap pointer from the stack into X
+ TAX
+
+ INX                    \ When we stored the heap pointer, it pointed to the
+                        \ last entry on the heap, not the first free byte, so we
+                        \ increment it so it does point to the next free byte
+
+ LDA XX15+5             \ If y_sign is negative, jump up to LL70, which will
+ BMI LL70               \ store #Y + (U R) on the XX3 heap and return by jumping
+                        \ down to LL50 below
+
+ LDA #Y                 \ Calculate #Y - (U R), starting with the low bytes
  SEC
  SBC R
- STA XX3,X
- INX
- LDA #&00
+
+ STA XX3,X              \ Store the low byte of the result in the X-th byte of
+                        \ the heap at XX3
+
+ INX                    \ Increment the heap pointer in X to point to the next
+                        \ byte
+
+ LDA #0                 \ And then subtract the high bytes
  SBC U
- STA XX3,X
+
+ STA XX3,X              \ Store the high byte of the result in the X-th byte of
+                        \ the heap at XX3
 
 .LL50
 
- CLC
- LDA CNT
- ADC #&04
+                        \ By the time we get here, the XX3 heap contains four
+                        \ bytes containing the screen coordinates of the current
+                        \ vertex, in the order: x_lo, x_hi, y_lo, y_hi
+
+ CLC                    \ Set CNT = CNT + 4, so the heap pointer points to the
+ LDA CNT                \ next free byte on the heap
+ ADC #4
  STA CNT
- LDA XX17
- ADC #&06
- TAY
- BCS LL72
 
- CMP XX20
- BCS LL72
+ LDA XX17               \ Set A to the offset of the current vertex's data,
+                        \ which we set in part 6
 
- JMP LL48
+ ADC #6                 \ Set Y = A + 6, so Y now points to the data for the
+ TAY                    \ next vertex
+
+ BCS LL72               \ If the addition just overflowed, meaning we just tried
+                        \ to access vertex #43, jump to LL72, as the maximum
+                        \ number of vertices allowed is 42
+
+ CMP XX20               \ If Y >= number of vertices * 6 (which we stored in
+ BCS LL72               \ XX20 in part 6), jump to LL72, as we have processed
+                        \ all the vertices for this ship
+
+ JMP LL48               \ Loop back to LL48 in part 6 to calculate visibility
+                        \ and screen coordinates for the next vertex
+
+\ ******************************************************************************
+\
+\       Name: LL9 (Part 9 of 12)
+\       Type: Subroutine
+\   Category: Drawing ships
+\    Summary: Draw ship: Draw laser beams if the ship is firing its laser at us
+\  Deep dive: Drawing ships
+\
+\ ------------------------------------------------------------------------------
+\
+\ This part sets things up so we can loop through the edges in the next part. It
+\ also adds a line to the ship line heap, if the ship is firing at us.
+\
+\ When we get here, the heap at XX3 contains all the visible vertex screen
+\ coordinates.
+\
+\ ******************************************************************************
 
 .LL72
 
- LDA INWK+31
- AND #&20
+ LDA XX1+31             \ If bit 5 of the ship's byte #31 is clear, then the
+ AND #%00100000         \ ship is not currently exploding, so jump down to EE31
  BEQ EE31
 
- LDA INWK+31
- ORA #&08
- STA INWK+31
- JMP DOEXP
+ LDA XX1+31             \ The ship is exploding, so set bit 3 of the ship's byte
+ ORA #8                 \ #31 to denote that we are drawing something on-screen
+ STA XX1+31             \ for this ship
+
+ JMP DOEXP              \ Jump to DOEXP to display the explosion cloud,
+                        \ returning from the subroutine using a tail call
 
 .EE31
 
- LDY #&09
+ LDY #&09               \ ???
  LDA (XX0),Y
  STA XX20
- LDA #&08
- ORA INWK+31
- STA INWK+31
- LDY #&00
+
+ LDA #%00001000         \ Set bit 3 of A so the next instruction sets bit 3 of
+                        \ the ship's byte #31 to denote that we are drawing
+                        \ something on-screen for this ship
+
+.LL74
+
+ ORA XX1+31             \ Apply bit 3 of A to the ship's byte #31, so if there
+ STA XX1+31             \ was no ship already on screen, the bit is clear,
+                        \ otherwise it is set
+
+ LDY #&00               \ ???
  STY XX17
- BIT INWK+31
- BVC LL170
 
- LDA INWK+31
- AND #&BF
- STA INWK+31
- LDY #&06
- LDA (XX0),Y
- TAY
- LDX XX3,Y
- STX XX15
- INX
- BEQ LL170
+ BIT XX1+31             \ If bit 6 of the ship's byte #31 is clear, then the
+ BVC LL170              \ ship is not firing its lasers, so jump to LL170 to
+                        \ skip the drawing of laser lines
 
- LDX XX3+1,Y
- STX Y1
- INX
- BEQ LL170
+                        \ The ship is firing its laser at us, so we need to draw
+                        \ the laser lines
 
- LDX XX3+2,Y
- STX X2
- LDX XX3+3,Y
- STX Y2
- LDA #&00
- STA XX15+4
+ LDA XX1+31             \ Clear bit 6 of the ship's byte #31 so the ship doesn't
+ AND #%10111111         \ keep firing endlessly
+ STA XX1+31
+
+ LDY #6                 \ Fetch byte #6 of the ship's blueprint, which is the
+ LDA (XX0),Y            \ number * 4 of the vertex where the ship has its lasers
+
+ TAY                    \ Put the vertex number into Y, where it can act as an
+                        \ index into list of vertex screen coordinates we added
+                        \ to the XX3 heap
+
+ LDX XX3,Y              \ Fetch the x_lo coordinate of the laser vertex from the
+ STX XX15               \ XX3 heap into XX15
+
+ INX                    \ If X = 255 then the laser vertex is not visible, as
+ BEQ LL170              \ the value we stored in part 2 wasn't overwritten by
+                        \ the vertex calculation in part 6 and 7, so jump to
+                        \ LL170 to skip drawing the laser lines
+
+                        \ We now build a laser beam from the ship's laser vertex
+                        \ towards our ship, as follows:
+                        \
+                        \   XX15(1 0) = laser vertex x-coordinate
+                        \
+                        \   XX15(3 2) = laser vertex y-coordinate
+                        \
+                        \   XX15(5 4) = x-coordinate of the end of the beam
+                        \
+                        \   XX12(1 0) = y-coordinate of the end of the beam
+                        \
+                        \ The end of the laser beam will be set positioned to
+                        \ look good, rather than being directly aimed at us, as
+                        \ otherwise we would only see a flashing point of light
+                        \ as they unleashed their attack
+
+ LDX XX3+1,Y            \ Fetch the x_hi coordinate of the laser vertex from the
+ STX XX15+1             \ XX3 heap into XX15+1
+
+ INX                    \ If X = 255 then the laser vertex is not visible, as
+ BEQ LL170              \ the value we stored in part 2 wasn't overwritten by
+                        \ a vertex calculation in part 6 and 7, so jump to LL170
+                        \ to skip drawing the laser beam
+
+ LDX XX3+2,Y            \ Fetch the y_lo coordinate of the laser vertex from the
+ STX XX15+2             \ XX3 heap into XX15+2
+
+ LDX XX3+3,Y            \ Fetch the y_hi coordinate of the laser vertex from the
+ STX XX15+3             \ XX3 heap into XX15+3
+
+ LDA #0                 \ Set XX15(5 4) = 0, so their laser beam fires to the
+ STA XX15+4             \ left edge of the screen
  STA XX15+5
- STA XX12+1
- LDA INWK+6
- STA XX12
- LDA INWK+2
- BPL L7616
 
- DEC XX15+4
+ STA XX12+1             \ Set XX12(1 0) = the ship's z_lo coordinate, which will
+ LDA XX1+6              \ effectively make the vertical position of the end of
+ STA XX12               \ the laser beam move around as the ship moves in space
 
-.L7616
+ LDA XX1+2              \ If the ship's x_sign is positive, skip the next
+ BPL P%+4               \ instruction
 
- JSR LL145
+ DEC XX15+4             \ The ship's x_sign is negative (i.e. it's on the left
+                        \ side of the screen), so switch the laser beam so it
+                        \ goes to the right edge of the screen by decrementing
+                        \ XX15(5 4) to 255
 
- BCS LL170
+ JSR LL145              \ Call LL145 to see if the laser beam needs to be
+                        \ clipped to fit on-screen, returning the clipped line's
+                        \ end-points in (X1, Y1) and (X2, Y2)
 
- JSR L78F8
+ BCS LL170              \ If the C flag is set then the line is not visible on
+                        \ screen, so jump to LL170 so we don't store this line
+                        \ in the ship line heap
+
+ JSR LLX30              \ ???
+
+\ ******************************************************************************
+\
+\       Name: LL9 (Part 10 of 12)
+\       Type: Subroutine
+\   Category: Drawing ships
+\    Summary: Draw ship: Calculate the visibility of each of the ship's edges
+\  Deep dive: Drawing ships
+\
+\ ------------------------------------------------------------------------------
+\
+\ This part calculates which edges are visible - in other words, which lines we
+\ should draw - and clips them to fit on the screen.
+\
+\ When we get here, the heap at XX3 contains all the visible vertex screen
+\ coordinates.
+\
+\ ******************************************************************************
 
 .LL170
 
- LDY #&03
- CLC
+ LDY #3                 \ Fetch byte #3 of the ship's blueprint, which contains
+ CLC                    \ the low byte of the offset to the edges data
  LDA (XX0),Y
- ADC XX0
+
+ ADC XX0                \ Set V = low byte edges offset + XX0
  STA V
- LDY #&10
- LDA (XX0),Y
- ADC XX0+1
- STA V+1
- LDY #&05
- LDA (XX0),Y
- STA CNT
+
+ LDY #16                \ Fetch byte #16 of the ship's blueprint, which contains
+ LDA (XX0),Y            \ the high byte of the offset to the edges data
+
+ ADC XX0+1              \ Set V+1 = high byte edges offset + XX0+1
+ STA V+1                \
+                        \ So V(1 0) now points to the start of the edges data
+                        \ for this ship
+
+ LDY #5                 \ Fetch byte #5 of the ship's blueprint, which contains
+ LDA (XX0),Y            \ the maximum heap size for plotting the ship (which is
+ STA CNT                \ 1 + 4 * the maximum number of visible edges) and store
+                        \ it in CNT
 
 .LL75
 
- LDY #&00
- LDA (V),Y
- CMP XX4
- BCC LL78
+ LDY #0                 \ ???
 
- INY
- LDA (V),Y
- STA P
- AND #&0F
- TAX
- LDA K3,X
- BNE LL79
+ LDA (V),Y              \ Fetch byte #0 for this edge, which contains the
+                        \ visibility distance for this edge, beyond which the
+                        \ edge is not shown
 
- LDA P
- LSR A
- LSR A
+ CMP XX4                \ If XX4 > the visibility distance, where XX4 contains
+ BCC LL78               \ the ship's z-distance reduced to 0-31 (which we set in
+                        \ part 2), then this edge is too far away to be visible,
+                        \ so jump down to LL78 to move on to the next edge
+
+ INY                    \ Increment Y to point to byte #1
+
+ LDA (V),Y              \ Fetch byte #1 for this edge into A, so:
+                        \
+                        \   A = %ffff ffff, where:
+                        \
+                        \     * Bits 0-3 = the number of face 1
+                        \
+                        \     * Bits 4-7 = the number of face 2
+
+ STA P                  \ Store byte #1 into P
+
+ AND #%00001111         \ Extract the number of face 1 into X
+ TAX
+
+ LDA XX2,X              \ If XX2+X is non-zero then we decided in part 5 that
+ BNE LL79               \ face 1 is visible, so jump to LL79
+
+ LDA P                  \ Fetch byte #1 for this edge into A
+
+ LSR A                  \ Shift right four times to extract the number of face 2
+ LSR A                  \ from bits 4-7 into X
  LSR A
  LSR A
  TAX
- LDA K3,X
- BEQ LL78
+
+ LDA XX2,X              \ If XX2+X is zero then we decided in part 5 that
+ BEQ LL78               \ face 2 is hidden, so jump to LL78
 
 .LL79
 
- INY
+                        \ We now build the screen line for this edge, as
+                        \ follows:
+                        \
+                        \   XX15(1 0) = start x-coordinate
+                        \
+                        \   XX15(3 2) = start y-coordinate
+                        \
+                        \   XX15(5 4) = end x-coordinate
+                        \
+                        \   XX12(1 0) = end y-coordinate
+                        \
+                        \ We can then pass this to the line clipping routine
+                        \ before storing the resulting line in the ship line
+                        \ heap
+
+ INY                    \ ???
+
+ LDA (V),Y              \ Fetch byte #2 for this edge into X, which contains
+ TAX                    \ the number of the vertex at the start of the edge
+
+ LDA XX3,X              \ Fetch the x_lo coordinate of the edge's start vertex
+ STA XX15               \ from the XX3 heap into XX15
+
+ LDA XX3+1,X            \ Fetch the x_hi coordinate of the edge's start vertex
+ STA XX15+1             \ from the XX3 heap into XX15+1
+
+ LDA XX3+2,X            \ Fetch the y_lo coordinate of the edge's start vertex
+ STA XX15+2             \ from the XX3 heap into XX15+2
+
+ LDA XX3+3,X            \ Fetch the y_hi coordinate of the edge's start vertex
+ STA XX15+3             \ from the XX3 heap into XX15+3
+
+ INY                    \ ???
  LDA (V),Y
  TAX
- LDA XX3,X
- STA XX15
- LDA XX3+1,X
- STA Y1
- LDA XX3+2,X
- STA X2
- LDA XX3+3,X
- STA Y2
- INY
- LDA (V),Y
- TAX
- LDA XX3,X
- STA XX15+4
- LDA XX3+2,X
- STA XX12
- LDA XX3+3,X
- STA XX12+1
- LDA XX3+1,X
- STA XX15+5
- JSR LL147
 
- BCS LL78
+ LDA XX3,X              \ Fetch the x_lo coordinate of the edge's end vertex
+ STA XX15+4             \ from the XX3 heap into XX15+4
 
- JSR L78F8
+ LDA XX3+2,X            \ Fetch the y_lo coordinate of the edge's end vertex
+ STA XX12               \ from the XX3 heap into XX12
+
+ LDA XX3+3,X            \ Fetch the y_hi coordinate of the edge's end vertex
+ STA XX12+1             \ from the XX3 heap into XX11+1
+
+ LDA XX3+1,X            \ Fetch the x_hi coordinate of the edge's end vertex
+ STA XX15+5             \ from the XX3 heap into XX15+5
+
+ JSR LL147              \ Call LL147 to see if the new line segment needs to be
+                        \ clipped to fit on-screen, returning the clipped line's
+                        \ end-points in (X1, Y1) and (X2, Y2)
+
+ BCS LL78               \ If the C flag is set then the line is not visible on
+                        \ screen, so jump to LL78 so we don't store this line
+                        \ in the ship line heap
+
+ JSR LLX30              \ ???
+
+\ ******************************************************************************
+\
+\       Name: LL9 (Part 11 of 12)
+\       Type: Subroutine
+\   Category: Drawing ships
+\    Summary: Draw ship: Add all visible edges to the ship line heap
+\  Deep dive: Drawing ships
+\
+\ ------------------------------------------------------------------------------
+\
+\ This part adds all the visible edges to the ship line heap, so we can draw
+\ them in part 12.
+\
+\ ******************************************************************************
 
 .LL78
 
- LDA XX14
+ LDA XX14               \ ???
  CMP CNT
  BCS LL81
 
- LDA V
- CLC
- ADC #&04
+ LDA V                  \ Increment V by 4 so V(1 0) points to the data for the
+ CLC                    \ next edge
+ ADC #4
  STA V
- BCC ll81
 
- INC V+1
+ BCC ll81               \ If the above addition didn't overflow, jump to ll81
+
+ INC V+1                \ Otherwise increment the high byte of V(1 0), as we
+                        \ just moved the V(1 0) pointer past a page boundary
 
 .ll81
 
- INC XX17
+ INC XX17               \ ???
  LDY XX17
  CPY XX20
  BCC LL75
 
 .LL81
 
- JMP LL155
+ JMP LL155              \ ???
+
+\ ******************************************************************************
+\
+\       Name: LL118
+\       Type: Subroutine
+\   Category: Drawing lines
+\    Summary: Move a point along a line until it is on-screen
+\  Deep dive: Line-clipping
+\
+\ ------------------------------------------------------------------------------
+\
+\ Given a point (x1, y1), a gradient and a direction of slope, move the point
+\ along the line until it is on-screen, so this effectively clips the (x1, y1)
+\ end of a line to be on the screen.
+\
+\ See the deep dive on "Line-clipping" for more details.
+\
+\ Arguments:
+\
+\   XX15(1 0)           x1 as a 16-bit coordinate (x1_hi x1_lo)
+\
+\   XX15(3 2)           y1 as a 16-bit coordinate (y1_hi y1_lo)
+\
+\   XX12+2              The line's gradient * 256 (so 1.0 = 256)
+\
+\   XX12+3              The direction of slope:
+\
+\                         * Positive (bit 7 clear) = top left to bottom right
+\
+\                         * Negative (bit 7 set) = top right to bottom left
+\
+\   T                   The type of slope:
+\
+\                         * 0 if it's more vertical than horizontal
+\
+\                         * &FF if it's more horizontal than vertical
+\
+\ Returns:
+\
+\   XX15                x1 as an 8-bit coordinate
+\
+\   XX15+2              y1 as an 8-bit coordinate
+\
+\ Other entry points:
+\
+\   LL118-1             Contains an RTS
+\
+\ ******************************************************************************
 
 .LL118
 
- LDA Y1
- BPL LL119
+ LDA XX15+1             \ If x1_hi is positive, jump down to LL119 to skip
+ BPL LL119              \ the following
 
- STA S
- JSR LL120
+ STA S                  \ Otherwise x1_hi is negative, i.e. off the left of the
+                        \ screen, so set S = x1_hi
 
- TXA
- CLC
- ADC X2
- STA X2
- TYA
- ADC Y2
- STA Y2
- LDA #&00
+ JSR LL120              \ Call LL120 to calculate:
+                        \
+                        \   (Y X) = (S x1_lo) * XX12+2      if T = 0
+                        \         = x1 * gradient
+                        \
+                        \   (Y X) = (S x1_lo) / XX12+2      if T <> 0
+                        \         = x1 / gradient
+                        \
+                        \ with the sign of (Y X) set to the opposite of the
+                        \ line's direction of slope
+
+ TXA                    \ Set y1 = y1 + (Y X)
+ CLC                    \
+ ADC XX15+2             \ starting with the low bytes
+ STA XX15+2
+
+ TYA                    \ And then adding the high bytes
+ ADC XX15+3
+ STA XX15+3
+
+ LDA #0                 \ Set x1 = 0
  STA XX15
- STA Y1
- TAX
+ STA XX15+1
+
+ TAX                    \ Set X = 0 so the next instruction becomes a JMP
 
 .LL119
 
- BEQ LL134
+ BEQ LL134              \ If x1_hi = 0 then jump down to LL134 to skip the
+                        \ following, as the x-coordinate is already on-screen
+                        \ (as 0 <= (x_hi x_lo) <= 255)
 
- STA S
- DEC S
- JSR LL120
+ STA S                  \ Otherwise x1_hi is positive, i.e. x1 >= 256 and off
+ DEC S                  \ the right side of the screen, so set S = x1_hi - 1
 
- TXA
- CLC
- ADC X2
- STA X2
- TYA
- ADC Y2
- STA Y2
- LDX #&FF
+ JSR LL120              \ Call LL120 to calculate:
+                        \
+                        \   (Y X) = (S x1_lo) * XX12+2      if T = 0
+                        \         = (x1 - 256) * gradient
+                        \
+                        \   (Y X) = (S x1_lo) / XX12+2      if T <> 0
+                        \         = (x1 - 256) / gradient
+                        \
+                        \ with the sign of (Y X) set to the opposite of the
+                        \ line's direction of slope
+
+ TXA                    \ Set y1 = y1 + (Y X)
+ CLC                    \
+ ADC XX15+2             \ starting with the low bytes
+ STA XX15+2
+
+ TYA                    \ And then adding the high bytes
+ ADC XX15+3
+ STA XX15+3
+
+ LDX #255               \ Set x1 = 255
  STX XX15
  INX
- STX Y1
+ STX XX15+1
 
 .LL134
 
- LDA Y2
- BPL LL135
+                        \ We have moved the point so the x-coordinate is on
+                        \ screen (i.e. in the range 0-255), so now for the
+                        \ y-coordinate
 
- STA S
- LDA X2
+ LDA XX15+3             \ If y1_hi is positive, jump down to LL119 to skip
+ BPL LL135              \ the following
+
+ STA S                  \ Otherwise y1_hi is negative, i.e. off the top of the
+                        \ screen, so set S = y1_hi
+
+ LDA XX15+2             \ Set R = y1_lo
  STA R
- JSR LL123
 
- TXA
- CLC
- ADC XX15
+ JSR LL123              \ Call LL123 to calculate:
+                        \
+                        \   (Y X) = (S R) / XX12+2      if T = 0
+                        \         = y1 / gradient
+                        \
+                        \   (Y X) = (S R) * XX12+2      if T <> 0
+                        \         = y1 * gradient
+                        \
+                        \ with the sign of (Y X) set to the opposite of the
+                        \ line's direction of slope
+
+ TXA                    \ Set x1 = x1 + (Y X)
+ CLC                    \
+ ADC XX15               \ starting with the low bytes
  STA XX15
- TYA
- ADC Y1
- STA Y1
- LDA #&00
- STA X2
- STA Y2
+
+ TYA                    \ And then adding the high bytes
+ ADC XX15+1
+ STA XX15+1
+
+ LDA #0                 \ Set y1 = 0
+ STA XX15+2
+ STA XX15+3
 
 .LL135
 
- LDA X2
- SEC
- SBC #&C0
+\BNE LL139              \ This instruction is commented out in the original
+                        \ source
+
+ LDA XX15+2             \ Set (S R) = (y1_hi y1_lo) - 192
+ SEC                    \
+ SBC #Y*2               \ starting with the low bytes
  STA R
- LDA Y2
- SBC #&00
+
+ LDA XX15+3             \ And then subtracting the high bytes
+ SBC #0
  STA S
- BCC LL136
 
- JSR LL123
+ BCC LL136              \ If the subtraction underflowed, i.e. if y1 < 192, then
+                        \ y1 is already on-screen, so jump to LL136 to return
+                        \ from the subroutine, as we are done
 
- TXA
- CLC
- ADC XX15
+.LL139
+
+                        \ If we get here then y1 >= 192, i.e. off the bottom of
+                        \ the screen
+
+ JSR LL123              \ Call LL123 to calculate:
+                        \
+                        \   (Y X) = (S R) / XX12+2      if T = 0
+                        \         = (y1 - 192) / gradient
+                        \
+                        \   (Y X) = (S R) * XX12+2      if T <> 0
+                        \         = (y1 - 192) * gradient
+                        \
+                        \ with the sign of (Y X) set to the opposite of the
+                        \ line's direction of slope
+
+ TXA                    \ Set x1 = x1 + (Y X)
+ CLC                    \
+ ADC XX15               \ starting with the low bytes
  STA XX15
- TYA
- ADC Y1
- STA Y1
- LDA #&BF
- STA X2
- LDA #&00
- STA Y2
+
+ TYA                    \ And then adding the high bytes
+ ADC XX15+1
+ STA XX15+1
+
+ LDA #Y*2-1             \ Set y1 = 2 * #Y - 1. The constant #Y is 96, the
+ STA XX15+2             \ y-coordinate of the mid-point of the space view, so
+ LDA #0                 \ this sets Y2 to 191, the y-coordinate of the bottom
+ STA XX15+3             \ pixel row of the space view
 
 .LL136
 
- RTS
+ RTS                    \ Return from the subroutine
+
+\ ******************************************************************************
+\
+\       Name: LL120
+\       Type: Subroutine
+\   Category: Maths (Arithmetic)
+\    Summary: Calculate (Y X) = (S x1_lo) * XX12+2 or (S x1_lo) / XX12+2
+\
+\ ------------------------------------------------------------------------------
+\
+\ Calculate the following:
+\
+\   * If T = 0  (more vertical than horizontal), (Y X) = (S x1_lo) * XX12+2
+\
+\   * If T <> 0 (more horizontal than vertical), (Y X) = (S x1_lo) / XX12+2
+\
+\ giving (Y X) the opposite sign to the slope direction in XX12+3.
+\
+\ Other entry points:
+\
+\   LL122               Calculate (Y X) = (S R) * Q and set the sign to the
+\                       opposite of the top byte on the stack
+\
+\ ******************************************************************************
 
 .LL120
 
- LDA XX15
+ LDA XX15               \ Set R = x1_lo
  STA R
- JSR LL129
 
- PHA
- LDX T
- BNE LL121
+\.LL120                 \ This label is commented out in the original source
+
+ JSR LL129              \ Call LL129 to do the following:
+                        \
+                        \   Q = XX12+2
+                        \     = line gradient
+                        \
+                        \   A = S EOR XX12+3
+                        \     = S EOR slope direction
+                        \
+                        \   (S R) = |S R|
+                        \
+                        \ So A contains the sign of S * slope direction
+
+ PHA                    \ Store A on the stack so we can use it later
+
+ LDX T                  \ If T is non-zero, so it's more horizontal than
+ BNE LL121              \ vertical, jump down to LL121 to calculate this
+                        \ instead:
+                        \
+                        \   (Y X) = (S R) / Q
 
 .LL122
 
- LDA #&00
- TAX
+                        \ The following calculates:
+                        \
+                        \   (Y X) = (S R) * Q
+                        \
+                        \ using the same shift-and-add algorithm that's
+                        \ documented in MULT1
+
+ LDA #0                 \ Set A = 0
+
+ TAX                    \ Set (Y X) = 0 so we can start building the answer here
  TAY
- LSR S
- ROR R
- ASL Q
- BCC LL126
+
+ LSR S                  \ Shift (S R) to the right, so we extract bit 0 of (S R)
+ ROR R                  \ into the C flag
+
+ ASL Q                  \ Shift Q to the left, catching bit 7 in the C flag
+
+ BCC LL126              \ If C (i.e. the next bit from Q) is clear, do not do
+                        \ the addition for this bit of Q, and instead skip to
+                        \ LL126 to just do the shifts
 
 .LL125
 
- TXA
- CLC
- ADC R
+ TXA                    \ Set (Y X) = (Y X) + (S R)
+ CLC                    \
+ ADC R                  \ starting with the low bytes
  TAX
- TYA
+
+ TYA                    \ And then doing the high bytes
  ADC S
  TAY
 
 .LL126
 
- LSR S
+ LSR S                  \ Shift (S R) to the right
  ROR R
- ASL Q
- BCS LL125
 
- BNE LL126
+ ASL Q                  \ Shift Q to the left, catching bit 7 in the C flag
 
- PLA
- BPL LL133
+ BCS LL125              \ If C (i.e. the next bit from Q) is set, loop back to
+                        \ LL125 to do the addition for this bit of Q
 
- RTS
+ BNE LL126              \ If Q has not yet run out of set bits, loop back to
+                        \ LL126 to do the "shift" part of shift-and-add until
+                        \ we have done additions for all the set bits in Q, to
+                        \ give us our multiplication result
+
+ PLA                    \ Restore A, which we calculated above, from the stack
+
+ BPL LL133              \ If A is positive jump to LL133 to negate (Y X) and
+                        \ return from the subroutine using a tail call
+
+ RTS                    \ Return from the subroutine
+
+\ ******************************************************************************
+\
+\       Name: LL123
+\       Type: Subroutine
+\   Category: Maths (Arithmetic)
+\    Summary: Calculate (Y X) = (S R) / XX12+2 or (S R) * XX12+2
+\
+\ ------------------------------------------------------------------------------
+\
+\ Calculate the following:
+\
+\   * If T = 0,  calculate (Y X) = (S R) / XX12+2
+\
+\   * If T <> 0, calculate (Y X) = (S R) * XX12+2
+\
+\ giving (Y X) the opposite sign to the slope direction in XX12+3.
+\
+\ Arguments:
+\
+\   XX12+2              The line's gradient * 256 (so 1.0 = 256)
+\
+\   XX12+3              The direction of slope:
+\
+\                         * Bit 7 clear means top left to bottom right
+\
+\                         * Bit 7 set means top right to bottom left
+\
+\ Other entry points:
+\
+\   LL121               Calculate (Y X) = (S R) / Q and set the sign to the
+\                       opposite of the top byte on the stack
+\
+\   LL133               Negate (Y X) and return from the subroutine
+\
+\   LL128               Contains an RTS
+\
+\ ******************************************************************************
 
 .LL123
 
- JSR LL129
+ JSR LL129              \ Call LL129 to do the following:
+                        \
+                        \   Q = XX12+2
+                        \     = line gradient
+                        \
+                        \   A = S EOR XX12+3
+                        \     = S EOR slope direction
+                        \
+                        \   (S R) = |S R|
+                        \
+                        \ So A contains the sign of S * slope direction
 
- PHA
- LDX T
- BNE LL122
+ PHA                    \ Store A on the stack so we can use it later
+
+ LDX T                  \ If T is non-zero, so it's more horizontal than
+ BNE LL122              \ vertical, jump up to LL122 to calculate this instead:
+                        \
+                        \   (Y X) = (S R) * Q
 
 .LL121
 
- LDA #&FF
+                        \ The following calculates:
+                        \
+                        \   (Y X) = (S R) / Q
+                        \
+                        \ using the same shift-and-subtract algorithm that's
+                        \ documented in TIS2
+
+ LDA #%11111111         \ Set Y = %11111111
  TAY
- ASL A
+
+ ASL A                  \ Set X = %11111110
  TAX
+
+                        \ This sets (Y X) = %1111111111111110, so we can rotate
+                        \ through 15 loop iterations, getting a 1 each time, and
+                        \ then getting a 0 on the 16th iteration... and we can
+                        \ also use it to catch our result bits into bit 0 each
+                        \ time
 
 .LL130
 
- ASL R
+ ASL R                  \ Shift (S R) to the left
  ROL S
- LDA S
- BCS LL131
 
- CMP Q
+ LDA S                  \ Set A = S
+
+ BCS LL131              \ If bit 7 of S was set, then jump straight to the
+                        \ subtraction
+
+ CMP Q                  \ If A < Q (i.e. S < Q), skip the following subtractions
  BCC LL132
 
 .LL131
 
- SBC Q
- STA S
- LDA R
- SBC #&00
+ SBC Q                  \ A >= Q (i.e. S >= Q) so set:
+ STA S                  \
+                        \   S = (A R) - Q
+                        \     = (S R) - Q
+                        \
+                        \ starting with the low bytes (we know the C flag is
+                        \ set so the subtraction will be correct)
+
+ LDA R                  \ And then doing the high bytes
+ SBC #0
  STA R
- SEC
+
+ SEC                    \ Set the C flag to rotate into the result in (Y X)
 
 .LL132
 
- TXA
- ROL A
- TAX
+ TXA                    \ Rotate the counter in (Y X) to the left, and catch the
+ ROL A                  \ result bit into bit 0 (which will be a 0 if we didn't
+ TAX                    \ do the subtraction, or 1 if we did)
  TYA
  ROL A
  TAY
- BCS LL130
 
- PLA
- BMI LL128
+ BCS LL130              \ If we still have set bits in (Y X), loop back to LL130
+                        \ to do the next iteration of 15, until we have done the
+                        \ whole division
+
+ PLA                    \ Restore A, which we calculated above, from the stack
+
+ BMI LL128              \ If A is negative jump to LL128 to return from the
+                        \ subroutine with (Y X) as is
 
 .LL133
 
- TXA
- EOR #&FF
- ADC #&01
- TAX
- TYA
- EOR #&FF
- ADC #&00
+ TXA                    \ Otherwise negate (Y X) using two's complement by first
+ EOR #%11111111         \ setting the low byte to ~X + 1
+\CLC                    \
+ ADC #1                 \ The CLC instruction is commented out in the original
+ TAX                    \ source. It would have no effect as we know the C flag
+                        \ is clear from when we passed through the BCS above
+
+ TYA                    \ Then set the high byte to ~Y + C
+ EOR #%11111111
+ ADC #0
  TAY
 
 .LL128
 
- RTS
+ RTS                    \ Return from the subroutine
+
+\ ******************************************************************************
+\
+\       Name: LL129
+\       Type: Subroutine
+\   Category: Maths (Arithmetic)
+\    Summary: Calculate Q = XX12+2, A = S EOR XX12+3 and (S R) = |S R|
+\
+\ ------------------------------------------------------------------------------
+\
+\ Do the following, in this order:
+\
+\   Q = XX12+2
+\
+\   A = S EOR XX12+3
+\
+\   (S R) = |S R|
+\
+\ This sets up the variables required above to calculate (S R) / XX12+2 and give
+\ the result the opposite sign to XX13+3.
+\
+\ ******************************************************************************
 
 .LL129
 
- LDX XX12+2
+ LDX XX12+2             \ Set Q = XX12+2
  STX Q
- LDA S
+
+ LDA S                  \ If S is positive, jump to LL127
  BPL LL127
 
- LDA #&00
+ LDA #0                 \ Otherwise set R = -R
  SEC
  SBC R
  STA R
- LDA S
+
+ LDA S                  \ Push S onto the stack
  PHA
- EOR #&FF
- ADC #&00
+
+ EOR #%11111111         \ Set S = ~S + 1 + C
+ ADC #0
  STA S
- PLA
+
+ PLA                    \ Pull the original, negative S from the stack into A
 
 .LL127
 
- EOR XX12+3
- RTS
+ EOR XX12+3             \ Set A = original argument S EOR'd with XX12+3
+
+ RTS                    \ Return from the subroutine
+
+\ ******************************************************************************
+\
+\       Name: LL145 (Part 1 of 4)
+\       Type: Subroutine
+\   Category: Drawing lines
+\    Summary: Clip line: Work out which end-points are on-screen, if any
+\  Deep dive: Line-clipping
+\             Extended screen coordinates
+\
+\ ------------------------------------------------------------------------------
+\
+\ This routine clips the line from (x1, y1) to (x2, y2) so it fits on-screen, or
+\ returns an error if it can't be clipped to fit. The arguments are 16-bit
+\ coordinates, and the clipped line is returned using 8-bit screen coordinates.
+\
+\ This part sets XX13 to reflect which of the two points are on-screen and
+\ off-screen.
+\
+\ Arguments:
+\
+\   XX15(1 0)           x1 as a 16-bit coordinate (x1_hi x1_lo)
+\
+\   XX15(3 2)           y1 as a 16-bit coordinate (y1_hi y1_lo)
+\
+\   XX15(5 4)           x2 as a 16-bit coordinate (x2_hi x2_lo)
+\
+\   XX12(1 0)           y2 as a 16-bit coordinate (y2_hi y2_lo)
+\
+\ Returns:
+\
+\   (X1, Y1)            Screen coordinate of the start of the clipped line
+\
+\   (X2, Y2)            Screen coordinate of the end of the clipped line
+\
+\   C flag              Clear if the clipped line fits on-screen, set if it
+\                       doesn't
+\
+\   XX13                The state of the original coordinates on-screen:
+\
+\                         * 0   = (x2, y2) on-screen
+\
+\                         * 95  = (x1, y1) on-screen,  (x2, y2) off-screen
+\
+\                         * 191 = (x1, y1) off-screen, (x2, y2) off-screen
+\
+\                       So XX13 is non-zero if the end of the line was clipped,
+\                       meaning the next line sent to BLINE can't join onto the
+\                       end but has to start a new segment
+\
+\   SWAP                The swap status of the returned coordinates:
+\
+\                         * &FF if we swapped the values of (x1, y1) and
+\                           (x2, y2) as part of the clipping process
+\
+\                         * 0 if the coordinates are still in the same order
+\
+\   Y                   Y is preserved
+\
+\ Other entry points:
+\
+\   LL147               Don't initialise the values in SWAP or A
+\
+\ ******************************************************************************
 
 .LL145
 
- LDA #&00
+ LDA #0                 \ Set SWAP = 0
  STA SWAP
- LDA XX15+5
+
+ LDA XX15+5             \ Set A = x2_hi
 
 .LL147
 
- LDX #&BF
- ORA XX12+1
- BNE LL107
+ LDX #Y*2-1             \ Set Y2 = #Y * 2 - 1. The constant #Y is 96, the
+                        \ y-coordinate of the mid-point of the space view, so
+                        \ this sets Y2 to 191, the y-coordinate of the bottom
+                        \ pixel row of the space view
 
- CPX XX12
- BCC LL107
+ ORA XX12+1             \ If one or both of x2_hi and y2_hi are non-zero, jump
+ BNE LL107              \ to LL107 to skip the following
 
- LDX #&00
+ CPX XX12               \ If y2_lo > the y-coordinate of the bottom of screen
+ BCC LL107              \ then (x2, y2) is off the bottom of the screen, so skip
+                        \ the following instruction, leaving X at 191
+
+ LDX #0                 \ Set X = 0
 
 .LL107
 
- STX XX13
- LDA Y1
- ORA Y2
+ STX XX13               \ Set XX13 = X, so we have:
+                        \
+                        \   * XX13 = 0 if x2_hi = y2_hi = 0, y2_lo is on-screen
+                        \
+                        \   * XX13 = 191 if x2_hi or y2_hi are non-zero or y2_lo
+                        \            is off the bottom of the screen
+                        \
+                        \ In other words, XX13 is 191 if (x2, y2) is off-screen,
+                        \ otherwise it is 0
+
+ LDA XX15+1             \ If one or both of x1_hi and y1_hi are non-zero, jump
+ ORA XX15+3             \ jump to LL83
  BNE LL83
 
- LDA #&BF
- CMP X2
- BCC LL83
+ LDA #Y*2-1             \ If y1_lo > the y-coordinate of the bottom of screen
+ CMP XX15+2             \ then (x1, y1) is off the bottom of the screen, so jump
+ BCC LL83               \ to LL83
 
- LDA XX13
- BNE LL108
+                        \ If we get here, (x1, y1) is on-screen
+
+ LDA XX13               \ If XX13 is non-zero, i.e. (x2, y2) is off-screen, jump
+ BNE LL108              \ to LL108 to halve it before continuing at LL83
+
+                        \ If we get here, the high bytes are all zero, which
+                        \ means the x-coordinates are < 256 and therefore fit on
+                        \ screen, and neither coordinate is off the bottom of
+                        \ the screen. That means both coordinates are already on
+                        \ screen, so we don't need to do any clipping, all we
+                        \ need to do is move the low bytes into (X1, Y1) and
+                        \ X2, Y2) and return
 
 .LL146
 
- LDA X2
- STA Y1
- LDA XX15+4
- STA X2
- LDA XX12
- STA Y2
- CLC
- RTS
+                        \ If we get here then we have clipped our line to the
+                        \ (if we had to clip it at all), so we move the low
+                        \ bytes from (x1, y1) and (x2, y2) into (X1, Y1) and
+                        \ (X2, Y2), remembering that they share locations with
+                        \ XX15:
+                        \
+                        \   X1 = XX15
+                        \   Y1 = XX15+1
+                        \   X2 = XX15+2
+                        \   Y2 = XX15+3
+                        \
+                        \ X1 already contains x1_lo, so now we do the rest
+
+ LDA XX15+2             \ Set Y1 (aka XX15+1) = y1_lo
+ STA XX15+1
+
+ LDA XX15+4             \ Set X2 (aka XX15+2) = x2_lo
+ STA XX15+2
+
+ LDA XX12               \ Set Y2 (aka XX15+3) = y2_lo
+ STA XX15+3
+
+ CLC                    \ Clear the C flag as the clipped line fits on-screen
+
+ RTS                    \ Return from the subroutine
 
 .LL109
 
- SEC
- RTS
+ SEC                    \ Set the C flag to indicate the clipped line does not
+                        \ fit on-screen
+
+ RTS                    \ Return from the subroutine
 
 .LL108
 
- LSR XX13
+ LSR XX13               \ If we get here then (x2, y2) is off-screen and XX13 is
+                        \ 191, so shift XX13 right to halve it to 95
+
+\ ******************************************************************************
+\
+\       Name: LL145 (Part 2 of 4)
+\       Type: Subroutine
+\   Category: Drawing lines
+\    Summary: Clip line: Work out if any part of the line is on-screen
+\  Deep dive: Line-clipping
+\             Extended screen coordinates
+\
+\ ------------------------------------------------------------------------------
+\
+\ This part does a number of tests to see if the line is on or off the screen.
+\
+\ If we get here then at least one of (x1, y1) and (x2, y2) is off-screen, with
+\ XX13 set as follows:
+\
+\   * 0   = (x1, y1) off-screen, (x2, y2) on-screen
+\
+\   * 95  = (x1, y1) on-screen,  (x2, y2) off-screen
+\
+\   * 191 = (x1, y1) off-screen, (x2, y2) off-screen
+\
+\ where "off-screen" is defined as having a non-zero high byte in one of the
+\ coordinates, or in the case of y-coordinates, having a low byte > 191, the
+\ y-coordinate of the bottom of the space view.
+\
+\ ******************************************************************************
 
 .LL83
 
- LDA XX13
- BPL LL115
+ LDA XX13               \ If XX13 < 128 then only one of the points is on-screen
+ BPL LL115              \ so jump down to LL115 to skip the checks of whether
+                        \ both points are in the strips to the right or bottom
+                        \ of the screen
 
- LDA Y1
- AND XX15+5
- BMI LL109
+                        \ If we get here, both points are off-screen
 
- LDA Y2
- AND XX12+1
- BMI LL109
+ LDA XX15+1             \ If both x1_hi and x2_hi have bit 7 set, jump to LL109
+ AND XX15+5             \ to return from the subroutine with the C flag set, as
+ BMI LL109              \ the entire line is above the top of the screen
 
- LDX Y1
+ LDA XX15+3             \ If both y1_hi and y2_hi have bit 7 set, jump to LL109
+ AND XX12+1             \ to return from the subroutine with the C flag set, as
+ BMI LL109              \ the entire line is to the left of the screen
+
+ LDX XX15+1             \ Set A = X = x1_hi - 1
  DEX
  TXA
- LDX XX15+5
+
+ LDX XX15+5             \ Set XX12+2 = x2_hi - 1
  DEX
  STX XX12+2
- ORA XX12+2
- BPL LL109
 
- LDA X2
- CMP #&C0
- LDA Y2
- SBC #&00
- STA XX12+2
- LDA XX12
- CMP #&C0
- LDA XX12+1
- SBC #&00
- ORA XX12+2
- BPL LL109
+ ORA XX12+2             \ If neither (x1_hi - 1) or (x2_hi - 1) have bit 7 set,
+ BPL LL109              \ jump to LL109 to return from the subroutine with the C
+                        \ flag set, as the line doesn't fit on-screen
+
+ LDA XX15+2             \ If y1_lo < y-coordinate of screen bottom, clear the C
+ CMP #Y*2               \ flag, otherwise set it
+
+ LDA XX15+3             \ Set XX12+2 = y1_hi - (1 - C), so:
+ SBC #0                 \
+ STA XX12+2             \  * Set XX12+2 = y1_hi - 1 if y1_lo is on-screen
+                        \  * Set XX12+2 = y1_hi     otherwise
+                        \
+                        \ We do this subtraction because we are only interested
+                        \ in trying to move the points up by a screen if that
+                        \ might move the point into the space view portion of
+                        \ the screen, i.e. if y1_lo is on-screen
+
+ LDA XX12               \ If y2_lo < y-coordinate of screen bottom, clear the C
+ CMP #Y*2               \ flag, otherwise set it
+
+ LDA XX12+1             \ Set XX12+2 = y2_hi - (1 - C), so:
+ SBC #0                 \
+                        \  * Set XX12+1 = y2_hi - 1 if y2_lo is on-screen
+                        \  * Set XX12+1 = y2_hi     otherwise
+                        \
+                        \ We do this subtraction because we are only interested
+                        \ in trying to move the points up by a screen if that
+                        \ might move the point into the space view portion of
+                        \ the screen, i.e. if y1_lo is on-screen
+
+ ORA XX12+2             \ If neither XX12+1 or XX12+2 have bit 7 set, jump to
+ BPL LL109              \ LL109 to return from the subroutine with the C flag
+                        \ set, as the line doesn't fit on-screen
+
+\ ******************************************************************************
+\
+\       Name: LL145 (Part 3 of 4)
+\       Type: Subroutine
+\   Category: Drawing lines
+\    Summary: Clip line: Calculate the line's gradient
+\  Deep dive: Line-clipping
+\             Extended screen coordinates
+\
+\ ******************************************************************************
 
 .LL115
 
- TYA
- PHA
- LDA XX15+4
+ TYA                    \ Store Y on the stack so we can preserve it through the
+ PHA                    \ call to this subroutine
+
+ LDA XX15+4             \ Set XX12+2 = x2_lo - x1_lo
  SEC
  SBC XX15
  STA XX12+2
- LDA XX15+5
- SBC Y1
- STA XX12+3
- LDA XX12
- SEC
- SBC X2
- STA XX12+4
- LDA XX12+1
- SBC Y2
- STA XX12+5
- EOR XX12+3
- STA S
- LDA XX12+5
- BPL LL110
 
- LDA #&00
+ LDA XX15+5             \ Set XX12+3 = x2_hi - x1_hi
+ SBC XX15+1
+ STA XX12+3
+
+ LDA XX12               \ Set XX12+4 = y2_lo - y1_lo
  SEC
+ SBC XX15+2
+ STA XX12+4
+
+ LDA XX12+1             \ Set XX12+5 = y2_hi - y1_hi
+ SBC XX15+3
+ STA XX12+5
+
+                        \ So we now have:
+                        \
+                        \   delta_x in XX12(3 2)
+                        \   delta_y in XX12(5 4)
+                        \
+                        \ where the delta is (x1, y1) - (x2, y2))
+
+ EOR XX12+3             \ Set S = the sign of delta_x * the sign of delta_y, so
+ STA S                  \ if bit 7 of S is set, the deltas have different signs
+
+ LDA XX12+5             \ If delta_y_hi is positive, jump down to LL110 to skip
+ BPL LL110              \ the following
+
+ LDA #0                 \ Otherwise flip the sign of delta_y to make it
+ SEC                    \ positive, starting with the low bytes
  SBC XX12+4
  STA XX12+4
- LDA #&00
- SBC XX12+5
- STA XX12+5
+
+ LDA #0                 \ And then doing the high bytes, so now:
+ SBC XX12+5             \
+ STA XX12+5             \   XX12(5 4) = |delta_y|
 
 .LL110
 
- LDA XX12+3
- BPL LL111
+ LDA XX12+3             \ If delta_x_hi is positive, jump down to LL111 to skip
+ BPL LL111              \ the following
 
- SEC
- LDA #&00
+ SEC                    \ Otherwise flip the sign of delta_x to make it
+ LDA #0                 \ positive, starting with the low bytes
  SBC XX12+2
  STA XX12+2
- LDA #&00
- SBC XX12+3
+
+ LDA #0                 \ And then doing the high bytes, so now:
+ SBC XX12+3             \
+                        \   (A XX12+2) = |delta_x|
 
 .LL111
 
- TAX
+                        \ We now keep halving |delta_x| and |delta_y| until
+                        \ both of them have zero in their high bytes
+
+ TAX                    \ IF |delta_x_hi| is non-zero, skip the following
  BNE LL112
 
- LDX XX12+5
- BEQ LL113
+ LDX XX12+5             \ If |delta_y_hi| = 0, jump down to LL113 (as both
+ BEQ LL113              \ |delta_x_hi| and |delta_y_hi| are 0)
 
 .LL112
 
- LSR A
+ LSR A                  \ Halve the value of delta_x in (A XX12+2)
  ROR XX12+2
- LSR XX12+5
+
+ LSR XX12+5             \ Halve the value of delta_y XX12(5 4)
  ROR XX12+4
- JMP LL111
+
+ JMP LL111              \ Loop back to LL111
 
 .LL113
 
- STX T
- LDA XX12+2
- CMP XX12+4
+                        \ By now, the high bytes of both |delta_x| and |delta_y|
+                        \ are zero
+
+ STX T                  \ We know that X = 0 as that's what we tested with a BEQ
+                        \ above, so this sets T = 0
+
+ LDA XX12+2             \ If delta_x_lo < delta_y_lo, so our line is more
+ CMP XX12+4             \ vertical than horizontal, jump to LL114
  BCC LL114
 
- STA Q
- LDA XX12+4
- JSR LL28
+ STA Q                  \ Set Q = delta_x_lo
 
- JMP LL116
+ LDA XX12+4             \ Set A = delta_y_lo
+
+ JSR LL28               \ Call LL28 to calculate:
+                        \
+                        \   R = 256 * A / Q
+                        \     = 256 * delta_y_lo / delta_x_lo
+
+ JMP LL116              \ Jump to LL116, as we now have the line's gradient in R
 
 .LL114
 
- LDA XX12+4
+ LDA XX12+4             \ Set Q = delta_y_lo
  STA Q
- LDA XX12+2
- JSR LL28
+ LDA XX12+2             \ Set A = delta_x_lo
 
- DEC T
+ JSR LL28               \ Call LL28 to calculate:
+                        \
+                        \   R = 256 * A / Q
+                        \     = 256 * delta_x_lo / delta_y_lo
+
+ DEC T                  \ T was set to 0 above, so this sets T = &FF
+
+\ ******************************************************************************
+\
+\       Name: LL145 (Part 4 of 4)
+\       Type: Subroutine
+\   Category: Drawing lines
+\    Summary: Clip line: Call the routine in LL188 to do the actual clipping
+\  Deep dive: Line-clipping
+\             Extended screen coordinates
+\
+\ ------------------------------------------------------------------------------
+\
+\ This part sets things up to call the routine in LL188, which does the actual
+\ clipping.
+\
+\ If we get here, then R has been set to the gradient of the line (x1, y1) to
+\ (x2, y2), with T indicating the type of slope:
+\
+\   * 0   = it's more vertical than horizontal
+\
+\   * &FF = it's more horizontal than vertical
+\
+\ and XX13 has been set as follows:
+\
+\   * 0   = (x1, y1) off-screen, (x2, y2) on-screen
+\
+\   * 95  = (x1, y1) on-screen,  (x2, y2) off-screen
+\
+\   * 191 = (x1, y1) off-screen, (x2, y2) off-screen
+\
+\ ******************************************************************************
 
 .LL116
 
- LDA R
+ LDA R                  \ Store the gradient in XX12+2
  STA XX12+2
- LDA S
- STA XX12+3
- LDA XX13
+
+ LDA S                  \ Store the type of slope in XX12+3, bit 7 clear means
+ STA XX12+3             \ top left to bottom right, bit 7 set means top right to
+                        \ bottom left
+
+ LDA XX13               \ If XX13 = 0, skip the following instruction
  BEQ LL138
 
- BPL LLX117
+ BPL LLX117             \ If XX13 is positive, it must be 95. This means
+                        \ (x1, y1) is on-screen but (x2, y2) isn't, so we jump
+                        \ to LLX117 to swap the (x1, y1) and (x2, y2)
+                        \ coordinates around before doing the actual clipping,
+                        \ because we need to clip (x2, y2) but the clipping
+                        \ routine at LL118 only clips (x1, y1)
 
 .LL138
 
- JSR LL118
+                        \ If we get here, XX13 = 0 or 191, so (x1, y1) is
+                        \ off-screen and needs clipping
 
- LDA XX13
- BPL LL124
+ JSR LL118              \ Call LL118 to move (x1, y1) along the line onto the
+                        \ screen, i.e. clip the line at the (x1, y1) end
 
- LDA Y1
- ORA Y2
- BNE LL137
+ LDA XX13               \ If XX13 = 0, i.e. (x2, y2) is on-screen, jump down to
+ BPL LL124              \ LL124 to return with a successfully clipped line
 
- LDA X2
- CMP #&C0
- BCS LL137
+.LL117
+
+                        \ If we get here, XX13 = 191 (both coordinates are
+                        \ off-screen)
+
+ LDA XX15+1             \ If either of x1_hi or y1_hi are non-zero, jump to
+ ORA XX15+3             \ LL137 to return from the subroutine with the C flag
+ BNE LL137              \ set, as the line doesn't fit on-screen
+
+ LDA XX15+2             \ If y1_lo > y-coordinate of the bottom of the screen
+ CMP #Y*2               \ jump to LL137 to return from the subroutine with the
+ BCS LL137              \ C flag set, as the line doesn't fit on-screen
 
 .LLX117
 
- LDX XX15
+                        \ If we get here, XX13 = 95 or 191, and in both cases
+                        \ (x2, y2) is off-screen, so we now need to swap the
+                        \ (x1, y1) and (x2, y2) coordinates around before doing
+                        \ the actual clipping, because we need to clip (x2, y2)
+                        \ but the clipping routine at LL118 only clips (x1, y1)
+
+ LDX XX15               \ Swap x1_lo = x2_lo
  LDA XX15+4
  STA XX15
  STX XX15+4
- LDA XX15+5
- LDX Y1
- STX XX15+5
- STA Y1
- LDX X2
- LDA XX12
- STA X2
- STX XX12
- LDA XX12+1
- LDX Y2
- STX XX12+1
- STA Y2
- JSR LL118
 
- DEC SWAP
+ LDA XX15+5             \ Swap x2_lo = x1_lo
+ LDX XX15+1
+ STX XX15+5
+ STA XX15+1
+
+ LDX XX15+2             \ Swap y1_lo = y2_lo
+ LDA XX12
+ STA XX15+2
+ STX XX12
+
+ LDA XX12+1             \ Swap y2_lo = y1_lo
+ LDX XX15+3
+ STX XX12+1
+ STA XX15+3
+
+ JSR LL118              \ Call LL118 to move (x1, y1) along the line onto the
+                        \ screen, i.e. clip the line at the (x1, y1) end
+
+ DEC SWAP               \ Set SWAP = &FF to indicate that we just clipped the
+                        \ line at the (x2, y2) end by swapping the coordinates
+                        \ (the DEC does this as we set SWAP to 0 at the start of
+                        \ this subroutine)
 
 .LL124
 
- PLA
- TAY
- JMP LL146
+ PLA                    \ Restore Y from the stack so it gets preserved through
+ TAY                    \ the call to this subroutine
+
+ JMP LL146              \ Jump up to LL146 to move the low bytes of (x1, y1) and
+                        \ (x2, y2) into (X1, Y1) and (X2, Y2), and return from
+                        \ the subroutine with a successfully clipped line
 
 .LL137
 
- PLA
- TAY
- SEC
- RTS
+ PLA                    \ Restore Y from the stack so it gets preserved through
+ TAY                    \ the call to this subroutine
+
+ SEC                    \ Set the C flag to indicate the clipped line does not
+                        \ fit on-screen
+
+ RTS                    \ Return from the subroutine
+
+\ ******************************************************************************
+\
+\       Name: LL9 (Part 12 of 12)
+\       Type: Subroutine
+\   Category: Drawing ships
+\    Summary: Draw ship: Draw all the visible edges from the ship line heap
+\  Deep dive: Drawing ships
+\
+\ ------------------------------------------------------------------------------
+\
+\ This part draws the lines in the ship line heap, which is used both to draw
+\ the ship, and to remove it from the screen.
+\
+\ ******************************************************************************
 
 .LL155
 
- LDY XX14
+ LDY XX14               \ ???
 
-.L78D3
+.LL27
 
- CPY XX14+1
+ CPY XX14+1             \ ???
  BCS L78F1
 
  LDA (XX19),Y
@@ -37088,7 +39907,7 @@ ENDIF
  STA Y2
  JSR LL30
 
- JMP L78D3
+ JMP LL27               \ ???
 
 .L78F1
 
@@ -37096,23 +39915,32 @@ ENDIF
  LDY #&00
  STA (XX19),Y
 
-.L78F7
+.LL82
 
- RTS
+ RTS                    \ Return from the subroutine
 
-.L78F8
+\ ******************************************************************************
+\
+\       Name: LLX30
+\       Type: Subroutine
+\   Category: Drawing lines
+\    Summary: Draw a one-segment line using smooth animation
+\
+\ ******************************************************************************
+
+.LLX30
 
  LDY XX14
  CPY XX14+1
  PHP
- LDX #&03
+ LDX #3
 
-.L78FF
+.LLXL
 
  LDA XX15,X
  STA XX12,X
  DEX
- BPL L78FF
+ BPL LLXL
 
  JSR LL30
 
@@ -37138,691 +39966,1585 @@ ENDIF
  INY
  STY XX14
  PLP
- BCS L78F7
+ BCS LL82
 
  JMP LL30
 
+\ ******************************************************************************
+\
+\ Save output/ELTG.bin
+\
+\ ******************************************************************************
+
+PRINT "ELITE G"
+PRINT "Assembled at ", ~CODE_G%
+PRINT "Ends at ", ~P%
+PRINT "Code size is ", ~(P% - CODE_G%)
+PRINT "Execute at ", ~LOAD%
+PRINT "Reload at ", ~LOAD_G%
+
+PRINT "S.ELTG ", ~CODE_G%, " ", ~P%, " ", ~LOAD%, " ", ~LOAD_G%
+\SAVE "output/ELTG.bin", CODE_G%, P%, LOAD%
+
+\ ******************************************************************************
+\
+\ ELITE H FILE
+\
+\ Produces the binary file ELTH.bin that gets loaded by elite-bcfs.asm.
+\
+\ ******************************************************************************
+
+CODE_H% = P%
+LOAD_H% = LOAD% + P% - CODE%
+
+\ ******************************************************************************
+\
+\       Name: MVEIT (Part 1 of 9)
+\       Type: Subroutine
+\   Category: Moving
+\    Summary: Move current ship: Tidy the orientation vectors
+\  Deep dive: Program flow of the ship-moving routine
+\             Scheduling tasks with the main loop counter
+\
+\ ------------------------------------------------------------------------------
+\
+\ This routine has multiple stages. This stage does the following:
+\
+\   * Tidy the orientation vectors for one of the ship slots
+\
+\ Arguments:
+\
+\   INWK                The current ship/planet/sun's data block
+\
+\   XSAV                The slot number of the current ship/planet/sun
+\
+\   TYPE                The type of the current ship/planet/sun
+\
+\ ******************************************************************************
+
 .MVEIT
 
- LDA INWK+31
- AND #&A0
- BNE MV30
+ LDA INWK+31            \ If bits 5 or 7 of ship byte #31 are set, jump to MV30
+ AND #%10100000         \ as the ship is either exploding or has been killed, so
+ BNE MV30               \ we don't need to tidy its orientation vectors or apply
+                        \ tactics
 
- LDA MCNT
- EOR XSAV
- AND #&0F
- BNE MV3
+ LDA MCNT               \ Fetch the main loop counter
 
- JSR TIDY
+ EOR XSAV               \ Fetch the slot number of the ship we are moving, EOR
+ AND #15                \ with the loop counter and apply mod 15 to the result.
+ BNE MV3                \ The result will be zero when "counter mod 15" matches
+                        \ the slot number, so this makes sure we call TIDY 12
+                        \ times every 16 main loop iterations, like this:
+                        \
+                        \   Iteration 0, tidy the ship in slot 0
+                        \   Iteration 1, tidy the ship in slot 1
+                        \   Iteration 2, tidy the ship in slot 2
+                        \     ...
+                        \   Iteration 11, tidy the ship in slot 11
+                        \   Iteration 12, do nothing
+                        \   Iteration 13, do nothing
+                        \   Iteration 14, do nothing
+                        \   Iteration 15, do nothing
+                        \   Iteration 16, tidy the ship in slot 0
+                        \     ...
+                        \
+                        \ and so on
+
+ JSR TIDY               \ Call TIDY to tidy up the orientation vectors, to
+                        \ prevent the ship from getting elongated and out of
+                        \ shape due to the imprecise nature of trigonometry
+                        \ in assembly language
+
+\ ******************************************************************************
+\
+\       Name: MVEIT (Part 2 of 9)
+\       Type: Subroutine
+\   Category: Moving
+\    Summary: Move current ship: Call tactics routine, remove ship from scanner
+\  Deep dive: Scheduling tasks with the main loop counter
+\
+\ ------------------------------------------------------------------------------
+\
+\ This routine has multiple stages. This stage does the following:
+\
+\   * Apply tactics to ships with AI enabled (by calling the TACTICS routine)
+\
+\   * Remove the ship from the scanner, so we can move it
+\
+\ ******************************************************************************
 
 .MV3
 
- LDX TYPE
- BPL L794D
+ LDX TYPE               \ If the type of the ship we are moving is positive,
+ BPL P%+5               \ i.e. it is not a planet (types 128 and 130) or sun
+                        \ (type 129), then skip the following instruction
 
- JMP MV40
+ JMP MV40               \ This item is the planet or sun, so jump to MV40 to
+                        \ move it, which ends by jumping back into this routine
+                        \ at MV45 (after all the rotation, tactics and scanner
+                        \ code, which we don't need to apply to planets or suns)
 
-.L794D
+ LDA INWK+32            \ Fetch the ship's byte #32 (AI flag) into A
 
- LDA INWK+32
- BPL MV30
+ BPL MV30               \ If bit 7 of the AI flag is clear, then if this is a
+                        \ ship or missile it is dumb and has no AI, and if this
+                        \ is the space station it is not hostile, so in both
+                        \ cases skip the following as it has no tactics
 
- CPX #&01
- BEQ MV26
+ CPX #MSL               \ If the ship is a missile, skip straight to MV26 to
+ BEQ MV26               \ call the TACTICS routine, as we do this every
+                        \ iteration of the main loop for missiles only
 
- LDA MCNT
- EOR XSAV
- AND #&07
- BNE MV30
+ LDA MCNT               \ Fetch the main loop counter
+
+ EOR XSAV               \ Fetch the slot number of the ship we are moving, EOR
+ AND #7                 \ with the loop counter and apply mod 8 to the result.
+ BNE MV30               \ The result will be zero when "counter mod 8" matches
+                        \ the slot number mod 8, so this makes sure we call
+                        \ TACTICS 12 times every 8 main loop iterations, like
+                        \ this:
+                        \
+                        \   Iteration 0, apply tactics to slots 0 and 8
+                        \   Iteration 1, apply tactics to slots 1 and 9
+                        \   Iteration 2, apply tactics to slots 2 and 10
+                        \   Iteration 3, apply tactics to slots 3 and 11
+                        \   Iteration 4, apply tactics to slot 4
+                        \   Iteration 5, apply tactics to slot 5
+                        \   Iteration 6, apply tactics to slot 6
+                        \   Iteration 7, apply tactics to slot 7
+                        \   Iteration 8, apply tactics to slots 0 and 8
+                        \     ...
+                        \
+                        \ and so on
 
 .MV26
 
- JSR TACTICS
+ JSR TACTICS            \ Call TACTICS to apply AI tactics to this ship
 
 .MV30
 
- JSR SCAN
+ JSR SCAN               \ Draw the ship on the scanner, which has the effect of
+                        \ removing it, as it's already at this point and hasn't
+                        \ yet moved
 
- LDA INWK+27
+\ ******************************************************************************
+\
+\       Name: MVEIT (Part 3 of 9)
+\       Type: Subroutine
+\   Category: Moving
+\    Summary: Move current ship: Move ship forward according to its speed
+\
+\ ------------------------------------------------------------------------------
+\
+\ This routine has multiple stages. This stage does the following:
+\
+\   * Move the ship forward (along the vector pointing in the direction of
+\     travel) according to its speed:
+\
+\     (x, y, z) += nosev_hi * speed / 64
+\
+\ ******************************************************************************
+
+ LDA INWK+27            \ Set Q = the ship's speed byte #27 * 4
  ASL A
  ASL A
  STA Q
- LDA INWK+10
- AND #&7F
- JSR FMLTU
 
- STA R
- LDA INWK+10
- LDX #&00
- JSR L7ADF
+ LDA INWK+10            \ Set A = |nosev_x_hi|
+ AND #%01111111
 
- LDA INWK+12
- AND #&7F
- JSR FMLTU
+ JSR FMLTU              \ Set R = A * Q / 256
+ STA R                  \       = |nosev_x_hi| * speed / 64
 
- STA R
- LDA INWK+12
- LDX #&03
- JSR L7ADF
+ LDA INWK+10            \ If nosev_x_hi is positive, then:
+ LDX #0                 \
+ JSR MVT1-2             \   (x_sign x_hi x_lo) = (x_sign x_hi x_lo) + R
+                        \
+                        \ If nosev_x_hi is negative, then:
+                        \
+                        \   (x_sign x_hi x_lo) = (x_sign x_hi x_lo) - R
+                        \
+                        \ So in effect, this does:
+                        \
+                        \   (x_sign x_hi x_lo) += nosev_x_hi * speed / 64
 
- LDA INWK+14
- AND #&7F
- JSR FMLTU
+ LDA INWK+12            \ Set A = |nosev_y_hi|
+ AND #%01111111
 
- STA R
- LDA INWK+14
- LDX #&06
- JSR L7ADF
+ JSR FMLTU              \ Set R = A * Q / 256
+ STA R                  \       = |nosev_y_hi| * speed / 64
 
- LDA INWK+27
- CLC
+ LDA INWK+12            \ If nosev_y_hi is positive, then:
+ LDX #3                 \
+ JSR MVT1-2             \   (y_sign y_hi y_lo) = (y_sign y_hi y_lo) + R
+                        \
+                        \ If nosev_y_hi is negative, then:
+                        \
+                        \   (y_sign y_hi y_lo) = (y_sign y_hi y_lo) - R
+                        \
+                        \ So in effect, this does:
+                        \
+                        \   (y_sign y_hi y_lo) += nosev_y_hi * speed / 64
+
+ LDA INWK+14            \ Set A = |nosev_z_hi|
+ AND #%01111111
+
+ JSR FMLTU              \ Set R = A * Q / 256
+ STA R                  \       = |nosev_z_hi| * speed / 64
+
+ LDA INWK+14            \ If nosev_y_hi is positive, then:
+ LDX #6                 \
+ JSR MVT1-2             \   (z_sign z_hi z_lo) = (z_sign z_hi z_lo) + R
+                        \
+                        \ If nosev_z_hi is negative, then:
+                        \
+                        \   (z_sign z_hi z_lo) = (z_sign z_hi z_lo) - R
+                        \
+                        \ So in effect, this does:
+                        \
+                        \   (z_sign z_hi z_lo) += nosev_z_hi * speed / 64
+
+\ ******************************************************************************
+\
+\       Name: MVEIT (Part 4 of 9)
+\       Type: Subroutine
+\   Category: Moving
+\    Summary: Move current ship: Apply acceleration to ship's speed as a one-off
+\
+\ ------------------------------------------------------------------------------
+\
+\ This routine has multiple stages. This stage does the following:
+\
+\   * Apply acceleration to the ship's speed (if acceleration is non-zero),
+\     and then zero the acceleration as it's a one-off change
+\
+\ ******************************************************************************
+
+ LDA INWK+27            \ Set A = the ship's speed in byte #24 + the ship's
+ CLC                    \ acceleration in byte #28
  ADC INWK+28
- BPL L79A2
 
- LDA #&00
+ BPL P%+4               \ If the result is positive, skip the following
+                        \ instruction
 
-.L79A2
+ LDA #0                 \ Set A to 0 to stop the speed from going negative
 
- LDY #&0F
- CMP (XX0),Y
- BCC L79AA
+ LDY #15                \ Fetch byte #15 from the ship's blueprint, which
+                        \ contains the ship's maximum speed
 
- LDA (XX0),Y
+ CMP (XX0),Y            \ If A < the ship's maximum speed, skip the following
+ BCC P%+4               \ instruction
 
-.L79AA
+ LDA (XX0),Y            \ Set A to the ship's maximum speed
 
- STA INWK+27
- LDA #&00
- STA INWK+28
- LDX ALP1
- LDA INWK
- EOR #&FF
+ STA INWK+27            \ We have now calculated the new ship's speed after
+                        \ accelerating and keeping the speed within the ship's
+                        \ limits, so store the updated speed in byte #27
+
+ LDA #0                 \ We have added the ship's acceleration, so we now set
+ STA INWK+28            \ it back to 0 in byte #28, as it's a one-off change
+
+\ ******************************************************************************
+\
+\       Name: MVEIT (Part 5 of 9)
+\       Type: Subroutine
+\   Category: Moving
+\    Summary: Move current ship: Rotate ship's location by our pitch and roll
+\  Deep dive: Rotating the universe
+\
+\ ------------------------------------------------------------------------------
+\
+\ This routine has multiple stages. This stage does the following:
+\
+\   * Rotate the ship's location in space by the amount of pitch and roll of
+\     our ship. See below for a deeper explanation of this routine
+\
+\ ******************************************************************************
+
+ LDX ALP1               \ Fetch the magnitude of the current roll into X, so
+                        \ if the roll angle is alpha, X contains |alpha|
+
+ LDA INWK               \ Set P = ~x_lo (i.e. with all its bits flipped) so that
+ EOR #%11111111         \ we can pass x_lo to MLTU2 below)
  STA P
- LDA INWK+1
- JSR MLTU2-2
 
- STA P+2
- LDA ALP2+1
- EOR INWK+2
- LDX #&03
- JSR MVT6
+ LDA INWK+1             \ Set A = x_hi
 
- STA K2+3
- LDA P+1
+ JSR MLTU2-2            \ Set (A P+1 P) = (A ~P) * X
+                        \               = (x_hi x_lo) * alpha
+
+ STA P+2                \ Store the high byte of the result in P+2, so we now
+                        \ have:
+                        \
+                        \ P(2 1 0) = (x_hi x_lo) * alpha
+
+ LDA ALP2+1             \ Fetch the flipped sign of the current roll angle alpha
+ EOR INWK+2             \ from ALP2+1 and EOR with byte #2 (x_sign), so if the
+                        \ flipped roll angle and x_sign have the same sign, A
+                        \ will be positive, else it will be negative. So A will
+                        \ contain the sign bit of x_sign * flipped alpha sign,
+                        \ which is the opposite to the sign of the above result,
+                        \ so we now have:
+                        \
+                        \ (A P+2 P+1) = - (x_sign x_hi x_lo) * alpha / 256
+
+ LDX #3                 \ Set (A P+2 P+1) = (y_sign y_hi y_lo) + (A P+2 P+1)
+ JSR MVT6               \                 = y - x * alpha / 256
+
+ STA K2+3               \ Set K2(3) = A = the sign of the result
+
+ LDA P+1                \ Set K2(1) = P+1, the low byte of the result
  STA K2+1
- EOR #&FF
- STA P
- LDA P+2
+
+ EOR #%11111111         \ Set P = ~K2+1 (i.e. with all its bits flipped) so
+ STA P                  \ that we can pass K2+1 to MLTU2 below)
+
+ LDA P+2                \ Set K2(2) = A = P+2
  STA K2+2
- LDX BET1
- JSR MLTU2-2
 
- STA P+2
- LDA K2+3
- EOR BET2
- LDX #&06
- JSR MVT6
+                        \ So we now have result 1 above:
+                        \
+                        \ K2(3 2 1) = (A P+2 P+1)
+                        \           = y - x * alpha / 256
 
- STA INWK+8
- LDA P+1
+ LDX BET1               \ Fetch the magnitude of the current pitch into X, so
+                        \ if the pitch angle is beta, X contains |beta|
+
+ JSR MLTU2-2            \ Set (A P+1 P) = (A ~P) * X
+                        \               = K2(2 1) * beta
+
+ STA P+2                \ Store the high byte of the result in P+2, so we now
+                        \ have:
+                        \
+                        \ P(2 1 0) = K2(2 1) * beta
+
+ LDA K2+3               \ Fetch the sign of the above result in K(3 2 1) from
+ EOR BET2               \ K2+3 and EOR with BET2, the sign of the current pitch
+                        \ rate, so if the pitch and K(3 2 1) have the same sign,
+                        \ A will be positive, else it will be negative. So A
+                        \ will contain the sign bit of K(3 2 1) * beta, which is
+                        \ the same as the sign of the above result, so we now
+                        \ have:
+                        \
+                        \ (A P+2 P+1) = K2(3 2 1) * beta / 256
+
+ LDX #6                 \ Set (A P+2 P+1) = (z_sign z_hi z_lo) + (A P+2 P+1)
+ JSR MVT6               \                 = z + K2 * beta / 256
+
+ STA INWK+8             \ Set z_sign = A = the sign of the result
+
+ LDA P+1                \ Set z_lo = P+1, the low byte of the result
  STA INWK+6
- EOR #&FF
- STA P
- LDA P+2
+
+ EOR #%11111111         \ Set P = ~z_lo (i.e. with all its bits flipped) so that
+ STA P                  \ we can pass z_lo to MLTU2 below)
+
+ LDA P+2                \ Set z_hi = P+2
  STA INWK+7
- JSR MLTU2
 
- STA P+2
- LDA K2+3
+                        \ So we now have result 2 above:
+                        \
+                        \ (z_sign z_hi z_lo) = (A P+2 P+1)
+                        \                    = z + K2 * beta / 256
+
+ JSR MLTU2              \ MLTU2 doesn't change Q, and Q was set to beta in
+                        \ the previous call to MLTU2, so this call does:
+                        \
+                        \ (A P+1 P) = (A ~P) * Q
+                        \           = (z_hi z_lo) * beta
+
+ STA P+2                \ Set P+2 = A = the high byte of the result, so we
+                        \ now have:
+                        \
+                        \ P(2 1 0) = (z_hi z_lo) * beta
+
+ LDA K2+3               \ Set y_sign = K2+3
  STA INWK+5
- EOR BET2
- EOR INWK+8
- BPL MV43
 
- LDA P+1
+ EOR BET2               \ EOR y_sign with BET2, the sign of the current pitch
+ EOR INWK+8             \ rate, and z_sign. If the result is positive jump to
+ BPL MV43               \ MV43, otherwise this means beta * z and y have
+                        \ different signs, i.e. P(2 1) and K2(3 2 1) have
+                        \ different signs, so we need to add them in order to
+                        \ calculate K2(2 1) - P(2 1)
+
+ LDA P+1                \ Set (y_hi y_lo) = K2(2 1) + P(2 1)
  ADC K2+1
  STA INWK+3
  LDA P+2
  ADC K2+2
  STA INWK+4
- JMP MV44
+
+ JMP MV44               \ Jump to MV44 to continue the calculation
 
 .MV43
 
- LDA K2+1
- SBC P+1
- STA INWK+3
+ LDA K2+1               \ Reversing the logic above, we need to subtract P(2 1)
+ SBC P+1                \ and K2(3 2 1) to calculate K2(2 1) - P(2 1), so this
+ STA INWK+3             \ sets (y_hi y_lo) = K2(2 1) - P(2 1)
  LDA K2+2
  SBC P+2
  STA INWK+4
- BCS MV44
 
- LDA #&01
- SBC INWK+3
- STA INWK+3
- LDA #&00
- SBC INWK+4
- STA INWK+4
- LDA INWK+5
- EOR #&80
+ BCS MV44               \ If the above subtraction did not underflow, then
+                        \ jump to MV44, otherwise we need to negate the result
+
+ LDA #1                 \ Negate (y_sign y_hi y_lo) using two's complement,
+ SBC INWK+3             \ first doing the low bytes:
+ STA INWK+3             \
+                        \ y_lo = 1 - y_lo
+
+ LDA #0                 \ Then the high bytes:
+ SBC INWK+4             \
+ STA INWK+4             \ y_hi = 0 - y_hi
+
+ LDA INWK+5             \ And finally flip the sign in y_sign
+ EOR #%10000000
  STA INWK+5
 
 .MV44
 
- LDX ALP1
- LDA INWK+3
- EOR #&FF
+                        \ So we now have result 3 above:
+                        \
+                        \ (y_sign y_hi y_lo) = K2(2 1) - P(2 1)
+                        \                    = K2 - beta * z
+
+ LDX ALP1               \ Fetch the magnitude of the current roll into X, so
+                        \ if the roll angle is alpha, X contains |alpha|
+
+ LDA INWK+3             \ Set P = ~y_lo (i.e. with all its bits flipped) so that
+ EOR #&FF               \ we can pass y_lo to MLTU2 below)
  STA P
- LDA INWK+4
- JSR MLTU2-2
 
- STA P+2
- LDA ALP2
- EOR INWK+5
- LDX #&00
- JSR MVT6
+ LDA INWK+4             \ Set A = y_hi
 
- STA INWK+2
- LDA P+2
+ JSR MLTU2-2            \ Set (A P+1 P) = (A ~P) * X
+                        \               = (y_hi y_lo) * alpha
+
+ STA P+2                \ Store the high byte of the result in P+2, so we now
+                        \ have:
+                        \
+                        \ P(2 1 0) = (y_hi y_lo) * alpha
+
+ LDA ALP2               \ Fetch the correct sign of the current roll angle alpha
+ EOR INWK+5             \ from ALP2 and EOR with byte #5 (y_sign), so if the
+                        \ correct roll angle and y_sign have the same sign, A
+                        \ will be positive, else it will be negative. So A will
+                        \ contain the sign bit of x_sign * correct alpha sign,
+                        \ which is the same as the sign of the above result,
+                        \ so we now have:
+                        \
+                        \ (A P+2 P+1) = (y_sign y_hi y_lo) * alpha / 256
+
+ LDX #0                 \ Set (A P+2 P+1) = (x_sign x_hi x_lo) + (A P+2 P+1)
+ JSR MVT6               \                 = x + y * alpha / 256
+
+ STA INWK+2             \ Set x_sign = A = the sign of the result
+
+ LDA P+2                \ Set x_hi = P+2, the high byte of the result
  STA INWK+1
- LDA P+1
+
+ LDA P+1                \ Set x_lo = P+1, the low byte of the result
  STA INWK
+
+                        \ So we now have result 4 above:
+                        \
+                        \ x = x + alpha * y
+                        \
+                        \ and the rotation of (x, y, z) is done
+
+\ ******************************************************************************
+\
+\       Name: MVEIT (Part 6 of 9)
+\       Type: Subroutine
+\   Category: Moving
+\    Summary: Move current ship: Move the ship in space according to our speed
+\
+\ ------------------------------------------------------------------------------
+\
+\ This routine has multiple stages. This stage does the following:
+\
+\   * Move the ship in space according to our speed (we already moved it
+\     according to its own speed in part 3).
+\
+\ We do this by subtracting our speed (i.e. the distance we travel in this
+\ iteration of the loop) from the other ship's z-coordinate. We subtract because
+\ they appear to be "moving" in the opposite direction to us, and the whole
+\ MVEIT routine is about moving the other ships rather than us (even though we
+\ are the one doing the moving).
+\
+\ Other entry points:
+\
+\   MV45                Rejoin the MVEIT routine after the rotation, tactics and
+\                       scanner code
+\
+\ ******************************************************************************
 
 .MV45
 
- LDA DELTA
+ LDA DELTA              \ Set R to our speed in DELTA
  STA R
- LDA #&80
- LDX #&06
- JSR MVT1
 
- LDA TYPE
- AND #&81
- CMP #&81
- BNE L7A68
+ LDA #%10000000         \ Set A to zeroes but with bit 7 set, so that (A R) is
+                        \ a 16-bit number containing -R, or -speed
 
- RTS
+ LDX #6                 \ Set X to the z-axis so the call to MVT1 does this:
+ JSR MVT1               \
+                        \ (z_sign z_hi z_lo) = (z_sign z_hi z_lo) + (A R)
+                        \                    = (z_sign z_hi z_lo) - speed
 
-.L7A68
+ LDA TYPE               \ If the ship type is not the sun (129) then skip the
+ AND #%10000001         \ next instruction, otherwise return from the subroutine
+ CMP #129               \ as we don't need to rotate the sun around its origin.
+ BNE P%+3               \ Having both the AND and the CMP is a little odd, as
+                        \ the sun is the only ship type with bits 0 and 7 set,
+                        \ so the AND has no effect and could be removed
 
- LDY #&09
- JSR MVS4
+ RTS                    \ Return from the subroutine, as the ship we are moving
+                        \ is the sun and doesn't need any of the following
 
- LDY #&0F
- JSR MVS4
+\ ******************************************************************************
+\
+\       Name: MVEIT (Part 7 of 9)
+\       Type: Subroutine
+\   Category: Moving
+\    Summary: Move current ship: Rotate ship's orientation vectors by pitch/roll
+\  Deep dive: Orientation vectors
+\             Pitching and rolling
+\
+\ ------------------------------------------------------------------------------
+\
+\ This routine has multiple stages. This stage does the following:
+\
+\   * Rotate the ship's orientation vectors according to our pitch and roll
+\
+\ As with the previous step, this is all about moving the other ships rather
+\ than us (even though we are the one doing the moving). So we rotate the
+\ current ship's orientation vectors (which defines its orientation in space),
+\ by the angles we are "moving" the rest of the sky through (alpha and beta, our
+\ roll and pitch), so the ship appears to us to be stationary while we rotate.
+\
+\ ******************************************************************************
 
- LDY #&15
- JSR MVS4
+ LDY #9                 \ Apply our pitch and roll rotations to the current
+ JSR MVS4               \ ship's nosev vector
 
- LDA INWK+30
- AND #&80
+ LDY #15                \ Apply our pitch and roll rotations to the current
+ JSR MVS4               \ ship's roofv vector
+
+ LDY #21                \ Apply our pitch and roll rotations to the current
+ JSR MVS4               \ ship's sidev vector
+
+\ ******************************************************************************
+\
+\       Name: MVEIT (Part 8 of 9)
+\       Type: Subroutine
+\   Category: Moving
+\    Summary: Move current ship: Rotate ship about itself by its own pitch/roll
+\  Deep dive: Orientation vectors
+\             Pitching and rolling by a fixed angle
+\
+\ ------------------------------------------------------------------------------
+\
+\ This routine has multiple stages. This stage does the following:
+\
+\   * If the ship we are processing is rolling or pitching itself, rotate it and
+\     apply damping if required
+\
+\ ******************************************************************************
+
+ LDA INWK+30            \ Fetch the ship's pitch counter and extract the sign
+ AND #%10000000         \ into RAT2
  STA RAT2
- LDA INWK+30
- AND #&7F
- BEQ MV8
 
- CMP #&7F
- SBC #&00
- ORA RAT2
- STA INWK+30
- LDX #&0F
- LDY #&09
+ LDA INWK+30            \ Fetch the ship's pitch counter and extract the value
+ AND #%01111111         \ without the sign bit into A
+
+ BEQ MV8                \ If the pitch counter is 0, then jump to MV8 to skip
+                        \ the following, as the ship is not pitching
+
+ CMP #%01111111         \ If bits 0-6 are set in the pitch counter (i.e. the
+                        \ ship's pitch is not damping down), then the C flag
+                        \ will be set by this instruction
+
+ SBC #0                 \ Set A = A - 0 - (1 - C), so if we are damping then we
+                        \ reduce A by 1, otherwise it is unchanged
+
+ ORA RAT2               \ Change bit 7 of A to the sign we saved in RAT2, so
+                        \ the updated pitch counter in A retains its sign
+
+ STA INWK+30            \ Store the updated pitch counter in byte #30
+
+ LDX #15                \ Rotate (roofv_x, nosev_x) by a small angle (pitch)
+ LDY #9
  JSR MVS5
 
- LDX #&11
- LDY #&0B
+ LDX #17                \ Rotate (roofv_y, nosev_y) by a small angle (pitch)
+ LDY #11
  JSR MVS5
 
- LDX #&13
- LDY #&0D
+ LDX #19                \ Rotate (roofv_z, nosev_z) by a small angle (pitch)
+ LDY #13
  JSR MVS5
 
 .MV8
 
- LDA INWK+29
- AND #&80
+ LDA INWK+29            \ Fetch the ship's roll counter and extract the sign
+ AND #%10000000         \ into RAT2
  STA RAT2
- LDA INWK+29
- AND #&7F
- BEQ MV5
 
- CMP #&7F
- SBC #&00
- ORA RAT2
- STA INWK+29
- LDX #&0F
- LDY #&15
+ LDA INWK+29            \ Fetch the ship's roll counter and extract the value
+ AND #%01111111         \ without the sign bit into A
+
+ BEQ MV5                \ If the roll counter is 0, then jump to MV5 to skip the
+                        \ following, as the ship is not rolling
+
+ CMP #%01111111         \ If bits 0-6 are set in the roll counter (i.e. the
+                        \ ship's roll is not damping down), then the C flag
+                        \ will be set by this instruction
+
+ SBC #0                 \ Set A = A - 0 - (1 - C), so if we are damping then we
+                        \ reduce A by 1, otherwise it is unchanged
+
+ ORA RAT2               \ Change bit 7 of A to the sign we saved in RAT2, so
+                        \ the updated roll counter in A retains its sign
+
+ STA INWK+29            \ Store the updated pitch counter in byte #29
+
+ LDX #15                \ Rotate (roofv_x, sidev_x) by a small angle (roll)
+ LDY #21
  JSR MVS5
 
- LDX #&11
- LDY #&17
+ LDX #17                \ Rotate (roofv_y, sidev_y) by a small angle (roll)
+ LDY #23
  JSR MVS5
 
- LDX #&13
- LDY #&19
+ LDX #19                \ Rotate (roofv_z, sidev_z) by a small angle (roll)
+ LDY #25
  JSR MVS5
+
+\ ******************************************************************************
+\
+\       Name: MVEIT (Part 9 of 9)
+\       Type: Subroutine
+\   Category: Moving
+\    Summary: Move current ship: Redraw on scanner, if it hasn't been destroyed
+\
+\ ------------------------------------------------------------------------------
+\
+\ This routine has multiple stages. This stage does the following:
+\
+\   * If the ship is exploding or being removed, hide it on the scanner
+\
+\   * Otherwise redraw the ship on the scanner, now that it's been moved
+\
+\ ******************************************************************************
 
 .MV5
 
- LDA INWK+31
- AND #&A0
- BNE MVD1
+ LDA INWK+31            \ Fetch the ship's exploding/killed state from byte #31
 
- LDA INWK+31
- ORA #&10
+ AND #%10100000         \ If we are exploding or removing this ship then jump to
+ BNE MVD1               \ MVD1 to remove it from the scanner permanently
+
+ LDA INWK+31            \ Set bit 4 to keep the ship visible on the scanner
+ ORA #%00010000
  STA INWK+31
- JMP SCAN
+
+ JMP SCAN               \ Display the ship on the scanner, returning from the
+                        \ subroutine using a tail call
 
 .MVD1
 
- LDA INWK+31
- AND #&EF
+ LDA INWK+31            \ Clear bit 4 to hide the ship on the scanner
+ AND #%11101111
  STA INWK+31
- RTS
 
-.L7ADF
+ RTS                    \ Return from the subroutine
 
- AND #&80
+\ ******************************************************************************
+\
+\       Name: MVT1
+\       Type: Subroutine
+\   Category: Moving
+\    Summary: Calculate (x_sign x_hi x_lo) = (x_sign x_hi x_lo) + (A R)
+\
+\ ------------------------------------------------------------------------------
+\
+\ Add the signed delta (A R) to a ship's coordinate, along the axis given in X.
+\ Mathematically speaking, this routine translates the ship along a single axis
+\ by a signed delta. Taking the example of X = 0, the x-axis, it does the
+\ following:
+\
+\   (x_sign x_hi x_lo) = (x_sign x_hi x_lo) + (A R)
+\
+\ (In practice, MVT1 is only ever called directly with A = 0 or 128, otherwise
+\ it is always called via MVT-2, which clears A apart from the sign bit. The
+\ routine is written to cope with a non-zero delta_hi, so it supports a full
+\ 16-bit delta, but it appears that delta_hi is only ever used to hold the
+\ sign of the delta.)
+\
+\ The comments below assume we are adding delta to the x-axis, though the axis
+\ is determined by the value of X.
+\
+\ Arguments:
+\
+\   (A R)               The signed delta, so A = delta_hi and R = delta_lo
+\
+\   X                   Determines which coordinate axis of INWK to change:
+\
+\                         * X = 0 adds the delta to (x_lo, x_hi, x_sign)
+\
+\                         * X = 3 adds the delta to (y_lo, y_hi, y_sign)
+\
+\                         * X = 6 adds the delta to (z_lo, z_hi, z_sign)
+\
+\ Other entry points:
+\
+\   MVT1-2              Clear bits 0-6 of A before entering MVT1
+\
+\ ******************************************************************************
+
+ AND #%10000000         \ Clear bits 0-6 of A
 
 .MVT1
 
- ASL A
- STA S
- LDA #&00
+ ASL A                  \ Set the C flag to the sign bit of the delta, leaving
+                        \ delta_hi << 1 in A
+
+ STA S                  \ Set S = delta_hi << 1
+                        \
+                        \ This also clears bit 0 of S
+
+ LDA #0                 \ Set T = just the sign bit of delta (in bit 7)
  ROR A
  STA T
- LSR S
- EOR INWK+2,X
- BMI MV10
 
- LDA R
- ADC INWK,X
- STA INWK,X
- LDA S
- ADC INWK+1,X
- STA INWK+1,X
- LDA INWK+2,X
- ADC #&00
- ORA T
+ LSR S                  \ Set S = delta_hi >> 1
+                        \       = |delta_hi|
+                        \
+                        \ This also clear the C flag, as we know that bit 0 of
+                        \ S was clear before the LSR
+
+ EOR INWK+2,X           \ If T EOR x_sign has bit 7 set, then x_sign and delta
+ BMI MV10               \ have different signs, so jump to MV10
+
+                        \ At this point, we know x_sign and delta have the same
+                        \ sign, that sign is in T, and S contains |delta_hi|,
+                        \ so now we want to do:
+                        \
+                        \   (x_sign x_hi x_lo) = (x_sign x_hi x_lo) + (S R)
+                        \
+                        \ and then set the sign of the result to the same sign
+                        \ as x_sign and delta
+
+ LDA R                  \ First we add the low bytes, so:
+ ADC INWK,X             \
+ STA INWK,X             \   x_lo = x_lo + R
+
+ LDA S                  \ Then we add the high bytes:
+ ADC INWK+1,X           \
+ STA INWK+1,X           \   x_hi = x_hi + S
+
+ LDA INWK+2,X           \ And finally we add any carry into x_sign, and if the
+ ADC #0                 \ sign of x_sign and delta in T is negative, make sure
+ ORA T                  \ the result is negative (by OR'ing with T)
  STA INWK+2,X
- RTS
+
+ RTS                    \ Return from the subroutine
 
 .MV10
 
- LDA INWK,X
- SEC
- SBC R
+                        \ If we get here, we know x_sign and delta have
+                        \ different signs, with delta's sign in T, and
+                        \ |delta_hi| in S, so now we want to do:
+                        \
+                        \   (x_sign x_hi x_lo) = (x_sign x_hi x_lo) - (S R)
+                        \
+                        \ and then set the sign of the result according to
+                        \ the signs of x_sign and delta
+
+ LDA INWK,X             \ First we subtract the low bytes, so:
+ SEC                    \
+ SBC R                  \   x_lo = x_lo - R
  STA INWK,X
- LDA INWK+1,X
- SBC S
- STA INWK+1,X
- LDA INWK+2,X
- AND #&7F
- SBC #&00
- ORA #&80
+
+ LDA INWK+1,X           \ Then we subtract the high bytes:
+ SBC S                  \
+ STA INWK+1,X           \   x_hi = x_hi - S
+
+ LDA INWK+2,X           \ And finally we subtract any borrow from bits 0-6 of
+ AND #%01111111         \ x_sign, and give the result the opposite sign bit to T
+ SBC #0                 \ (i.e. give it the sign of the original x_sign)
+ ORA #%10000000
  EOR T
  STA INWK+2,X
- BCS MV11
 
- LDA #&01
- SBC INWK,X
- STA INWK,X
- LDA #&00
- SBC INWK+1,X
- STA INWK+1,X
- LDA #&00
- SBC INWK+2,X
- AND #&7F
- ORA T
- STA INWK+2,X
+ BCS MV11               \ If the C flag is set by the above SBC, then our sum
+                        \ above didn't underflow and is correct - to put it
+                        \ another way, (x_sign x_hi x_lo) >= (S R) so the result
+                        \ should indeed have the same sign as x_sign, so jump to
+                        \ MV11 to return from the subroutine
+
+                        \ Otherwise our subtraction underflowed because
+                        \ (x_sign x_hi x_lo) < (S R), so we now need to flip the
+                        \ subtraction around by using two's complement to this:
+                        \
+                        \   (S R) - (x_sign x_hi x_lo)
+                        \
+                        \ and then we need to give the result the same sign as
+                        \ (S R), the delta, as that's the dominant figure in the
+                        \ sum
+
+ LDA #1                 \ First we subtract the low bytes, so:
+ SBC INWK,X             \
+ STA INWK,X             \   x_lo = 1 - x_lo
+
+ LDA #0                 \ Then we subtract the high bytes:
+ SBC INWK+1,X           \
+ STA INWK+1,X           \   x_hi = 0 - x_hi
+
+ LDA #0                 \ And then we subtract the sign bytes:
+ SBC INWK+2,X           \
+                        \   x_sign = 0 - x_sign
+
+ AND #%01111111         \ Finally, we set the sign bit to the sign in T, the
+ ORA T                  \ sign of the original delta, as the delta is the
+ STA INWK+2,X           \ dominant figure in the sum
 
 .MV11
 
- RTS
+ RTS                    \ Return from the subroutine
+
+\ ******************************************************************************
+\
+\       Name: MVS4
+\       Type: Subroutine
+\   Category: Moving
+\    Summary: Apply pitch and roll to an orientation vector
+\  Deep dive: Orientation vectors
+\             Pitching and rolling
+\
+\ ------------------------------------------------------------------------------
+\
+\ Apply pitch and roll angles alpha and beta to the orientation vector in Y.
+\
+\ Specifically, this routine rotates a point (x, y, z) around the origin by
+\ pitch alpha and roll beta, using the small angle approximation to make the
+\ maths easier, and incorporating the Minsky circle algorithm to make the
+\ rotation more stable (though more elliptic).
+\
+\ If that paragraph makes sense to you, then you should probably be writing
+\ this commentary! For the rest of us, there's a detailed explanation of all
+\ this in the deep dive on "Pitching and rolling".
+\
+\ Arguments:
+\
+\   Y                   Determines which of the INWK orientation vectors to
+\                       transform:
+\
+\                         * Y = 9 rotates nosev: (nosev_x, nosev_y, nosev_z)
+\
+\                         * Y = 15 rotates roofv: (roofv_x, roofv_y, roofv_z)
+\
+\                         * Y = 21 rotates sidev: (sidev_x, sidev_y, sidev_z)
+\
+\ ******************************************************************************
 
 .MVS4
 
- LDA ALPHA
+ LDA ALPHA              \ Set Q = alpha (the roll angle to rotate through)
  STA Q
- LDX INWK+2,Y
+
+ LDX INWK+2,Y           \ Set (S R) = nosev_y
  STX R
  LDX INWK+3,Y
  STX S
- LDX INWK,Y
- STX P
- LDA INWK+1,Y
- EOR #&80
- JSR MAD
 
- STA INWK+3,Y
- STX INWK+2,Y
- STX P
- LDX INWK,Y
+ LDX INWK,Y             \ These instructions have no effect as MAD overwrites
+ STX P                  \ X and P when called, but they set X = P = nosev_x_lo
+
+ LDA INWK+1,Y           \ Set A = -nosev_x_hi
+ EOR #%10000000
+
+ JSR MAD                \ Set (A X) = Q * A + (S R)
+ STA INWK+3,Y           \           = alpha * -nosev_x_hi + nosev_y
+ STX INWK+2,Y           \
+                        \ and store (A X) in nosev_y, so this does:
+                        \
+                        \ nosev_y = nosev_y - alpha * nosev_x_hi
+
+ STX P                  \ This instruction has no effect as MAD overwrites P,
+                        \ but it sets P = nosev_y_lo
+
+ LDX INWK,Y             \ Set (S R) = nosev_x
  STX R
  LDX INWK+1,Y
  STX S
- LDA INWK+3,Y
- JSR MAD
 
- STA INWK+1,Y
- STX INWK,Y
- STX P
- LDA BETA
+ LDA INWK+3,Y           \ Set A = nosev_y_hi
+
+ JSR MAD                \ Set (A X) = Q * A + (S R)
+ STA INWK+1,Y           \           = alpha * nosev_y_hi + nosev_x
+ STX INWK,Y             \
+                        \ and store (A X) in nosev_x, so this does:
+                        \
+                        \ nosev_x = nosev_x + alpha * nosev_y_hi
+
+ STX P                  \ This instruction has no effect as MAD overwrites P,
+                        \ but it sets P = nosev_x_lo
+
+ LDA BETA               \ Set Q = beta (the pitch angle to rotate through)
  STA Q
- LDX INWK+2,Y
+
+ LDX INWK+2,Y           \ Set (S R) = nosev_y
  STX R
  LDX INWK+3,Y
  STX S
  LDX INWK+4,Y
- STX P
- LDA INWK+5,Y
- EOR #&80
- JSR MAD
 
- STA INWK+3,Y
- STX INWK+2,Y
- STX P
- LDX INWK+4,Y
+ STX P                  \ This instruction has no effect as MAD overwrites P,
+                        \ but it sets P = nosev_y
+
+ LDA INWK+5,Y           \ Set A = -nosev_z_hi
+ EOR #%10000000
+
+ JSR MAD                \ Set (A X) = Q * A + (S R)
+ STA INWK+3,Y           \           = beta * -nosev_z_hi + nosev_y
+ STX INWK+2,Y           \
+                        \ and store (A X) in nosev_y, so this does:
+                        \
+                        \ nosev_y = nosev_y - beta * nosev_z_hi
+
+ STX P                  \ This instruction has no effect as MAD overwrites P,
+                        \ but it sets P = nosev_y_lo
+
+ LDX INWK+4,Y           \ Set (S R) = nosev_z
  STX R
  LDX INWK+5,Y
  STX S
- LDA INWK+3,Y
- JSR MAD
 
- STA INWK+5,Y
- STX INWK+4,Y
- RTS
+ LDA INWK+3,Y           \ Set A = nosev_y_hi
+
+ JSR MAD                \ Set (A X) = Q * A + (S R)
+ STA INWK+5,Y           \           = beta * nosev_y_hi + nosev_z
+ STX INWK+4,Y           \
+                        \ and store (A X) in nosev_z, so this does:
+                        \
+                        \ nosev_z = nosev_z + beta * nosev_y_hi
+
+ RTS                    \ Return from the subroutine
+
+\ ******************************************************************************
+\
+\       Name: MVT6
+\       Type: Subroutine
+\   Category: Moving
+\    Summary: Calculate (A P+2 P+1) = (x_sign x_hi x_lo) + (A P+2 P+1)
+\
+\ ------------------------------------------------------------------------------
+\
+\ Do the following calculation, for the coordinate given by X (so this is what
+\ it does for the x-coordinate):
+\
+\   (A P+2 P+1) = (x_sign x_hi x_lo) + (A P+2 P+1)
+\
+\ A is a sign bit and is not included in the calculation, but bits 0-6 of A are
+\ preserved. Bit 7 is set to the sign of the result.
+\
+\ Arguments:
+\
+\   A                   The sign of P(2 1) in bit 7
+\
+\   P(2 1)              The 16-bit value we want to add the coordinate to
+\
+\   X                   The coordinate to add, as follows:
+\
+\                         * If X = 0, add to (x_sign x_hi x_lo)
+\
+\                         * If X = 3, add to (y_sign y_hi y_lo)
+\
+\                         * If X = 6, add to (z_sign z_hi z_lo)
+\
+\ Returns:
+\
+\   A                   The sign of the result (in bit 7)
+\
+\ ******************************************************************************
 
 .MVT6
 
- TAY
- EOR INWK+2,X
- BMI MV50
+ TAY                    \ Store argument A into Y, for later use
 
- LDA P+1
- CLC
- ADC INWK,X
+ EOR INWK+2,X           \ Set A = A EOR x_sign
+
+ BMI MV50               \ If the sign is negative, i.e. A and x_sign have
+                        \ different signs, jump to MV50
+
+                        \ The signs are the same, so we can add the two
+                        \ arguments and keep the sign to get the result
+
+ LDA P+1                \ First we add the low bytes:
+ CLC                    \
+ ADC INWK,X             \   P+1 = P+1 + x_lo
  STA P+1
- LDA P+2
- ADC INWK+1,X
- STA P+2
- TYA
- RTS
+
+ LDA P+2                \ And then the high bytes:
+ ADC INWK+1,X           \
+ STA P+2                \   P+2 = P+2 + x_hi
+
+ TYA                    \ Restore the original A argument that we stored earlier
+                        \ so that we keep the original sign
+
+ RTS                    \ Return from the subroutine
 
 .MV50
 
- LDA INWK,X
- SEC
- SBC P+1
+ LDA INWK,X             \ First we subtract the low bytes:
+ SEC                    \
+ SBC P+1                \   P+1 = x_lo - P+1
  STA P+1
- LDA INWK+1,X
- SBC P+2
- STA P+2
- BCC MV51
 
- TYA
- EOR #&80
- RTS
+ LDA INWK+1,X           \ And then the high bytes:
+ SBC P+2                \
+ STA P+2                \   P+2 = x_hi - P+2
+
+ BCC MV51               \ If the last subtraction underflowed, then the C flag
+                        \ will be clear and x_hi < P+2, so jump to MV51 to
+                        \ negate the result
+
+ TYA                    \ Restore the original A argument that we stored earlier
+ EOR #%10000000         \ but flip bit 7, which flips the sign. We do this
+                        \ because x_hi >= P+2 so we want the result to have the
+                        \ same sign as x_hi (as it's the dominant side in this
+                        \ calculation). The sign of x_hi is x_sign, and x_sign
+                        \ has the opposite sign to A, so we flip the sign in A
+                        \ to return the correct result
+
+ RTS                    \ Return from the subroutine
 
 .MV51
 
- LDA #&01
- SBC P+1
- STA P+1
- LDA #&00
- SBC P+2
- STA P+2
- TYA
- RTS
+ LDA #1                 \ Our subtraction underflowed, so we negate the result
+ SBC P+1                \ using two's complement, first with the low byte:
+ STA P+1                \
+                        \   P+1 = 1 - P+1
+
+ LDA #0                 \ And then the high byte:
+ SBC P+2                \
+ STA P+2                \   P+2 = 0 - P+2
+
+ TYA                    \ Restore the original A argument that we stored earlier
+                        \ as this is the correct sign for the result. This is
+                        \ because x_hi < P+2, so we want to return the same sign
+                        \ as P+2, the dominant side
+
+ RTS                    \ Return from the subroutine
+
+\ ******************************************************************************
+\
+\       Name: MV40
+\       Type: Subroutine
+\   Category: Moving
+\    Summary: Rotate the planet or sun by our ship's pitch and roll
+\
+\ ------------------------------------------------------------------------------
+\
+\ Rotate the planet or sun's location in space by the amount of pitch and roll
+\ of our ship.
+\
+\ We implement this using the same equations as in part 5 of MVEIT, where we
+\ rotated the current ship's location by our pitch and roll. Specifically, the
+\ calculation is as follows:
+\
+\   1. K2 = y - alpha * x
+\   2. z = z + beta * K2
+\   3. y = K2 - beta * z
+\   4. x = x + alpha * y
+\
+\ See the deep dive on "Rotating the universe" for more details on the above.
+\
+\ ******************************************************************************
 
 .MV40
 
- LDA ALPHA
- EOR #&80
- STA Q
- LDA INWK
+ LDA ALPHA              \ Set Q = -ALPHA, so Q contains the angle we want to
+ EOR #%10000000         \ roll the planet through (i.e. in the opposite
+ STA Q                  \ direction to our ship's roll angle alpha)
+
+ LDA INWK               \ Set P(1 0) = (x_hi x_lo)
  STA P
  LDA INWK+1
  STA P+1
- LDA INWK+2
- JSR MULT3
 
- LDX #&03
- JSR MVT3
+ LDA INWK+2             \ Set A = x_sign
 
- LDA K+1
+ JSR MULT3              \ Set K(3 2 1 0) = (A P+1 P) * Q
+                        \
+                        \ which also means:
+                        \
+                        \   K(3 2 1) = (A P+1 P) * Q / 256
+                        \            = x * -alpha / 256
+                        \            = - alpha * x / 256
+
+ LDX #3                 \ Set K(3 2 1) = (y_sign y_hi y_lo) + K(3 2 1)
+ JSR MVT3               \              = y - alpha * x / 256
+
+ LDA K+1                \ Set K2(2 1) = P(1 0) = K(2 1)
  STA K2+1
  STA P
- LDA K+2
+
+ LDA K+2                \ Set K2+2 = K+2
  STA K2+2
- STA P+1
- LDA BETA
+
+ STA P+1                \ Set P+1 = K+2
+
+ LDA BETA               \ Set Q = beta, the pitch angle of our ship
  STA Q
- LDA K+3
- STA K2+3
- JSR MULT3
 
- LDX #&06
- JSR MVT3
+ LDA K+3                \ Set K+3 to K2+3, so now we have result 1 above:
+ STA K2+3               \
+                        \   K2(3 2 1) = K(3 2 1)
+                        \             = y - alpha * x / 256
 
- LDA K+1
+                        \ We also have:
+                        \
+                        \   A = K+3
+                        \
+                        \   P(1 0) = K(2 1)
+                        \
+                        \ so combined, these mean:
+                        \
+                        \   (A P+1 P) = K(3 2 1)
+                        \             = K2(3 2 1)
+
+ JSR MULT3              \ Set K(3 2 1 0) = (A P+1 P) * Q
+                        \
+                        \ which also means:
+                        \
+                        \   K(3 2 1) = (A P+1 P) * Q / 256
+                        \            = K2(3 2 1) * beta / 256
+                        \            = beta * K2 / 256
+
+ LDX #6                 \ K(3 2 1) = (z_sign z_hi z_lo) + K(3 2 1)
+ JSR MVT3               \          = z + beta * K2 / 256
+
+ LDA K+1                \ Set P = K+1
  STA P
- STA INWK+6
- LDA K+2
+
+ STA INWK+6             \ Set z_lo = K+1
+
+ LDA K+2                \ Set P+1 = K+2
  STA P+1
- STA INWK+7
- LDA K+3
- STA INWK+8
- EOR #&80
- JSR MULT3
 
- LDA K+3
- AND #&80
+ STA INWK+7             \ Set z_hi = K+2
+
+ LDA K+3                \ Set A = z_sign = K+3, so now we have:
+ STA INWK+8             \
+                        \   (z_sign z_hi z_lo) = K(3 2 1)
+                        \                      = z + beta * K2 / 256
+
+                        \ So we now have result 2 above:
+                        \
+                        \   z = z + beta * K2
+
+ EOR #%10000000         \ Flip the sign bit of A to give A = -z_sign
+
+ JSR MULT3              \ Set K(3 2 1 0) = (A P+1 P) * Q
+                        \                = (-z_sign z_hi z_lo) * beta
+                        \                = -z * beta
+
+ LDA K+3                \ Set T to the sign bit of K(3 2 1 0), i.e. to the sign
+ AND #%10000000         \ bit of -z * beta
  STA T
- EOR K2+3
- BMI MV1
 
- LDA K
- CLC
- ADC K2
- LDA K+1
+ EOR K2+3               \ If K2(3 2 1 0) has a different sign to K(3 2 1 0),
+ BMI MV1                \ then EOR'ing them will produce a 1 in bit 7, so jump
+                        \ to MV1 to take this into account
+
+                        \ If we get here, K and K2 have the same sign, so we can
+                        \ add them together to get the result we're after, and
+                        \ then set the sign afterwards
+
+ LDA K                  \ We now do the following sum:
+ CLC                    \
+ ADC K2                 \   (A y_hi y_lo -) = K(3 2 1 0) + K2(3 2 1 0)
+                        \
+                        \ starting with the low bytes (which we don't keep)
+                        \
+                        \ The CLC has no effect because MULT3 clears the C
+                        \ flag, so this instruction could be removed (as it is
+                        \ in the cassette version, for example)
+
+ LDA K+1                \ We then do the middle bytes, which go into y_lo
  ADC K2+1
  STA INWK+3
- LDA K+2
+
+ LDA K+2                \ And then the high bytes, which go into y_hi
  ADC K2+2
  STA INWK+4
- LDA K+3
- ADC K2+3
- JMP MV2
+
+ LDA K+3                \ And then the sign bytes into A, so overall we have the
+ ADC K2+3               \ following, if we drop the low bytes from the result:
+                        \
+                        \   (A y_hi y_lo) = (K + K2) / 256
+
+ JMP MV2                \ Jump to MV2 to skip the calculation for when K and K2
+                        \ have different signs
 
 .MV1
 
- LDA K
- SEC
- SBC K2
- LDA K+1
+ LDA K                  \ If we get here then K2 and K have different signs, so
+ SEC                    \ instead of adding, we need to subtract to get the
+ SBC K2                 \ result we want, like this:
+                        \
+                        \   (A y_hi y_lo -) = K(3 2 1 0) - K2(3 2 1 0)
+                        \
+                        \ starting with the low bytes (which we don't keep)
+
+ LDA K+1                \ We then do the middle bytes, which go into y_lo
  SBC K2+1
  STA INWK+3
- LDA K+2
+
+ LDA K+2                \ And then the high bytes, which go into y_hi
  SBC K2+2
  STA INWK+4
- LDA K2+3
- AND #&7F
- STA P
- LDA K+3
- AND #&7F
- SBC P
- STA P
- BCS MV2
 
- LDA #&01
- SBC INWK+3
- STA INWK+3
- LDA #&00
- SBC INWK+4
- STA INWK+4
- LDA #&00
- SBC P
- ORA #&80
+ LDA K2+3               \ Now for the sign bytes, so first we extract the sign
+ AND #%01111111         \ byte from K2 without the sign bit, so P = |K2+3|
+ STA P
+
+ LDA K+3                \ And then we extract the sign byte from K without the
+ AND #%01111111         \ sign bit, so A = |K+3|
+
+ SBC P                  \ And finally we subtract the sign bytes, so P = A - P
+ STA P
+
+                        \ By now we have the following, if we drop the low bytes
+                        \ from the result:
+                        \
+                        \   (A y_hi y_lo) = (K - K2) / 256
+                        \
+                        \ so now we just need to make sure the sign of the
+                        \ result is correct
+
+ BCS MV2                \ If the C flag is set, then the last subtraction above
+                        \ didn't underflow and the result is correct, so jump to
+                        \ MV2 as we are done with this particular stage
+
+ LDA #1                 \ Otherwise the subtraction above underflowed, as K2 is
+ SBC INWK+3             \ the dominant part of the subtraction, so we need to
+ STA INWK+3             \ negate the result using two's complement, starting
+                        \ with the low bytes:
+                        \
+                        \   y_lo = 1 - y_lo
+
+ LDA #0                 \ And then the high bytes:
+ SBC INWK+4             \
+ STA INWK+4             \   y_hi = 0 - y_hi
+
+ LDA #0                 \ And finally the sign bytes:
+ SBC P                  \
+                        \   A = 0 - P
+
+ ORA #%10000000         \ We now force the sign bit to be negative, so that the
+                        \ final result below gets the opposite sign to K, which
+                        \ we want as K2 is the dominant part of the sum
 
 .MV2
 
- EOR T
- STA INWK+5
- LDA ALPHA
+ EOR T                  \ T contains the sign bit of K, so if K is negative,
+                        \ this flips the sign of A
+
+ STA INWK+5             \ Store A in y_sign
+
+                        \ So we now have result 3 above:
+                        \
+                        \   y = K2 + K
+                        \     = K2 - beta * z
+
+ LDA ALPHA              \ Set A = alpha
  STA Q
- LDA INWK+3
+
+ LDA INWK+3             \ Set P(1 0) = (y_hi y_lo)
  STA P
  LDA INWK+4
  STA P+1
- LDA INWK+5
- JSR MULT3
 
- LDX #&00
- JSR MVT3
+ LDA INWK+5             \ Set A = y_sign
 
- LDA K+1
- STA INWK
+ JSR MULT3              \ Set K(3 2 1 0) = (A P+1 P) * Q
+                        \                = (y_sign y_hi y_lo) * alpha
+                        \                = y * alpha
+
+ LDX #0                 \ Set K(3 2 1) = (x_sign x_hi x_lo) + K(3 2 1)
+ JSR MVT3               \              = x + y * alpha / 256
+
+ LDA K+1                \ Set (x_sign x_hi x_lo) = K(3 2 1)
+ STA INWK               \                        = x + y * alpha / 256
  LDA K+2
  STA INWK+1
  LDA K+3
  STA INWK+2
- JMP MV45
+
+                        \ So we now have result 4 above:
+                        \
+                        \   x = x + y * alpha
+
+ JMP MV45               \ We have now finished rotating the planet or sun by
+                        \ our pitch and roll, so jump back into the MVEIT
+                        \ routine at MV45 to apply all the other movements
+
+\ ******************************************************************************
+\
+\       Type: Subroutine
+\   Category: Flight
+\    Summary: Flip the coordinate axes for the four different views
+\  Deep dive: Flipping axes between space views
+\
+\ ------------------------------------------------------------------------------
+\
+\ This routine flips the relevant geometric axes in INWK depending on which
+\ view we are looking through (front, rear, left, right).
+\
+\ Other entry points:
+\
+\   LO2                 Contains an RTS
+\
+\ ******************************************************************************
 
 .PLUT
 
- LDX VIEW
- BEQ L7CD1
+ LDX VIEW               \ Load the current view into X:
+                        \
+                        \   0 = front
+                        \   1 = rear
+                        \   2 = left
+                        \   3 = right
 
- DEX
- BNE PU2
+ BEQ PU2-1              \ If the current view is the front view, return from the
+                        \ subroutine (PU2-1 contains an RTS), as the geometry in
+                        \ INWK is already correct
 
- LDA INWK+2
- EOR #&80
+.PU1
+
+ DEX                    \ Decrement the view, so now:
+                        \
+                        \   0 = rear
+                        \   1 = left
+                        \   2 = right
+
+ BNE PU2                \ If the current view is left or right, jump to PU2,
+                        \ otherwise this is the rear view, so continue on
+
+ LDA INWK+2             \ Flip the sign of x_sign
+ EOR #%10000000
  STA INWK+2
- LDA INWK+8
- EOR #&80
+
+ LDA INWK+8             \ Flip the sign of z_sign
+ EOR #%10000000
  STA INWK+8
- LDA INWK+10
- EOR #&80
+
+ LDA INWK+10            \ Flip the sign of nosev_x_hi
+ EOR #%10000000
  STA INWK+10
- LDA INWK+14
- EOR #&80
+
+ LDA INWK+14            \ Flip the sign of nosev_z_hi
+ EOR #%10000000
  STA INWK+14
- LDA INWK+16
- EOR #&80
+
+ LDA INWK+16            \ Flip the sign of roofv_x_hi
+ EOR #%10000000
  STA INWK+16
- LDA INWK+20
- EOR #&80
+
+ LDA INWK+20            \ Flip the sign of roofv_z_hi
+ EOR #%10000000
  STA INWK+20
- LDA INWK+22
- EOR #&80
+
+ LDA INWK+22            \ Flip the sign of sidev_x_hi
+ EOR #%10000000
  STA INWK+22
- LDA INWK+26
- EOR #&80
+
+ LDA INWK+26            \ Flip the sign of roofv_z_hi
+ EOR #%10000000
  STA INWK+26
 
-.L7CD1
-
- RTS
+ RTS                    \ Return from the subroutine
 
 .PU2
 
- LDA #&00
- CPX #&02
+                        \ We enter this with X set to the view, as follows:
+                        \
+                        \   1 = left
+                        \   2 = right
+
+ LDA #0                 \ Set RAT2 = 0 (left view) or -1 (right view)
+ CPX #2
  ROR A
  STA RAT2
- EOR #&80
+
+ EOR #%10000000         \ Set RAT = -1 (left view) or 0 (right view)
  STA RAT
- LDA INWK
+
+ LDA INWK               \ Swap x_lo and z_lo
  LDX INWK+6
  STA INWK+6
  STX INWK
- LDA INWK+1
+
+ LDA INWK+1             \ Swap x_hi and z_hi
  LDX INWK+7
  STA INWK+7
  STX INWK+1
- LDA INWK+2
- EOR RAT
- TAX
+
+ LDA INWK+2             \ Swap x_sign and z_sign
+ EOR RAT                \ If left view, flip sign of new z_sign
+ TAX                    \ If right view, flip sign of new x_sign
  LDA INWK+8
  EOR RAT2
  STA INWK+2
  STX INWK+8
- LDY #&09
- JSR PUS1
 
- LDY #&0F
- JSR PUS1
+ LDY #9                 \ Swap nosev_x_lo and nosev_z_lo
+ JSR PUS1               \ Swap nosev_x_hi and nosev_z_hi
+                        \ If left view, flip sign of new nosev_z_hi
+                        \ If right view, flip sign of new nosev_x_hi
 
- LDY #&15
+ LDY #15                \ Swap roofv_x_lo and roofv_z_lo
+ JSR PUS1               \ Swap roofv_x_hi and roofv_z_hi
+                        \ If left view, flip sign of new roofv_z_hi
+                        \ If right view, flip sign of new roofv_x_hi
+
+ LDY #21                \ Swap sidev_x_lo and sidev_z_lo
+                        \ Swap sidev_x_hi and sidev_z_hi
+                        \ If left view, flip sign of new sidev_z_hi
+                        \ If right view, flip sign of new sidev_x_hi
 
 .PUS1
 
- LDA INWK,Y
- LDX INWK+4,Y
- STA INWK+4,Y
- STX INWK,Y
- LDA INWK+1,Y
- EOR RAT
- TAX
- LDA INWK+5,Y
+ LDA INWK,Y             \ Swap the low x and z bytes for the vector in Y:
+ LDX INWK+4,Y           \
+ STA INWK+4,Y           \   * For Y =  9 swap nosev_x_lo and nosev_z_lo
+ STX INWK,Y             \   * For Y = 15 swap roofv_x_lo and roofv_z_lo
+                        \   * For Y = 21 swap sidev_x_lo and sidev_z_lo
+
+ LDA INWK+1,Y           \ Swap the high x and z bytes for the offset in Y:
+ EOR RAT                \
+ TAX                    \   * If left view, flip sign of new z-coordinate
+ LDA INWK+5,Y           \   * If right view, flip sign of new x-coordinate
  EOR RAT2
  STA INWK+1,Y
  STX INWK+5,Y
 
+                        \ Fall through into LOOK1 to return from the subroutine
+
+\ ******************************************************************************
+\
+\       Name: LOOK1
+\       Type: Subroutine
+\   Category: Flight
+\    Summary: Initialise the space view
+\
+\ ------------------------------------------------------------------------------
+\
+\ Initialise the space view, with the direction of view given in X. This clears
+\ the upper screen and draws the laser crosshairs, if the view in X has lasers
+\ fitted. It also wipes all the ships from the scanner, so we can recalculate
+\ ship positions for the new view (they get put back in the main flight loop).
+\
+\ Arguments:
+\
+\   X                   The space view to set:
+\
+\                         * 0 = front
+\
+\                         * 1 = rear
+\
+\                         * 2 = left
+\
+\                         * 3 = right
+\
+\ ******************************************************************************
+
 .LO2
 
- RTS
+ RTS                    \ Return from the subroutine
 
 .LQ
 
- STX VIEW
- JSR TT66
+ STX VIEW               \ Set the current space view to X
 
- JSR SIGHT
+ JSR TT66               \ Clear the top part of the screen, draw a white border,
+                        \ and set the current view type in QQ11 to 0 (space
+                        \ view)
 
- LDA BOMB
+ JSR SIGHT              \ Draw the laser crosshairs
+
+ LDA BOMB               \ ???
  BPL L7D32
 
  JSR L31AC
 
 .L7D32
 
- JMP NWSTARS
+ JMP NWSTARS            \ Set up a new stardust field and return from the
+                        \ subroutine using a tail call
 
 .LOOK1
 
- LDA #&00
- JSR DOVDU19
+ LDA #0                 \ Set A = 0, the type number of a space view
 
- LDY QQ11
- BNE LQ
+ JSR DOVDU19            \ Send a #SETVDU19 0 command to the I/O processor to
+                        \ switch to the mode 1 palette for the space view,
+                        \ which is yellow (colour 1), red (colour 2) and cyan
+                        \ (colour 3)
 
- CPX VIEW
- BEQ LO2
+ LDY QQ11               \ If the current view is not a space view, jump up to LQ
+ BNE LQ                 \ to set up a new space view
 
- STX VIEW
- JSR TT66
+ CPX VIEW               \ If the current view is already of type X, jump to LO2
+ BEQ LO2                \ to return from the subroutine (as LO2 contains an RTS)
 
- JSR FLIP
+ STX VIEW               \ Change the current space view to X
 
- LDA BOMB
+ JSR TT66               \ Clear the top part of the screen, draw a white border,
+                        \ and set the current view type in QQ11 to 0 (space
+                        \ view)
+
+ JSR FLIP               \ Swap the x- and y-coordinates of all the stardust
+                        \ particles
+
+ LDA BOMB               \ ???
  BPL L7D54
 
  JSR L31AC
 
 .L7D54
 
- JSR WPSHPS
+ JSR WPSHPS             \ Wipe all the ships from the scanner
+
+                        \ And fall through into SIGHT to draw the laser
+                        \ crosshairs
+
+\ ******************************************************************************
+\
+\       Name: SIGHT
+\       Type: Subroutine
+\   Category: Flight
+\    Summary: Draw the laser crosshairs
+\
+\ ******************************************************************************
 
 .SIGHT
 
- LDY VIEW
+ LDY VIEW               \ Fetch the laser power for our new view
  LDA LASER,Y
- BEQ LO2
 
- LDY #&00
+ BEQ LO2                \ If it is zero (i.e. there is no laser fitted to this
+                        \ view), jump to LO2 to return from the subroutine (as
+                        \ LO2 contains an RTS)
+
+ LDY #&00               \ ???
  CMP #&0F
  BEQ L7D70
 
@@ -37838,78 +41560,189 @@ ENDIF
 
 .L7D70
 
- LDA L7D8B,Y
+ LDA SIGHTCOL,Y
  STA COL
- LDA #&80
- STA QQ19
- LDA #&48
- STA QQ19+1
- LDA #&14
+
+ LDA #128               \ Set QQ19 to the x-coordinate of the centre of the
+ STA QQ19               \ screen
+
+ LDA #Y-24              \ Set QQ19+1 to the y-coordinate of the centre of the
+ STA QQ19+1             \ screen, minus 24 (because TT15 will add 24 to the
+                        \ coordinate when it draws the crosshairs)
+
+ LDA #20                \ Set QQ19+2 to size 20 for the crosshairs size
  STA QQ19+2
- JSR TT15
 
- LDA #&0A
+ JSR TT15               \ Call TT15 to draw crosshairs of size 20 just to the
+                        \ left of the middle of the screen
+
+ LDA #10                \ Set QQ19+2 to size 10 for the crosshairs size
  STA QQ19+2
- JMP TT15
 
-.L7D8B
+ JMP TT15               \ Call TT15 to draw crosshairs of size 10 at the same
+                        \ location, which will remove the centre part from the
+                        \ laser crosshairs, leaving a gap in the middle, and
+                        \ return from the subroutine using a tail call
 
- EQUB &0F
+\ ******************************************************************************
+\
+\       Name: SIGHTCOL
+\       Type: Variable
+\   Category: Drawing lines
+\    Summary: ???
+\
+\ ******************************************************************************
 
- EQUB &FF,&FF,&0F
+.SIGHTCOL
 
- EQUB &FA
+ EQUB &0F,&FF,&FF,&0F
+ EQUB &FA,&FA,&FA,&FA
 
- EQUB &FA,&FA,&FA
+\ ******************************************************************************
+\
+\       Name: TT66
+\       Type: Subroutine
+\   Category: Utility routines
+\    Summary: Clear the screen and set the current view type
+\
+\ ------------------------------------------------------------------------------
+\
+\ Clear the top part of the screen, draw a white border, and set the current
+\ view type in QQ11 to A.
+\
+\ Arguments:
+\
+\   A                   The type of the new current view (see QQ11 for a list of
+\                       view types)
+\
+\ ******************************************************************************
 
 .TT66
 
- STA QQ11
- JSR TTX66
+ STA QQ11               \ Set the current view type in QQ11 to A
 
- JSR MT2
+                        \ Fall through into TTX662 to clear the screen and draw a
+                        \ white border
 
- LDA #&00
+\ ******************************************************************************
+\
+\       Name: TT662
+\       Type: Subroutine
+\   Category: Utility routines
+\    Summary: Clear the top part of the screen and draw a white border
+\
+\ ------------------------------------------------------------------------------
+\
+\ Clear the top part of the screen (the space view) and draw a white border
+\ along the top and sides.
+\
+\ ******************************************************************************
+
+.TT662
+
+ JSR TTX66              \ ???
+
+ JSR MT2                \ Switch to Sentence Case when printing extended tokens
+
+ LDA #0                 \ Reset the ball line heap pointer at LSP
  STA LSP
- LDA #&80
+
+ LDA #%10000000         \ Set bit 7 of QQ17 to switch to Sentence Case
  STA QQ17
- STA DTW2
- JSR FLFLLS
 
- LDA #&00
+ STA DTW2               \ Set bit 7 of DTW2 to indicate we are not currently
+                        \ printing a word
+
+ JSR FLFLLS             \ Call FLFLLS to reset the LSO block
+
+ LDA #0                 \ Set LAS2 = 0 to stop any laser pulsing
  STA LAS2
- STA DLY
- STA de
- LDX QQ22+1
- BEQ OLDBOX
 
- JSR ee3
+ STA DLY                \ Set the delay in DLY to 0, to indicate that we are
+                        \ no longer showing an in-flight message, so any new
+                        \ in-flight messages will be shown instantly
+
+ STA de                 \ Clear de, the flag that appends " DESTROYED" to the
+                        \ end of the next text token, so that it doesn't
+
+ LDX QQ22+1             \ Fetch into X the number that's shown on-screen during
+                        \ the hyperspace countdown
+
+ BEQ OLDBOX             \ If the counter is zero then we are not counting down
+                        \ to hyperspace, so jump to OLDBOX to skip the next
+                        \ instruction
+
+ JSR ee3                \ Print the 8-bit number in X at text location (0, 1),
+                        \ i.e. print the hyperspace countdown in the top-left
+                        \ corner
 
 .OLDBOX
 
- LDA QQ11
- BNE tt66
+ LDA QQ11               \ If this is not a space view, jump to tt66 to skip
+ BNE tt66               \ displaying the view name
 
- LDA #&0B
+ LDA #11                \ Move the text cursor to row 11
  STA XC
- LDA #&FF
+
+ LDA #CYAN              \ Switch to colour 3, which is cyan in the space view
  STA COL
- LDA VIEW
- ORA #&60
- JSR TT27
 
- JSR TT162
+ LDA VIEW               \ Load the current view into A:
+                        \
+                        \   0 = front
+                        \   1 = rear
+                        \   2 = left
+                        \   3 = right
 
- LDA #&AF
+ ORA #&60               \ OR with &60 so we get a value of &60 to &63 (96 to 99)
+
+ JSR TT27               \ Print recursive token 96 to 99, which will be in the
+                        \ range "FRONT" to "RIGHT"
+
+ JSR TT162              \ Print a space
+
+ LDA #175               \ Print recursive token 15 ("VIEW ")
  JSR TT27
 
 .tt66
 
- LDX #&00
+ LDX #0                 \ Set QQ17 = 0 to switch to ALL CAPS
  STX QQ17
- RTS
 
-.L7DDC
+ RTS                    \ Return from the subroutine
+
+\ ******************************************************************************
+\
+\       Name: TRANTABLE
+\       Type: Variable
+\   Category: Keyboard
+\    Summary: Translation table from internal key number to ASCII
+\
+\ ------------------------------------------------------------------------------
+\
+\ This is a copy of the keyboard translation table from the BBC Micro's MOS 1.20
+\ ROM. The value at offset n is the lower-case ASCII value of the key with
+\ internal key number n, so for example the value at offset &10 is &71, which is
+\ 113, or ASCII "q", so internal key number &10 is the key number of the "Q"
+\ key.
+\
+\ Valid internal key numbers are Binary Coded Decimal (BCD) numbers in the range
+\ &10 top &79, so they're in the ranges &10 to &19, then &20 to &29, then &30 to
+\ &39, and so on. This means that the other locations - i.e. &1A to &1F, &2A to
+\ &2F and so on - are unused by the lookup table, but the MOS doesn't let this
+\ space go to waste; instead, those gaps contain MOS code, which is replicated
+\ below as TRANTABLE contains a copy of this entire block of the MOS, not just
+\ the table entries.
+\
+\ This table allows code running on the parasite to convert internal key numbers
+\ into ASCII codes in an efficient way. Without this table we would have to do a
+\ lookup from the table in the I/O processor's MOS ROM, which we would have to
+\ access from across the Tube, and this would be a lot slower than doing a
+\ simple table lookup in the parasite's user RAM.
+\
+\ ******************************************************************************
+
+.TRANTABLE
 
  EQUB &00
 
@@ -37930,20 +41763,38 @@ ENDIF
  EQUB &81,&82,&83,&85,&86,&88,&89,&5C
  EQUB &8D,&34,&35,&32,&2C,&4E,&E3
 
+\ ******************************************************************************
+\
+\       Name: KYTB
+\       Type: Variable
+\   Category: Keyboard
+\    Summary: ???
+\
+\ ******************************************************************************
+
 .KYTB
 
  EQUB &22,&23,&35,&37,&41,&42,&45,&51
  EQUB &52,&60,&62,&65,&66,&67,&68,&70
  EQUB &F0
 
-.RDKEY_REAL
+\ ******************************************************************************
+\
+\       Name: RDKEY2
+\       Type: Subroutine
+\   Category: Keyboard
+\    Summary: ???
+\
+\ ******************************************************************************
+
+.RDKEY2
 
  JSR U%
 
  LDA #&10
  CLC
 
-.L7E73
+.RDK1
 
  LDY #&03
  SEI
@@ -37958,10 +41809,10 @@ ENDIF
  TYA
  BMI DKS1
 
-.L7E8D
+.RDK2
 
  ADC #&01
- BPL L7E73
+ BPL RDK1
 
  CLD
  LDA L00CB
@@ -37972,61 +41823,170 @@ ENDIF
  TAX
  RTS
 
+\ ******************************************************************************
+\
+\       Name: DKS1
+\       Type: Subroutine
+\   Category: Keyboard
+\    Summary: Scan the keyboard for a flight key
+\
+\ ******************************************************************************
+
 .DKS1
 
  EOR #&80
  STA KL
 
-.L7EA2
+.DKL5
 
  CMP KYTB,X
- BCC L7E8D
+ BCC RDK2
 
- BEQ L7EAC
+ BEQ P%+5
 
  INX
- BNE L7EA2
-
-.L7EAC
+ BNE DKL5
 
  DEC KY17,X
  INX
  CLC
- BCC L7E8D
+ BCC RDK2
+
+\ ******************************************************************************
+\
+\       Name: CTRL
+\       Type: Subroutine
+\   Category: Keyboard
+\    Summary: Scan the keyboard to see if CTRL is currently pressed
+\
+\ ------------------------------------------------------------------------------
+\
+\ Returns:
+\
+\   X                   X = %10000001 (i.e. 129 or -127) if CTRL is being
+\                       pressed
+\
+\                       X = 1 if CTRL is not being pressed
+\
+\   A                   Contains the same as X
+\
+\ ******************************************************************************
 
 .CTRL
 
- LDA #&01
+ LDA #1                 \ Set A to the internal key number for CTRL and fall
+                        \ through to DSK4 to scan the keyboard
+
+\ ******************************************************************************
+\
+\       Name: DKS4
+\   Category: Keyboard
+\    Summary: Scan the keyboard to see if a specific key is being pressed
+\  Deep dive: The key logger
+\
+\ ------------------------------------------------------------------------------
+\
+\ Arguments:
+\
+\   A                   The internal number of the key to check (see p.142 of
+\                       the Advanced User Guide for a list of internal key
+\                       numbers)
+\
+\ Returns:
+\
+\   A                   If the key in A is being pressed, A contains the
+\                       original argument A, but with bit 7 set (i.e. A + 128).
+\                       If the key in A is not being pressed, the value in A is
+\                       unchanged
+\
+\   X                   Contains the same as A
+\
+\ ******************************************************************************
 
 .DKS4
 
- LDX #&03
- SEI
- STX VIA+&40
- LDX #&7F
- STX VIA+&43
- STA VIA+&4F
- LDX VIA+&4F
- LDA #&0B
- STA VIA+&40
- CLI
- TXA
- RTS
+ LDX #3                 \ Set X to 3, so it's ready to send to SHEILA once
+                        \ interrupts have been disabled
+
+ SEI                    \ Disable interrupts so we can scan the keyboard
+                        \ without being hijacked
+
+ STX VIA+&40            \ Set 6522 System VIA output register ORB (SHEILA &40)
+                        \ to %00000011 to stop auto scan of keyboard
+
+ LDX #%01111111         \ Set 6522 System VIA data direction register DDRA
+ STX VIA+&43            \ (SHEILA &43) to %01111111. This sets the A registers
+                        \ (IRA and ORA) so that:
+                        \
+                        \   * Bits 0-6 of ORA will be sent to the keyboard
+                        \
+                        \   * Bit 7 of IRA will be read from the keyboard
+
+ STA VIA+&4F            \ Set 6522 System VIA output register ORA (SHEILA &4F)
+                        \ to X, the key we want to scan for; bits 0-6 will be
+                        \ sent to the keyboard, of which bits 0-3 determine the
+                        \ keyboard column, and bits 4-6 the keyboard row
+
+ LDX VIA+&4F            \ Read 6522 System VIA output register IRA (SHEILA &4F)
+                        \ into X; bit 7 is the only bit that will have changed.
+                        \ If the key is pressed, then bit 7 will be set,
+                        \ otherwise it will be clear
+
+ LDA #%00001011         \ Set 6522 System VIA output register ORB (SHEILA &40)
+ STA VIA+&40            \ to %00001011 to restart auto scan of keyboard
+
+ CLI                    \ Allow interrupts again
+
+ TXA                    \ Transfer X into A
+
+ RTS                    \ Return from the subroutine
+
+\ ******************************************************************************
+\
+\       Name: U%
+\       Type: Subroutine
+\   Category: Keyboard
+\    Summary: Clear the key logger
+\
+\ ------------------------------------------------------------------------------
+\
+\ Returns:
+\
+\   A                   A is set to 0
+\
+\ ******************************************************************************
 
 .U%
 
- LDA #&00
- LDX #&11
+ LDA #0                 \ Set A to 0, as this means "key not pressed" in the
+                        \ key logger at KL
+
+ LDX #17                \ ???
 
 .DKL3
 
- STA JSTY,X
- DEX
- BNE DKL3
+ STA JSTY,X             \ Store 0 in the Y-th byte of the key logger ???
 
- RTS
+ DEX                    \ Decrement the counter
 
-.L7ED7
+ BNE DKL3               \ And loop back for the next key, until we have just
+                        \ KL+1. We don't want to clear the first key logger
+                        \ location at KL, as the keyboard table at KYTB starts
+                        \ with offset 1, not 0, so KL is not technically part of
+                        \ the key logger (it's actually used for logging keys
+                        \ that don't appear in the keyboard table, and which
+                        \ therefore don't use the key logger)
+
+ RTS                    \ Return from the subroutine
+
+\ ******************************************************************************
+\
+\       Name: RDKEY
+\       Type: Subroutine
+\   Category: Keyboard
+\    Summary: Scan the keyboard for key presses
+\
+\ ******************************************************************************
 
  SED
 
@@ -38034,67 +41994,168 @@ ENDIF
 
  TYA
  PHA
- JSR RDKEY_REAL
+ JSR RDKEY2
 
  PLA
  TAY
- LDA L7DDC,X
+ LDA TRANTABLE,X
  STA KL
  TAX
  RTS
 
-.L7EE6
+.RDKRTS
 
  RTS
 
+\ ******************************************************************************
+\
+\       Name: ECMOF
+\       Type: Subroutine
+\   Category: Sound
+\    Summary: Switch off the E.C.M.
+\
+\ ------------------------------------------------------------------------------
+\
+\ Switch the E.C.M. off, turn off the dashboard bulb and make the sound of the
+\ E.C.M. switching off).
+\
+\ ******************************************************************************
+
 .ECMOF
 
- LDA #&00
- STA ECMA
+ LDA #0                 \ Set ECMA and ECMB to 0 to indicate that no E.C.M. is
+ STA ECMA               \ currently running
  STA ECMP
- JMP ECBLB
+
+ JMP ECBLB              \ Update the E.C.M. indicator bulb on the dashboard and
+                        \ return from the subroutine using a tail call
+
+\ ******************************************************************************
+\
+\       Name: SFRMIS
+\       Type: Subroutine
+\   Category: Tactics
+\    Summary: Add an enemy missile to our local bubble of universe
+\
+\ ------------------------------------------------------------------------------
+\
+\ An enemy has fired a missile, so add the missile to our universe if there is
+\ room, and if there is, make the appropriate warnings and noises.
+\
+\ ******************************************************************************
 
 .SFRMIS
 
- LDX #&01
- JSR SFS1-2
+ LDX #MSL               \ Set X to the ship type of a missile, and call SFS1-2
+ JSR SFS1-2             \ to add the missile to our universe with an AI flag
+                        \ of %11111110 (AI enabled, hostile, no E.C.M.)
 
- BCC L7EE6
+ BCC RDKRTS             \ The C flag will be set if the call to SFS1-2 was a
+                        \ success, so if it's clear, jump to KYTB to return from
+                        \ the subroutine (as RDKRTS contains an RTS)
 
- LDA #&78
- JSR MESS
+ LDA #120               \ Print recursive token 120 ("INCOMING MISSILE") as an
+ JSR MESS               \ in-flight message
 
- LDY #&08
+ LDY #&08               \ ???
  JMP NOISE
+
+\ ******************************************************************************
+\
+\       Name: EXNO2
+\       Type: Subroutine
+\   Category: Sound
+\    Summary: Process us making a kill
+\  Deep dive: Combat rank
+\
+\ ------------------------------------------------------------------------------
+\
+\ We have killed a ship, so increase the kill tally, displaying an iconic
+\ message of encouragement if the kill total is a multiple of 256, and then
+\ make a nearby explosion sound.
+\
+\ Other entry points:
+\
+\   EXNO-2              Set X = 7 and fall through into EXNO to make the sound
+\                       of a ship exploding
+\
+\ ******************************************************************************
 
 .EXNO2
 
- LDA L1266
+ LDA L1266              \ ???
  CLC
  ADC L8062,X
  STA L1266
  LDA TALLY
  ADC L8083,X
  STA TALLY
+
  BCC EXNO3
 
- INC TALLY+1
- LDA #&65
- JSR MESS
+ INC TALLY+1            \ Increment the high byte of the kill count in TALLY
+
+ LDA #101               \ The kill total is a multiple of 256, so it's time
+ JSR MESS               \ for a pat on the back, so print recursive token 101
+                        \ ("RIGHT ON COMMANDER!") as an in-flight message
+
+                        \ Fall through into EXNO3 to make the sound of a
+                        \ ship exploding
+
+\ ******************************************************************************
+\
+\       Name: EXNO3
+\       Type: Subroutine
+\   Category: Sound
+\    Summary: Make an explosion sound
+\
+\ ------------------------------------------------------------------------------
+\
+\ Make the sound of death in the cold, hard vacuum of space. Apparently, in
+\ Elite space, everyone can hear you scream.
+\
+\ This routine also makes the sound of a destroyed cargo canister if we don't
+\ get scooping right, the sound of us colliding with another ship, and the sound
+\ of us being hit with depleted shields. It is not a good sound to hear.
+\
+\ ******************************************************************************
 
 .EXNO3
 
- LDY #&04
+ LDY #4                 \ ???
  JMP NOISE
+
+\ ******************************************************************************
+\
+\       Name: EXNO
+\       Type: Subroutine
+\   Category: Sound
+\    Summary: Make the sound of a laser strike or ship explosion
+\
+\ ------------------------------------------------------------------------------
+\
+\ Make the two-part explosion sound of us making a laser strike, or of another
+\ ship exploding.
+\
+\ ******************************************************************************
 
 .EXNO
 
- LDY #&06
+ LDY #&06               \ ???
  JMP NOISE
+
+\ ******************************************************************************
+\
+\       Name: BRKBK
+\       Type: Subroutine
+\   Category: Save and load
+\    Summary: Set the standard BRKV handler for the game
+\
+\ ******************************************************************************
 
 .BRKBK
 
- LDA #&B9
+ LDA #&B9               \ ???
  STA BRKV
  LDA #&66
  STA BRKV+1
@@ -38102,16 +42163,16 @@ ENDIF
  STA WRCHV
  LDA #&20
  STA WRCHV+1
- JSR MASTER_MOVE_ZP_3000
+
+ JSR SAVEZP
 
  JSR STARTUP
 
  JMP L1377
 
  CLI
- RTI
 
-.BeebDisEndAddr
+ RTI                    \ ???
 
 \ ******************************************************************************
 \
@@ -38121,4 +42182,3 @@ ENDIF
 
 PRINT "S.BCODE ", ~CODE%, " ", ~P%, " ", ~LOAD%, " ", ~LOAD%
 SAVE "output/BCODE.unprot.bin", CODE%, P%, LOAD%
-
