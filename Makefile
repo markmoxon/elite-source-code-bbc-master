@@ -9,6 +9,7 @@ build:
 	echo _VERSION=4 > sources/elite-header.h.asm
 	echo _RELEASE=$(rel-master) >> sources/elite-header.h.asm
 	echo _REMOVE_CHECKSUMS=TRUE >> sources/elite-header.h.asm
+	echo _MATCH_EXTRACTED_BINARIES=FALSE >> sources/elite-header.h.asm
 	$(BEEBASM) -i sources/elite-loader.asm -v > output/compile.txt
 	$(BEEBASM) -i sources/elite-data.asm -v >> output/compile.txt
 	$(BEEBASM) -i sources/elite-source.asm -v >> output/compile.txt
@@ -20,6 +21,7 @@ encrypt:
 	echo _VERSION=4 > sources/elite-header.h.asm
 	echo _RELEASE=$(rel-master) >> sources/elite-header.h.asm
 	echo _REMOVE_CHECKSUMS=FALSE >> sources/elite-header.h.asm
+	echo _MATCH_EXTRACTED_BINARIES=TRUE >> sources/elite-header.h.asm
 	$(BEEBASM) -i sources/elite-loader.asm -v > output/compile.txt
 	$(BEEBASM) -i sources/elite-data.asm -v >> output/compile.txt
 	$(BEEBASM) -i sources/elite-source.asm -v >> output/compile.txt

@@ -27,13 +27,6 @@ INCLUDE "sources/elite-header.h.asm"
 CPU 1                   \ Switch to 65SC12 assembly, as this code runs on a
                         \ BBC Master
 
-_CASSETTE_VERSION = (_VERSION = 1)
-_DISC_VERSION = (_VERSION = 2)
-_6502SP_VERSION = (_VERSION = 3)
-_MASTER_VERSION = (_VERSION = 4)
-_DISC_DOCKED = FALSE
-_DISC_FLIGHT = FALSE
-
 \ ******************************************************************************
 \
 \ Configuration variables
@@ -44,6 +37,8 @@ Q% = _REMOVE_CHECKSUMS  \ Set Q% to TRUE to max out the default commander, FALSE
                         \ for the standard default commander (this is set to
                         \ TRUE if checksums are disabled, just for convenience)
 
+LS% = &0800             \ The start of the descending ship line heap
+
 BRKV = &202             \ The break vector that we intercept to enable us to
                         \ handle and display system errors
 
@@ -53,7 +48,7 @@ NOST = 20               \ The number of stardust particles in normal space (this
 NOSH = 12               \ The maximum number of ships in our local bubble of
                         \ universe
 
-NTY = 34                \ The number of different ship types
+NTY = 33                \ The number of different ship types
 
 MSL = 1                 \ Ship type for a missile
 SST = 2                 \ Ship type for a Coriolis space station
@@ -156,250 +151,1658 @@ VE = &57                \ The obfuscation byte used to hide the extended tokens
 LL = 30                 \ The length of lines (in characters) of justified text
                         \ in the extended tokens system
 
-\ New vars: L0098, L0099, L009B, L00FC
-\ KL vars: L00C9, L00CB, L00D0, L00D1
-\ Save block? L0791
-\ L1229: distance for ship in TITLE?
-\ L1264 - L1266
-\ L12A6 - L12A9 (see IRQ1)
+XX21 = &8000            \ The address of the ship blueprints lookup table, as
+                        \ set in elite-data.asm
 
-ZP = &0000
-RAND = &0002
-T1 = &0006
-SC = &000A
-SCH = &000B
-P = &000C
-XC = &0010
-COL = &0011
-YC = &0012
-QQ17 = &0013
-K3 = &0014
-XX2 = &0014
-K4 = &0022
-XX16 = &0024
-XX0 = &0036
-INF = &0038
-V = &003A
-XX = &003C
-YY = &003E
-SUNX = &0040
-BETA = &0042
-BET1 = &0043
-QQ22 = &0044
-ECMA = &0046
-ALP1 = &0047
-ALP2 = &0048
-XX15 = &004A
-X1 = &004A
-Y1 = &004B
-X2 = &004C
-Y2 = &004D
-XX12 = &0050
-K = &0056
-LAS = &005A
-MSTG = &005B
-DL = &005C
-LSP = &005D
-QQ15 = &005E
-XX18 = &0064
-K5 = &0064
-K6 = &0068
-QQ19 = &006D
-BET2 = &0073
-DELTA   = &0075
-DELT4   = &0076
-U = &0078
-Q = &0079
-R = &007A
-S = &007B
-T = &007C
-XSAV = &007D
-YSAV = &007E
-XX17 = &007F
-W  = &0080
-QQ11 = &0081
-ZZ = &0082
-XX13 = &0083
-MCNT = &0084
-TYPE = &0085
-ALPHA   = &0086
-QQ12 = &0087
-TGT = &0088
-FLAG = &0089
-CNT = &008A
-CNT2 = &008B
-STP = &008C
-XX4 = &008D
-XX20 = &008E
-XX14 = &008F
-RAT = &0091
-RAT2 = &0092
-K2 = &0093
-widget  = &0097
-L0098   = &0098
-L0099   = &0099
-messXC  = &009A
-L009B   = &009B
-INWK = &009C
-XX1 = &009C
-XX19 = &00BD
-NEWB = &00C0
-JSTX = &00C1
-JSTY = &00C2
-KL = &00C3
-KY17 = &00C4
-KY14 = &00C5
-KY15 = &00C6
-KY20 = &00C7
-KY7 = &00C8
-L00C9   = &00C9
-KY18 = &00CA
-L00CB   = &00CB
-KY19 = &00CC
-KY12 = &00CD
-KY2 = &00CE
-KY16 = &00CF
-L00D0   = &00D0
-L00D1   = &00D1
-KY1 = &00D2
-KY13 = &00D3
-LSX = &00D4
-FSH = &00D5
-ASH = &00D6
-ENERGY  = &00D7
-QQ3 = &00D8
-QQ4 = &00D9
-QQ5 = &00DA
-QQ6 = &00DB
-QQ7 = &00DD
-QQ8 = &00DF
-QQ9 = &00E1
-QQ10 = &00E2
-NOSTM   = &00E3
-L00FC   = &00FC
-XX3 = &0100
-K% = &0400
-L0401   = &0401
-L0402   = &0402
-L0404   = &0404
-L0405   = &0405
-L0406   = &0406
-L0407   = &0407
-L0408   = &0408
-L0425   = &0425
-L0427   = &0427
-L0429   = &0429
-L042D   = &042D
-L042F   = &042F
-L0431   = &0431
-L0433   = &0433
-L0449   = &0449
-L06A9   = &06A9
-L0791   = &0791
+E% = &8042              \ The address of the default NEWB ship bytes, as set in
+                        \ elite-data.asm
 
-WP = &0801
+TALLYFRAC = &8063       \ The address of the kill tally fraction table, as set
+                        \ in elite-data.asm
 
-FRIN = &0E41
-MANY = &0E4E
-SSPR = &0E50
-L0E58   = &0E58
-L0E5E   = &0E5E
-L0E6B   = &0E6B
-L0E6D   = &0E6D
-JUNK = &0E70
-auto = &0E71
-ECMP = &0E72
-MJ = &0E73
-CABTMP  = &0E74
-LAS2 = &0E75
-MSAR = &0E76
-VIEW = &0E77
-LASCT   = &0E78
-GNTMP   = &0E79
-HFX = &0E7A
-EV = &0E7B
-DLY = &0E7C
-de = &0E7D
-LSX2 = &0E7E
-LSY2 = &0F7E
-LSO = &107E
-BUF = &1146
-SX = &11A0
-SXL = &11B5
-SY = &11CA
-SYL = &11DF
-L11ED   = &11ED
-SZ = &11F4
-SZL = &1209
-LASX = &121E
-LASY = &121F
-ALTIT   = &1221
-SWAP = &1222
-L1229   = &1229
-NAME = &122C
-TP = &1234
-QQ0 = &1235
-QQ1 = &1236
-QQ21 = &1237
-CASH = &123D
-QQ14 = &1241
-COK = &1242
-GCNT = &1243
-LASER   = &1244
-CRGO = &124A
-QQ20 = &124B
-ECM = &125C
-BST = &125D
-BOMB = &125E
-ENGY = &125F
-DKCMP   = &1260
-GHYP = &1261
-ESCP = &1262
-L1264   = &1264
-L1265   = &1265
-L1266   = &1266
-NOMSL   = &1267
-FIST = &1268
-AVL = &1269
-QQ26 = &127A
-TALLY   = &127B
-SVC = &127D
-MCH = &1281
-COMX = &1282
-COMY = &1283
-QQ24 = &1292
-QQ25 = &1293
-QQ28 = &1294
-QQ29 = &1295
-gov = &1296
-tek = &1297
-SLSP = &1298
-QQ2 = &129A
-safehouse = &12A0
-L12A6   = &12A6
-L12A7   = &12A7
-L12A8   = &12A8
-L12A9   = &12A9
-XX21 = &8000
-L8002   = &8002
-L8003   = &8003
-L8007   = &8007
-L8040   = &8040
-L8041   = &8041
-E% = &8042
-L8062   = &8062
-TALLYFRAC = &8063
-L8083   = &8083
-TALLYINT = &8084
-QQ18 = &A000
-SNE = &A3C0
-ACT = &A3E0
-TKN1 = &A400
-RUPLA   = &AF48
-RUGAL   = &AF62
-RUTOK   = &AF7C
+TALLYINT = &8084        \ The address of the kill tally integer table, as set in
+                        \ elite-data.asm
 
-NT% = SVC + 2 - TP
+QQ18 = &A000            \ The address of the text token table, as set in
+                        \ elite-data.asm
+
+SNE = &A3C0             \ The address of the sine lookup table, as set in
+                        \ elite-data.asm
+
+ACT = &A3E0             \ The address of the arctan lookup table, as set in
+                        \ elite-data.asm
+
+TKN1 = &A400            \ The address of the extended token table, as set in
+                        \ elite-data.asm
+
+RUPLA = &AF48           \ The address of the extended system description system
+                        \ number table, as set in elite-data.asm
+
+RUGAL = &AF62           \ The address of the extended system description galaxy
+                        \ number table, as set in elite-data.asm
+
+RUTOK = &AF7C           \ The address of the extended system description token
+                        \ table, as set in elite-data.asm
+
+\ ******************************************************************************
+\
+\       Name: ZP
+\       Type: Workspace
+\    Address: &0000 to &00B0
+\   Category: Workspaces
+\    Summary: Lots of important variables are stored in the zero page workspace
+\             as it is quicker and more space-efficient to access memory here
+\
+\ ******************************************************************************
+
+ORG &0000
+
+.ZP
+
+ SKIP 2                 \ The start of the zero page workspace
+
+.RAND
+
+ SKIP 4                 \ Four 8-bit seeds for the random number generation
+                        \ system implemented in the DORND routine
+
+.T1
+
+ SKIP 1                 \ Temporary storage, used in a number of places
+
+ SKIP 3                 \ ???
+
+.SC
+
+ SKIP 1                 \ Screen address (low byte)
+                        \
+                        \ Elite draws on-screen by poking bytes directly into
+                        \ screen memory, and SC(1 0) is typically set to the
+                        \ address of the character block containing the pixel
+
+.SCH
+
+ SKIP 1                 \ Screen address (high byte)
+
+.P
+
+ SKIP 3                 \ Temporary storage, used in a number of places
+
+ SKIP 1                 \ ???
+
+.XC
+
+ SKIP 1                 \ The x-coordinate of the text cursor (i.e. the text
+                        \ column), which can be from 0 to 32
+                        \
+                        \ A value of 0 denotes the leftmost column and 32 the
+                        \ rightmost column, but because the top part of the
+                        \ screen (the space view) has a white border that
+                        \ clashes with columns 0 and 32, text is only shown
+                        \ in columns 1-31
+
+.COL
+
+ SKIP 1                 \ Temporary storage, used to store colour information
+                        \ when drawing pixels in the dashboard
+
+.YC
+
+ SKIP 1                 \ The y-coordinate of the text cursor (i.e. the text
+                        \ row), which can be from 0 to 23
+                        \
+                        \ The screen actually has 31 character rows if you
+                        \ include the dashboard, but the text printing routines
+                        \ only work on the top part (the space view), so the
+                        \ text cursor only goes up to a maximum of 23, the row
+                        \ just before the screen splits
+                        \
+                        \ A value of 0 denotes the top row, but because the
+                        \ top part of the screen has a white border that clashes
+                        \ with row 0, text is always shown at row 1 or greater
+
+.QQ17
+
+ SKIP 1                 \ Contains a number of flags that affect how text tokens
+                        \ are printed, particularly capitalisation:
+                        \
+                        \   * If all bits are set (255) then text printing is
+                        \     disabled
+                        \
+                        \   * Bit 7: 0 = ALL CAPS
+                        \            1 = Sentence Case, bit 6 determines the
+                        \                case of the next letter to print
+                        \
+                        \   * Bit 6: 0 = print the next letter in upper case
+                        \            1 = print the next letter in lower case
+                        \
+                        \   * Bits 0-5: If any of bits 0-5 are set, print in
+                        \               lower case
+                        \
+                        \ So:
+                        \
+                        \   * QQ17 = 0 means case is set to ALL CAPS
+                        \
+                        \   * QQ17 = %10000000 means Sentence Case, currently
+                        \            printing upper case
+                        \
+                        \   * QQ17 = %11000000 means Sentence Case, currently
+                        \            printing lower case
+                        \
+                        \   * QQ17 = %11111111 means printing is disabled
+
+.K3
+
+ SKIP 0                 \ Temporary storage, used in a number of places
+
+.XX2
+
+ SKIP 14                \ Temporary storage, used to store the visibility of the
+                        \ ship's faces during the ship-drawing routine at LL9
+
+.K4
+
+ SKIP 2                 \ Temporary storage, used in a number of places
+
+.XX16
+
+ SKIP 18                \ Temporary storage for a block of values, used in a
+                        \ number of places
+
+.XX0
+
+ SKIP 2                 \ Temporary storage, used to store the address of a ship
+                        \ blueprint. For example, it is used when we add a new
+                        \ ship to the local bubble in routine NWSHP, and it
+                        \ contains the address of the current ship's blueprint
+                        \ as we loop through all the nearby ships in the main
+                        \ flight loop
+
+.INF
+
+ SKIP 2                 \ Temporary storage, typically used for storing the
+                        \ address of a ship's data block, so it can be copied
+                        \ to and from the internal workspace at INWK
+
+.V
+
+ SKIP 2                 \ Temporary storage, typically used for storing an
+                        \ address pointer
+
+.XX
+
+ SKIP 2                 \ Temporary storage, typically used for storing a 16-bit
+                        \ x-coordinate
+
+.YY
+
+ SKIP 2                 \ Temporary storage, typically used for storing a 16-bit
+                        \ y-coordinate
+
+.SUNX
+
+ SKIP 2                 \ The 16-bit x-coordinate of the vertical centre axis
+                        \ of the sun (which might be off-screen)
+
+.BETA
+
+ SKIP 1                 \ The current pitch angle beta, which is reduced from
+                        \ JSTY to a sign-magnitude value between -8 and +8
+                        \
+                        \ This describes how fast we are pitching our ship, and
+                        \ determines how fast the universe pitches around us
+                        \
+                        \ The sign bit is also stored in BET2, while the
+                        \ opposite sign is stored in BET2+1
+
+.BET1
+
+ SKIP 1                 \ The magnitude of the pitch angle beta, i.e. |beta|,
+                        \ which is a positive value between 0 and 8
+
+.QQ22
+
+ SKIP 2                 \ The two hyperspace countdown counters
+                        \
+                        \ Before a hyperspace jump, both QQ22 and QQ22+1 are
+                        \ set to 15
+                        \
+                        \ QQ22 is an internal counter that counts down by 1
+                        \ each time TT102 is called, which happens every
+                        \ iteration of the main game loop. When it reaches
+                        \ zero, the on-screen counter in QQ22+1 gets
+                        \ decremented, and QQ22 gets set to 5 and the countdown
+                        \ continues (so the first tick of the hyperspace counter
+                        \ takes 15 iterations to happen, but subsequent ticks
+                        \ take 5 iterations each)
+                        \
+                        \ QQ22+1 contains the number that's shown on-screen
+                        \ during the countdown. It counts down from 15 to 1, and
+                        \ when it hits 0, the hyperspace engines kick in
+
+.ECMA
+
+ SKIP 1                 \ The E.C.M. countdown timer, which determines whether
+                        \ an E.C.M. system is currently operating:
+                        \
+                        \   * 0 = E.C.M. is off
+                        \
+                        \   * Non-zero = E.C.M. is on and is counting down
+                        \
+                        \ The counter starts at 32 when an E.C.M. is activated,
+                        \ either by us or by an opponent, and it decreases by 1
+                        \ in each iteration of the main flight loop until it
+                        \ reaches zero, at which point the E.C.M. switches off.
+                        \ Only one E.C.M. can be active at any one time, so
+                        \ there is only one counter
+
+.ALP1
+
+ SKIP 1                 \ Magnitude of the roll angle alpha, i.e. |alpha|,
+                        \ which is a positive value between 0 and 31
+
+.ALP2
+
+ SKIP 2                 \ Bit 7 of ALP2 = sign of the roll angle in ALPHA
+                        \
+                        \ Bit 7 of ALP2+1 = opposite sign to ALP2 and ALPHA
+
+.XX15
+
+ SKIP 0                 \ Temporary storage, typically used for storing screen
+                        \ coordinates in line-drawing routines
+                        \
+                        \ There are six bytes of storage, from XX15 TO XX15+5.
+                        \ The first four bytes have the following aliases:
+                        \
+                        \   X1 = XX15
+                        \   Y1 = XX15+1
+                        \   X2 = XX15+2
+                        \   Y2 = XX15+3
+                        \
+                        \ These are typically used for describing lines in terms
+                        \ of screen coordinates, i.e. (X1, Y1) to (X2, Y2)
+                        \
+                        \ The last two bytes of XX15 do not have aliases
+
+.X1
+
+ SKIP 1                 \ Temporary storage, typically used for x-coordinates in
+                        \ line-drawing routines
+
+.Y1
+
+ SKIP 1                 \ Temporary storage, typically used for y-coordinates in
+                        \ line-drawing routines
+
+.X2
+
+ SKIP 1                 \ Temporary storage, typically used for x-coordinates in
+                        \ line-drawing routines
+
+.Y2
+
+ SKIP 1                 \ Temporary storage, typically used for y-coordinates in
+                        \ line-drawing routines
+
+ SKIP 2                 \ The last 2 bytes of the XX15 block
+
+.XX12
+
+ SKIP 6                 \ Temporary storage for a block of values, used in a
+                        \ number of places
+
+.K
+
+ SKIP 4                 \ Temporary storage, used in a number of places
+
+.LAS
+
+ SKIP 1                 \ Contains the laser power of the laser fitted to the
+                        \ current space view (or 0 if there is no laser fitted
+                        \ to the current view)
+                        \
+                        \ This gets set to bits 0-6 of the laser power byte from
+                        \ the commander data block, which contains the laser's
+                        \ power (bit 7 doesn't denote laser power, just whether
+                        \ or not the laser pulses, so that is not stored here)
+
+.MSTG
+
+ SKIP 1                 \ The current missile lock target
+                        \
+                        \   * &FF = no target
+                        \
+                        \   * 1-13 = the slot number of the ship that our
+                        \            missile is locked onto
+
+.DL
+
+ SKIP 1                 \ Vertical sync flag
+                        \
+                        \ DL gets set to 30 every time we reach vertical sync on
+                        \ the video system, which happens 50 times a second
+                        \ (50Hz). The WSCAN routine uses this to pause until the
+                        \ vertical sync, by setting DL to 0 and then monitoring
+                        \ its value until it changes to 30
+
+.LSP
+
+ SKIP 1                 \ The ball line heap pointer, which contains the number
+                        \ of the first free byte after the end of the LSX2 and
+                        \ LSY2 heaps (see the deep dive on "The ball line heap"
+                        \ for details)
+
+.QQ15
+
+ SKIP 6                 \ The three 16-bit seeds for the selected system, i.e.
+                        \ the one in the crosshairs in the Short-range Chart
+                        \
+                        \ See the deep dives on "Galaxy and system seeds" and
+                        \ "Twisting the system seeds" for more details
+
+.K5
+
+ SKIP 0                 \ Temporary storage used to store segment coordinates
+                        \ across successive calls to BLINE, the ball line
+                        \ routine
+
+.XX18
+
+ SKIP 0                 \ Temporary storage used to store coordinates in the
+                        \ LL9 ship-drawing routine
+
+ SKIP 4
+
+.K6
+
+ SKIP 5                 \ Temporary storage, typically used for storing
+                        \ coordinates during vector calculations
+
+.QQ19
+
+ SKIP 3                 \ Temporary storage, used in a number of places
+
+ SKIP 3
+
+.BET2
+
+ SKIP 2                 \ Bit 7 of BET2 = sign of the pitch angle in BETA
+                        \
+                        \ Bit 7 of BET2+1 = opposite sign to BET2 and BETA
+
+.DELTA
+
+ SKIP 1                 \ Our current speed, in the range 1-40
+
+.DELT4
+
+ SKIP 2                 \ Our current speed * 64 as a 16-bit value
+                        \
+                        \ This is stored as DELT4(1 0), so the high byte in
+                        \ DELT4+1 therefore contains our current speed / 4
+
+.U
+
+ SKIP 1                 \ Temporary storage, used in a number of places
+
+.Q
+
+ SKIP 1                 \ Temporary storage, used in a number of places
+
+.R
+
+ SKIP 1                 \ Temporary storage, used in a number of places
+
+.S
+
+ SKIP 1                 \ Temporary storage, used in a number of places
+
+.T
+
+ SKIP 1                 \ Temporary storage, used in a number of places
+
+.XSAV
+
+ SKIP 1                 \ Temporary storage for saving the value of the X
+                        \ register, used in a number of places
+
+.YSAV
+
+ SKIP 1                 \ Temporary storage for saving the value of the Y
+                        \ register, used in a number of places
+
+.XX17
+
+ SKIP 1                 \ Temporary storage, used in BPRNT to store the number
+                        \ of characters to print, and as the edge counter in the
+                        \ main ship-drawing routine
+
+.W
+ SKIP 1
+
+.QQ11
+
+ SKIP 1                 \ The number of the current view:
+                        \
+                        \   0   = Space view
+                        \   1   = Title screen
+                        \         Get commander name ("@", save/load commander)
+                        \         In-system jump just arrived ("J")
+                        \         Data on System screen (red key f6)
+                        \   4   = Sell Cargo screen (red key f2)
+                        \   6   = Death screen
+                        \   8   = Status Mode screen (red key f8)
+                        \         Inventory screen (red key f9)
+                        \   16  = Market Price screen (red key f7)
+                        \   32  = Equip Ship screen (red key f3)
+                        \   64  = Long-range Chart (red key f4)
+                        \   128 = Short-range Chart (red key f5)
+                        \
+                        \ This value is typically set by calling routine TT66
+
+.ZZ
+
+ SKIP 1                 \ Temporary storage, typically used for distance values
+
+.XX13
+
+ SKIP 1                 \ Temporary storage, typically used in the line-drawing
+                        \ routines
+
+.MCNT
+
+ SKIP 1                 \ The main loop counter
+                        \
+                        \ This counter determines how often certain actions are
+                        \ performed within the main loop. See the deep dive on
+                        \ "Scheduling tasks with the main loop counter" for more
+                        \ details
+
+.TYPE
+
+ SKIP 1                 \ The current ship type
+                        \
+                        \ This is where we store the current ship type for when
+                        \ we are iterating through the ships in the local bubble
+                        \ as part of the main flight loop. See the table at XX21
+                        \ for information about ship types
+
+.ALPHA
+
+ SKIP 1                 \ The current roll angle alpha, which is reduced from
+                        \ JSTX to a sign-magnitude value between -31 and +31
+                        \
+                        \ This describes how fast we are rolling our ship, and
+                        \ determines how fast the universe rolls around us
+                        \
+                        \ The sign bit is also stored in ALP2, while the
+                        \ opposite sign is stored in ALP2+1
+
+.QQ12
+
+ SKIP 1                 \ Our "docked" status
+                        \
+                        \   * 0 = we are not docked
+                        \
+                        \   * &FF = we are docked
+
+.TGT
+
+ SKIP 1                 \ Temporary storage, typically used as a target value
+                        \ for counters when drawing explosion clouds and partial
+                        \ circles
+
+.FLAG
+
+ SKIP 1                 \ A flag that's used to define whether this is the first
+                        \ call to the ball line routine in BLINE, so it knows
+                        \ whether to wait for the second call before storing
+                        \ segment data in the ball line heap
+
+.CNT
+
+ SKIP 1                 \ Temporary storage, typically used for storing the
+                        \ number of iterations required when looping
+
+.CNT2
+
+ SKIP 1                 \ Temporary storage, used in the planet-drawing routine
+                        \ to store the segment number where the arc of a partial
+                        \ circle should start
+
+.STP
+
+ SKIP 1                 \ The step size for drawing circles
+                        \
+                        \ Circles in Elite are split up into 64 points, and the
+                        \ step size determines how many points to skip with each
+                        \ straight-line segment, so the smaller the step size,
+                        \ the smoother the circle. The values used are:
+                        \
+                        \   * 2 for big planets and the circles on the charts
+                        \   * 4 for medium planets and the launch tunnel
+                        \   * 8 for small planets and the hyperspace tunnel
+                        \
+                        \ As the step size increases we move from smoother
+                        \ circles at the top to more polygonal at the bottom.
+                        \ See the CIRCLE2 routine for more details
+
+.XX4
+
+ SKIP 1                 \ Temporary storage, used in a number of places
+
+.XX20
+
+ SKIP 1                 \ Temporary storage, used in a number of places
+
+.XX14
+
+ SKIP 1                 \ This byte is unused
+
+ SKIP 1                 \ ???
+
+.RAT
+
+ SKIP 1                 \ Used to store different signs depending on the current
+                        \ space view, for use in calculating stardust movement
+
+.RAT2
+
+ SKIP 1                 \ Temporary storage, used to store the pitch and roll
+                        \ signs when moving objects and stardust
+
+.K2
+
+ SKIP 4                 \ Temporary storage, used in a number of places
+
+.widget
+
+ SKIP 1                 \ Temporary storage, used to store the original argument
+                        \ in A in the logarithmic FMLTU and LL28 routines
+
+.XMAX
+ SKIP 1 \ Set to 0 in RES2, never read I think
+
+.YMAX
+ SKIP 1 \ Set to 191 by RES2, i.e. number of pixel rows in space view
+
+.messXC
+
+ SKIP 1                 \ Temporary storage, used to store the text column
+                        \ of the in-flight message in MESS, so it can be erased
+                        \ from the screen at the correct time
+
+.deltX
+ SKIP 1 \ New var, used in STARS2 only for delta_x
+
+.XX1
+
+ SKIP 0                 \ This is an alias for INWK that is used in the main
+                        \ ship-drawing routine at LL9
+
+.INWK
+
+ SKIP 33                \ The zero-page internal workspace for the current ship
+                        \ data block
+                        \
+                        \ As operations on zero page locations are faster and
+                        \ have smaller opcodes than operations on the rest of
+                        \ the addressable memory, Elite tends to store oft-used
+                        \ data here. A lot of the routines in Elite need to
+                        \ access and manipulate ship data, so to make this an
+                        \ efficient exercise, the ship data is first copied from
+                        \ the ship data blocks at K% into INWK (or, when new
+                        \ ships are spawned, from the blueprints at XX21). See
+                        \ the deep dive on "Ship data blocks" for details of
+                        \ what each of the bytes in the INWK data block
+                        \ represents
+
+.XX19
+
+ SKIP 3                 \ ???
+
+.NEWB
+
+ SKIP 1                 \ The ship's "new byte flags" (or NEWB flags)
+                        \
+                        \ Contains details about the ship's type and associated
+                        \ behaviour, such as whether they are a trader, a bounty
+                        \ hunter, a pirate, currently hostile, in the process of
+                        \ docking, inside the hold having been scooped, and so
+                        \ on. The default values for each ship type are taken
+                        \ from the table at E%, where the NEWB flags are
+                        \ described in more detail
+
+.JSTX
+
+ SKIP 1                 \ Our current roll rate
+                        \
+                        \ This value is shown in the dashboard's RL indicator,
+                        \ and determines the rate at which we are rolling
+                        \
+                        \ The value ranges from from 1 to 255 with 128 as the
+                        \ centre point, so 1 means roll is decreasing at the
+                        \ maximum rate, 128 means roll is not changing, and
+                        \ 255 means roll is increasing at the maximum rate
+                        \
+                        \ This value is updated by "<" and ">" key presses, or
+                        \ if joysticks are enabled, from the joystick. If
+                        \ keyboard damping is enabled (which it is by default),
+                        \ the value is slowly moved towards the centre value of
+                        \ 128 (no roll) if there are no key presses or joystick
+                        \ movement
+
+.JSTY
+
+ SKIP 1                 \ Our current pitch rate
+                        \
+                        \ This value is shown in the dashboard's DC indicator,
+                        \ and determines the rate at which we are pitching
+                        \
+                        \ The value ranges from from 1 to 255 with 128 as the
+                        \ centre point, so 1 means pitch is decreasing at the
+                        \ maximum rate, 128 means pitch is not changing, and
+                        \ 255 means pitch is increasing at the maximum rate
+                        \
+                        \ This value is updated by "S" and "X" key presses, or
+                        \ if joysticks are enabled, from the joystick. If
+                        \ keyboard damping is enabled (which it is by default),
+                        \ the value is slowly moved towards the centre value of
+                        \ 128 (no pitch) if there are no key presses or joystick
+                        \ movement
+.KL
+
+ SKIP 1                 \ The following bytes implement a key logger that
+                        \ enables Elite to scan for concurrent key presses of
+                        \ the primary flight keys, plus a secondary flight key
+                        \
+                        \ See the deep dive on "The key logger" for more details
+                        \
+                        \ If a key is being pressed that is not in the keyboard
+                        \ table at KYTB, it can be stored here (as seen in
+                        \ routine DK4, for example)
+
+.KY17
+
+ SKIP 1                 \ "E" is being pressed
+                        \
+                        \   * 0 = no
+                        \
+                        \   * Non-zero = yes
+
+.KY14
+
+ SKIP 1                 \ "T" is being pressed
+                        \
+                        \   * 0 = no
+                        \
+                        \   * Non-zero = yes
+
+.KY15
+
+ SKIP 1                 \ "U" is being pressed
+                        \
+                        \   * 0 = no
+                        \
+                        \   * Non-zero = yes
+
+.KY20
+
+ SKIP 1                 \ "P" is being pressed
+                        \
+                        \   * 0 = no
+                        \
+                        \   * Non-zero = yes
+
+.KY7
+
+ SKIP 1                 \ "A" is being pressed
+                        \
+                        \   * 0 = no
+                        \
+                        \   * Non-zero = yes
+                        \
+                        \ This is also set when the joystick fire button has
+                        \ been pressed
+
+.KY5
+
+ SKIP 1                 \ "X" is being pressed
+                        \
+                        \   * 0 = no
+                        \
+                        \   * Non-zero = yes
+
+.KY18
+
+ SKIP 1                 \ "J" is being pressed
+                        \
+                        \   * 0 = no
+                        \
+                        \   * Non-zero = yes
+
+.KY6
+
+ SKIP 1                 \ "S" is being pressed
+                        \
+                        \   * 0 = no
+                        \
+                        \   * Non-zero = yes
+
+.KY19
+
+ SKIP 1                 \ "C" is being pressed
+                        \
+                        \   * 0 = no
+                        \
+                        \   * Non-zero = yes
+
+.KY12
+
+ SKIP 1                 \ TAB is being pressed
+                        \
+                        \   * 0 = no
+                        \
+                        \   * Non-zero = yes
+
+.KY2
+
+ SKIP 1                 \ Space is being pressed
+                        \
+                        \   * 0 = no
+                        \
+                        \   * Non-zero = yes
+
+.KY16
+
+ SKIP 1                 \ "M" is being pressed
+                        \
+                        \   * 0 = no
+                        \
+                        \   * Non-zero = yes
+
+.KY3
+
+ SKIP 1                 \ "<" is being pressed
+                        \
+                        \   * 0 = no
+                        \
+                        \   * Non-zero = yes
+
+.KY4
+
+ SKIP 1                 \ ">" is being pressed
+                        \
+                        \   * 0 = no
+                        \
+                        \   * Non-zero = yes
+
+.KY1
+
+ SKIP 1                 \ "?" is being pressed
+                        \
+                        \   * 0 = no
+                        \
+                        \   * Non-zero = yes
+
+.KY13
+
+ SKIP 1                 \ ESCAPE is being pressed
+                        \
+                        \   * 0 = no
+                        \
+                        \   * Non-zero = yes
+
+.LSX
+
+ SKIP 1                 \ LSX contains the status of the sun line heap at LSO
+                        \
+                        \   * &FF indicates the sun line heap is empty
+                        \
+                        \   * Otherwise the LSO heap contains the line data for
+                        \     the sun
+
+.FSH
+
+ SKIP 1                 \ Forward shield status
+                        \
+                        \   * 0 = empty
+                        \
+                        \   * &FF = full
+
+.ASH
+
+ SKIP 1                 \ Aft shield status
+                        \
+                        \   * 0 = empty
+                        \
+                        \   * &FF = full
+
+.ENERGY
+
+ SKIP 1                 \ Energy bank status
+                        \
+                        \   * 0 = empty
+                        \
+                        \   * &FF = full
+
+.QQ3
+
+ SKIP 1                 \ The selected system's economy (0-7)
+                        \
+                        \ See the deep dive on "Generating system data" for more
+                        \ information on economies
+
+.QQ4
+
+ SKIP 1                 \ The selected system's government (0-7)
+                        \
+                        \ See the deep dive on "Generating system data" for more
+                        \ details of the various government types
+
+.QQ5
+
+ SKIP 1                 \ The selected system's tech level (0-14)
+                        \
+                        \ See the deep dive on "Generating system data" for more
+                        \ information on tech levels
+
+.QQ6
+
+ SKIP 2                 \ The selected system's population in billions * 10
+                        \ (1-71), so the maximum population is 7.1 billion
+                        \
+                        \ See the deep dive on "Generating system data" for more
+                        \ details on population levels
+
+.QQ7
+
+ SKIP 2                 \ The selected system's productivity in M CR (96-62480)
+                        \
+                        \ See the deep dive on "Generating system data" for more
+                        \ details about productivity levels
+
+.QQ8
+
+ SKIP 2                 \ The distance from the current system to the selected
+                        \ system in light years * 10, stored as a 16-bit number
+                        \
+                        \ The distance will be 0 if the selected sysyem is the
+                        \ current system
+                        \
+                        \ The galaxy chart is 102.4 light years wide and 51.2
+                        \ light years tall (see the intra-system distance
+                        \ calculations in routine TT111 for details), which
+                        \ equates to 1024 x 512 in terms of QQ8
+
+.QQ9
+
+ SKIP 1                 \ The galactic x-coordinate of the crosshairs in the
+                        \ galaxy chart (and, most of the time, the selected
+                        \ system's galactic x-coordinate)
+
+.QQ10
+
+ SKIP 1                 \ The galactic y-coordinate of the crosshairs in the
+                        \ galaxy chart (and, most of the time, the selected
+                        \ system's galactic y-coordinate)
+
+.NOSTM
+
+ SKIP 1                 \ The number of stardust particles shown on screen,
+                        \ which is 18 (#NOST) for normal space, and 3 for
+                        \ witchspace
+
+PRINT "Zero page variables from ", ~ZP, " to ", ~P%
+
+\ ******************************************************************************
+\
+\       Name: XX3
+\       Type: Workspace
+\    Address: &0100 to the top of the descending stack
+\   Category: Workspaces
+\    Summary: Temporary storage space for complex calculations
+\
+\ ------------------------------------------------------------------------------
+\
+\ Used as heap space for storing temporary data during calculations. Shared with
+\ the descending 6502 stack, which works down from &01FF.
+\
+\ ******************************************************************************
+
+ORG &0100
+
+.XX3
+
+ SKIP 0                 \ Temporary storage, typically used for storing tables
+                        \ of values such as screen coordinates or ship data
+
+\ ******************************************************************************
+\
+\       Name: K%
+\       Type: Workspace
+\    Address: &0400 to &0800
+\   Category: Workspaces
+\    Summary: Ship data blocks and ship line heaps
+\  Deep dive: Ship data blocks
+\             The local bubble of universe
+\
+\ ------------------------------------------------------------------------------
+\
+\ Contains ship data for all the ships, planets, suns and space stations in our
+\
+\ The blocks are pointed to by the lookup table at location UNIV. The first 444
+\ bytes of the K% workspace hold ship data on up to 12 ships, with 37 (NI%)
+\ bytes per ship, and the ship line heap grows downwards from WP at the end of
+\ the K% workspace.
+\
+\ See the deep dive on "Ship data blocks" for details on ship data blocks, and
+\ the deep dive on "The local bubble of universe" for details of how Elite
+\ stores the local universe in K%, FRIN and UNIV.
+\
+\ ******************************************************************************
+
+ORG &0400
+
+.K%
+
+ SKIP 0                 \ Ship data blocks and ship line heap
+
+\ ******************************************************************************
+\
+\       Name: WP
+\       Type: Workspace
+\    Address: &0E41 to &12A9
+\   Category: Workspaces
+\    Summary: Ship slots, variables
+\
+\ ******************************************************************************
+
+ORG &0E41
+
+.WP
+
+ SKIP 0                 \ The start of the WP workspace
+
+.FRIN
+
+ SKIP NOSH + 1          \ Slots for the ships in the local bubble of universe
+                        \
+                        \ There are #NOSH + 1 slots, but the ship-spawning
+                        \ routine at NWSHP only populates #NOSH of them, so
+                        \ (the last slot is effectively used as a null
+                        \ terminator when shuffling the slots down in the
+                        \ KILLSHP routine)
+                        \
+                        \ See the deep dive on "The local bubble of universe"
+                        \ for details of how Elite stores the local universe in
+                        \ FRIN, UNIV and K%
+
+.MANY
+
+ SKIP SST               \ The number of ships of each type in the local bubble
+                        \ of universe
+                        \
+                        \ The number of ships of type X in the local bubble is
+                        \ stored at MANY+X, so the number of Sidewinders is at
+                        \ MANY+1, the number of Mambas is at MANY+2, and so on
+                        \
+                        \ See the deep dive on "Ship blueprints" for a list of
+                        \ ship types
+
+.SSPR
+
+ SKIP NTY + 1 - SST     \ "Space station present" flag
+                        \
+                        \   * Non-zero if we are inside the space station's safe
+                        \     zone
+                        \
+                        \   * 0 if we aren't (in which case we can show the sun)
+                        \
+                        \ This flag is at MANY+SST, which is no coincidence, as
+                        \ MANY+SST is a count of how many space stations there
+                        \ are in our local bubble, which is the same as saying
+                        \ "space station present"
+
+.JUNK
+
+ SKIP 1                 \ The amount of junk in the local bubble
+                        \
+                        \ "Junk" is defined as being one of these:
+                        \
+                        \   * Escape pod
+                        \   * Alloy plate
+                        \   * Cargo canister
+                        \   * Asteroid
+                        \   * Splinter
+                        \   * Shuttle
+                        \   * Transporter
+
+.auto
+
+ SKIP 1                 \ Docking computer activation status
+                        \
+                        \   * 0 = Docking computer is off
+                        \
+                        \   * Non-zero = Docking computer is running
+
+.ECMP
+
+ SKIP 1                 \ Our E.C.M. status
+                        \
+                        \   * 0 = E.C.M. is off
+                        \
+                        \   * Non-zero = E.C.M. is on
+
+.MJ
+
+ SKIP 1                 \ Are we in witchspace (i.e. have we mis-jumped)?
+                        \
+                        \   * 0 = no, we are in normal space
+                        \
+                        \   * &FF = yes, we are in witchspace
+
+.CABTMP
+
+                        \
+                        \ The ambient cabin temperature in deep space is 30,
+                        \ which is displayed as one notch on the dashboard bar
+                        \
+                        \ We get higher temperatures closer to the sun
+                        \
+                        \ CABTMP shares a location with MANY, but that's OK as
+                        \ MANY+0 would contain the number of ships of type 0,
+                        \ but as there is no ship type 0 (they start at 1), MANY
+                        \ is unused
+
+ SKIP 1                 \ This byte is unused
+
+.LAS2
+
+ SKIP 1                 \ Laser power for the current laser
+                        \
+                        \   * Bits 0-6 contain the laser power of the current
+                        \     space view
+                        \
+                        \   * Bit 7 denotes whether or not the laser pulses:
+                        \
+                        \     * 0 = pulsing laser
+                        \
+                        \     * 1 = beam laser (i.e. always on)
+
+.MSAR
+
+ SKIP 1                 \ The targeting state of our leftmost missile
+                        \
+                        \   * 0 = missile is not looking for a target, or it
+                        \     already has a target lock (indicator is not
+                        \     yellow/white)
+                        \
+                        \   * Non-zero = missile is currently looking for a
+                        \     target (indicator is yellow/white)
+
+.VIEW
+
+ SKIP 1                 \ The number of the current space view
+                        \
+                        \   * 0 = front
+                        \   * 1 = rear
+                        \   * 2 = left
+                        \   * 3 = right
+
+.LASCT
+
+ SKIP 1                 \ The laser pulse count for the current laser
+                        \
+                        \ This is a counter that defines the gap between the
+                        \ pulses of a pulse laser. It is set as follows:
+                        \
+                        \   * 0 for a beam laser
+                        \
+                        \   * 10 for a pulse laser
+                        \
+                        \ It gets decremented every vertical sync (in the LINSCN
+                        \ routine, which is called 50 times a second) and is set
+                        \ to a non-zero value for pulse lasers only
+                        \
+                        \ The laser only fires when the value of LASCT hits
+                        \ zero, so for pulse lasers with a value of 10, that
+                        \ means the laser fires once every 10 vertical syncs (or
+                        \ 5 times a second)
+                        \
+                        \ In comparison, beam lasers fire continuously as the
+                        \ value of LASCT is always 0
+
+.GNTMP
+
+ SKIP 1                 \ Laser temperature (or "gun temperature")
+                        \
+                        \ If the laser temperature exceeds 242 then the laser
+                        \ overheats and cannot be fired again until it has
+                        \ cooled down
+
+.HFX
+
+ SKIP 1                 \ A flag that toggles the hyperspace colour effect
+                        \
+                        \   * 0 = no colour effect
+                        \
+                        \   * Non-zero = hyperspace colour effect enabled
+                        \
+
+.EV
+
+ SKIP 1                 \ The "extra vessels" spawning counter
+                        \
+                        \ This counter is set to 0 on arrival in a system and
+                        \ following an in-system jump, and is bumped up when we
+                        \ spawn bounty hunters or pirates (i.e. "extra vessels")
+                        \
+                        \ It decreases by 1 each time we consider spawning more
+                        \ "extra vessels" in part 4 of the main game loop, so
+                        \ increasing the value of EV has the effect of delaying
+                        \ the spawning of more vessels
+                        \
+                        \ In other words, this counter stops bounty hunters and
+                        \ pirates from continually appearing, and ensures that
+                        \ there's a delay between spawnings
+
+.DLY
+
+ SKIP 1                 \ In-flight message delay
+                        \
+                        \ This counter is used to keep an in-flight message up
+                        \ for a specified time before it gets removed. The value
+                        \ in DLY is decremented each time we start another
+                        \ iteration of the main game loop at TT100
+
+.de
+
+ SKIP 1                 \ Equipment destruction flag
+                        \
+                        \   * Bit 1 denotes whether or not the in-flight message
+                        \     about to be shown by the MESS routine is about
+                        \     destroyed equipment:
+                        \
+                        \     * 0 = the message is shown normally
+                        \
+                        \     * 1 = the string " DESTROYED" gets added to the
+                        \       end of the message
+
+.LSX2
+
+ SKIP &100
+
+.LSY2
+
+ SKIP &100
+
+.LSO
+
+ SKIP 200
+
+.BUF
+
+ SKIP 90               \ The line buffer used by DASC to print justified text
+
+.SX
+
+ SKIP NOST + 1          \ This is where we store the x_hi coordinates for all
+                        \ the stardust particles
+
+.SXL
+
+ SKIP NOST + 1          \ This is where we store the x_lo coordinates for all
+                        \ the stardust particles
+.SY
+
+ SKIP NOST + 1          \ This is where we store the y_hi coordinates for all
+                        \ the stardust particles
+
+.SYL
+
+ SKIP NOST + 1          \ This is where we store the y_lo coordinates for all
+                        \ the stardust particles
+
+.SZ
+
+ SKIP NOST + 1          \ This is where we store the z_hi coordinates for all
+                        \ the stardust particles
+
+.SZL
+
+ SKIP NOST + 1          \ This is where we store the z_lo coordinates for all
+                        \ the stardust particles
+
+.LASX
+
+ SKIP 1                 \ The x-coordinate of the tip of the laser line
+
+.LASY
+
+ SKIP 1                 \ The y-coordinate of the tip of the laser line
+
+ SKIP 1                 \ This byte is unused
+
+.ALTIT
+
+ SKIP 1                 \ Our altitude above the surface of the planet or sun
+                        \
+                        \   * 255 = we are a long way above the surface
+                        \
+                        \   * 1-254 = our altitude as the square root of:
+                        \
+                        \       x_hi^2 + y_hi^2 + z_hi^2 - 6^2
+                        \
+                        \     where our ship is at the origin, the centre of the
+                        \     planet/sun is at (x_hi, y_hi, z_hi), and the
+                        \     radius of the planet is 6
+                        \
+                        \   * 0 = we have crashed into the surface
+
+.SWAP
+
+ SKIP 1                 \ Temporary storage, used to store a flag that records
+                        \ whether or not we had to swap a line's start and end
+                        \ coordinates around when clipping the line in routine
+                        \ LL145 (the flag is used in places like BLINE to swap
+                        \ them back)
+
+ SKIP 6                 \ These bytes are unused
+
+.SDIST
+
+ SKIP 1                 \ New, distance for ship in TITLE?
+
+ SKIP 2                 \ These bytes are unused
+
+.NAME
+
+ SKIP 8                 \ The current commander name
+                        \
+                        \ The commander name can be up to 7 characters (the DFS
+                        \ limit for file names), and is terminated by a carriage
+                        \ return
+
+.TP
+
+ SKIP 1                 \ This byte is unused
+
+.QQ0
+
+ SKIP 1                 \ The current system's galactic x-coordinate (0-256)
+
+.QQ1
+
+ SKIP 1                 \ The current system's galactic y-coordinate (0-256)
+
+.QQ21
+
+ SKIP 6                 \ The three 16-bit seeds for the current galaxy
+                        \
+                        \ These seeds define system 0 in the current galaxy, so
+                        \ they can be used as a starting point to generate all
+                        \ 256 systems in the galaxy
+                        \
+                        \ Using a galactic hyperdrive rotates each byte to the
+                        \ left (rolling each byte within itself) to get the
+                        \ seeds for the next galaxy, so after eight galactic
+                        \ jumps, the seeds roll around to the first galaxy again
+                        \
+                        \ See the deep dives on "Galaxy and system seeds" and
+                        \ "Twisting the system seeds" for more details
+.CASH
+
+ SKIP 4                 \ Our current cash pot
+                        \
+                        \ The cash stash is stored as a 32-bit unsigned integer,
+                        \ with the most significant byte in CASH and the least
+                        \ significant in CASH+3. This is big-endian, which is
+                        \ the opposite way round to most of the numbers used in
+                        \ Elite - to use our notation for multi-byte numbers,
+                        \ the amount of cash is CASH(0 1 2 3)
+
+.QQ14
+
+ SKIP 1                 \ Our current fuel level (0-70)
+                        \
+                        \ The fuel level is stored as the number of light years
+                        \ multiplied by 10, so QQ14 = 1 represents 0.1 light
+                        \ years, and the maximum possible value is 70, for 7.0
+                        \ light years
+
+.COK
+
+ SKIP 1                 \ Flags used to generate the competition code
+                        \
+                        \ See the deep dive on "The competition code" for
+                        \ details of these flags and how they are used in
+                        \ generating and decoding the competition code
+
+.GCNT
+
+ SKIP 1                 \ The number of the current galaxy (0-7)
+                        \
+                        \ When this is displayed in-game, 1 is added to the
+                        \ number, so we start in galaxy 1 in-game, but it's
+                        \ stored as galaxy 0 internally
+                        \
+                        \ The galaxy number increases by one every time a
+                        \ galactic hyperdrive is used, and wraps back round to
+                        \ the start after eight galaxies
+
+.LASER
+
+ SKIP 4                 \ The specifications of the lasers fitted to each of the
+                        \ four space views:
+                        \
+                        \   * Byte #0 = front view (red key f0)
+                        \   * Byte #1 = rear view (red key f1)
+                        \   * Byte #2 = left view (red key f2)
+                        \   * Byte #3 = right view (red key f3)
+                        \
+                        \ For each of the views:
+                        \
+                        \   * 0 = no laser is fitted to this view
+                        \
+                        \   * Non-zero = a laser is fitted to this view, with
+                        \     the following specification:
+                        \
+                        \     * Bits 0-6 contain the laser's power
+                        \
+                        \     * Bit 7 determines whether or not the laser pulses
+
+ SKIP 2                 \ These bytes are unused (they were originally used for
+                        \ up/down lasers, but they were dropped)
+
+.CRGO
+
+ SKIP 1                 \ Our ship's cargo capacity
+                        \
+                        \   * 22 = standard cargo bay of 20 tonnes
+                        \
+                        \   * 37 = large cargo bay of 35 tonnes
+                        \
+                        \ The value is two greater than the actual capacity to
+                        \ male the maths in tnpr slightly more efficient
+
+.QQ20
+
+ SKIP 17                \ The contents of our cargo hold
+                        \
+                        \ The amount of market item X that we have in our hold
+                        \ can be found in the X-th byte of QQ20. For example:
+                        \
+                        \   * QQ20 contains the amount of food (item 0)
+                        \
+                        \   * QQ20+7 contains the amount of computers (item 7)
+                        \
+                        \ See QQ23 for a list of market item numbers and their
+                        \ storage units
+
+.ECM
+
+ SKIP 1                 \ E.C.M. system
+                        \
+                        \   * 0 = not fitted
+                        \
+                        \   * &FF = fitted
+
+.BST
+
+ SKIP 1                 \ Fuel scoops (BST stands for "barrel status")
+                        \
+                        \   * 0 = not fitted
+                        \
+                        \   * &FF = fitted
+
+.BOMB
+
+ SKIP 1                 \ Energy bomb
+                        \
+                        \   * 0 = not fitted
+                        \
+                        \   * &7F = fitted
+
+.ENGY
+
+ SKIP 1                 \ Energy unit
+                        \
+                        \   * 0 = not fitted
+                        \
+                        \   * 1 = fitted
+
+.DKCMP
+
+ SKIP 1                 \ Docking computer
+                        \
+                        \   * 0 = not fitted
+                        \
+                        \   * &FF = fitted
+
+.GHYP
+
+ SKIP 1                 \ Galactic hyperdrive
+                        \
+                        \   * 0 = not fitted
+                        \
+                        \   * &FF = fitted
+
+.ESCP
+
+ SKIP 1                 \ Escape pod
+                        \
+                        \   * 0 = not fitted
+                        \
+                        \   * &FF = fitted
+
+ SKIP 1                 \ This byte is unused
+
+.L1264
+
+ SKIP 1
+
+.L1265
+
+ SKIP 1
+
+.TALLYF
+
+ SKIP 1
+
+.NOMSL
+
+ SKIP 1                 \ The number of missiles we have fitted (0-4)
+
+.FIST
+
+ SKIP 1                 \ Our legal status (FIST stands for "fugitive/innocent
+                        \ status"):
+                        \
+                        \   * 0 = Clean
+                        \
+                        \   * 1-49 = Offender
+                        \
+                        \   * 50+ = Fugitive
+                        \
+                        \ You get 64 points if you kill a cop, so that's a fast
+                        \ ticket to fugitive status
+
+.AVL
+
+ SKIP 17                \ Market availability in the current system
+                        \
+                        \ The available amount of market item X is stored in
+                        \ the X-th byte of AVL, so for example:
+                        \
+                        \   * AVL contains the amount of food (item 0)
+                        \
+                        \   * AVL+7 contains the amount of computers (item 7)
+                        \
+                        \ See QQ23 for a list of market item numbers and their
+                        \ storage units, and the deep dive on "Market item
+                        \ prices and availability" for details of the algorithm
+                        \ used for calculating each item's availability
+
+.QQ26
+
+ SKIP 1                 \ A random value used to randomise market data
+                        \
+                        \ This value is set to a new random number for each
+                        \ change of system, so we can add a random factor into
+                        \ the calculations for market prices (for details of how
+                        \ this is used, see the deep dive on "Market prices")
+
+.TALLY
+
+ SKIP 2                 \ Our combat rank
+                        \
+                        \ The combat rank is stored as the number of kills, in a
+                        \ 16-bit number TALLY(1 0) - so the high byte is in
+                        \ TALLY+1 and the low byte in TALLY
+                        \
+                        \ If the high byte in TALLY+1 is 0 then we have between
+                        \ 0 and 255 kills, so our rank is Harmless, Mostly
+                        \ Harmless, Poor, Average or Above Average, according to
+                        \ the value of the low byte in TALLY:
+                        \
+                        \   Harmless        = %00000000 to %00000011 = 0 to 3
+                        \   Mostly Harmless = %00000100 to %00000111 = 4 to 7
+                        \   Poor            = %00001000 to %00001111 = 8 to 15
+                        \   Average         = %00010000 to %00011111 = 16 to 31
+                        \   Above Average   = %00100000 to %11111111 = 32 to 255
+                        \
+                        \ If the high byte in TALLY+1 is non-zero then we are
+                        \ Competent, Dangerous, Deadly or Elite, according to
+                        \ the high byte in TALLY+1:
+                        \
+                        \   Competent       = 1           = 256 to 511 kills
+                        \   Dangerous       = 2 to 9      = 512 to 2559 kills
+                        \   Deadly          = 10 to 24    = 2560 to 6399 kills
+                        \   Elite           = 25 and up   = 6400 kills and up
+                        \
+                        \ You can see the rating calculation in STATUS
+
+.SVC
+
+ SKIP 1                 \ The save count
+                        \
+                        \ When a new commander is created, the save count gets
+                        \ set to 128. This value gets halved each time the
+                        \ commander file is saved, but it is otherwise unused.
+                        \ It is presumably part of the security system for the
+                        \ competition, possibly another flag to catch out
+                        \ entries with manually altered commander files
+
+ SKIP 2                 \ The commander file checksum
+                        \
+                        \ These two bytes are reserved for the commander file
+                        \ checksum, so when the current commander block is
+                        \ copied from here to the last saved commander block at
+                        \ NA%, CHK and CHK2 get overwritten
+
+NT% = SVC + 2 - TP      \ This sets the variable NT% to the size of the current
+                        \ commander data block, which starts at TP and ends at
+                        \ SVC+2 (inclusive)
+
+ SKIP 1                 \ This byte is unused
+
+.MCH
+
+ SKIP 1                 \ The text token number of the in-flight message that is
+                        \ currently being shown, and which will be removed by
+                        \ the me2 routine when the counter in DLY reaches zero
+
+.COMX
+
+ SKIP 1                 \ The x-coordinate of the compass dot
+
+.COMY
+
+ SKIP 1                 \ The y-coordinate of the compass dot
+
+ SKIP 14                \ These bytes are unused
+
+.QQ24
+
+ SKIP 1                 \ Temporary storage, used to store the current market
+                        \ item's price in routine TT151
+
+.QQ25
+
+ SKIP 1                 \ Temporary storage, used to store the current market
+                        \ item's availability in routine TT151
+
+.QQ28
+
+ SKIP 1                 \ Temporary storage, used to store the economy byte of
+                        \ the current system in routine var
+
+.QQ29
+
+ SKIP 1                 \ Temporary storage, used in a number of places
+
+.gov
+
+ SKIP 1                 \ The current system's government type (0-7)
+                        \
+                        \ See the deep dive on "Generating system data" for
+                        \ details of the various government types
+
+.tek
+
+ SKIP 1                 \ The current system's tech level (0-14)
+                        \
+                        \ See the deep dive on "Generating system data" for more
+                        \ information on tech levels
+
+.SLSP
+
+ SKIP 2                 \ The address of the bottom of the ship line heap
+                        \
+                        \ The ship line heap is a descending block of memory
+                        \ extended downwards by the NWSHP routine when adding
+                        \ new ships (and their associated ship line heaps), in
+                        \ which case SLSP is lowered to provide more heap space,
+                        \ assuming there is enough free memory to do so
+
+.QQ2
+
+ SKIP 6                 \ The three 16-bit seeds for the current system, i.e.
+                        \ the one we are currently in
+                        \
+                        \ See the deep dives on "Galaxy and system seeds" and
+                        \ "Twisting the system seeds" for more details
+
+.safehouse
+
+ SKIP 6                 \ Backup storage for the seeds for the selected system
+                        \
+                        \ The seeds for the current system get stored here as
+                        \ soon as a hyperspace is initiated, so we can fetch
+                        \ them in the hyp1 routine. This fixes a bug in an
+                        \ earlier version where you could hyperspace while
+                        \ docking and magically appear in your destination
+                        \ station
+
+.CLCNT
+
+ SKIP 1                 \ New, EX2, stored but never read = cloud counter
+
+.ADCH1
+
+ SKIP 1                 \ New, joystick channel 1, written to in irq1
+
+.ADCH2
+
+ SKIP 1                 \ New, channel 2
+
+.ADCH3
+
+ SKIP 1                 \ New, channel 3
+
+PRINT "WP workspace from  ", ~WP," to ", ~P%
 
 \ ******************************************************************************
 \
@@ -574,10 +1977,19 @@ LOAD_A% = LOAD%
 
  RTS                    \ Return from the subroutine
 
-.BEEP_LONG_LOW
+\ ******************************************************************************
+\
+\       Name: LOWBEEP
+\       Type: Subroutine
+\   Category: Sound
+\    Summary: Make a long, low beep
+\
+\ ******************************************************************************
 
- LDY #&00
- BRA NOISE
+.LOWBEEP
+
+ LDY #0                 \ Call NOISE with Y = 0 to make a long, low beep,
+ BRA NOISE              \ returning from the subroutine using a tail call
 
 \ ******************************************************************************
 \
@@ -593,42 +2005,95 @@ LOAD_A% = LOAD%
  LDY #1                 \ Call NOISE with Y = 1 to make a short, high beep,
  BRA NOISE              \ returning from the subroutine using a tail call
 
+\ ******************************************************************************
+\
+\       Name: L1358
+\       Type: Variable
+\   Category: Sound
+\    Summary: ???
+\
+\ ******************************************************************************
+
 .L1358
 
- EQUB &C0
+ EQUB %11000000
+ EQUB %10100000
+ EQUB %10000000
 
- EQUB &A0,&80
+\ ******************************************************************************
+\
+\       Name: L135B
+\       Type: Variable
+\   Category: Sound
+\    Summary: ???
+\
+\ ******************************************************************************
 
 .L135B
 
- EQUB &FF,&BF,&9F,&DF,&EF
+ EQUB %11111111
+ EQUB %10111111
+ EQUB %10011111
+ EQUB %11011111
+ EQUB %11101111
 
-.MASTER_DKSn
+\ ******************************************************************************
+\
+\       Name: SOUND
+\       Type: Subroutine
+\   Category: Sound
+\    Summary: Write sound data directly to the 76489 sound chip
+\
+\ ------------------------------------------------------------------------------
+\
+\ Other entry points:
+\
+\   SRTS                Contains an RTS
+\
+\ ******************************************************************************
 
- LDX #&FF
- STX VIA+&43
- STA VIA+&4F
- LDA #&00
- STA VIA+&40
- PHA
- PLA
- PHA
- PLA
- LDA #&08
- STA VIA+&40
+.SOUND
 
-.L1376
+ LDX #%11111111         \ Set 6522 System VIA data direction register DDRA
+ STX VIA+&43            \ (SHEILA &43) to %11111111. This sets the ORA register
+                        \ so that bits 0-7 of ORA will be sent to the 76489
+                        \ sound chip
 
- RTS
+ STA VIA+&4F            \ Set 6522 System VIA output register ORA (SHEILA &4F)
+                        \ to A, the sound data we want to send
+
+ LDA #%00000000         \ Activate the sound chip by clearing bit 3 of the
+ STA VIA+&40            \ 6522 System VIA output register ORB (SHEILA &40)
+
+ PHA                    \ These instructions don't do anything apart from
+ PLA                    \ keeping the sound chip activated for at least 8us,
+ PHA                    \ which we need to do in order for the data to make
+ PLA                    \ it to the chip
+
+ LDA #%00001000         \ Deactivate the sound chip by setting bit 3 of the
+ STA VIA+&40            \ 6522 System VIA output register ORB (SHEILA &40)
+
+.SRTS
+
+ RTS                    \ Return from the subroutine
+
+\ ******************************************************************************
+\
+\       Name: L1377
+\       Type: Subroutine
+\   Category: Sound
+\    Summary: ???
+\
+\ ******************************************************************************
 
 .L1377
 
- LDY #&03
- LDA #&00
+ LDY #3
+ LDA #0
 
 .L137B
 
- STA NS9,Y
+ STA SBUF-1,Y
  DEY
  BNE L137B
 
@@ -637,29 +2102,48 @@ LOAD_A% = LOAD%
 .L1382
 
  LDA L135B,Y
- JSR MASTER_DKSn
+ JSR SOUND
 
  INY
- CPY #&05
+ CPY #5
  BNE L1382
 
  CLI
+
  RTS
 
-.BEING_HIT_NOISE
+\ ******************************************************************************
+\
+\       Name: NOISEHIT
+\       Type: Subroutine
+\   Category: Sound
+\    Summary: Make the sound of us being hit
+\
+\ ******************************************************************************
 
- LDY #&09
+.NOISEHIT
+
+ LDY #9
  JSR NOISE
 
- LDY #&05
+ LDY #5
  BRA NOISE
 
-.LASER_NOISE
+\ ******************************************************************************
+\
+\       Name: NOISELASER
+\       Type: Subroutine
+\   Category: Sound
+\    Summary: Make the sound of our laser firing
+\
+\ ******************************************************************************
 
- LDY #&03
+.NOISELASER
+
+ LDY #3
  JSR NOISE
 
- LDY #&05
+ LDY #5
 
 \ ******************************************************************************
 \
@@ -673,12 +2157,12 @@ LOAD_A% = LOAD%
 .NOISE
 
  LDA DNOIZ
- BNE L1376
+ BNE SRTS
 
  LDA SFX2,Y
  LSR A
  CLV
- LDX #&00
+ LDX #0
  BCS NS1
 
  INX
@@ -692,7 +2176,7 @@ LOAD_A% = LOAD%
 
  LDA SFX1,Y
  CMP SBUF+12,X
- BCC L1376
+ BCC SRTS
 
  SEI
  STA SBUF+12,X
@@ -715,7 +2199,9 @@ LOAD_A% = LOAD%
  LDA #&80
  STA SBUF,X
  CLI
+
  SEC
+
  RTS
 
 \ ******************************************************************************
@@ -745,7 +2231,7 @@ LOAD_A% = LOAD%
 
 .NS2
 
- LDA #&00
+ LDA #0
  CLC
  CLD
  ADC SBUF+18,Y
@@ -755,12 +2241,12 @@ LOAD_A% = LOAD%
  ASL A
  AND #&0F
  ORA L1358,Y
- JSR MASTER_DKSn
+ JSR SOUND
 
  PLA
  LSR A
  LSR A
- JSR MASTER_DKSn
+ JSR SOUND
 
 .NS3
 
@@ -781,7 +2267,7 @@ LOAD_A% = LOAD%
 
 .NS4
 
- LDA #&00
+ LDA #0
  STA SBUF,Y
  STA SBUF+12,Y
  BEQ NS7
@@ -799,7 +2285,7 @@ LOAD_A% = LOAD%
 .NS7
 
  EOR L135B,Y
- JSR MASTER_DKSn
+ JSR SOUND
 
 .NS8
 
@@ -812,7 +2298,7 @@ LOAD_A% = LOAD%
 
 \ ******************************************************************************
 \
-\       Name: 
+\       Name: SBUF
 \       Type: Variable
 \   Category: Sound
 \    Summary: ???
@@ -834,8 +2320,10 @@ LOAD_A% = LOAD%
 
 .SFX1
 
- EQUB &4B,&5B,&3F,&EB,&FF,&09,&FF,&8B
- EQUB &CF,&E7,&FF,&EF
+ EQUB &4B, &5B, &3F
+ EQUB &EB, &FF, &09
+ EQUB &FF, &8B, &CF
+ EQUB &E7, &FF, &EF
 
 \ ******************************************************************************
 \
@@ -848,8 +2336,10 @@ LOAD_A% = LOAD%
 
 .SFX2
 
- EQUB &40,&10,&01,&FC,&F3,&19,&F9,&7C
- EQUB &F1,&FA,&FE,&FE
+ EQUB &40, &10, &01
+ EQUB &FC, &F3, &19
+ EQUB &F9, &7C, &F1
+ EQUB &FA, &FE, &FE
 
 \ ******************************************************************************
 \
@@ -862,8 +2352,10 @@ LOAD_A% = LOAD%
 
 .SFX3
 
- EQUB &F0,&20,&10,&30,&03,&01,&08,&80
- EQUB &16,&38,&00,&80
+ EQUB &F0, &20, &10
+ EQUB &30, &03, &01
+ EQUB &08, &80, &16
+ EQUB &38, &00, &80
 
 \ ******************************************************************************
 \
@@ -876,8 +2368,10 @@ LOAD_A% = LOAD%
 
 .SFX4
 
- EQUB &FF,&FF,&00,&03,&1F,&01,&07,&07
- EQUB &0F,&03,&0F,&0F
+ EQUB &FF, &FF, &00
+ EQUB &03, &1F, &01
+ EQUB &07, &07, &0F
+ EQUB &03, &0F, &0F
 
 \ ******************************************************************************
 \
@@ -1011,11 +2505,11 @@ LOAD_A% = LOAD%
  BNE VNT2               \ Loop back to VNT2 until we have copied all the palette
                         \ bytes bar the first one
 
- LDA VIA+&18            \ ???
+ LDA VIA+&18            \ ??? A to D joystick status byte (channel?)
  AND #&03
  TAY
- LDA VIA+&19
- STA L12A7,Y
+ LDA VIA+&19            \ A to D joystick high byte
+ STA ADCH1,Y
  INY
  TYA
  CMP #&03
@@ -1025,13 +2519,21 @@ LOAD_A% = LOAD%
  STA VIA+&18
  PLY
  LDA VIA+&44
- LDA L00FC
+
+ LDA &FC                \ Restore the value of A from before the call to the
+                        \ interrupt handler (the MOS stores the value of A in
+                        \ location &FC before calling the interrupt handler)
+
  RTI
 
 .LINSCN
 
  LDA VIA+&41            \ ???
- LDA L00FC
+
+ LDA &FC                \ Fetch the value of A from before the call to the
+                        \ interrupt handler (the MOS stores the value of A in
+                        \ location &FC before calling the interrupt handler)
+
  PHA
 
  LDA DLCNT
@@ -1569,19 +3071,19 @@ NEXT
 
 .LL30
 
- STY YSAV               \ ???
+ STY YSAV               \ Store Y in YSAV so we can retrieve it below
 
  LDA #%00001111         \ Set bits 1 and 2 of the Access Control Register at
  STA VIA+&34            \ SHEILA+&34 to switch screen memory into &3000-&7FFF
 
- JSR LOIN
+ JSR LOIN               \ Draw a line from (X1, Y1) to (X2, Y2)
 
  LDA #%00001001         \ Clear bits 1 and 2 of the Access Control Register at
  STA VIA+&34            \ SHEILA+&34 to switch main memory back into &3000-&7FFF
 
- LDY YSAV
+ LDY YSAV               \ Retrieve the value of Y we stored above
 
- RTS
+ RTS                    \ Return from the subroutine
 
 \ ******************************************************************************
 \
@@ -4614,7 +6116,7 @@ NEXT
 
  AND COL                \ Apply the colour mask to the pixel byte, as above
 
- STA R                  \ ???
+ STA R                  \ Store the dash's right pixel in R ???
 
  EOR (SC),Y             \ Draw the dash's right pixel according to the mask in
  STA (SC),Y             \ A, with the colour in COL, using EOR logic, just as
@@ -6050,8 +7552,8 @@ NEXT
  LDX #%00001111         \ Set bits 1 and 2 of the Access Control Register at
  STX VIA+&34            \ SHEILA+&34 to switch screen memory into &3000-&7FFF
 
- LDA COL                \ ???
- PHA
+ LDA COL                \ Store the current colour on the stack, so we can
+ PHA                    \ restore it once we have drawn the border
 
  LDA #%00001111         \ Set COL = %00001111 to act as a four-pixel yellow
  STA COL                \ character byte (i.e. set the line colour to yellow)
@@ -6059,7 +7561,7 @@ NEXT
  LDY #1                 \ Move the text cursor to row 1
  STY YC
 
- STY XC                 \ Move the text cursor to column 1 ???
+ STY XC                 \ Move the text cursor to column 1
 
  LDX #0                 \ Set X1 = Y1 = Y2 = 0
  STX Y1
@@ -6080,10 +7582,10 @@ NEXT
  STA X2
 
  JSR BOS2               \ Call BOS2 below, which will call BOS1 twice, and then
-                        \ fall through into BOS2 again, so we effectively do
-                        \ BOS1 four times, decrementing X1 and X2 each time
-                        \ before calling LOIN, so this whole loop-within-a-loop
-                        \ mind-bender ends up drawing these four lines:
+ JSR BOS2               \ call BOS2 again, so we effectively do BOS1 four times,
+                        \ decrementing X1 and X2 each time before calling LOIN,
+                        \ so this whole loop-within-a-loop mind-bender ends up
+                        \ drawing these four lines:
                         \
                         \   (1, 0)   to (1, 191)
                         \   (0, 0)   to (0, 191)
@@ -6093,13 +7595,12 @@ NEXT
                         \ So that's a 2-pixel wide vertical border along the
                         \ left edge of the upper part of the screen, and a
                         \ 2-pixel wide vertical border along the right edge
+ LDA COL                \ Set locations &4000 &41F8 to %00001111, as otherwise
+ STA &4000              \ the top-left and top-right corners will be black (as
+ STA &41F8              \ the lines overlap at the corners, and the EOR logic
+                        \ used by LOIN will otherwise make them black)
 
- JSR BOS2               \ ???
-
- LDA COL
- STA &4000
- STA &41F8
- PLA
+ PLA                    \ Restore the original colour that we stored above
  STA COL
 
  LDA #%00001001         \ Clear bits 1 and 2 of the Access Control Register at
@@ -6210,14 +7711,18 @@ NEXT
 
 .CLYNS
 
- STZ DLY                \ ???
- STZ de
+ STZ DLY                \ Set the delay in DLY to 0, to indicate that we are
+                        \ no longer showing an in-flight message, so any new
+                        \ in-flight messages will be shown instantly
+
+ STZ de                 \ Clear de, the flag that appends " DESTROYED" to the
+                        \ end of the next text token, so that it doesn't
 
  LDA #%11111111         \ Set DTW2 = %11111111 to denote that we are not
  STA DTW2               \ currently printing a word
 
- LDA #&80               \ ???
- STA QQ17
+ LDA #%10000000         \ Set bit 7 of QQ17 to switch standard tokens to
+ STA QQ17               \ Sentence Case
 
  LDA #20                \ Move the text cursor to row 20, near the bottom of
  STA YC                 \ the screen
@@ -6329,7 +7834,7 @@ NEXT
  LDA #%00001111         \ Set bits 1 and 2 of the Access Control Register at
  STA VIA+&34            \ SHEILA+&34 to switch screen memory into &3000-&7FFF
 
- LDA #&01               \ ???
+ LDA #1                 \ ???
  STA &DDEB
 
  LDA #&A0               \ Set SC(1 0) = &71A0, which is the screen address for
@@ -7078,305 +8583,147 @@ NEXT
  EOR T
  RTS
 
- EQUB &41,&23,&6D,&65,&6D,&3A,&53,&54
- EQUB &41,&6C,&61,&74,&63,&68,&3A,&52
- EQUB &54,&53,&0D,&13,&74,&09,&5C,&2E
- EQUB &2E,&2E,&2E,&0D,&18,&60,&05,&20
- EQUB &0D,&1A,&F4,&21,&5C,&2E,&2E,&2E
- EQUB &2E,&2E,&2E,&2E,&2E,&2E,&2E,&42
- EQUB &61,&79,&20,&56,&69,&65,&77,&2E
- EQUB &2E,&2E,&2E,&2E,&2E,&2E,&2E,&2E
- EQUB &2E,&0D,&1A,&FE,&05,&20,&0D,&1B
- EQUB &08,&11,&2E,&48,&41
+IF _MATCH_EXTRACTED_BINARIES
 
- EQUB &00,&00,&00,&00,&00,&00,&00,&00
- EQUB &18,&18,&18,&18,&18,&00,&18,&00
- EQUB &6C,&6C,&6C,&00,&00,&00,&00,&00
- EQUB &36,&36,&7F,&36,&7F,&36,&36,&00
- EQUB &0C,&3F,&68,&3E,&0B,&7E,&18,&00
- EQUB &60,&66,&0C,&18,&30,&66,&06,&00
- EQUB &38,&6C,&6C,&38,&6D,&66,&3B,&00
- EQUB &0C,&18,&30,&00,&00,&00,&00,&00
- EQUB &0C,&18,&30,&30,&30,&18,&0C,&00
- EQUB &30,&18,&0C,&0C,&0C,&18,&30,&00
- EQUB &00,&18,&7E,&3C,&7E,&18,&00,&00
- EQUB &00,&18,&18,&7E,&18,&18,&00,&00
- EQUB &00,&00,&00,&00,&00,&18,&18,&30
- EQUB &00,&00,&00,&7E,&00,&00,&00,&00
- EQUB &00,&00,&00,&00,&00,&18,&18,&00
- EQUB &00,&06,&0C,&18,&30,&60,&00,&00
- EQUB &3C,&66,&6E,&7E,&76,&66,&3C,&00
- EQUB &18,&38,&18,&18,&18,&18,&7E,&00
- EQUB &3C,&66,&06,&0C,&18,&30,&7E,&00
- EQUB &3C,&66,&06,&1C,&06,&66,&3C,&00
- EQUB &0C,&1C,&3C,&6C,&7E,&0C,&0C,&00
- EQUB &7E,&60,&7C,&06,&06,&66,&3C,&00
- EQUB &1C,&30,&60,&7C,&66,&66,&3C,&00
- EQUB &7E,&06,&0C,&18,&30,&30,&30,&00
- EQUB &3C,&66,&66,&3C,&66,&66,&3C,&00
- EQUB &3C,&66,&66,&3E,&06,&0C,&38,&00
- EQUB &00,&00,&18,&18,&00,&18,&18,&00
- EQUB &00,&00,&18,&18,&00,&18,&18,&30
- EQUB &0C,&18,&30,&60,&30,&18,&0C,&00
- EQUB &00,&00,&7E,&00,&7E,&00,&00,&00
- EQUB &30,&18,&0C,&06,&0C,&18,&30,&00
- EQUB &3C,&66,&0C,&18,&18,&00,&18,&00
- EQUB &3C,&66,&6E,&6A,&6E,&60,&3C,&00
- EQUB &3C,&66,&66,&7E,&66,&66,&66,&00
- EQUB &7C,&66,&66,&7C,&66,&66,&7C,&00
- EQUB &3C,&66,&60,&60,&60,&66,&3C,&00
- EQUB &78,&6C,&66,&66,&66,&6C,&78,&00
- EQUB &7E,&60,&60,&7C,&60,&60,&7E,&00
- EQUB &7E,&60,&60,&7C,&60,&60,&60,&00
- EQUB &3C,&66,&60,&6E,&66,&66,&3C,&00
- EQUB &66,&66,&66,&7E,&66,&66,&66,&00
- EQUB &7E,&18,&18,&18,&18,&18,&7E,&00
- EQUB &3E,&0C,&0C,&0C,&0C,&6C,&38,&00
- EQUB &66,&6C,&78,&70,&78,&6C,&66,&00
- EQUB &60,&60,&60,&60,&60,&60,&7E,&00
- EQUB &63,&77,&7F,&6B,&6B,&63,&63,&00
- EQUB &66,&66,&76,&7E,&6E,&66,&66,&00
- EQUB &3C,&66,&66,&66,&66,&66,&3C,&00
- EQUB &7C,&66,&66,&7C,&60,&60,&60,&00
- EQUB &3C,&66,&66,&66,&6A,&6C,&36,&00
- EQUB &7C,&66,&66,&7C,&6C,&66,&66,&00
- EQUB &3C,&66,&60,&3C,&06,&66,&3C,&00
- EQUB &7E,&18,&18,&18,&18,&18,&18,&00
- EQUB &66,&66,&66,&66,&66,&66,&3C,&00
- EQUB &66,&66,&66,&66,&66,&3C,&18,&00
- EQUB &63,&63,&6B,&6B,&7F,&77,&63,&00
- EQUB &66,&66,&3C,&18,&3C,&66,&66,&00
- EQUB &66,&66,&66,&3C,&18,&18,&18,&00
- EQUB &7E,&06,&0C,&18,&30,&60,&7E,&00
- EQUB &7C,&60,&60,&60,&60,&60,&7C,&00
- EQUB &00,&60,&30,&18,&0C,&06,&00,&00
- EQUB &3E,&06,&06,&06,&06,&06,&3E,&00
- EQUB &18,&3C,&66,&42,&00,&00,&00,&00
- EQUB &00,&00,&00,&00,&00,&00,&00,&FF
- EQUB &1C,&36,&30,&7C,&30,&30,&7E,&00
- EQUB &00,&00,&3C,&06,&3E,&66,&3E,&00
- EQUB &60,&60,&7C,&66,&66,&66,&7C,&00
- EQUB &00,&00,&3C,&66,&60,&66,&3C,&00
- EQUB &06,&06,&3E,&66,&66,&66,&3E,&00
- EQUB &00,&00,&3C,&66,&7E,&60,&3C,&00
- EQUB &1C,&30,&30,&7C,&30,&30,&30,&00
- EQUB &00,&00,&3E,&66,&66,&3E,&06,&3C
- EQUB &60,&60,&7C,&66,&66,&66,&66,&00
- EQUB &18,&00,&38,&18,&18,&18,&3C,&00
- EQUB &18,&00,&38,&18,&18,&18,&18,&70
- EQUB &60,&60,&66,&6C,&78,&6C,&66,&00
- EQUB &38,&18,&18,&18,&18,&18,&3C,&00
- EQUB &00,&00,&36,&7F,&6B,&6B,&63,&00
- EQUB &00,&00,&7C,&66,&66,&66,&66,&00
- EQUB &00,&00,&3C,&66,&66,&66,&3C,&00
- EQUB &00,&00,&7C,&66,&66,&7C,&60,&60
- EQUB &00,&00,&3E,&66,&66,&3E,&06,&07
- EQUB &00,&00,&6C,&76,&60,&60,&60,&00
- EQUB &00,&00,&3E,&60,&3C,&06,&7C,&00
- EQUB &30,&30,&7C,&30,&30,&30,&1C,&00
- EQUB &00,&00,&66,&66,&66,&66,&3E,&00
- EQUB &00,&00,&66,&66,&66,&3C,&18,&00
- EQUB &00,&00,&63,&6B,&6B,&7F,&36,&00
- EQUB &00,&00,&66,&3C,&18,&3C,&66,&00
- EQUB &00,&00,&66,&66,&66,&3E,&06,&3C
- EQUB &00,&00,&7E,&0C,&18,&30,&7E,&00
- EQUB &0C,&18,&18,&70,&18,&18,&0C,&00
- EQUB &18,&18,&18,&00,&18,&18,&18,&00
- EQUB &30,&18,&18,&0E,&18,&18,&30,&00
- EQUB &31,&6B,&46,&00,&00,&00,&00,&00
- EQUB &FF,&FF,&FF,&FF,&FF,&FF,&FF,&FF
+ INCBIN "extracted/sng47/workspaces/ELTA-align1.bin"
+
+ELSE
+
+ SKIP 845               \ These bytes appear to be unused
+
+ENDIF
+
+\ ******************************************************************************
+\
+\       Name: log
+\       Type: Variable
+\   Category: Maths (Arithmetic)
+\    Summary: Binary logarithm table (high byte)
+\
+\ ------------------------------------------------------------------------------
+\
+\ At byte n, the table contains the high byte of:
+\
+\   &2000 * log10(n) / log10(2) = 32 * 256 * log10(n) / log10(2)
+\
+\ where log10 is the logarithm to base 10. The change-of-base formula says that:
+\
+\   log2(n) = log10(n) / log10(2)
+\
+\ so byte n contains the high byte of:
+\
+\   32 * log2(n) * 256
+\
+\ ******************************************************************************
 
 .log
 
- EQUB &00,&00,&20,&32,&40,&4A,&52,&59
- EQUB &60,&65,&6A,&6E,&72,&76,&79,&7D
- EQUB &80,&82,&85,&87,&8A,&8C,&8E,&90
- EQUB &92,&94,&96,&98,&99,&9B,&9D,&9E
- EQUB &A0,&A1,&A2,&A4,&A5,&A6,&A7,&A9
- EQUB &AA,&AB,&AC,&AD,&AE,&AF,&B0,&B1
- EQUB &B2,&B3,&B4,&B5,&B6,&B7,&B8,&B9
- EQUB &B9,&BA,&BB,&BC,&BD,&BD,&BE,&BF
- EQUB &C0,&C0,&C1,&C2,&C2,&C3,&C4,&C4
- EQUB &C5,&C6,&C6,&C7,&C7,&C8,&C9,&C9
- EQUB &CA,&CA,&CB,&CC,&CC,&CD,&CD,&CE
- EQUB &CE,&CF,&CF,&D0,&D0,&D1,&D1,&D2
- EQUB &D2,&D3,&D3,&D4,&D4,&D5,&D5,&D5
- EQUB &D6,&D6,&D7,&D7,&D8,&D8,&D9,&D9
- EQUB &D9,&DA,&DA,&DB,&DB,&DB,&DC,&DC
- EQUB &DD,&DD,&DD,&DE,&DE,&DE,&DF,&DF
- EQUB &E0,&E0,&E0,&E1,&E1,&E1,&E2,&E2
- EQUB &E2,&E3,&E3,&E3,&E4,&E4,&E4,&E5
- EQUB &E5,&E5,&E6,&E6,&E6,&E7,&E7,&E7
- EQUB &E7,&E8,&E8,&E8,&E9,&E9,&E9,&EA
- EQUB &EA,&EA,&EA,&EB,&EB,&EB,&EC,&EC
- EQUB &EC,&EC,&ED,&ED,&ED,&ED,&EE,&EE
- EQUB &EE,&EE,&EF,&EF,&EF,&EF,&F0,&F0
- EQUB &F0,&F1,&F1,&F1,&F1,&F1,&F2,&F2
- EQUB &F2,&F2,&F3,&F3,&F3,&F3,&F4,&F4
- EQUB &F4,&F4,&F5,&F5,&F5,&F5,&F5,&F6
- EQUB &F6,&F6,&F6,&F7,&F7,&F7,&F7,&F7
- EQUB &F8,&F8,&F8,&F8,&F9,&F9,&F9,&F9
- EQUB &F9,&FA,&FA,&FA,&FA,&FA,&FB,&FB
- EQUB &FB,&FB,&FB,&FC,&FC,&FC,&FC,&FC
- EQUB &FD,&FD,&FD,&FD,&FD,&FD,&FE,&FE
- EQUB &FE,&FE,&FE,&FF,&FF,&FF,&FF,&FF
+IF _MATCH_EXTRACTED_BINARIES
+
+ INCBIN "extracted/sng47/workspaces/ELTA-log.bin"
+
+ELSE
+
+ SKIP 1
+
+ FOR I%, 1, 255
+   B% = INT(&2000 * LOG(I%) / LOG(2) + 0.5)
+   EQUB B% DIV 256
+ NEXT
+
+ENDIF
+
+\ ******************************************************************************
+\
+\       Name: logL
+\       Type: Variable
+\   Category: Maths (Arithmetic)
+\    Summary: Binary logarithm table (low byte)
+\
+\ ------------------------------------------------------------------------------
+\
+\ Byte n contains the low byte of:
+\
+\   32 * log2(n) * 256
+\
+\ ******************************************************************************
 
 .logL
 
- EQUB &60,&00,&00,&B8,&00,&4D,&B8,&D6
- EQUB &00,&70,&4D,&B4,&B8,&6A,&D6,&05
- EQUB &00,&CC,&70,&EF,&4D,&8E,&B4,&C1
- EQUB &B8,&9A,&6A,&28,&D6,&75,&05,&89
- EQUB &00,&6C,&CC,&23,&70,&B4,&EF,&22
- EQUB &4D,&71,&8E,&A4,&B4,&BD,&C1,&BF
- EQUB &B8,&AC,&9A,&85,&6A,&4B,&28,&01
- EQUB &D6,&A7,&75,&3F,&05,&C9,&89,&46
- EQUB &00,&B7,&6C,&1D,&CC,&79,&23,&CB
- EQUB &70,&13,&B4,&52,&EF,&8A,&22,&B9
- EQUB &4D,&E0,&71,&00,&8E,&1A,&A4,&2D
- EQUB &B4,&39,&BD,&40,&C1,&41,&BF,&3C
- EQUB &B8,&32,&AC,&24,&9A,&10,&85,&F8
- EQUB &6A,&DB,&4B,&BA,&28,&95,&01,&6C
- EQUB &D6,&3F,&A7,&0E,&75,&DA,&3F,&A2
- EQUB &05,&67,&C9,&29,&89,&E8,&46,&A3
- EQUB &00,&5C,&B7,&12,&6C,&C5,&1D,&75
- EQUB &CC,&23,&79,&CE,&23,&77,&CB,&1E
- EQUB &70,&C2,&13,&64,&B4,&03,&52,&A1
- EQUB &EF,&3D,&8A,&D6,&22,&6E,&B9,&03
- EQUB &4D,&97,&E0,&29,&71,&B9,&00,&47
- EQUB &8E,&D4,&1A,&5F,&A4,&E8,&2D,&70
- EQUB &B4,&F7,&39,&7B,&BD,&FF,&40,&81
- EQUB &C1,&01,&41,&80,&BF,&FE,&3C,&7A
- EQUB &B8,&F5,&32,&6F,&AC,&E8,&24,&5F
- EQUB &9A,&D5,&10,&4A,&85,&BE,&F8,&31
- EQUB &6A,&A3,&DB,&13,&4B,&83,&BA,&F1
- EQUB &28,&5F,&95,&CB,&01,&36,&6C,&A1
- EQUB &D6,&0A,&3F,&73,&A7,&DB,&0E,&42
- EQUB &75,&A7,&DA,&0C,&3F,&71,&A2,&D4
- EQUB &05,&36,&67,&98,&C9,&F9,&29,&59
- EQUB &89,&B8,&E8,&17,&46,&75,&A3,&D2
+IF _MATCH_EXTRACTED_BINARIES
+
+  INCBIN "extracted/sng47/workspaces/ELTA-logL.bin"
+
+ELSE
+
+ SKIP 1
+
+ FOR I%, 1, 255
+   B% = INT(&2000 * LOG(I%) / LOG(2) + 0.5)
+   EQUB B% MOD 256
+ NEXT
+
+ENDIF
+
+\ ******************************************************************************
+\
+\       Name: antilog
+\       Type: Variable
+\   Category: Maths (Arithmetic)
+\    Summary: Binary antilogarithm table
+\
+\ ------------------------------------------------------------------------------
+\
+\ At byte n, the table contains:
+\
+\   2^((n / 2 + 128) / 16) / 256
+\
+\ which equals:
+\
+\   2^(n / 32 + 8) / 256
+\
+\ ******************************************************************************
 
 .antilog
 
- EQUB &01,&01,&01,&01,&01,&01,&01,&01
- EQUB &01,&01,&01,&01,&01,&01,&01,&01
- EQUB &01,&01,&01,&01,&01,&01,&01,&01
- EQUB &01,&01,&01,&01,&01,&01,&01,&01
- EQUB &02,&02,&02,&02,&02,&02,&02,&02
- EQUB &02,&02,&02,&02,&02,&02,&02,&02
- EQUB &02,&02,&02,&03,&03,&03,&03,&03
- EQUB &03,&03,&03,&03,&03,&03,&03,&03
- EQUB &04,&04,&04,&04,&04,&04,&04,&04
- EQUB &04,&04,&04,&05,&05,&05,&05,&05
- EQUB &05,&05,&05,&06,&06,&06,&06,&06
- EQUB &06,&06,&07,&07,&07,&07,&07,&07
- EQUB &08,&08,&08,&08,&08,&08,&09,&09
- EQUB &09,&09,&09,&0A,&0A,&0A,&0A,&0B
- EQUB &0B,&0B,&0B,&0C,&0C,&0C,&0C,&0D
- EQUB &0D,&0D,&0E,&0E,&0E,&0E,&0F,&0F
- EQUB &10,&10,&10,&11,&11,&11,&12,&12
- EQUB &13,&13,&13,&14,&14,&15,&15,&16
- EQUB &16,&17,&17,&18,&18,&19,&19,&1A
- EQUB &1A,&1B,&1C,&1C,&1D,&1D,&1E,&1F
- EQUB &20,&20,&21,&22,&22,&23,&24,&25
- EQUB &26,&26,&27,&28,&29,&2A,&2B,&2C
- EQUB &2D,&2E,&2F,&30,&31,&32,&33,&34
- EQUB &35,&36,&38,&39,&3A,&3B,&3D,&3E
- EQUB &40,&41,&42,&44,&45,&47,&48,&4A
- EQUB &4C,&4D,&4F,&51,&52,&54,&56,&58
- EQUB &5A,&5C,&5E,&60,&62,&64,&67,&69
- EQUB &6B,&6D,&70,&72,&75,&77,&7A,&7D
- EQUB &80,&82,&85,&88,&8B,&8E,&91,&94
- EQUB &98,&9B,&9E,&A2,&A5,&A9,&AD,&B1
- EQUB &B5,&B8,&BD,&C1,&C5,&C9,&CE,&D2
- EQUB &D7,&DB,&E0,&E5,&EA,&EF,&F5,&FA
+IF _MATCH_EXTRACTED_BINARIES
 
-.antilogODD
+  INCBIN "extracted/sng47/workspaces/ELTA-antilog.bin"
 
- EQUB &01,&02,&03,&04,&05,&06,&00,&01
- EQUB &02,&03,&04,&05,&06,&00,&01,&02
- EQUB &03,&04,&05,&06,&00,&01,&02,&03
- EQUB &04,&05,&06,&00,&01,&02,&03,&04
- EQUB &05,&06,&00,&01,&02,&03,&04,&05
- EQUB &06,&00,&01,&02,&03,&04,&05,&06
- EQUB &00,&01,&02,&03,&04,&05,&06,&00
- EQUB &01,&02,&03,&04,&05,&06,&00,&01
- EQUB &02,&03,&04,&05,&06,&00,&01,&02
- EQUB &03,&04,&05,&06,&00,&01,&02,&03
- EQUB &04,&05,&06,&00,&01,&02,&03,&04
- EQUB &05,&06,&00,&01,&02,&03,&04,&05
- EQUB &06,&00,&01,&02,&03,&04,&05,&06
- EQUB &00,&01,&02,&03,&04,&05,&06,&00
- EQUB &01,&02,&03,&04,&05,&06,&00,&01
- EQUB &02,&03,&04,&05,&06,&00,&01,&02
- EQUB &03,&04,&05,&06,&00,&01,&02,&03
- EQUB &04,&05,&06,&00,&01,&02,&03,&04
- EQUB &05,&06,&00,&01,&02,&03,&04,&05
- EQUB &06,&00,&01,&02,&03,&04,&05,&06
- EQUB &00,&01,&02,&03,&04,&05,&06,&00
- EQUB &01,&02,&03,&04,&05,&06,&00,&01
- EQUB &02,&03,&04,&05,&06,&00,&01,&02
- EQUB &03,&04,&05,&06,&00,&01,&02,&03
- EQUB &04,&05,&06,&00,&01,&02,&03,&04
- EQUB &05,&06,&00,&01,&02,&03,&04,&05
- EQUB &06,&00,&01,&02,&03,&04,&05,&06
- EQUB &00,&01,&02,&03,&04,&05,&06,&00
- EQUB &01,&02,&03,&04,&05,&06,&00,&01
- EQUB &02,&03,&04,&05,&06,&00,&01,&02
- EQUB &03,&04,&05,&06,&00,&01,&02,&03
- EQUB &04,&05,&06,&00,&01,&02,&03,&04
- EQUB &01,&01,&01,&01,&01,&01,&02,&02
- EQUB &02,&02,&02,&02,&02,&03,&03,&03
- EQUB &03,&03,&03,&03,&04,&04,&04,&04
- EQUB &04,&04,&04,&05,&05,&05,&05,&05
- EQUB &05,&05,&06,&06,&06,&06,&06,&06
- EQUB &06,&07,&07,&07,&07,&07,&07,&07
- EQUB &08,&08,&08,&08,&08,&08,&08,&09
- EQUB &09,&09,&09,&09,&09,&09,&0A,&0A
- EQUB &0A,&0A,&0A,&0A,&0A,&0B,&0B,&0B
- EQUB &0B,&0B,&0B,&0B,&0C,&0C,&0C,&0C
- EQUB &0C,&0C,&0C,&0D,&0D,&0D,&0D,&0D
- EQUB &0D,&0D,&0E,&0E,&0E,&0E,&0E,&0E
- EQUB &0E,&0F,&0F,&0F,&0F,&0F,&0F,&0F
- EQUB &10,&10,&10,&10,&10,&10,&10,&11
- EQUB &11,&11,&11,&11,&11,&11,&12,&12
- EQUB &12,&12,&12,&12,&12,&13,&13,&13
- EQUB &13,&13,&13,&13,&14,&14,&14,&14
- EQUB &14,&14,&14,&15,&15,&15,&15,&15
- EQUB &15,&15,&16,&16,&16,&16,&16,&16
- EQUB &16,&17,&17,&17,&17,&17,&17,&17
- EQUB &18,&18,&18,&18,&18,&18,&18,&19
- EQUB &19,&19,&19,&19,&19,&19,&1A,&1A
- EQUB &1A,&1A,&1A,&1A,&1A,&1B,&1B,&1B
- EQUB &1B,&1B,&1B,&1B,&1C,&1C,&1C,&1C
- EQUB &1C,&1C,&1C,&1D,&1D,&1D,&1D,&1D
- EQUB &1D,&1D,&1E,&1E,&1E,&1E,&1E,&1E
- EQUB &1E,&1F,&1F,&1F,&1F,&1F,&1F,&1F
- EQUB &20,&20,&20,&20,&20,&20,&20,&21
- EQUB &21,&21,&21,&21,&21,&21,&22,&22
- EQUB &22,&22,&22,&22,&22,&23,&23,&23
- EQUB &23,&23,&23,&23,&24,&24,&24,&24
- EQUB &24,&24,&24,&25,&25,&25,&25,&25
- EQUB &96,&97,&9A,&9B,&9D,&9E,&9F,&A6
- EQUB &A7,&AB,&AC,&AD,&AE,&AF,&B2,&B3
- EQUB &B4,&B5,&B6,&B7,&B9,&BA,&BB,&BC
- EQUB &BD,&BE,&BF,&CB,&CD,&CE,&CF,&D3
- EQUB &D6,&D7,&D9,&DA,&DB,&DC,&DD,&DE
- EQUB &DF,&E5,&E6,&E7,&E9,&EA,&EB,&EC
- EQUB &ED,&EE,&EF,&F2,&F3,&F4,&F5,&F6
- EQUB &F7,&F9,&FA,&FB,&FC,&FD,&FE,&FF
+ELSE
+
+ FOR I%, 0, 255
+   B% = INT(2^((I% / 2 + 128) / 16) + 0.5) DIV 256
+   IF B% = 256
+     EQUB B%+1
+   ELSE
+     EQUB B%
+   ENDIF
+ NEXT
+
+ENDIF
+
+IF _MATCH_EXTRACTED_BINARIES
+
+ INCBIN "extracted/sng47/workspaces/ELTA-align2.bin"
+
+ELSE
+
+ SKIP 576               \ These bytes appear to be unused
+
+ENDIF
 
 .COMC
 
- EQUB &00
+ EQUB 0
 
- EQUB &00,&00,&00,&00,&00,&00,&00
- EQUB &00,&00,&00,&00,&00,&00,&00,&00
- EQUB &00,&00,&00
+ SKIP 18
 
 .CATF
 
- EQUB &00,&00
+ EQUB &00
+ 
+ SKIP 1
 
 .DNOIZ
 
@@ -7398,9 +8745,9 @@ NEXT
 
  EQUB &00
 
-.L2C5A
+.JSTGY
 
- EQUB &00
+ EQUB &00           \ Other way round (&FF is default = standard Y axis)
 
 .JSTE
 
@@ -7410,15 +8757,18 @@ NEXT
 
  EQUB &00
 
- EQUB &00
+ 
+ EQUB &00           \ Conf option U
 
 .L2C5E
 
- EQUB &00
+ EQUB &00           \ Conf option T
 
 .BSTK
 
- EQUB &00,&00
+ EQUB &00
+ 
+ EQUB 0
 
 .L2C61
 
@@ -7443,7 +8793,7 @@ NEXT
 
  CLD
 
- JSR MVBL
+ JSR scramble
 
  JSR BRKBK
 
@@ -7451,40 +8801,51 @@ NEXT
 
 \ ******************************************************************************
 \
-\       Name: MVBL
+\       Name: scramble
 \       Type: Subroutine
 \   Category: Utility routines
-\    Summary: Move a multi-page block of memory from one location to another
+\    Summary: Unscramble the main code
 \
 \ ******************************************************************************
 
-.MVBL
+.scramble
 
- LDA #&C0
+ LDA #&C0               \ See elite-checksum.py
  STA FRIN
  LDA #&2C
  STA FRIN+1
+
  LDA #&7F
  LDY #&47
  LDX #&19
- JSR MVPG
+ JSR DECRYPT
 
  LDA #&FF
  STA FRIN
  LDA #&7F
  STA FRIN+1
+
  LDA #&B1
  LDY #&FF
  LDX #&62
 
-.MVPG
+\ ******************************************************************************
+\
+\       Name: DECRYPT
+\       Type: Subroutine
+\   Category: Utility routines
+\    Summary: Decrypt a multi-page block of memory
+\
+\ ******************************************************************************
+
+.DECRYPT
 
  STX T
  STA SC+1
  LDA #&00
  STA SC
 
-.MPL
+.DEL
 
  LDA (SC),Y
  SEC
@@ -7498,11 +8859,11 @@ NEXT
 
  DEY
  CPY FRIN
- BNE MPL
+ BNE DEL
 
  LDA SC+1
  CMP FRIN+1
- BNE MPL
+ BNE DEL
 
  RTS
 
@@ -7840,7 +9201,7 @@ NEXT
  LDA BSTK               \ If BSTK = 0 then the Bitstik is not configured, so
  BEQ BS2                \ jump to BS2 to skip the following
 
- LDA L12A9              \ ???
+ LDA ADCH3              \ ???
 
  LSR A                  \ Divide A by 4
  LSR A
@@ -7927,7 +9288,7 @@ NEXT
  JSR ABORT              \ ABORT to disarm the missile and update the missile
                         \ indicators on the dashboard to green (Y = &EE)
 
- JSR BEEP_LONG_LOW      \ ???
+ JSR LOWBEEP            \ ???
 
  LDA #0                 \ Set MSAR to 0 to indicate that no missiles are
  STA MSAR               \ currently armed
@@ -8092,7 +9453,7 @@ NEXT
  STA LAS
  STA LAS2
 
- JSR LASER_NOISE        \ ???
+ JSR NOISELASER         \ ???
 
  JSR LASLI              \ Call LASLI to draw the laser lines
 
@@ -9415,31 +10776,49 @@ NEXT
 
  RTS                    \ Return from the subroutine
 
+\ ******************************************************************************
+\
+\       Name: L31AC
+\       Type: Subroutine
+\   Category: Drawing lines
+\    Summary: 
+\
+\ ******************************************************************************
+
 .L31AC
 
  LDA #&FF
  STA COL
+
  LDA QQ11
  BNE L31DE
 
  LDY #&01
+
  LDA L321D
  STA XX12
+
  LDA L3227
  STA XX12+1
 
 .L31C0
 
  LDA XX12
- STA XX15
+ STA X1
+
  LDA XX12+1
  STA Y1
+
  LDA L321D,Y
  STA X2
+
  STA XX12
+
  LDA L3227,Y
  STA Y2
+
  STA XX12+1
+
  JSR LL30
 
  INY
@@ -9449,6 +10828,15 @@ NEXT
 .L31DE
 
  RTS
+
+\ ******************************************************************************
+\
+\       Name: BOMBFX
+\       Type: Subroutine
+\   Category: Screen mode
+\    Summary: ???
+\
+\ ******************************************************************************
 
 .BOMBFX
 
@@ -9461,9 +10849,18 @@ NEXT
 
  JSR L31AC
 
+\ ******************************************************************************
+\
+\       Name: BOMBFX2
+\       Type: Subroutine
+\   Category: Screen mode
+\    Summary: ???
+\
+\ ******************************************************************************
+
 .BOMBFX2
 
- LDY #&00
+ LDY #0
 
 .L31EF
 
@@ -9472,20 +10869,34 @@ NEXT
  AND #&7F
  ADC #&03
  STA L3227,Y
+
  TXA
  AND #&1F
  CLC
  ADC L3213,Y
  STA L321D,Y
+
  INY
  CPY #&0A
  BCC L31EF
 
  LDX #&00
  STX L321D+9
+
  DEX
+
  STX L321D
+
  BCS L31AC
+
+\ ******************************************************************************
+\
+\       Name: L3213
+\       Type: Variable
+\   Category: Screen mode
+\    Summary: ???
+\
+\ ******************************************************************************
 
 .L3213
 
@@ -9506,9 +10917,27 @@ NEXT
 \ EQUB %00000000
 \ EQUB %00000000
 
+\ ******************************************************************************
+\
+\       Name: L321D
+\       Type: Variable
+\   Category: Screen mode
+\    Summary: ???
+\
+\ ******************************************************************************
+
 .L321D
 
  SKIP 10
+
+\ ******************************************************************************
+\
+\       Name: L3227
+\       Type: Variable
+\   Category: Screen mode
+\    Summary: ???
+\
+\ ******************************************************************************
 
 .L3227
 
@@ -10576,7 +12005,7 @@ NEXT
 
 .NA%
 
- EQUS "jameson"         \ The current commander name, which defaults to JAMESON
+ EQUS "jameson"         \ The current commander name
  EQUB 13
 
  SKIP 53                \ Placeholders for bytes #0 to #52
@@ -10649,7 +12078,7 @@ NEXT
 
  EQUB 0
 
- SKIP 12
+ SKIP 12                \ These bytes appear to be unused
 
 \ ******************************************************************************
 \
@@ -10804,7 +12233,7 @@ ENDIF
 
  EQUB &03               \ The CHK checksum value for the default commander
 
- SKIP 16
+ SKIP 16                \ These bytes appear to be unused
 
 \ ******************************************************************************
 \
@@ -14215,7 +15644,7 @@ DTW7 = MT16 + 1         \ Point DTW7 to the second byte of the instruction above
 
  JSR TT103              \ Draw small crosshairs at coordinates (QQ9, QQ10)
 
- JSR BEEP_LONG_LOW      \ ???
+ JSR LOWBEEP            \ ???
 
  LDA #215               \ Print extended token 215 ("{left align} UNKNOWN
  JMP DETOK              \ PLANET"), which will print on-screem as the left align
@@ -15448,7 +16877,7 @@ LOAD_C% = LOAD% +P% - CODE%
  BNE TA9-1              \ opponent's), return from the subroutine without making
                         \ the laser-strike sound (as TA9-1 contains an RTS)
 
- JSR BEING_HIT_NOISE    \ ???
+ JSR NOISEHIT           \ ???
 
 \ ******************************************************************************
 \
@@ -16652,7 +18081,11 @@ LOAD_C% = LOAD% +P% - CODE%
  DEC NOMSL              \ Reduce the number of missiles we have by 1
 
  LDY #8                 \ Call the NOISE routine with Y = 8 to make the sound
- JSR NOISE              \ of a missile launch ???
+ JSR NOISE              \ of a missile launch
+
+                        \ Fall through into ANGRY to make the missile target
+                        \ angry, though as we already did this above, I'm not
+                        \ entirely sure why we do this again
 
 \ ******************************************************************************
 \
@@ -17269,7 +18702,7 @@ LOAD_C% = LOAD% +P% - CODE%
                         \ particle along the x-axis, let's call it delta_x
 
  LDA P                  \ ???
- STA L009B
+ STA deltX
 
  EOR RAT2               \ Set S = P but with the sign from RAT2, so we now have
  STA S                  \ the distance delta_x with the correct sign in (S R):
@@ -17421,7 +18854,7 @@ LOAD_C% = LOAD% +P% - CODE%
 
  AND #%01111111         \ If |x_hi| >= ??? then jump to KILL2 to recycle this
  EOR #%01111111         \ particle, as it's gone off the side of the screen,
- CMP L009B              \ and re-join at STC2 with the new particle ???
+ CMP deltX              \ and re-join at STC2 with the new particle ???
  BCC KILL2
  BEQ KILL2
 
@@ -20243,7 +21676,7 @@ LOAD_C% = LOAD% +P% - CODE%
 
 .PAS1
 
- LDA #120               \ Set y_lo = 120 ???
+ LDA #120               \ Set y_lo = 120
  STA INWK+3
 
  LDA #0                 \ Set x_lo = 0
@@ -20475,6 +21908,15 @@ LOAD_D% = LOAD% + P% - CODE%
 .LSR3
 
  RTS
+
+\ ******************************************************************************
+\
+\       Name: Unused
+\       Type: Subroutine
+\   Category: Drawing lines
+\    Summary: ???
+\
+\ ******************************************************************************
 
  STA X1                 \ This code appears to be unused
  STA X2
@@ -23744,8 +25186,8 @@ LOAD_D% = LOAD% + P% - CODE%
 
  LDY #0                 \ Set Y = 0 for the high byte in pr6
 
- CLC                    \ ???
- LDA #&03
+ CLC                    \ Call TT11 to print X to 3 digits with no decimal point
+ LDA #3                 \ and return from the subroutine using a tail call
  JMP TT11
 
 \ ******************************************************************************
@@ -25309,8 +26751,8 @@ LOAD_D% = LOAD% + P% - CODE%
 
  JSR BEEP               \ Call the BEEP subroutine to make a short, high beep
 
- LDY #25                \ Delay for 50 vertical syncs (25/50 = 0.5 second) and
- JMP DELAY              \ return from the subroutine using a tail call ???
+ LDY #25                \ Delay for 25 vertical syncs (25/50 = 0.5 second) and
+ JMP DELAY              \ return from the subroutine using a tail call
 
 \ ******************************************************************************
 \
@@ -26596,6 +28038,15 @@ LOAD_E% = LOAD% + P% - CODE%
 
  RTS                    \ Return from the subroutine
 
+\ ******************************************************************************
+\
+\       Name: Unused2
+\       Type: Subroutine
+\   Category: Utility routines
+\    Summary: ???
+\
+\ ******************************************************************************
+
  LDX #&15               \ This code appears to be unused
 
 .L58B9
@@ -26669,7 +28120,7 @@ LOAD_E% = LOAD% + P% - CODE%
  LDY #1                 \ Fetch byte #1 of the ship line heap, which contains
  LDA (XX19),Y           \ the cloud counter
 
- STA L12A6              \ ???
+ STA CLCNT              \ ???
 
  ADC #4                 \ Add 4 to the cloud counter, so it ticks onwards every
                         \ we redraw it
@@ -28034,7 +29485,7 @@ LOAD_E% = LOAD% + P% - CODE%
                         \   |                                   |
                         \   | WP workspace                      |
                         \   |                                   |
-                        \   +-----------------------------------+   &0E40 = WP ???
+                        \   +-----------------------------------+   &0800 = WP
                         \   |                                   |
                         \   | Current ship line heap            |
                         \   |                                   |
@@ -29174,7 +30625,7 @@ LOAD_E% = LOAD% + P% - CODE%
                         \ new sun, given that P(2 1) contains the 16-bit maximum
                         \ y-coordinate of the new sun on-screen
 
- LDA L0099              \ ???
+ LDA YMAX               \ ???
 
  LDX P+2                \ If P+2 is non-zero, the maximum y-coordinate is off
  BNE PLF2               \ the bottom of the screen, so skip to PLF2 with A = 191
@@ -29199,7 +30650,7 @@ LOAD_E% = LOAD% + P% - CODE%
                         \ and the direction in which we need to draw them, both
                         \ from the centre of the new sun
 
- LDA L0099              \ Set (A X) = y-coordinate of bottom of screen - K4(1 0)
+ LDA YMAX               \ Set (A X) = y-coordinate of bottom of screen - K4(1 0)
  SEC                    \
  SBC K4                 \ Starting with the low bytes ???
  TAX
@@ -29267,7 +30718,7 @@ LOAD_E% = LOAD% + P% - CODE%
 \
 \ ******************************************************************************
 
- LDY L0099              \ ???
+ LDY YMAX               \ ???
 
  LDA SUNX               \ Set YY(1 0) = SUNX(1 0), the x-coordinate of the
  STA YY                 \ vertical centre axis of the old sun that's currently
@@ -30188,18 +31639,17 @@ LOAD_E% = LOAD% + P% - CODE%
                         \ the C flag and return from the subroutine, as the
                         \ whole circle is off-screen to the bottom
 
- CPX L0099              \ If we get here then A is zero, which means the top ???
+ CPX YMAX               \ If we get here then A is zero, which means the top
                         \ edge of the circle is within the screen boundary, so
                         \ now we need to check whether it is in the space view
                         \ (in which case it is on-screen) or the dashboard (in
                         \ which case the top of the circle is hidden by the
                         \ dashboard, so the circle isn't on-screen). We do this
                         \ by checking the low byte of the result in X against
-                        \ 2 * #Y - 1, and returning the C flag from this
-                        \ comparison. The constant #Y is the y-coordinate of the
-                        \ mid-point of the space view, so 2 * #Y - 1 is 191, the
-                        \ y-coordinate of the bottom pixel row of the space
-                        \ view. So this does the following:
+                        \ YMAX, and returning the C flag from this comparison.
+                        \ The value in YMAX is the y-coordinate of the bottom
+                        \ pixel row of the space view, or 191, so this does the
+                        \ following:
                         \
                         \   * The C flag is set if coordinate (A X) is below the
                         \     bottom row of the space view, i.e. the top edge of
@@ -30949,7 +32399,7 @@ LOAD_F% = LOAD% + P% - CODE%
  ORA #%00000010         \ bit 1 of TP to indicate that we have successfully
  STA TP                 \ completed mission 1
 
- INC TALLY+1            \ ???
+ INC TALLY+1            \ Award 256 kill points for killing the Constrictor
 
 .lll
 
@@ -31238,6 +32688,15 @@ LOAD_F% = LOAD% + P% - CODE%
 
  RTS                    \ Return from the subroutine
 
+\ ******************************************************************************
+\
+\       Name: Unused3
+\       Type: Subroutine
+\   Category: Text
+\    Summary: ???
+\
+\ ******************************************************************************
+
  PHA                    \ This code appears to be unused
  LSR A
  LSR A
@@ -31273,6 +32732,7 @@ LOAD_F% = LOAD% + P% - CODE%
 \
 \   * Pages &9, &A, &B, &C and &D
 \
+\   * BETA to BETA+6, which covers the following:
 \
 \     * BETA, BET1 - Set pitch to 0
 \
@@ -31304,7 +32764,9 @@ LOAD_F% = LOAD% + P% - CODE%
 
  BPL SAL3               \ Loop back for the next byte to zero
 
- STX L2C5A              \ ???
+ STX JSTGY              \ X is now negative - i.e. &FF - so this sets JSTGY to
+                        \ &FF to set the joystick Y-channel to the default
+                        \ direction
 
  TXA                    \ X is now negative - i.e. &FF - so this sets A and QQ12
  STA QQ12               \ to &FF to indicate we are docked
@@ -31382,9 +32844,9 @@ LOAD_F% = LOAD% + P% - CODE%
  STA ALP1               \ Reset ALP1 (magnitude of roll angle alpha) to 3
 
  LDA #&00               \ ???
- STA L0098
+ STA XMAX
  LDA #&BF
- STA L0099
+ STA YMAX
 
  LDA SSPR               \ Fetch the "space station present" flag, and if we are
  BEQ P%+5               \ not inside the safe zone, skip the next instruction
@@ -31405,9 +32867,9 @@ LOAD_F% = LOAD% + P% - CODE%
                         \ slots for the local bubble of universe, and various
                         \ flight and ship status variables
 
- LDA #LO(WP-1)          \ We have reset the ship line heap, so we now point
- STA SLSP               \ SLSP to the byte before the WP workspace to indicate
- LDA #HI(WP-1)          \ that the heap is empty
+ LDA #LO(LS%)           \ We have reset the ship line heap, so we now point
+ STA SLSP               \ SLSP to LS% (the byte below the ship blueprints at D%)
+ LDA #HI(LS%)           \ to indicate that the heap is empty
  STA SLSP+1
 
                         \ Finally, fall through into ZINF to reset the INWK
@@ -32713,20 +34175,15 @@ LOAD_F% = LOAD% + P% - CODE%
 
 \ ******************************************************************************
 \
-\       Name: brkd
+\       Name: stack
 \       Type: Variable
-\   Category: Utility routines
-\    Summary: The brkd counter for error handling
-\
-\ ------------------------------------------------------------------------------
-\
-\ This counter starts at -1, and is decremented whenever the BRKV handler at
-\ BRBR prints an error message. It is incremented every time an error message
-\ is printer out as part of the TITLE routine.
-\
+\   Category: Save and load
+\    Summary: Temporary storage for the stack pointer when switching the BRKV
+\             handler between BRBR and MEBRK
+
 \ ******************************************************************************
 
-.brkd
+.stack
 
  EQUB &FF
 
@@ -32760,7 +34217,7 @@ LOAD_F% = LOAD% + P% - CODE%
 
 .BRBR
 
- LDX brkd               \ ???
+ LDX stack              \ ???
  TXS
  JSR LOADZP
 
@@ -32804,8 +34261,8 @@ LOAD_F% = LOAD% + P% - CODE%
 
 .DEATH
 
- LDY #&04               \ ???
- JSR NOISE
+ LDY #4                 \ Call the NOISE routine with Y = 4 to make the sound of
+ JSR NOISE              \ us dying
 
  JSR RES2               \ Reset a number of flight variables and workspaces
 
@@ -32821,7 +34278,8 @@ LOAD_F% = LOAD% + P% - CODE%
                         \ and set the current view type in QQ11 to 6 (death
                         \ screen)
 
- STZ QQ11               \ ???
+ STZ QQ11               \ Set QQ11 to 0, so from here on we are using a space
+                        \ view
 
  JSR BOX                \ Call BOX to redraw the same white border (BOX is part
                         \ of TT66), which removes the border as it is drawn
@@ -32830,7 +34288,7 @@ LOAD_F% = LOAD% + P% - CODE%
  JSR nWq                \ Create a cloud of stardust containing the correct
                         \ number of dust particles (i.e. NOSTM of them)
 
- LDA #&FF               \ ???
+ LDA #CYAN              \ Change the current colour to cyan
  STA COL
 
  LDA #12                \ Move the text cursor to column 12 on row 12
@@ -33065,15 +34523,16 @@ LOAD_F% = LOAD% + P% - CODE%
 
 .BR1
 
- JSR U%                 \ ???
+ JSR U%                 \ Call U% to clear the key logger
 
  LDA #3                 \ Set XC = 3 (set text cursor to column 3)
  STA XC
 
- LDX #&0B
- LDA #&06
- LDY #&C8
- JSR TITLE
+ LDX #CYL               \ Call TITLE to show a rotating Cobra Mk III (#CYL) and
+ LDA #6                 \ token 6 ("LOAD NEW {single cap}COMMANDER {all caps}
+ LDY #200               \ (Y/N)?{sentence case}{cr}{cr}"), with the ship at a
+ JSR TITLE              \ distance of 200, returning with the internal number
+                        \ of the key pressed in A
 
  CPX #&59               \ Did we press "Y"? If not, jump to QU5, otherwise
  BNE QU5                \ continue on to load a new commander
@@ -33107,8 +34566,9 @@ LOAD_F% = LOAD% + P% - CODE%
 
  LDA #7                 \ Call TITLE to show a rotating Cougar (#COU) and
  LDX #COU               \ token 7 ("LOAD NEW {single cap}COMMANDER {all caps}
- LDY #&64               \ (Y/N)?{sentence case}{cr}{cr}""), returning with the
- JSR TITLE              \ internal number of the key pressed in A ???
+ LDY #100               \ (Y/N)?{sentence case}{cr}{cr}""), with the ship at a
+ JSR TITLE              \ distance of 100, returning with the internal number
+                        \ of the key pressed in A
 
  JSR ping               \ Set the target system coordinates (QQ9, QQ10) to the
                         \ current system coordinates (QQ0, QQ1) we just loaded
@@ -33282,7 +34742,7 @@ ENDIF
 
 .TITLE
 
- STY L1229              \ ???
+ STY SDIST              \ ???
 
  PHA                    \ Store the token number on the stack for later
 
@@ -33291,8 +34751,9 @@ ENDIF
  JSR RESET              \ Reset our ship so we can use it for the rotating
                         \ title ship
 
- JSR U%                 \ ???
- JSR ZINF
+ JSR U%                 \ Call U% to clear the key logger
+
+ JSR ZINF               \ Call ZINF to reset the INWK ship workspace
 
  LDA #32                \ Set the mode 1 palette to yellow (colour 1), white
  JSR DOVDU19            \ (colour 2) and cyan (colour 3)
@@ -33303,8 +34764,8 @@ ENDIF
  LDA #RED               \ Switch to colour 2, which is white in the title screen
  STA COL
 
- LDA #&00
- STA QQ11
+ LDA #0                 \ Set QQ11 to 0, so from here on we are using a space
+ STA QQ11               \ view
 
  LDA #96                \ Set nosev_z hi = 96 (96 is the value of unity in the
  STA INWK+14            \ rotation vector)
@@ -33360,7 +34821,7 @@ ENDIF
  LDA #1
  STA XC
 
- PLA
+ PLA                    \ ???
  JSR DETOK
 
  LDA #7
@@ -33391,7 +34852,7 @@ ENDIF
  JSR MVEIT              \ Move the ship in space according to the orientation
                         \ vectors and the new value in z_hi
 
- LDX L1229              \ ???
+ LDX SDIST              \ ???
  STX INWK+6
 
  LDA #0
@@ -33974,7 +35435,7 @@ ENDIF
 .SVE
 
  TSX                    \ ???
- STX brkd
+ STX stack
  JSR TRADE
 
  LDA #1                 \ ???
@@ -34108,7 +35569,7 @@ ENDIF
 .L6A71
 
  LDA NA%+8,Y
- STA L0791,Y
+ STA &0791,Y
  DEY
  BPL L6A71
 
@@ -34220,14 +35681,14 @@ ENDIF
 
  JSR LOAD               \ ???
 
- LDA L0791              \ ???
+ LDA &0791              \ ???
  BMI ELT2F
 
  LDY #NT%+1             \ ???
 
 .LOL1
 
- LDA L0791,Y            \ Copy the Y-th byte of ??? to the Y-th byte of NA%+8
+ LDA &0791,Y            \ Copy the Y-th byte of ??? to the Y-th byte of NA%+8
  STA NA%+8,Y
 
  DEY                    \ Decrement the loop counter
@@ -34412,7 +35873,7 @@ ENDIF
 .LOADL3
 
  LDA LSX2,Y
- STA L0791,Y
+ STA &0791,Y
  DEY
  BPL LOADL3
 
@@ -34853,7 +36314,7 @@ ENDIF
 
 .WA1
 
- JMP BEEP_LONG_LOW      \ ???
+ JMP LOWBEEP            \ ???
 
  RTS
 
@@ -35098,14 +36559,14 @@ ENDIF
  LDA JSTK               \ ???
  BEQ DK15
 
- LDA L12A7
+ LDA ADCH1
  EOR JSTE
  ORA #&01
  STA JSTX
- LDA L12A8
+ LDA ADCH2
  EOR #&FF
  EOR JSTE
- EOR L2C5A
+ EOR JSTGY
  STA JSTY
  LDA VIA+&40
  AND #&10
@@ -35119,14 +36580,14 @@ ENDIF
 
  LDX JSTX               \ ???
  LDA #&07
- LDY L00D0
+ LDY KY3
  BEQ L6D26
 
  JSR BUMP2
 
 .L6D26
 
- LDY L00D1
+ LDY KY4
  BEQ L6D2D
 
  JSR REDU2
@@ -35136,14 +36597,14 @@ ENDIF
  STX JSTX
  ASL A
  LDX JSTY
- LDY L00C9
+ LDY KY5
  BEQ L6D39
 
  JSR REDU2
 
 .L6D39
 
- LDY L00CB
+ LDY KY6
  BEQ L6D40
 
  JSR BUMP2
@@ -35264,11 +36725,9 @@ ENDIF
                         \ is enabled, the joystick is configured with reversed
                         \ channels
 
- BPL L6D9A              \ ???
+ BPL P%+5              \ ???
 
  JSR BELL
-
-.L6D9A
 
  JSR BELL
 
@@ -35283,11 +36742,9 @@ ENDIF
 .DK7
 
  CPX #&1B
- BNE L6DAD
+ BNE P%+5
 
  JMP DEATH2
-
-.L6DAD
 
  CPX #&7F               \ ???
  BNE FREEZE
@@ -39946,25 +41403,30 @@ LOAD_G% = LOAD% + P% - CODE%
 
  LDA (XX19),Y
  STA XX15
+
  LDA XX12
  STA (XX19),Y
  INY
  LDA (XX19),Y
  STA Y1
+
  LDA XX12+1
  STA (XX19),Y
  INY
  LDA (XX19),Y
  STA X2
+
  LDA XX12+2
  STA (XX19),Y
  INY
  LDA (XX19),Y
  STA Y2
+
  LDA XX12+3
  STA (XX19),Y
  INY
  STY XX14
+
  PLP
  BCS LL82
 
@@ -41626,7 +43088,7 @@ LOAD_H% = LOAD% + P% - CODE%
 
 \ ******************************************************************************
 \
-\       Name: TT662
+\       Name: TTX662
 \       Type: Subroutine
 \   Category: Utility routines
 \    Summary: Clear the top part of the screen and draw a white border
@@ -41638,7 +43100,7 @@ LOAD_H% = LOAD% + P% - CODE%
 \
 \ ******************************************************************************
 
-.TT662
+.TTX662
 
  JSR TTX66              \ ???
 
@@ -41815,7 +43277,7 @@ LOAD_H% = LOAD% + P% - CODE%
  BPL RDK1
 
  CLD
- LDA L00CB
+ LDA KY6
  EOR #&FF
  AND KY19
  STA KY19
@@ -42083,12 +43545,12 @@ LOAD_H% = LOAD% + P% - CODE%
 
 .EXNO2
 
- LDA L1266              \ ???
+ LDA TALLYF              \ ???
  CLC
- ADC L8062,X
- STA L1266
+ ADC TALLYFRAC-1,X
+ STA TALLYF
  LDA TALLY
- ADC L8083,X
+ ADC TALLYINT-1,X
  STA TALLY
 
  BCC EXNO3
@@ -42173,6 +43635,22 @@ LOAD_H% = LOAD% + P% - CODE%
  CLI
 
  RTI                    \ ???
+
+\ ******************************************************************************
+\
+\ Save output/ELTH.bin
+\
+\ ******************************************************************************
+
+PRINT "ELITE H"
+PRINT "Assembled at ", ~CODE_H%
+PRINT "Ends at ", ~P%
+PRINT "Code size is ", ~(P% - CODE_H%)
+PRINT "Execute at ", ~LOAD%
+PRINT "Reload at ", ~LOAD_H%
+
+PRINT "S.ELTH ", ~CODE_H%, " ", ~P%, " ", ~LOAD%, " ", ~LOAD_H%
+\SAVE "output/ELTH.bin", CODE_G%, P%, LOAD%
 
 \ ******************************************************************************
 \
