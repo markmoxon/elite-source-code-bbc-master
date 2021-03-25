@@ -63,18 +63,18 @@ ORG CODE%
 
 INCBIN "binaries/P.DIALS2P.bin"
 
-SKIP 256                \ These bytes are unused, but they get moved to
+ SKIP 256               \ These bytes are unused, but they get moved to
                         \ &7E00-&7EFF along with the dashboard
-
-SKIP 256                \ These bytes are unused, but they get moved to
-                        \ &7F00-&7FFF along with the ship blueprints and text
-                        \ tokens
 
 \ ******************************************************************************
 \
 \ ELITE SHIP BLUEPRINTS FILE
 \
 \ ******************************************************************************
+
+ SKIP 256               \ These bytes are unused, but they get moved to
+                        \ &7F00-&7FFF along with the ship blueprints and text
+                        \ tokens
 
 \ ******************************************************************************
 \
@@ -3256,6 +3256,12 @@ ENDMACRO
  FACE     -169,       55,      -89,         31    \ Face 10
  FACE        0,        0,     -196,         31    \ Face 11
 
+\ ******************************************************************************
+\
+\ ELITE RECURSIVE TEXT TOKEN FILE
+\
+\ ******************************************************************************
+
 IF _MATCH_EXTRACTED_BINARIES
 
  INCBIN "extracted/sng47/workspaces/DATA-align.bin"
@@ -3265,12 +3271,6 @@ ELSE
  SKIP 619               \ This data appears to be unused
 
 ENDIF
-
-\ ******************************************************************************
-\
-\ ELITE RECURSIVE TEXT TOKEN FILE
-\
-\ ******************************************************************************
 
 \ ******************************************************************************
 \

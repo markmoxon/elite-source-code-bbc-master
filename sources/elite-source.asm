@@ -199,7 +199,9 @@ ORG &0000
 
 .ZP
 
- SKIP 2                 \ The start of the zero page workspace
+ SKIP 0                 \ The start of the zero page workspace
+
+ SKIP 2                 \ These bytes are unused
 
 .RAND
 
@@ -210,7 +212,7 @@ ORG &0000
 
  SKIP 1                 \ Temporary storage, used in a number of places
 
- SKIP 3                 \ ???
+ SKIP 3                 \ These bytes are unused
 
 .SC
 
@@ -228,7 +230,7 @@ ORG &0000
 
  SKIP 3                 \ Temporary storage, used in a number of places
 
- SKIP 1                 \ ???
+ SKIP 1                 \ This byte is unused
 
 .XC
 
@@ -445,7 +447,7 @@ ORG &0000
  SKIP 1                 \ Temporary storage, typically used for y-coordinates in
                         \ line-drawing routines
 
- SKIP 2                 \ The last 2 bytes of the XX15 block
+ SKIP 2                 \ The last two bytes of the XX15 block
 
 .XX12
 
@@ -509,10 +511,8 @@ ORG &0000
 
 .XX18
 
- SKIP 0                 \ Temporary storage used to store coordinates in the
+ SKIP 4                 \ Temporary storage used to store coordinates in the
                         \ LL9 ship-drawing routine
-
- SKIP 4
 
 .K6
 
@@ -521,9 +521,7 @@ ORG &0000
 
 .QQ19
 
- SKIP 3                 \ Temporary storage, used in a number of places
-
- SKIP 3
+ SKIP 6                 \ Temporary storage, used in a number of places
 
 .BET2
 
@@ -579,7 +577,8 @@ ORG &0000
                         \ main ship-drawing routine
 
 .W
- SKIP 1
+
+ SKIP 1                 \ Temporary storage, used in a number of places
 
 .QQ11
 
@@ -698,9 +697,7 @@ ORG &0000
 
 .XX14
 
- SKIP 1                 \ This byte is unused
-
- SKIP 1                 \ ???
+ SKIP 2                 \ ???
 
 .RAT
 
@@ -722,10 +719,14 @@ ORG &0000
                         \ in A in the logarithmic FMLTU and LL28 routines
 
 .XMAX
- SKIP 1 \ Set to 0 in RES2, never read I think
+
+ SKIP 1                 \ This is set to 0 in the RES2 routine, but the value is
+                        \ never actually read
 
 .YMAX
- SKIP 1 \ Set to 191 by RES2, i.e. number of pixel rows in space view
+
+ SKIP 1                 \ This is used to store the number of pixel rows in the
+                        \ space view (it is set to 191 in the RES2 routine)
 
 .messXC
 
@@ -734,7 +735,9 @@ ORG &0000
                         \ from the screen at the correct time
 
 .deltX
- SKIP 1 \ New var, used in STARS2 only for delta_x
+
+ SKIP 1                 \ This is used by the STARS2 routine for storing the
+                        \ stardust particle's delta_x value
 
 .XX1
 
@@ -760,7 +763,8 @@ ORG &0000
 
 .XX19
 
- SKIP 3                 \ ???
+ SKIP NI% - 34          \ XX19(1 0) shares its location with INWK(34 33), which
+                        \ contains the address of the ship line heap
 
 .NEWB
 
@@ -1205,6 +1209,7 @@ ORG &0E41
 
 .CABTMP
 
+ SKIP 1                 \ Cabin temperature
                         \
                         \ The ambient cabin temperature in deep space is 30,
                         \ which is displayed as one notch on the dashboard bar
@@ -1215,8 +1220,6 @@ ORG &0E41
                         \ MANY+0 would contain the number of ships of type 0,
                         \ but as there is no ship type 0 (they start at 1), MANY
                         \ is unused
-
- SKIP 1                 \ This byte is unused
 
 .LAS2
 
@@ -1332,19 +1335,30 @@ ORG &0E41
 
 .LSX2
 
- SKIP &100
+ SKIP 256               \ The ball line heap for storing x-coordinates (see the
+                        \ deep dive on "The ball line heap" for details)
 
 .LSY2
 
- SKIP &100
+ SKIP 256               \ The ball line heap for storing y-coordinates (see the
+                        \ deep dive on "The ball line heap" for details)
 
 .LSO
 
- SKIP 200
+ SKIP 200               \ This space has two uses:
+                        \
+                        \   * The ship line heap for the space station (see
+                        \     NWSPS for details)
+                        \
+                        \   * The sun line heap (see SUN for details)
+                        \
+                        \ The spaces can be shared as our local bubble of
+                        \ universe can support either the sun or a space
+                        \ station, but not both
 
 .BUF
 
- SKIP 90               \ The line buffer used by DASC to print justified text
+ SKIP 90                \ The line buffer used by DASC to print justified text
 
 .SX
 
@@ -1355,6 +1369,7 @@ ORG &0E41
 
  SKIP NOST + 1          \ This is where we store the x_lo coordinates for all
                         \ the stardust particles
+
 .SY
 
  SKIP NOST + 1          \ This is where we store the y_hi coordinates for all
@@ -1413,7 +1428,8 @@ ORG &0E41
 
 .SDIST
 
- SKIP 1                 \ New, distance for ship in TITLE?
+ SKIP 1                 \ Used to store the nearest distance of the rotating
+                        \ ship on the title screen
 
  SKIP 2                 \ These bytes are unused
 
@@ -1427,7 +1443,21 @@ ORG &0E41
 
 .TP
 
- SKIP 1                 \ This byte is unused
+ SKIP 1                 \ The current mission status:
+                        \
+                        \   * Bits 0-1 = Mission 1 status
+                        \
+                        \     * %00 = Mission not started
+                        \     * %01 = Mission in progress, hunting for ship
+                        \     * %11 = Constrictor killed, not debriefed yet
+                        \     * %10 = Mission and debrief complete
+                        \
+                        \   * Bits 2-3 = Mission 2 status
+                        \
+                        \     * %00 = Mission not started
+                        \     * %01 = Mission in progress, plans not picked up
+                        \     * %10 = Mission in progress, plans picked up
+                        \     * %11 = Mission complete
 
 .QQ0
 
@@ -1601,15 +1631,21 @@ ORG &0E41
 
 .L1264
 
- SKIP 1
+ SKIP 1                 \ ???
 
 .L1265
 
- SKIP 1
+ SKIP 1                 \ ???
 
 .TALLYF
 
- SKIP 1
+ SKIP 1                 \ Combat rank fraction
+                        \
+                        \ Contains the fraction part of the kill count, which
+                        \ together with the integer in TALLY(1 0) determines our
+                        \ combat rank. The fraction is stored as the numerator
+                        \ of a fraction with a denominator of 256, so a TALLYF
+                        \ of 128 would represent 0.5 (i.e. 128 / 256)
 
 .NOMSL
 
@@ -1661,6 +1697,9 @@ ORG &0E41
                         \ The combat rank is stored as the number of kills, in a
                         \ 16-bit number TALLY(1 0) - so the high byte is in
                         \ TALLY+1 and the low byte in TALLY
+                        \
+                        \ There is also a fractional part of the kill count,
+                        \ which is stored in TALLYF
                         \
                         \ If the high byte in TALLY+1 is 0 then we have between
                         \ 0 and 255 kills, so our rank is Harmless, Mostly
@@ -1788,19 +1827,23 @@ NT% = SVC + 2 - TP      \ This sets the variable NT% to the size of the current
 
 .CLCNT
 
- SKIP 1                 \ New, EX2, stored but never read = cloud counter
+ SKIP 1                 \ Used to store the number of particles in the explosion
+                        \ cloud, though the number is never actually used
 
 .ADCH1
 
- SKIP 1                 \ New, joystick channel 1, written to in irq1
+ SKIP 1                 \ Contains the latest value of joystick channel 1, as
+                        \ updated by the IRQ1 interrupt handler
 
 .ADCH2
 
- SKIP 1                 \ New, channel 2
+ SKIP 1                 \ Contains the latest value of joystick channel 2, as
+                        \ updated by the IRQ1 interrupt handler
 
 .ADCH3
 
- SKIP 1                 \ New, channel 3
+ SKIP 1                 \ Contains the latest value of joystick channel 3, as
+                        \ updated by the IRQ1 interrupt handler
 
 PRINT "WP workspace from  ", ~WP," to ", ~P%
 
@@ -1988,8 +2031,8 @@ LOAD_A% = LOAD%
 
 .LOWBEEP
 
- LDY #0                 \ Call NOISE with Y = 0 to make a long, low beep,
- BRA NOISE              \ returning from the subroutine using a tail call
+ LDY #0                 \ Call the NOISE routine with Y = 0 to make a long, low
+ BRA NOISE              \ beep, returning from the subroutine using a tail call
 
 \ ******************************************************************************
 \
@@ -2002,8 +2045,9 @@ LOAD_A% = LOAD%
 
 .BEEP
 
- LDY #1                 \ Call NOISE with Y = 1 to make a short, high beep,
- BRA NOISE              \ returning from the subroutine using a tail call
+ LDY #1                 \ Call the NOISE routine with Y = 1 to make a short,
+ BRA NOISE              \ high beep, returning from the subroutine using a tail
+                        \ call
 
 \ ******************************************************************************
 \
@@ -2123,11 +2167,12 @@ LOAD_A% = LOAD%
 
 .NOISEHIT
 
- LDY #9
- JSR NOISE
+ LDY #9                 \ Call the NOISE routine with Y = 9 to make the first
+ JSR NOISE              \ sound of us being hit
 
- LDY #5
- BRA NOISE
+ LDY #5                 \ Call the NOISE routine with Y = 5 to make the second
+ BRA NOISE              \ sound of us being hit, returning from the subroutine
+                        \ using a tail call
 
 \ ******************************************************************************
 \
@@ -2140,10 +2185,11 @@ LOAD_A% = LOAD%
 
 .NOISELASER
 
- LDY #3
- JSR NOISE
+ LDY #3                 \ Call the NOISE routine with Y = 3 to make the first
+ JSR NOISE              \ sound of us firing our lasers
 
- LDY #5
+ LDY #5                 \ Set Y = 5 and fall through into the NOISE routine to
+                        \ make the second sound of us firing our lasers
 
 \ ******************************************************************************
 \
@@ -2151,6 +2197,25 @@ LOAD_A% = LOAD%
 \       Type: Subroutine
 \   Category: Sound
 \    Summary: Make the sound whose number is in Y
+\
+\ ------------------------------------------------------------------------------
+\
+\ The following sounds can be made by this routine. Two-part noises are made by
+\ consecutive calls to this routine woth different values of Y.
+\
+\   0       Long, low beep
+\   1       Short, high beep
+\   3, 5    Lasers fired by us
+\   4       We died / Collision / Our depleted shields being hit by lasers
+\   6       We made a hit or kill / Energy bomb / Other ship exploding
+\   7       E.C.M. on
+\   8       Missile launched / Ship launched from station
+\   9, 5    We're being hit by lasers
+\   10, 11  Hyperspace drive engaged
+\
+\ Arguments:
+\
+\   Y                   The number of the sound to be made from the above table
 \
 \ ******************************************************************************
 
@@ -9288,7 +9353,8 @@ ENDIF
  JSR ABORT              \ ABORT to disarm the missile and update the missile
                         \ indicators on the dashboard to green (Y = &EE)
 
- JSR LOWBEEP            \ ???
+ JSR LOWBEEP            \ Call the LOWBEEP routine to make a low, long beep to
+                        \ indicate the missile is now disarmed
 
  LDA #0                 \ Set MSAR to 0 to indicate that no missiles are
  STA MSAR               \ currently armed
@@ -9453,7 +9519,8 @@ ENDIF
  STA LAS
  STA LAS2
 
- JSR NOISELASER         \ ???
+ JSR NOISELASER         \ Call the NOISELASER routine to make the sound of our
+                        \ laser firing
 
  JSR LASLI              \ Call LASLI to draw the laser lines
 
@@ -10689,8 +10756,8 @@ ENDIF
  LDA ECMA               \ If an E.C.M is going off (our's or an opponent's) then
  BEQ MA66               \ keep going, otherwise skip to MA66
 
- LDY #&07               \ ???
- JSR NOISE
+ LDY #7                 \ Call the NOISE routine with Y = 7 to make the sound of
+ JSR NOISE              \ the E.C.M.
 
  DEC ECMA               \ Decrement the E.C.M. countdown timer, and if it has
  BNE MA66               \ reached zero, keep going, otherwise skip to MA66
@@ -10844,8 +10911,8 @@ ENDIF
 
  JSR P%+3
 
- LDY #&06
- JSR NOISE
+ LDY #6                 \ Call the NOISE routine with Y = 6 to make the sound of
+ JSR NOISE              \ an energy bomb going off
 
  JSR L31AC
 
@@ -16802,7 +16869,7 @@ LOAD_C% = LOAD% +P% - CODE%
 \
 \   * If we are in the ship's crosshairs, register some damage to our ship, slow
 \     down the attacking ship, make the noise of us being hit by laser fire, and
-\     we're done
+\     move on to the next part to manoeuvre the attacking ship
 \
 \ ******************************************************************************
 
@@ -16877,7 +16944,8 @@ LOAD_C% = LOAD% +P% - CODE%
  BNE TA9-1              \ opponent's), return from the subroutine without making
                         \ the laser-strike sound (as TA9-1 contains an RTS)
 
- JSR NOISEHIT           \ ???
+ JSR NOISEHIT           \ Call the NOISEHIT routine to make the sound of us
+                        \ being hit by lasers
 
 \ ******************************************************************************
 \
@@ -18466,11 +18534,11 @@ LOAD_C% = LOAD% +P% - CODE%
 
 .LL164
 
- LDY #&0A               \ ???
- JSR NOISE
+ LDY #10                \ Call the NOISE routine with Y = 10 to make the first
+ JSR NOISE              \ sound of the hyperspace drive being engaged
 
- LDY #&0B
- JSR NOISE
+ LDY #11                \ Call the NOISE routine with Y = 11 to make the second
+ JSR NOISE              \ sound of the hyperspace drive being engaged
 
  LDA #4                 \ Set the step size for the hyperspace rings to 4, so
                         \ there are more sections in the rings and they are
@@ -43519,8 +43587,9 @@ LOAD_H% = LOAD% + P% - CODE%
  LDA #120               \ Print recursive token 120 ("INCOMING MISSILE") as an
  JSR MESS               \ in-flight message
 
- LDY #&08               \ ???
- JMP NOISE
+ LDY #8                 \ Call the NOISE routine with Y = 8 to make the sound
+ JMP NOISE              \ of the missile being launched and return from the
+                        \ subroutine using a tail call
 
 \ ******************************************************************************
 \
@@ -43584,8 +43653,9 @@ LOAD_H% = LOAD% + P% - CODE%
 
 .EXNO3
 
- LDY #4                 \ ???
- JMP NOISE
+ LDY #4                 \ Call the NOISE routine with Y = 4 to make the sound of
+ JMP NOISE              \ an explosion and return from the subroutine using a
+                        \ tail call
 
 \ ******************************************************************************
 \
@@ -43603,8 +43673,9 @@ LOAD_H% = LOAD% + P% - CODE%
 
 .EXNO
 
- LDY #&06               \ ???
- JMP NOISE
+ LDY #6                 \ Call the NOISE routine with Y = 6 to make the sound of
+ JMP NOISE              \ us making a hit or kill and return from the subroutine
+                        \ using a tail call
 
 \ ******************************************************************************
 \
