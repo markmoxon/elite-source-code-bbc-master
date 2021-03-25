@@ -201,7 +201,7 @@ ORG &0000
 
  SKIP 0                 \ The start of the zero page workspace
 
- SKIP 2                 \ These bytes are unused
+ SKIP 2                 \ These bytes appear to be unused
 
 .RAND
 
@@ -212,7 +212,7 @@ ORG &0000
 
  SKIP 1                 \ Temporary storage, used in a number of places
 
- SKIP 3                 \ These bytes are unused
+ SKIP 3                 \ These bytes appear to be unused
 
 .SC
 
@@ -230,7 +230,7 @@ ORG &0000
 
  SKIP 3                 \ Temporary storage, used in a number of places
 
- SKIP 1                 \ This byte is unused
+ SKIP 1                 \ This byte appears to be unused
 
 .XC
 
@@ -1218,8 +1218,9 @@ ORG &0E41
                         \
                         \ CABTMP shares a location with MANY, but that's OK as
                         \ MANY+0 would contain the number of ships of type 0,
-                        \ but as there is no ship type 0 (they start at 1), MANY
-                        \ is unused
+                        \ and as there is no ship type 0 (they start at 1), the
+                        \ byte at MANY+0 is not used for storing a ship type
+                        \ and can be used for the cabin temperature instead
 
 .LAS2
 
@@ -1398,7 +1399,7 @@ ORG &0E41
 
  SKIP 1                 \ The y-coordinate of the tip of the laser line
 
- SKIP 1                 \ This byte is unused
+ SKIP 1                 \ This byte appears to be unused
 
 .ALTIT
 
@@ -1424,14 +1425,14 @@ ORG &0E41
                         \ LL145 (the flag is used in places like BLINE to swap
                         \ them back)
 
- SKIP 6                 \ These bytes are unused
+ SKIP 6                 \ These bytes appear to be unused
 
 .SDIST
 
  SKIP 1                 \ Used to store the nearest distance of the rotating
                         \ ship on the title screen
 
- SKIP 2                 \ These bytes are unused
+ SKIP 2                 \ These bytes appear to be unused
 
 .NAME
 
@@ -1543,8 +1544,8 @@ ORG &0E41
                         \
                         \     * Bit 7 determines whether or not the laser pulses
 
- SKIP 2                 \ These bytes are unused (they were originally used for
-                        \ up/down lasers, but they were dropped)
+ SKIP 2                 \ These bytes appear to be unused (they were originally
+                        \ used for up/down lasers, but they were dropped)
 
 .CRGO
 
@@ -1627,7 +1628,7 @@ ORG &0E41
                         \
                         \   * &FF = fitted
 
- SKIP 1                 \ This byte is unused
+ SKIP 1                 \ This byte appears to be unused
 
 .L1264
 
@@ -1745,7 +1746,7 @@ NT% = SVC + 2 - TP      \ This sets the variable NT% to the size of the current
                         \ commander data block, which starts at TP and ends at
                         \ SVC+2 (inclusive)
 
- SKIP 1                 \ This byte is unused
+ SKIP 1                 \ This byte appears to be unused
 
 .MCH
 
@@ -1761,7 +1762,7 @@ NT% = SVC + 2 - TP      \ This sets the variable NT% to the size of the current
 
  SKIP 1                 \ The y-coordinate of the compass dot
 
- SKIP 14                \ These bytes are unused
+ SKIP 14                \ These bytes appear to be unused
 
 .QQ24
 
@@ -2221,7 +2222,7 @@ LOAD_A% = LOAD%
 
 .NOISE
 
- LDA DNOIZ
+ LDA DNOIZ              \ ???
  BNE SRTS
 
  LDA SFX2,Y
@@ -2736,7 +2737,7 @@ LOAD_A% = LOAD%
  LDA #%00001111         \ Set bits 1 and 2 of the Access Control Register at
  STA VIA+&34            \ SHEILA+&34 to switch screen memory into &3000-&7FFF
 
- LDX #&90
+ LDX #&90               \ ???
 
 .SZPL1
 
@@ -2766,7 +2767,7 @@ LOAD_A% = LOAD%
  LDA #%00001111         \ Set bits 1 and 2 of the Access Control Register at
  STA VIA+&34            \ SHEILA+&34 to switch screen memory into &3000-&7FFF
 
- LDX #&90
+ LDX #&90               \ ???
 
 .LZPL1
 
@@ -8599,7 +8600,7 @@ NEXT
 
 .ADD_DUPLICATE
 
- STA T1
+ STA T1                 \ ???
  AND #&80
  STA T
  EOR S
@@ -8780,68 +8781,154 @@ ENDIF
 
 .COMC
 
- EQUB 0
+ SKIP 1                 \ The colour of the dot on the compass
+                        \
 
- SKIP 18
+ SKIP 18                \ These bytes appear to be unused
 
 .CATF
 
- EQUB &00
+ SKIP 1                 \ The disc catalogue flag
+                        \
+                        \ Determines whether a disc catalogue is currently in
+                        \ progress, so the TT26 print routine can format the
+                        \ output correctly:
+                        \
+                        \   * 0 = disc is not currently being catalogued
+                        \
+                        \   * 1 = disc is currently being catalogued
+                        \
+                        \ Specifically, when CATF is non-zero, TT26 will omit
+                        \ column 17 from the catalogue so that it will fit
+                        \ on-screen (column 17 is blank column in the middle
+                        \ of the catalogue, between the two lists of filenames,
+                        \ so it can be dropped without affecting the layout)
+
  
- SKIP 1
+ SKIP 1                 \ This byte appears to be unused
 
 .DNOIZ
 
- EQUB &00
+ SKIP 1                 \ Sound on/off configuration setting
+                        \
+                        \   * 0 = sound is on (default)
+                        \
+                        \   * &10 = sound is off
+                        \
+                        \ Toggled by pressing "S" when paused, see the DK4
+                        \ routine for details
 
 .DAMP
 
- EQUB &00
+ SKIP 1                 \ Keyboard damping configuration setting
+                        \
+                        \   * 0 = damping is enabled (default)
+                        \
+                        \   * &FF = damping is disabled
+                        \
+                        \ Toggled by pressing CAPS LOCK when paused, see the
+                        \ DKS3 routine for details
 
 .DJD
 
- EQUB &00
+ SKIP 1                 \ Keyboard auto-recentre configuration setting
+                        \
+                        \   * 0 = auto-recentre is enabled (default)
+                        \
+                        \   * &FF = auto-recentre is disabled
+                        \
+                        \ Toggled by pressing "A" when paused, see the DKS3
+                        \ routine for details
 
 .PATG
 
- EQUB &00
+ SKIP 1                 \ Configuration setting to show the author names on the
+                        \ start-up screen and enable manual hyperspace mis-jumps
+                        \
+                        \   * 0 = no author names or manual mis-jumps (default)
+                        \
+                        \   * &FF = show author names and allow manual mis-jumps
+                        \
+                        \ Toggled by pressing "X" when paused, see the DKS3
+                        \ routine for details
+                        \
+                        \ This needs to be turned on for manual mis-jumps to be
+                        \ possible. To do a manual mis-jump, first toggle the
+                        \ author display by pausing the game (COPY) and pressing
+                        \ "X", and during the next hyperspace, hold down CTRL to
+                        \ force a mis-jump. See routine ee5 for the "AND PATG"
+                        \ instruction that implements this logic
 
 .FLH
 
- EQUB &00
+ SKIP 1                 \ Flashing console bars configuration setting
+                        \
+                        \   * 0 = static bars (default)
+                        \
+                        \   * &FF = flashing bars
+                        \
+                        \ Toggled by pressing "F" when paused, see the DKS3
+                        \ routine for details
 
 .JSTGY
 
- EQUB &00           \ Other way round (&FF is default = standard Y axis)
+ SKIP 1                 \ Reverse joystick Y-channel configuration setting
+                        \
+                        \   * 0 = reversed Y-channel
+                        \
+                        \   * &FF = standard Y-channel (default)
+                        \
+                        \ Toggled by pressing "Y" when paused, see the DKS3
+                        \ routine for details
 
 .JSTE
 
- EQUB &00
+ SKIP 1                 \ Reverse both joystick channels configuration setting
+                        \
+                        \   * 0 = standard channels (default)
+                        \
+                        \   * &FF = reversed channels
+                        \
+                        \ Toggled by pressing "J" when paused, see the DKS3
+                        \ routine for details
 
 .JSTK
 
- EQUB &00
+ SKIP 1                 \ Keyboard or joystick configuration setting
+                        \
+                        \   * 0 = keyboard (default)
+                        \
+                        \   * &FF = joystick
+                        \
+                        \ Toggled by pressing "K" when paused, see the DKS3
+                        \ routine for details
 
- 
- EQUB &00           \ Conf option U
+ EQUB &00               \ Conf option U ???
 
 .L2C5E
 
- EQUB &00           \ Conf option T
+ EQUB &00               \ Conf option T ???
 
 .BSTK
 
- EQUB &00
- 
- EQUB 0
+ SKIP 1                 \ Bitstik configuration setting
+                        \
+                        \   * 0 = keyboard or joystick (default)
+                        \
+                        \   * &FF = Bitstik
+                        \
+                        \ Toggled by pressing "B" when paused, see the DKS3
+                        \ routine for details
+
+ SKIP 1                 \ This byte appears to be unused
 
 .L2C61
 
- EQUB &07
+ EQUB &07               \ ???
 
 .CKEYS
 
- EQUB 1
+ EQUB 1                 \ ???
  EQUS "AXFYJKUT"
  EQUB &60
 
@@ -8856,7 +8943,7 @@ ENDIF
 
 .S%
 
- CLD
+ CLD                    \ ???
 
  JSR scramble
 
@@ -8875,7 +8962,7 @@ ENDIF
 
 .scramble
 
- LDA #&C0               \ See elite-checksum.py
+ LDA #&C0               \ See elite-checksum.py ???
  STA FRIN
  LDA #&2C
  STA FRIN+1
@@ -8905,7 +8992,7 @@ ENDIF
 
 .DECRYPT
 
- STX T
+ STX T                  \ ???
  STA SC+1
  LDA #&00
  STA SC
@@ -10848,7 +10935,7 @@ ENDIF
 \       Name: L31AC
 \       Type: Subroutine
 \   Category: Drawing lines
-\    Summary: 
+\    Summary: ???
 \
 \ ******************************************************************************
 
@@ -12228,8 +12315,9 @@ ENDIF
 
  EQUB 0                 \ LASER+3 = Right laser, #19
 
- EQUW 0                 \ These bytes are unused (they were originally used for
-                        \ up/down lasers, but they were dropped), #20-21
+ EQUW 0                 \ These bytes appear to be unused (they were originally
+                        \ used for up/down lasers, but they were dropped),
+                        \ #20-21
 
  EQUB 22+(15 AND Q%)    \ CRGO = Cargo capacity, #22
 
@@ -12265,7 +12353,7 @@ ENDIF
 
  EQUB Q%                \ ESCP = Escape pod, #46
 
- EQUD 0                 \ These four bytes are unused, #47-50
+ EQUD 0                 \ These four bytes appear to be unused, #47-50
 
  EQUB 3+(Q% AND 1)      \ NOMSL = Number of missiles, #51
 
@@ -35019,7 +35107,7 @@ ENDIF
 
 .JAMESON
 
- LDY #&60
+ LDY #&60               \ ???
 
 .JAMESL
 
@@ -35289,7 +35377,7 @@ ENDIF
 
 .MT30
 
- LDA #3
+ LDA #3                 \ ???
  CLC
  ADC L2C5E
  JMP DETOK
@@ -35306,7 +35394,7 @@ ENDIF
 
 .MT31
 
- LDA #2
+ LDA #2                 \ ???
  SEC
  SBC L2C5E
  JMP DETOK
@@ -35849,7 +35937,7 @@ ENDIF
 
 .SAVE
 
- LDY #&4C
+ LDY #&4C               \ ???
 
 .SAVEL1
 
@@ -35907,7 +35995,7 @@ ENDIF
 
 .LOAD
 
- LDY #0
+ LDY #0                 \ ???
 
 .LOADL1
 
@@ -41455,7 +41543,7 @@ LOAD_G% = LOAD% + P% - CODE%
 
 .LLX30
 
- LDY XX14
+ LDY XX14               \ ???
  CPY XX14+1
  PHP
  LDX #3
@@ -43259,7 +43347,7 @@ LOAD_H% = LOAD% + P% - CODE%
 \ Valid internal key numbers are Binary Coded Decimal (BCD) numbers in the range
 \ &10 top &79, so they're in the ranges &10 to &19, then &20 to &29, then &30 to
 \ &39, and so on. This means that the other locations - i.e. &1A to &1F, &2A to
-\ &2F and so on - are unused by the lookup table, but the MOS doesn't let this
+\ &2F and so on - aren't used by the lookup table, but the MOS doesn't let this
 \ space go to waste; instead, those gaps contain MOS code, which is replicated
 \ below as TRANTABLE contains a copy of this entire block of the MOS, not just
 \ the table entries.
@@ -43364,7 +43452,7 @@ LOAD_H% = LOAD% + P% - CODE%
 
 .DKS1
 
- EOR #&80
+ EOR #&80               \ ???
  STA KL
 
 .DKL5
@@ -43518,7 +43606,7 @@ LOAD_H% = LOAD% + P% - CODE%
 \
 \ ******************************************************************************
 
- SED
+ SED                    \ ???
 
 .RDKEY
 

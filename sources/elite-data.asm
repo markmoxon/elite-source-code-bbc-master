@@ -63,7 +63,7 @@ ORG CODE%
 
 INCBIN "binaries/P.DIALS2P.bin"
 
- SKIP 256               \ These bytes are unused, but they get moved to
+ SKIP 256               \ These bytes appear to be unused, but they get moved to
                         \ &7E00-&7EFF along with the dashboard
 
 \ ******************************************************************************
@@ -72,7 +72,7 @@ INCBIN "binaries/P.DIALS2P.bin"
 \
 \ ******************************************************************************
 
- SKIP 256               \ These bytes are unused, but they get moved to
+ SKIP 256               \ These bytes appear to be unused, but they get moved to
                         \ &7F00-&7FFF along with the ship blueprints and text
                         \ tokens
 
@@ -4563,7 +4563,7 @@ ENDMACRO
  CHAR 'R'
  EQUB 0
 
- EQUB 0, 0              \ These bytes are unused and just contain noise
+ EQUB 0, 0              \ These bytes appear to be unused and just contain noise
  EQUB &19, &03, &16
 
 \ ******************************************************************************
