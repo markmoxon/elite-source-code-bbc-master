@@ -1632,11 +1632,11 @@ ORG &0E41
 
 .L1264
 
- SKIP 1                 \ ???
+ SKIP 1                 \ Low byte of Trumble count ???
 
 .L1265
 
- SKIP 1                 \ ???
+ SKIP 1                 \ High byte of Trumble count, this many tons of space are taken up, see tnpr, so 256 Trumbles = 1 ton ???
 
 .TALLYF
 
@@ -2055,7 +2055,7 @@ LOAD_A% = LOAD%
 \       Name: L1358
 \       Type: Variable
 \   Category: Sound
-\    Summary: ???
+\    Summary: ??? Sound data mask applied to top nibble of sound data in NS2
 \
 \ ******************************************************************************
 
@@ -2070,7 +2070,7 @@ LOAD_A% = LOAD%
 \       Name: L135B
 \       Type: Variable
 \   Category: Sound
-\    Summary: ???
+\    Summary: ??? Sound data passed to the sound chip, and a mask applied in NS7
 \
 \ ******************************************************************************
 
@@ -2346,7 +2346,7 @@ LOAD_A% = LOAD%
 
  LDA SBUF+6,Y
  CLC
- ADC L2C61
+ ADC VOLUME
 
 .NS7
 
@@ -2477,7 +2477,7 @@ LOAD_A% = LOAD%
 
  CLI                    \ Enable interrupts again
 
- RTS
+ RTS                    \ Return from the subroutine
 
 \ ******************************************************************************
 \
@@ -3013,9 +3013,12 @@ NEXT
  LDY #%00001111         \ Set bits 1 and 2 of the Access Control Register at
  STY VIA+&34            \ SHEILA+&34 to switch screen memory into &3000-&7FFF
 
- JSR CPIX2
+ JSR CPIX2              \ Call CPIX2 to draw a single-height dash at the
+                        \ y-coordinate in A, and return the dash's right pixel
+                        \ byte in R, which we use below
 
- LDA Y1
+ LDA Y1                 \ Fetch the y-coordinate back into A, which was stored
+                        \ in Y1 by the call to CPIX2
 
  SEC                    \ Set A = A - Y2 to get the stick length, by reversing
  SBC Y2                 \ the ADC Y2 we did above. This clears the C flag if the
@@ -3052,9 +3055,11 @@ NEXT
 
 .VLL1
 
- LDA R
- EOR (SC),Y
- STA (SC),Y
+ LDA R                  \ The call to CPIX2 above saved the dash's right pixel
+                        \ byte in R, so we load this into A
+
+ EOR (SC),Y             \ Draw the bottom row of the double-height dot using the
+ STA (SC),Y             \ same byte as the top row, plotted using EOR logic
 
 .VL1
 
@@ -5570,7 +5575,7 @@ NEXT
  LDY #%00001001         \ Clear bits 1 and 2 of the Access Control Register at
  STY VIA+&34            \ SHEILA+&34 to switch main memory back into &3000-&7FFF
 
- LDY YSAV
+ LDY YSAV               \ ???
 
  RTS                    \ Return from the subroutine
 
@@ -5621,7 +5626,7 @@ NEXT
  LDY #%00001001         \ Clear bits 1 and 2 of the Access Control Register at
  STY VIA+&34            \ SHEILA+&34 to switch main memory back into &3000-&7FFF
 
- LDY YSAV
+ LDY YSAV               \ ???
 
  RTS                    \ Return from the subroutine
 
@@ -6056,22 +6061,22 @@ NEXT
 
  LDA COMY               \ Set Y1 = COMY, the y-coordinate of the dot
 
- CPX #&0F               \ ???
- BNE L1EA5
+ CPX #YELLOW2           \ If the colour in X is yellow, then the dot is behind
+ BNE P%+8               \ us, so skip the following three instructions so we
+                        \ only draw a single-height dot
 
- JSR CPIX2
+ JSR CPIX2              \ Call CPIX2 to draw a single-height dash, i.e. the top
+                        \ row of a double-height dot
 
- LDA Y1
- DEC A
+ LDA Y1                 \ Fetch the y-coordinate of the row we just drew and
+ DEC A                  \ decrement it, ready to draw the bottom row
 
-.L1EA5
-
- JSR CPIX2
+ JSR CPIX2              \ Call CPIX2 to draw a single-height dash
 
  LDA #%00001001         \ Clear bits 1 and 2 of the Access Control Register at
  STA VIA+&34            \ SHEILA+&34 to switch main memory back into &3000-&7FFF
 
- RTS
+ RTS                    \ Return from the subroutine
 
 \ ******************************************************************************
 \
@@ -6088,15 +6093,19 @@ NEXT
 \
 \   X1                  The screen pixel x-coordinate of the dash
 \
-\   Y1                  The screen pixel y-coordinate of the dash
+\   A                   The screen pixel y-coordinate of the dash
 \
 \   COL                 The colour of the dash as a mode 2 character row byte
+\
+\ Returns:
+\
+\   R                   The dash's right pixel byte
 \
 \ ******************************************************************************
 
 .CPIX2
 
- STA Y1                 \ ???
+ STA Y1                 \ Store the y-coordinate in Y1
 
 \.CPIX                  \ This label is commented out in the original source. It
                         \ would provide a new entry point with A specifying the
@@ -6182,7 +6191,7 @@ NEXT
 
  AND COL                \ Apply the colour mask to the pixel byte, as above
 
- STA R                  \ Store the dash's right pixel in R ???
+ STA R                  \ Store the dash's right pixel byte in R
 
  EOR (SC),Y             \ Draw the dash's right pixel according to the mask in
  STA (SC),Y             \ A, with the colour in COL, using EOR logic, just as
@@ -6255,7 +6264,10 @@ NEXT
  BPL BULL2              \ Loop back to poke the next byte until we have done
                         \ all 16 bytes across two character blocks
 
- BMI BULB2              \ ???
+ BMI BULB2              \ Jump to BULB2 to switch main memory back into
+                        \ &3000-&7FFF and return from the subroutine (this BMI
+                        \ is effectively a JMP as we just passed through the BPL
+                        \ above)
 
 \ ******************************************************************************
 \
@@ -6268,7 +6280,8 @@ NEXT
 \
 \ Other entry points:
 \
-\   BULB2               ???
+\   BULB2               Switch main memory back into &3000-&7FFF and return from
+\                       the subroutine
 \
 \ ******************************************************************************
 
@@ -6318,7 +6331,7 @@ NEXT
  LDA #%00001001         \ Clear bits 1 and 2 of the Access Control Register at
  STA VIA+&34            \ SHEILA+&34 to switch main memory back into &3000-&7FFF
 
- RTS
+ RTS                    \ Return from the subroutine
 
 \ ******************************************************************************
 \
@@ -8813,7 +8826,7 @@ ENDIF
                         \
                         \   * 0 = sound is on (default)
                         \
-                        \   * &10 = sound is off
+                        \   * Non-zero = sound is off
                         \
                         \ Toggled by pressing "S" when paused, see the DK4
                         \ routine for details
@@ -8922,9 +8935,9 @@ ENDIF
 
  SKIP 1                 \ This byte appears to be unused
 
-.L2C61
+.VOLUME
 
- EQUB &07               \ ???
+ EQUB 7                 \ ???
 
 .CKEYS
 
@@ -12232,7 +12245,9 @@ ENDIF
 
  EQUB 0
 
- SKIP 12                \ These bytes appear to be unused
+ SKIP 12                \ These bytes appear to be unused, though the first byte
+                        \ in this block is included in the commander file (it
+                        \ has no effect)
 
 \ ******************************************************************************
 \
@@ -12388,7 +12403,9 @@ ENDIF
 
  EQUB &03               \ The CHK checksum value for the default commander
 
- SKIP 16                \ These bytes appear to be unused
+ SKIP 16                \ These bytes appear to be unused, though the first byte
+                        \ in this block is included in the commander file (it
+                        \ has no effect)
 
 \ ******************************************************************************
 \
@@ -12635,7 +12652,7 @@ NEXT
 
  STA Y1                 \ Set Y1 = A
 
- LDA #&0F               \ ???
+ LDA #YELLOW            \ Switch to colour 1, which is yellow
  STA COL
 
  LDX #2                 \ Set X1 = 2, so (X1, Y1) = (2, A)
@@ -12646,9 +12663,10 @@ NEXT
 
  JSR HLOIN3             \ ???
 
- LDA #&FF               \ ???
+ LDA #CYAN              \ Switch to colour 3, which is cyan or white
  STA COL
- RTS
+
+ RTS                    \ Return from the subroutine
 
 \ ******************************************************************************
 \
@@ -12926,7 +12944,7 @@ NEXT
 \BNE FLIP-1             \ source. They would have the effect of not swapping the
                         \ stardust if we had mis-jumped into witchspace
 
- LDA #&FA               \ ???
+ LDA #WHITE             \ Switch to white (i.e. cyan/red)
  STA COL
 
  LDY NOSTM              \ Set Y to the current number of stardust particles, so
@@ -12973,7 +12991,7 @@ NEXT
 
 .STARS
 
- LDA #&FA               \ ???
+ LDA #WHITE             \ Switch to white (i.e. cyan/red)
  STA COL
 
  LDX VIEW               \ Load the current view into X:
@@ -15661,9 +15679,9 @@ DTW7 = MT16 + 1         \ Point DTW7 to the second byte of the instruction above
 
  JSR MVEIT              \ Call MVEIT to move the Cobra in space
 
- LDA QQ11               \ ???
- ORA VIEW
- BNE P%+5
+ LDA QQ11               \ If either of QQ11 or VIEW is non-zero (i.e. this is
+ ORA VIEW               \ not the front space view), skip the following
+ BNE P%+5               \ instruction
 
  JSR LL9                \ Call LL9 to draw the Cobra on-screen
 
@@ -15717,7 +15735,7 @@ DTW7 = MT16 + 1         \ Point DTW7 to the second byte of the instruction above
 
 .HME2
 
- LDA #&FF               \ ???
+ LDA #CYAN              \ Switch to colour 3, which is white in the chart view
  STA COL
 
  LDA #14                \ Print extended token 14 ("{clear bottom of screen}
@@ -15799,7 +15817,8 @@ DTW7 = MT16 + 1         \ Point DTW7 to the second byte of the instruction above
 
  JSR TT103              \ Draw small crosshairs at coordinates (QQ9, QQ10)
 
- JSR LOWBEEP            \ ???
+ JSR LOWBEEP            \ Call the LOWBEEP routine to make a low, long beep to
+                        \ indicate a failed search
 
  LDA #215               \ Print extended token 215 ("{left align} UNKNOWN
  JMP DETOK              \ PLANET"), which will print on-screem as the left align
@@ -16281,7 +16300,7 @@ LOAD_C% = LOAD% +P% - CODE%
 
 .TAX35
 
- LDA INWK
+ LDA INWK               \ ???
  ORA INWK+3
  ORA INWK+6
  BNE P%+7
@@ -18633,7 +18652,10 @@ LOAD_C% = LOAD% +P% - CODE%
                         \ quite round (compared to the step size of 8 used in
                         \ the much more polygonal launch rings)
 
- STA HFX                \ ???
+ STA HFX                \ Set HFX to 4, which switches the screen mode to a full
+                        \ mode 2 screen, therefore making the hyperspace rings
+                        \ multi-coloured and all zig-zaggy (see the IRQ1 routine
+                        \ for details)
 
  JSR HFS2               \ Call HFS2 to draw the hyperspace tunnel rings
 
@@ -18706,13 +18728,14 @@ LOAD_C% = LOAD% +P% - CODE%
 
  STA STP                \ Store the step size in A
 
- LDA QQ11               \ ???
+ LDA QQ11               \ Store the current view number in QQ11 on the stack
  PHA
 
- LDA #0
- JSR TT66
+ LDA #0                 \ Clear the top part of the screen, draw a white border,
+ JSR TT66               \ and set the current view type in QQ11 to 0 (the space
+                        \ view)
 
- PLA
+ PLA                    \ Restore the view number from the stack
  STA QQ11
 
 .HFS1
@@ -21467,7 +21490,7 @@ LOAD_C% = LOAD% +P% - CODE%
 
 .BRP
 
- LDX #&FF               \ ???
+ LDX #CYAN              \ Switch to colour 3, which is white or cyan
  STX COL
 
  JSR DETOK              \ Print the extended token in A
@@ -21805,7 +21828,7 @@ LOAD_C% = LOAD% +P% - CODE%
  LDA #6                 \ Move the text cursor to row 6
  STA YC
 
- LDA #&FF               \ ???
+ LDA #CYAN              \ Set white text
  STA COL
 
  JMP MT13               \ Jump to MT13 to set bit 7 of DTW6 and bit 5 of DTW1,
@@ -23074,7 +23097,7 @@ LOAD_D% = LOAD% + P% - CODE%
                         \ system on the chart by passing it as the distance
                         \ argument to the PIXEL routine below
 
- LDA #&0F               \ ???
+ LDA #YELLOW            \ Switch to colour 1, which is yellow
  STA COL
 
  LDA QQ15+1             \ Fetch the s0_hi seed into A, which gives us the
@@ -23114,8 +23137,8 @@ LOAD_D% = LOAD% + P% - CODE%
  LDA #4                 \ Set QQ19+2 to size 4 for the crosshairs size
  STA QQ19+2
 
- LDA #&AF               \ ???
- STA COL
+ LDA #GREEN             \ Switch to stripe 3-1-3-1, which is white/yellow in the
+ STA COL                \ chart view
 
                         \ Fall through into TT15 to draw crosshairs of size 4 at
                         \ the selected system's coordinates
@@ -23294,8 +23317,8 @@ LOAD_D% = LOAD% + P% - CODE%
  LDA #16                \ Set QQ19+2 = 16, the size of the crosshairs on the
  STA QQ19+2             \ Short-range Chart
 
- LDA #&AF               \ ???
- STA COL
+ LDA #GREEN             \ Switch to stripe 3-1-3-1, which is white/yellow in the
+ STA COL                \ chart view
 
  JSR TT15               \ Draw the set of crosshairs defined in QQ19, at the
                         \ exact coordinates as this is the Short-range Chart
@@ -23334,7 +23357,7 @@ LOAD_D% = LOAD% + P% - CODE%
  LDA #7                 \ Set QQ19+2 = 7, the size of the crosshairs on the
  STA QQ19+2             \ Long-range Chart
 
- LDA #&FF               \ ???
+ LDA #CYAN              \ Switch to colour 3, which is white in the chart view
  STA COL
 
  JSR TT15               \ Draw the set of crosshairs defined in QQ19, which will
@@ -23970,7 +23993,8 @@ LOAD_D% = LOAD% + P% - CODE%
  JMP BAY2               \ And then jump to BAY2 to display the Inventory
                         \ screen, as we have finished selling cargo
 
- JSR TT69               \ ???
+ JSR TT69               \ ??? Would show special cargo of some kind? But tokens
+                        \ are blank
 
  LDA L1264
  ORA L1265
@@ -24182,8 +24206,8 @@ LOAD_D% = LOAD% + P% - CODE%
 
 .TT103
 
- LDA #&AF               \ ???
- STA COL
+ LDA #GREEN             \ Switch to stripe 3-1-3-1, which is white/yellow in the
+ STA COL                \ chart view
 
  LDA QQ11               \ Fetch the current view type into A
 
@@ -24342,8 +24366,8 @@ LOAD_D% = LOAD% + P% - CODE%
  LDA #8                 \ Set QQ19+2 to 8 denote crosshairs of size 8
  STA QQ19+2
 
- LDA #&AF               \ ???
- STA COL
+ LDA #GREEN             \ Switch to stripe 3-1-3-1, which is white/yellow in the
+ STA COL                \ chart view
 
  JMP TT15               \ Jump to TT15 to draw crosshairs of size 8 at the
                         \ crosshairs coordinates, returning from the subroutine
@@ -25223,9 +25247,16 @@ LOAD_D% = LOAD% + P% - CODE%
 
  INC GCNT               \ Increment the current galaxy number in GCNT
 
- LDA GCNT               \ Set GCNT = GCNT mod 8, so we jump from galaxy 7 back
- AND #&F7               \ to galaxy 0 (shown in-game as going from galaxy 8 back
- STA GCNT               \ to the starting point in galaxy 1) ???
+ LDA GCNT               \ Clear bit 3 of GCNT, so we jump from galaxy 7 back
+ AND #%11110111         \ to galaxy 0 (shown in-game as going from galaxy 8 back
+ STA GCNT               \ to the starting point in galaxy 1). We also retain any
+                        \ set bits in the top nibble, so if the galaxy number is
+                        \ manually set to 16 or higher, it will stay high
+                        \ (though the upper nibble doesn't seem to get set by
+                        \ the game at any point, so it isn't clear what this is
+                        \ for, though Lave in galaxy 16 does show a unique
+                        \ system description override, so something is going on
+                        \ here...)
 
 .G1
 
@@ -28276,7 +28307,8 @@ LOAD_E% = LOAD% + P% - CODE%
  LDY #1                 \ Fetch byte #1 of the ship line heap, which contains
  LDA (XX19),Y           \ the cloud counter
 
- STA CLCNT              \ ???
+ STA CLCNT              \ Store the cloud counter in CLCNT (though this value is
+                        \ never read, so this has no effect)
 
  ADC #4                 \ Add 4 to the cloud counter, so it ticks onwards every
                         \ we redraw it
@@ -28384,11 +28416,10 @@ LOAD_E% = LOAD% + P% - CODE%
  EOR #&FF               \ Flip the value of A so that in the second half of the
                         \ cloud's existence, A counts down instead of up
 
- LSR A                  \ Divide A by 8 so that is has a maximum value of 15
+ LSR A                  \ Divide A by 16 so that is has a maximum value of 7
  LSR A
  LSR A
-
- LSR A                  \ ???
+ LSR A
 
  ORA #1                 \ Make sure A is at least 1 and store it in U, to
  STA U                  \ give us the number of particles in the explosion for
@@ -28478,28 +28509,33 @@ LOAD_E% = LOAD% + P% - CODE%
                         \ use this as a loop counter to iterate through all the
                         \ particles in the explosion
 
- STY CNT2               \ ???
+ STY CNT2               \ Store the number of explosion particles in CNT2, to
+                        \ use this as a loop counter to iterate through all the
+                        \ particles in the explosion
 
 .EXL4
 
- CLC                    \ ???
- LDA RAND
- ROL A
- TAX
- ADC RAND+2
- STA RAND
+ CLC                    \ This contains the code from the DORND2 routine, so
+ LDA RAND               \ this section is exactly equivalent to a JSR DORND2
+ ROL A                  \ call, but is slightly faster as it's been inlined
+ TAX                    \ (so it sets A and X to random values and also
+ ADC RAND+2             \ restricts the value of RAND+2 so that bit 0 is
+ STA RAND               \ always 0)
  STX RAND+2
  LDA RAND+1
  TAX
  ADC RAND+3
  STA RAND+1
  STX RAND+3
- STA ZZ
 
- AND #&03
- TAX
- LDA L5A0D,X
- STA COL
+ STA ZZ                 \ Set ZZ to a random number
+
+ AND #3                 \ Set X to this random number, reduced to be in the
+ TAX                    \ range 0-3
+
+ LDA EXCOL,X            \ Set the colour randomly to one of the four colours
+ STA COL                \ in the EXCOL table, so explosions are made up of
+                        \ yellow, red and cyan particles
 
  LDA K3+1               \ Set (A R) = (y_hi y_lo)
  STA R                  \           = y
@@ -28542,7 +28578,8 @@ LOAD_E% = LOAD% + P% - CODE%
 
 .EX4
 
- DEC CNT2
+ DEC CNT2               \ Decrement the loop counter in CNT2 for the next
+                        \ particle
 
  BPL EXL4               \ Loop back to EXL4 until we have done all the particles
                         \ in the cloud
@@ -28565,12 +28602,12 @@ LOAD_E% = LOAD% + P% - CODE%
 
 .EX11
 
- CLC                    \ ???
- LDA RAND
- ROL A
- TAX
- ADC RAND+2
- STA RAND
+ CLC                    \ This contains the code from the DORND2 routine, so
+ LDA RAND               \ this section is exactly equivalent to a JSR DORND2
+ ROL A                  \ call, but is slightly faster as it's been inlined
+ TAX                    \ (so it sets A and X to random values and also
+ ADC RAND+2             \ restricts the value of RAND+2 so that bit 0 is
+ STA RAND               \ always 0)
  STX RAND+2
  LDA RAND+1
  TAX
@@ -28591,12 +28628,12 @@ LOAD_E% = LOAD% + P% - CODE%
 
  STA S                  \ Store A in S so we can use it later
 
- CLC                    \ ???
- LDA RAND
- ROL A
- TAX
- ADC RAND+2
- STA RAND
+ CLC                    \ This contains the code from the DORND2 routine, so
+ LDA RAND               \ this section is exactly equivalent to a JSR DORND2
+ ROL A                  \ call, but is slightly faster as it's been inlined
+ TAX                    \ (so it sets A and X to random values and also
+ ADC RAND+2             \ restricts the value of RAND+2 so that bit 0 is
+ STA RAND               \ always 0)
  STX RAND+2
  LDA RAND+1
  TAX
@@ -28637,11 +28674,23 @@ LOAD_E% = LOAD% + P% - CODE%
 
  RTS                    \ Return from the subroutine
 
- EQUB &00, &02
+ EQUB 0, 2              \ These bytes appear to be unused
 
-.L5A0D
+\ ******************************************************************************
+\
+\       Name: EXCOL
+\       Type: Variable
+\   Category: Drawing ships
+\    Summary: Colours for ship explosions
+\
+\ ******************************************************************************
 
- EQUB &0F,&F0,&0F,&FF
+.EXCOL
+
+ EQUB YELLOW
+ EQUB RED
+ EQUB YELLOW
+ EQUB CYAN
 
 \ ******************************************************************************
 \
@@ -28680,7 +28729,7 @@ LOAD_E% = LOAD% + P% - CODE%
 \       Name: SOLARX
 \       Type: Subroutine
 \   Category: Universe
-\    Summary: ???
+\    Summary: ??? Does this implement Trumbles multiplying 
 \
 \ ******************************************************************************
 
@@ -28689,19 +28738,19 @@ LOAD_E% = LOAD% + P% - CODE%
  LDA L1264
  BEQ SOLAR
 
- LDA #0
+ LDA #0                 \ Trumbles eat food and narcotics
  STA QQ20
  STA QQ20+6
 
- JSR DORND
+ JSR DORND              \ L1264 increases exponentially
  AND #&0F
  ADC L1264
  ORA #&04
  ROL A
-
  STA L1264
- ROL L1265
- BPL SOLAR
+
+ ROL L1265              \ Rotate carry into bit 0 of L1265 until bit 6 is set
+ BPL SOLAR              \ Change to P%+5
 
  ROR L1265
 
@@ -28809,7 +28858,7 @@ LOAD_E% = LOAD% + P% - CODE%
 
 .nWq
 
- LDA #&FA               \ ???
+ LDA #WHITE             \ Switch to white (i.e. cyan/red)
  STA COL
 
  LDY NOSTM              \ Set Y to the current number of stardust particles, so
@@ -28954,8 +29003,9 @@ LOAD_E% = LOAD% + P% - CODE%
 
  LDY #2*Y-1+8           \ #Y is the y-coordinate of the centre of the space
                         \ view, so this sets Y as a counter for the number of
-                        \ lines in the space view (i.e. 191), which is also the
-                        \ number of lines in the LSO block ???
+                        \ lines in the space view (i.e. 191) - which is also the
+                        \ number of lines in the LSO block - plus an extra 8
+                        \ bytes
 
  LDA #0                 \ Set A to 0 so we can zero-fill the LSO block
 
@@ -30730,7 +30780,7 @@ LOAD_E% = LOAD% + P% - CODE%
 
 .SUN
 
- LDA #&F0               \ ???
+ LDA #RED               \ Switch to colour 2, which is red in the space view
  STA COL
 
  LDA #1                 \ Set LSX = 1 to indicate the sun line heap is about to
@@ -31625,7 +31675,7 @@ LOAD_E% = LOAD% + P% - CODE%
 
  LDA #255               \ The high byte is positive and non-zero, so we went
  STA X2                 \ past the right edge of the screen, so clip X2 to the
-                        \ x-coordinate of the right edge of the screen ???
+                        \ x-coordinate of the right edge of the screen
 
  LDA YY                 \ We now calculate:
  SEC                    \
@@ -31653,7 +31703,7 @@ LOAD_E% = LOAD% + P% - CODE%
 
  LDA #0                 \ The high byte is negative and non-zero, so we went
  STA X1                 \ past the left edge of the screen, so clip X1 to the
-                        \ y-coordinate of the left edge of the screen ???
+                        \ y-coordinate of the left edge of the screen
 
  CLC                    \ The line does fit on-screen, so clear the C flag to
                         \ indicate success
@@ -34040,26 +34090,26 @@ LOAD_F% = LOAD% + P% - CODE%
 
 .INSP
 
- CMP #&81               \ ???
- BEQ L6620
+ CMP #f1                \ ???
+ BEQ BVIEW
 
- CMP #&82
- BEQ L661D
+ CMP #f2
+ BEQ LVIEW
 
- CMP #&83
+ CMP #f3
  BNE LABEL_3
 
- LDX #&03
+ LDX #3
  EQUB &2C
 
-.L661D
+.LVIEW
 
- LDX #&02
+ LDX #2
  EQUB &2C
 
-.L6620
+.BVIEW
 
- LDX #&01
+ LDX #1
  JMP LOOK1
 
 .LABEL_3
@@ -34193,7 +34243,7 @@ LOAD_F% = LOAD% + P% - CODE%
  LDA #%10000000         \ Set bit 7 of QQ17 to switch to Sentence Case, with the
  STA QQ17               \ next letter in capitals
 
- LDA #&0C               \ ???
+ LDA #12                \ ???
  JSR TT26
 
  JMP TT146              \ Print the distance to the selected system and return
@@ -34375,7 +34425,8 @@ LOAD_F% = LOAD% + P% - CODE%
 
  LDX stack              \ ???
  TXS
- JSR LOADZP
+
+ JSR LOADZP             \ Call LOADZP to restore the top part of zero page
 
  STZ CATF
  LDY #&00
@@ -34428,11 +34479,11 @@ LOAD_F% = LOAD% + P% - CODE%
  LDX #24                \ Set the screen to only show 24 text rows, which hides
  JSR DET1               \ the dashboard, setting A to 6 in the process
 
- LDA #&0D               \ ???
-
- JSR TT66               \ Clear the top part of the screen, draw a white border,
-                        \ and set the current view type in QQ11 to 6 (death
-                        \ screen)
+ LDA #13                \ Clear the top part of the screen, draw a white border,
+ JSR TT66               \ and set the current view type in QQ11 to 13 (which
+                        \ is not a space view, though I'm not quite sure why
+                        \ this value is chosen, as it gets overwritten by the
+                        \ next instruction anyway)
 
  STZ QQ11               \ Set QQ11 to 0, so from here on we are using a space
                         \ view
@@ -34485,14 +34536,16 @@ LOAD_F% = LOAD% + P% - CODE%
  STA INWK+29            \ store in byte #29 (roll counter) to give our ship a
                         \ gentle roll with damping
 
- LDY #&40               \ ???
- STY LASCT
- SEC
+ LDY #64                \ Set the laser count to 64 to act as a counter in the
+ STY LASCT              \ D2 loop below, so this setting determines how long the
+                        \ death animation lasts (it's 64 * 2 iterations of the
+                        \ main flight loop)
 
- ROR A                  \ The C flag is randomly set from the above call to Ze,
- AND #%10000111         \ so this sets A to a number between -7 and +7, which
- STA INWK+30            \ we store in byte #30 (the pitch counter) to give our
-                        \ ship a very gentle pitch with damping
+ SEC                    \ Set the C flag
+
+ ROR A                  \ This sets A to a number between 0 and +7, which we
+ AND #%10000111         \ we store in byte #30 (the pitch counter) to give our
+ STA INWK+30            \ ship a very gentle clockwise pitch with damping
 
  LDX #OIL               \ Set X to #OIL, the ship type for a cargo canister
 
@@ -34541,20 +34594,24 @@ LOAD_F% = LOAD% + P% - CODE%
                         \ is we loop back to D1 to add another canister, until
                         \ we have added five of them
 
- LDA #0                 \ ???
+ LDA #0                 \ Set our speed in DELTA to 0, as we aren't going
+ STA DELTA              \ anywhere any more
+                        \
 
- STA DELTA              \ Set our speed in DELTA to 0, as we aen't going
-                        \ anywhere any more
-
- JSR M%                 \ ???
+ JSR M%                 \ Call the M% routine to do the main flight loop once,
+                        \ which will display our exploding canister scene and
+                        \ move everything about, as well as decrementing the
+                        \ value in LASCT
 
 .D2
 
  JSR M%                 \ Call the M% routine to do the main flight loop once,
                         \ which will display our exploding canister scene and
-                        \ move everything about
+                        \ move everything about, as well as decrementing the
+                        \ value in LASCT
 
- DEC LASCT              \ Decrement the counter in LASCT, which we set above
+ DEC LASCT              \ Decrement the counter in LASCT, which we set above,
+                        \ so for each loop around D2, we decrement LASCT twice
 
  BNE D2                 \ Loop back to call the main flight loop again, until we
                         \ have called it 127 times
@@ -34632,10 +34689,7 @@ LOAD_F% = LOAD% + P% - CODE%
 
  LDX #&FF               \ Set the stack pointer to &01FF, which is the standard
  TXS                    \ location for the 6502 stack, so this instruction
-                        \ effectively resets the stack. We need to do this
-                        \ because the loader code in elite-loader.asm pushes
-                        \ code onto the stack, and this effectively removes that
-                        \ code so we start afresh
+                        \ effectively resets the stack
 
  JSR RESET              \ Call RESET to initialise most of the game variables
 
@@ -34713,7 +34767,7 @@ LOAD_F% = LOAD% + P% - CODE%
 \
 \ ------------------------------------------------------------------------------
 \
-\ BRKV is set to point to BR1 by elite-loader.asm.
+\ BRKV is set to point to BR1 by the loading process.
 \
 \ ******************************************************************************
 
@@ -34806,7 +34860,18 @@ LOAD_F% = LOAD% + P% - CODE%
 
 .DFAULT
 
- LDX #NT%+9             \ ???
+ LDX #NT%+9             \ The size of the last saved commander data block is NT%
+                        \ bytes, and it is preceded by the 8 bytes of the
+                        \ commander name (seven characters plus a carriage
+                        \ return). The commander data block at NAME is followed
+                        \ by the commander data block, so we need to copy the
+                        \ name and data from the "last saved" buffer at NA% to
+                        \ the current commander workspace at NAME. So we set up
+                        \ a counter in X for the NT% + 8 bytes that we want to
+                        \ copy, plus we also copy an extra byte from the end of
+                        \ the commander data block which isn't used (perhaps
+                        \ this byte was going to be used for something, but
+                        \ wasn't in the end)
 
 .QUL1
 
@@ -34914,7 +34979,7 @@ ENDIF
  LDA #32                \ Set the mode 1 palette to yellow (colour 1), white
  JSR DOVDU19            \ (colour 2) and cyan (colour 3)
 
- LDA #&0D
+ LDA #&0D               \ ???
  JSR TT66
 
  LDA #RED               \ Switch to colour 2, which is white in the title screen
@@ -35272,17 +35337,18 @@ ENDIF
 
 .MT26
 
- LDA COL                \ ???
+ LDA COL                \ Store the current colour on the stack
  PHA
- LDA #&F0
- STA COL
+
+ LDA #RED               \ Switch to colour 2, which is magenta in the trade view
+ STA COL                \ or red in the chart view
 
  LDY #8                 \ Wait for 8/50 of a second (0.16 seconds)
  JSR DELAY
 
- JSR FLKB
+ JSR FLKB               \ Call FLKB to flush the keyboard buffer
 
- LDY #&00
+ LDY #0                 \ ???
 
 .L691B
 
@@ -35331,8 +35397,10 @@ ENDIF
 .L694E
 
  SEC
- PLA
- STA COL
+
+ PLA                    \ Restore the original colour from the stack and set it
+ STA COL                \ as the current colour
+
  RTS
 
 .L6953
@@ -35483,7 +35551,7 @@ ENDIF
 
  STA XC                 \ Move the text cursor to column 1
 
- JSR LOADZP \ ???
+ JSR LOADZP             \ Call LOADZP to restore the top part of zero page
 
  LDX #LO(CTLI)          \ Set (Y X) to point to the OS command at CTLI, which
  LDY #HI(CTLI)          \ contains a dot and the drive number, which is the
@@ -35493,7 +35561,7 @@ ENDIF
  JSR OSCLI              \ Call OSCLI to execute the OS command at (Y X), which
                         \ catalogues the disc
 
- JSR LOADZP             \ ???
+ JSR LOADZP             \ Call LOADZP to restore the top part of zero page
 
  STZ CATF               \ Set the CATF flag to 0, so the TT26 routine reverts to
                         \ standard formatting
@@ -35564,7 +35632,7 @@ ENDIF
  BNE DELL1              \ Loop back to DELL1 to copy the next character until we
                         \ have copied the whole filename
 
- JSR LOADZP             \ ???
+ JSR LOADZP             \ Call LOADZP to restore the top part of zero page
 
  LDX #LO(DELI)          \ Set (Y X) to point to the OS command at DELI, which
  LDY #HI(DELI)          \ contains the DFS command for deleting this file
@@ -35572,7 +35640,7 @@ ENDIF
  JSR OSCLI              \ Call OSCLI to execute the OS command at (Y X), which
                         \ catalogues the disc
 
- JSR LOADZP             \ ???
+ JSR LOADZP             \ Call LOADZP to restore the top part of zero page
 
  JMP SVE                \ Jump to SVE to display the disc access menu and return
                         \ from the subroutine using a tail call
@@ -35976,13 +36044,14 @@ ENDIF
  CPY #&07
  BCC SAVEL4
 
- JSR LOADZP
+ JSR LOADZP             \ Call LOADZP to restore the top part of zero page
 
  LDX #&DF
  LDY #&6A
  JSR OSCLI
 
- JMP LOADZP
+ JMP LOADZP             \ Call LOADZP to restore the top part of zero page
+                        \ and return from the subroutine using a tail call
 
 \ ******************************************************************************
 \
@@ -36016,13 +36085,13 @@ ENDIF
  CPY #&07
  BCC LOADL2
 
- JSR LOADZP
+ JSR LOADZP             \ Call LOADZP to restore the top part of zero page
 
  LDX #&FF
  LDY #&6A
  JSR OSCLI
 
- JSR LOADZP
+ JSR LOADZP             \ Call LOADZP to restore the top part of zero page
 
  LDY #&4C
 
@@ -36489,55 +36558,59 @@ ENDIF
 \ Specifically, this routine toggles the configuration settings for the
 \ following keys:
 \
-\   * CAPS LOCK toggles keyboard flight damping (&40)
-\   * A toggles keyboard auto-recentre (&41)
-\   * X toggles author names on start-up screen (&42)
-\   * F toggles flashing console bars (&43)
-\   * Y toggles reverse joystick Y channel (&44)
-\   * J toggles reverse both joystick channels (&45)
-\   * K toggles keyboard and joystick (&46)
+\   * CAPS LOCK toggles keyboard flight damping (0)
+\   * A toggles keyboard auto-recentre (1)
+\   * X toggles author names on start-up screen (2)
+\   * F toggles flashing console bars (3)
+\   * Y toggles reverse joystick Y channel (4)
+\   * J toggles reverse both joystick channels (5)
+\   * K toggles keyboard and joystick (6)
 \
-\ The numbers in brackets are the internal key numbers (see p.142 of the
-\ Advanced User Guide for a list of internal key numbers). We pass the key that
-\ has been pressed in X, and the configuration option to check it against in Y,
-\ so this routine is typically called in a loop that loops through the various
-\ configuration options.
+\ The numbers in brackets are the configuration options that we pass in Y. We
+\ pass the ASCII code of the key that has been pressed in X, and the option to
+\ check it against in Y, so this routine is typically called in a loop that
+\ loops through the various configuration option.
 \
 \ Arguments:
 \
-\   X                   The internal number of the key that's been pressed
+\   X                   The ASCII code of the key that's been pressed
 \
-\   Y                   The internal number of the configuration key to check
-\                       against, from the list above (i.e. Y must be from &40 to
-\                       &46)
+\   Y                   The number of the configuration option to check against
+\                       from the list above (i.e. Y must be from 0 to 6)
 \
 \ ******************************************************************************
 
 .DKS3
 
- TXA                    \ ???
- CMP CKEYS,Y
- BNE Dk3
+ TXA                    \ Copy the ASCII code of the key that has been pressed
+                        \ into A
 
- LDA DAMP,Y             \ ???
- EOR #&FF
- STA DAMP,Y
- BPL L6C83
+ CMP CKEYS,Y            \ If the pressed key doesn't match the configuration key
+ BNE Dk3                \ for option Y (as listed in the CKEYS table), then jump
+                        \ to Dk3 to return from the subroutine
 
- JSR BELL
+ LDA DAMP,Y             \ The configuration keys listed in CKEYS correspond to
+ EOR #&FF               \ the configuration option settings from DAMP onwards,
+ STA DAMP,Y             \ so to toggle a setting, we fetch the existing byte
+                        \ from DAMP+Y, invert it and put it back (0 means no
+                        \ and &FF means yes in the configuration bytes, so
+                        \ this toggles the setting)
 
-.L6C83
+ BPL P%+5               \ If the result has a clear bit 7 (i.e. we just turned
+                        \ the option off), skip the following instruction
+
+ JSR BELL               \ We just turned the option on, so make a standard
+                        \ system beep, so in all we make two beeps
 
  JSR BELL               \ Make a beep sound so we know something has happened
 
- TYA                    \ ???
- PHA
- LDY #&14
+ TYA                    \ Store Y and A on the stack so we can retrieve them
+ PHA                    \ below
 
- JSR DELAY              \ Wait for Y vertical syncs (Y is between 64 and 70, so
-                        \ this is always a bit longer than a second)
+ LDY #20                \ Wait for 20 vertical syncs (20/50 = 0.4 seconds)
+ JSR DELAY
 
- PLA                    \ ???
+ PLA                    \ Restore A and Y from the stack
  TAY
 
 .Dk3
@@ -36796,9 +36869,10 @@ ENDIF
 
 .DK4
 
- LDX KL                 \ ???
- CPX #&8B
- BNE DK2
+ LDX KL                 \ Fetch the key pressed from byte #0 of the key logger
+
+ CPX #&8B               \ If COPY is not being pressed, jump to DK2 below,
+ BNE DK2                \ otherwise let's process the configuration keys
 
 .FREEZE
 
@@ -36814,16 +36888,22 @@ ENDIF
  JSR RDKEY              \ Scan the keyboard for a key press and return the
                         \ internal key number in X (or 0 for no key press)
 
- CPX #&51               \ If S is not being pressed, skip to DK6
+ CPX #'Q'               \ If "Q" is not being pressed, skip to DK6
  BNE DK6
 
- LDX #&FF               \ ???
- STX DNOIZ
- LDX #&51
+ LDX #&FF               \ "Q" is being pressed, so set DNOIZ to &FF to turn the
+ STX DNOIZ              \ sound off
+
+ LDX #&51               \ Set X to &51, which is the internal key for "S" on the
+                        \ BBC Micro. This is set to ensure that X has the same
+                        \ value at this point as the BBC Micro version of this
+                        \ routine would
 
 .DK6
 
- LDY #0                 \ ???
+ LDY #0                 \ We now want to loop through the keys that toggle
+                        \ various settings, so set a counter in Y to work our
+                        \ way through them
 
 .DKL4
 
@@ -36832,42 +36912,56 @@ ENDIF
 
  INY                    \ Increment Y to point to the next toggle key
 
- CPY #&09               \ ???
+ CPY #9                 \ Have we reached the last toggle key?
 
  BNE DKL4               \ If not, loop back to check for the next toggle key
 
- LDA L2C61              \ ???
- CPX #&2E
- BEQ L6D70
+ LDA VOLUME             \ Fetch the current volume setting into A
 
- CPX #&2C
- BNE L6D83
+ CPX #'.'               \ If "." is being pressed (i.e. the ">" key) then jump
+ BEQ VOLUP              \ to VOLUP to increase the volume
 
- DEC A
- EQUB &24
+ CPX #','               \ If "," is not being pressed (i.e. the "<" key) then
+ BNE NOVOL              \ jump to NOVOL to skip the following
 
-.L6D70
+ DEC A                  \ The volume down key is being pressed, so decrement the
+                        \ volume level in A
 
- INC A
- TAY
- AND #&F8
- BNE L6D79
+ EQUB &24               \ Skip the next instruction by turning it into &24 &1A,
+                        \ or BIT &001A, which does nothing apart from affect the
+                        \ flags
 
- STY L2C61
+.VOLUP
 
-.L6D79
+ INC A                  \ The volume up key is being pressed, so increment the
+                        \ volume level in A
 
- PHX
- JSR BEEP
+ TAY                    \ Copy the new volumen level to Y
 
- LDY #&0A
+ AND #%11111000         \ If any of bits 3-7 are set, skip to MAXVOL as we have
+ BNE MAXVOL             \ either increased the volume past the maximum volume of
+                        \ 7, or we have decreased it below 0 to -1, and in
+                        \ neither case do we want to change the volume as we are
+                        \ already at the maximum or minimum level
+
+ STY VOLUME             \ Store the new volume level in VOLUME
+
+.MAXVOL
+
+ PHX                    \ Store X on the stack so we can retrieve it below after
+                        \ making a beep
+
+ JSR BEEP               \ Call the BEEP subroutine to make a short, high beep at
+                        \ the new volume level
+
+ LDY #10                \ Wait for 10/50 of a second (0.2 seconds)
  JSR DELAY
 
- PLX
+ PLX                    \ Restore the value of X we stored above
 
-.L6D83
+.NOVOL
 
- CPX #&42               \ ???
+ CPX #'B'               \ If "B" is not being pressed, skip to DK7
  BNE nobit
 
  LDA BSTK               \ Toggle the value of BSTK between 0 and &FF
@@ -36881,29 +36975,32 @@ ENDIF
                         \ is enabled, the joystick is configured with reversed
                         \ channels
 
- BPL P%+5              \ ???
+ BPL P%+5               \ If we just toggled the Bitstik off (i.e. to 0, which
+                        \ is positive), then skip the following two instructions
 
- JSR BELL
-
- JSR BELL
+ JSR BELL               \ We just enabled the Bitstik, so give two standard
+ JSR BELL               \ system beeps
 
 .nobit
 
- CPX #&53               \ ???
+ CPX #'S'               \ If "S" is not being pressed, jump to DK7
  BNE DK7
 
- LDA #&00
- STA DNOIZ
+ LDA #0                 \ "S" is being pressed, so set DNOIZ to 0 to turn the
+ STA DNOIZ              \ sound on
 
 .DK7
 
- CPX #&1B
- BNE P%+5
+ CPX #&1B               \ If ESCAPE is not being pressed, skip over the next
+ BNE P%+5               \ instruction
 
- JMP DEATH2
+ JMP DEATH2             \ ESCAPE is being pressed, so jump to DEATH2 to end
+                        \ the game
 
- CPX #&7F               \ ???
- BNE FREEZE
+ CPX #&7F               \ If DELETE is not being pressed, we are still paused,
+ BNE FREEZE             \ so loop back up to keep listening for configuration
+                        \ keys, otherwise fall through into the rest of the
+                        \ key detection code, which unpauses the game
 
 .DK2
 
@@ -36996,7 +37093,7 @@ ENDIF
 
  PHA                    \ Store the new message token we want to print
 
- LDA #&0F               \ ???
+ LDA #YELLOW            \ Switch to colour 1, which is yellow
  STA COL
 
  LDA MCH                \ Set A to the token number of the message that is
@@ -43702,15 +43799,25 @@ LOAD_H% = LOAD% + P% - CODE%
 
 .EXNO2
 
- LDA TALLYF              \ ???
- CLC
- ADC TALLYFRAC-1,X
- STA TALLYF
- LDA TALLY
- ADC TALLYINT-1,X
- STA TALLY
+ LDA TALLYF             \ We now add the fractional kill count to our tally,
+ CLC                    \ starting by with the fractional bytes:
+ ADC TALLYFRAC-1,X      \
+ STA TALLYF             \   TALLYF = TALLYF + fractional kill count
+                        \
+                        \ where the fractional kill count is taken from the
+                        \ TALLYFRAC table, according to the ship's type (we
+                        \ look up the X-1-th value from TALLYFRAC because ship
+                        \ types start at 1 rather than 0)
 
- BCC EXNO3
+ LDA TALLY              \ And then we add the low byte of TALLY(1 0):
+ ADC TALLYINT-1,X       \
+ STA TALLY              \   TALLY = TALLY + carry + integer kill count
+                        \
+                        \ where the integer kill count is taken from the
+                        \ TALLYINT table in the same way
+
+ BCC EXNO3              \ If there is no carry, jump straight to EXNO3 to skip
+                        \ the following three instructions
 
  INC TALLY+1            \ Increment the high byte of the kill count in TALLY
 
@@ -43776,24 +43883,26 @@ LOAD_H% = LOAD% + P% - CODE%
 
 .BRKBK
 
- LDA #&B9               \ ???
+ LDA #LO(BRBR)          \ Set BRKV to point to the BRBR routine
  STA BRKV
- LDA #&66
+ LDA #HI(BRBR)
  STA BRKV+1
- LDA #&85
+
+ LDA #LO(CHPR)          \ Set WRCHV to point to the CHPR routine
  STA WRCHV
- LDA #&20
+ LDA #HI(CHPR)
  STA WRCHV+1
 
- JSR SAVEZP
+ JSR SAVEZP             \ Call SAVEZP to backup the top part of zero page
 
- JSR STARTUP
+ JSR STARTUP            \ Call STARTUP to set various vectors, interrupts and
+                        \ timers
 
- JMP L1377
+ JMP L1377              \ ???
 
- CLI
+ CLI                    \ Enable interrupts
 
- RTI                    \ ???
+ RTI                    \ Return from the interrupt handler
 
 \ ******************************************************************************
 \
