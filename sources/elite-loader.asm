@@ -272,7 +272,7 @@ ORG CODE%
  CPY #N%                \ Loop back for the next byte until we have done them
  BNE LOOP               \ all (the number of bytes was set in N% above)
 
- LDA #%00001111         \ Set the Access Control Register at SHEILA+&34, as
+ LDA #%00001111         \ Set the Access Control latch at SHEILA+&34, as
  STA VIA+&34            \ follows:
                         \
                         \   * Bit 7 = IRR = 0: Do not IRQ the CPU with this
@@ -290,7 +290,7 @@ ORG CODE%
 
  JSR PLL1               \ Call PLL1 to draw Saturn
 
- LDA #%00001001         \ Clear bits 1 and 2 of the the Access Control Register
+ LDA #%00001001         \ Clear bits 1 and 2 of the the Access Control latch
  STA VIA+&34            \ at SHEILA+&34, which changes the following:
                         \
                         \   * Bit 2 = X = 1: &3000-&7FFF set to main RAM
@@ -321,9 +321,9 @@ ORG CODE%
  STA LATCH              \ to 6, so it matches the paged ROM selection latch at
                         \ SHEILA+&30 that we are about to set
 
- LDA VIA+&30            \ Switch ROM bank 6 into memory by setting bits 0-3 of
- AND #%11110000         \ the ROM selection latch at SHEILA+&30 to 6
- ORA #6
+ LDA VIA+&30            \ Set bits 0-3 of the ROM Select latch at SHEILA+&30 to
+ AND #%11110000         \ 6, to switch sideways ROM bank 6 into into &8000-&BFFF
+ ORA #6                 \ in main memory
  STA VIA+&30
 
  LDA #%10101010         \ Set A and location &8000 to %10101010

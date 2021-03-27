@@ -1833,18 +1833,21 @@ NT% = SVC + 2 - TP      \ This sets the variable NT% to the size of the current
 
 .ADCH1
 
- SKIP 1                 \ Contains the latest value of joystick channel 1, as
-                        \ updated by the IRQ1 interrupt handler
+ SKIP 1                 \ Contains the high byte of the latest value from ADC
+                        \ channel 1 (the joystick X value), which gets updated
+                        \ regularly by the IRQ1 interrupt handler
 
 .ADCH2
 
- SKIP 1                 \ Contains the latest value of joystick channel 2, as
-                        \ updated by the IRQ1 interrupt handler
+ SKIP 1                 \ Contains the high byte of the latest value from ADC
+                        \ channel 2 (the joystick Y value), which gets updated
+                        \ regularly by the IRQ1 interrupt handler
 
 .ADCH3
 
- SKIP 1                 \ Contains the latest value of joystick channel 3, as
-                        \ updated by the IRQ1 interrupt handler
+ SKIP 1                 \ Contains the high byte of the latest value from ADC
+                        \ channel 3 (the Bitstik rotation value), which gets
+                        \ updated regularly by the IRQ1 interrupt handler
 
 PRINT "WP workspace from  ", ~WP," to ", ~P%
 
@@ -2583,7 +2586,9 @@ LOAD_A% = LOAD%
 
  LDA #&00
  STA VIA+&18
- PLY
+
+ PLY                    \ Restore Y from the stack
+
  LDA VIA+&44
 
  LDA &FC                \ Restore the value of A from before the call to the
@@ -2728,7 +2733,7 @@ LOAD_A% = LOAD%
 \       Name: SAVEZP
 \       Type: Subroutine
 \   Category: Utility routines
-\    Summary: Save zero page from &0090 to &00FF into the buffer at &3000
+\    Summary: Save zero page (&0090 to &00FF) into the buffer at &3000
 \
 \ ******************************************************************************
 
@@ -2737,28 +2742,30 @@ LOAD_A% = LOAD%
  LDA #%00001111         \ Set bits 1 and 2 of the Access Control Register at
  STA VIA+&34            \ SHEILA+&34 to switch screen memory into &3000-&7FFF
 
- LDX #&90               \ ???
+ LDX #&90               \ We want to save zero page from &0900 and up, so set an
+                        \ index in X, starting from &90
 
 .SZPL1
 
- LDA ZP,X
+ LDA ZP,X               \ Copy the X-th byte of ZP to the X-th byte of &3000
  STA &3000,X
 
- INX
+ INX                    \ Increment the loop counter
 
- BNE SZPL1
+ BNE SZPL1              \ Loop back until we have copied the last byte of zero
+                        \ page
 
  LDA #%00001001         \ Clear bits 1 and 2 of the Access Control Register at
  STA VIA+&34            \ SHEILA+&34 to switch main memory back into &3000-&7FFF
 
- RTS
+ RTS                    \ Return from the subroutine
 
 \ ******************************************************************************
 \
 \       Name: LOADZP
 \       Type: Subroutine
 \   Category: Utility routines
-\    Summary: Swap zero page from &0090 to &00EF with the buffer at &3000
+\    Summary: Swap zero page (&0090 to &00EF) with the buffer at &3000
 \
 \ ******************************************************************************
 
@@ -2767,28 +2774,30 @@ LOAD_A% = LOAD%
  LDA #%00001111         \ Set bits 1 and 2 of the Access Control Register at
  STA VIA+&34            \ SHEILA+&34 to switch screen memory into &3000-&7FFF
 
- LDX #&90               \ ???
+ LDX #&90               \ We want to swap zero page from &0900 and up, so set an
+                        \ index in X, starting from &90
 
 .LZPL1
 
- LDA ZP,X
+ LDA ZP,X               \ Swap the X-th byte of ZP with the X-th byte of &3000
  LDY &3000,X
-
  STY ZP,X
  STA &3000,X
 
- INX
+ INX                    \ Increment the loop counter
 
- CPX #&F0
+ CPX #&F0               \ Loop back until we have swapped up to location &00EF
  BNE LZPL1
 
  LDA #%00001001         \ Clear bits 1 and 2 of the Access Control Register at
  STA VIA+&34            \ SHEILA+&34 to switch main memory back into &3000-&7FFF
 
- LDA #&06
- STA VIA+&30
+ LDA #6                 \ Set bits 0-3 of the ROM Select latch at SHEILA+&30 to
+ STA VIA+&30            \ 6, to switch sideways ROM bank 6 into into &8000-&BFFF
+                        \ in main memory (we already confirmed that this bank
+                        \ contains RAM rather than ROM in the loader)
 
- RTS
+ RTS                    \ Return from the subroutine
 
 \ ******************************************************************************
 \
@@ -5395,7 +5404,7 @@ NEXT
 
 .HLOIN
 
- LDA Y1                 \ ???
+ LDA Y1                 \ Set A = Y1, the pixel y-coordinate of the line
 
  AND #3                 \ Set A to the correct order of red/yellow pixels to
  TAX                    \ make this line an orange colour (by using bits 0-1 of
@@ -5406,12 +5415,13 @@ NEXT
 
 .HLOIN3
 
- STY YSAV               \ ???
+ STY YSAV               \ Store Y into YSAV, so we can preserve it across the
+                        \ call to this subroutine
 
  LDY #%00001111         \ Set bits 1 and 2 of the Access Control Register at
  STY VIA+&34            \ SHEILA+&34 to switch screen memory into &3000-&7FFF
 
- LDX X1
+ LDX X1                 \ Set X = X1
 
  CPX X2                 \ If X1 = X2 then the start and end points are the same,
  BEQ HL6                \ so return from the subroutine (as HL6 contains an RTS)
@@ -5575,7 +5585,7 @@ NEXT
  LDY #%00001001         \ Clear bits 1 and 2 of the Access Control Register at
  STY VIA+&34            \ SHEILA+&34 to switch main memory back into &3000-&7FFF
 
- LDY YSAV               \ ???
+ LDY YSAV               \ Restore Y from YSAV, so that it's preserved
 
  RTS                    \ Return from the subroutine
 
@@ -5626,7 +5636,7 @@ NEXT
  LDY #%00001001         \ Clear bits 1 and 2 of the Access Control Register at
  STY VIA+&34            \ SHEILA+&34 to switch main memory back into &3000-&7FFF
 
- LDY YSAV               \ ???
+ LDY YSAV               \ Restore Y from YSAV, so that it's preserved
 
  RTS                    \ Return from the subroutine
 
@@ -5886,7 +5896,7 @@ NEXT
 
 .PIXEL
 
- STY T1                 \ ????
+ STY T1                 \ Store Y, the index of this pixel's y-coordinate, in T1
 
  LDY #%00001111         \ Set bits 1 and 2 of the Access Control Register at
  STY VIA+&34            \ SHEILA+&34 to switch screen memory into &3000-&7FFF
@@ -6482,8 +6492,8 @@ NEXT
  LDA #%00001111         \ Set bits 1 and 2 of the Access Control Register at
  STA VIA+&34            \ SHEILA+&34 to switch screen memory into &3000-&7FFF
 
- TXA
- PHA
+ TXA                    \ Store the value of X on the stack so we can preserve
+ PHA                    \ it across the call to this subroutine
 
  ASL A                  \ Set T = A * 8
  ASL A
@@ -6514,7 +6524,8 @@ NEXT
  STA SCH                \ that contains the missile indicators (i.e. the bottom
                         \ row of the screen)
 
- TYA                    \ ???
+ TYA                    \ Set A to the correct colour, which is a 2-pixel wide
+                        \ mode 2 character row byte in the specified colour
 
  LDY #5                 \ We now want to draw this line five times to do the
                         \ left two pixels of the indicator, so set a counter in
@@ -6558,7 +6569,7 @@ NEXT
 
  BNE MBL2               \ Loop back to MBL2 if have more rows to draw
 
- PLX                    \ ???
+ PLX                    \ Restore X from the stack, so that it's preserved
 
  LDA #%00001001         \ Clear bits 1 and 2 of the Access Control Register at
  STA VIA+&34            \ SHEILA+&34 to switch main memory back into &3000-&7FFF
@@ -7054,6 +7065,11 @@ NEXT
 \ ******************************************************************************
 
 .DVID4_DUPLICATE
+
+                        \ This is an exact duplicate of the DVID4 routine, which
+                        \ is also present in this source, so it isn't clear why
+                        \ this duplicate exists (especially as the other version
+                        \ is slightly faster, as it unrolls the loop)
 
  LDX #8                 \ Set a counter in X to count the 8 bits in A
 
@@ -8612,16 +8628,13 @@ NEXT
 \ ******************************************************************************
 
 .ADD_DUPLICATE
-
- STA T1                 \ ???
- AND #&80
- STA T
- EOR S
-
 {
- BMI MU8
-
- LDA R
+ STA T1                 \ This is an exact duplicate of the ADD routine, which
+ AND #%10000000         \ is also present in this source, so it isn't clear why
+ STA T                  \ this duplicate exists (it is surrounded by braces as
+ EOR S                  \ BeebAsm doesn't allow us to redefine labels, unlike
+ BMI MU8                \ BBC BASIC). See the ADD routine for an explanation
+ LDA R                  \ of the code
  CLC
  ADC P
  TAX
@@ -8631,36 +8644,32 @@ NEXT
  RTS
 
 .MU8
-}
 
  LDA S
- AND #&7F
+ AND #%01111111
  STA U
  LDA P
  SEC
  SBC R
  TAX
  LDA T1
- AND #&7F
+ AND #%01111111
  SBC U
-
-{
  BCS MU9
-
  STA U
  TXA
  EOR #&FF
- ADC #&01
+ ADC #1
  TAX
- LDA #&00
+ LDA #0
  SBC U
- ORA #&80
+ ORA #%10000000
 
 .MU9
-}
 
  EOR T
  RTS
+}
 
 IF _MATCH_EXTRACTED_BINARIES
 
@@ -8916,11 +8925,15 @@ ENDIF
                         \ Toggled by pressing "K" when paused, see the DKS3
                         \ routine for details
 
- EQUB &00               \ Conf option U ???
+ SKIP 1                 \ The configuration setting for toggle key "U", which
+                        \ isn't actually used but is still updated by pressing
+                        \ "U" while the game is paused
 
 .L2C5E
 
- EQUB &00               \ Conf option T ???
+ SKIP 1                 \ The configuration setting for toggle key "T", which
+                        \ isn't actually used but is still updated by pressing
+                        \ "T" while the game is paused
 
 .BSTK
 
@@ -8937,13 +8950,30 @@ ENDIF
 
 .VOLUME
 
- EQUB 7                 \ ???
+ EQUB 7                 \ The volume level for the game's sound effects (0-7)
+                        \
+                        \ This is controlled by the "<" and ">" keys while the
+                        \ game is paused, and the default level is 7
+
+\ ******************************************************************************
+\
+\       Name: CKEYS
+\       Type: Variable
+\   Category: Keyboard
+\    Summary: The keys used to toggle configuration settings when the game is
+\             paused
+\
+\ ******************************************************************************
 
 .CKEYS
 
- EQUB 1                 \ ???
- EQUS "AXFYJKUT"
- EQUB &60
+ EQUB 1                 \ The configuration keys in the same order as their
+ EQUS "AXFYJKUT"        \ configuration bytes (starting from DAMP). The 1 is
+                        \ for CAPS LOCK, and although "U" and "T" still toggle
+                        \ the relevant configuration bytes, those values ar not
+                        \ used, so those keys have no effect
+
+ EQUB &60               \ This byte appears to be unused
 
 \ ******************************************************************************
 \
@@ -9366,7 +9396,9 @@ ENDIF
  LDA BSTK               \ If BSTK = 0 then the Bitstik is not configured, so
  BEQ BS2                \ jump to BS2 to skip the following
 
- LDA ADCH3              \ ???
+ LDA ADCH3              \ Fetch the Bitstik rotation value (high byte) from
+                        \ ADCH3, which is constantly updated with the high byte
+                        \ of ADC channel 3 by the interrupt handler IRQ1
 
  LSR A                  \ Divide A by 4
  LSR A
@@ -9505,8 +9537,9 @@ ENDIF
  LDA KY12               \ If TAB is being pressed, keep going, otherwise jump
  BEQ MA76               \ jump down to MA76 to skip the following
 
- LDA BOMB               \ ???
- BMI MA76
+ LDA BOMB               \ If we already set off our energy bomb by pressing TAB,
+ BMI MA76               \ then BOMB is now negative, so this skips to MA76 if
+                        \ our energy bomb is already going off
 
  ASL BOMB               \ The "energy bomb" key is being pressed, so double
                         \ the value in BOMB. If we have an energy bomb fitted,
@@ -9517,9 +9550,11 @@ ENDIF
                         \ MAL1 routine below - this just registers the fact that
                         \ we've set the bomb ticking
 
- BEQ MA76               \ ???
+ BEQ MA76               \ If BOMB now contains 0, then the bomb is not going off
+                        \ any more (or it never was), so skip the following
+                        \ instruction
 
- JSR BOMBFX2
+ JSR BOMBFX2            \ Call BOMBFX2 to show the energy bomb effect
 
 .MA76
 
@@ -9762,8 +9797,8 @@ ENDIF
  CPY #2*SST             \ If the ship in Y is the space station, jump to BA21
  BEQ MA21               \ as energy bombs are useless against space stations
 
- CPY #2*THG             \ ???
- BEQ MA21
+ CPY #2*THG             \ If the ship in Y is a Thargoid, jump to BA21 as energy
+ BEQ MA21               \ bombs have no effect against Thargoids
 
  CPY #2*CON             \ If the ship in Y is the Constrictor, jump to BA21
  BCS MA21               \ as energy bombs are useless against the Constrictor
@@ -9779,7 +9814,9 @@ ENDIF
  SEC                    \ the ship byte #31 to indicate that it has now been
  ROR INWK+31            \ killed
 
- LDX TYPE               \ ???
+ LDX TYPE               \ Set X to the type of the ship that was killed so the
+                        \ following call to EXNO2 can award us the correct
+                        \ number of fractional kill points
 
  JSR EXNO2              \ Call EXNO2 to process the fact that we have killed a
                         \ ship (so increase the kill tally, make an explosion
@@ -10288,7 +10325,9 @@ ENDIF
  LDY #OIL               \ Randomly spawn some cargo canisters
  JSR SPIN
 
- LDX TYPE               \ ???
+ LDX TYPE               \ Set X to the type of the ship that was killed so the
+                        \ following call to EXNO2 can award us the correct
+                        \ number of fractional kill points
 
  JSR EXNO2              \ Call EXNO2 to process the fact that we have killed a
                         \ ship (so increase the kill tally, make an explosion
@@ -10437,7 +10476,7 @@ ENDIF
  BPL MA77               \ MA24 above), then BOMB is now negative, so this skips
                         \ to MA77 if our energy bomb is not going off
 
- JSR BOMBFX
+ JSR BOMBFX             \ ???
 
  ASL BOMB
  BMI MA77
@@ -10948,7 +10987,7 @@ ENDIF
 \       Name: L31AC
 \       Type: Subroutine
 \   Category: Drawing lines
-\    Summary: ???
+\    Summary: ??? energy bomb
 \
 \ ******************************************************************************
 
@@ -12557,11 +12596,18 @@ NEXT
 \   Category: Keyboard
 \    Summary: Flush the keyboard buffer
 \
+\ ------------------------------------------------------------------------------
+\
+\ This routine does nothing in the BBC Master version of Elite. It does have a
+\ function in the disc and 6502SP versions, so the authors presumably just
+\ cleared out the FLKB routine for the Master version, rather than unplumbing it
+\ from the code.
+\
 \ ******************************************************************************
 
 .FLKB
 
- RTS                    \ Return from the subroutine ????
+ RTS                    \ Return from the subroutine
 
 \ ******************************************************************************
 \
@@ -12661,7 +12707,7 @@ NEXT
  LDX #254               \ Set X2 = 254, so (X2, Y2) = (254, A)
  STX X2
 
- JSR HLOIN3             \ ???
+ JSR HLOIN3             \ Call HLOIN3 to draw a line from (2, A) to (254, A)
 
  LDA #CYAN              \ Switch to colour 3, which is cyan or white
  STA COL
@@ -14125,11 +14171,12 @@ NEXT
                         \
                         \ followed by a newline and an indent of 6 characters
 
- LDA ESCP               \ ???
- BEQ P%+7
+ LDA ESCP               \ If we don't have an escape pod fitted (i.e. ESCP is
+ BEQ P%+7               \ zero), skip the following two instructions
 
- LDA #112
- JSR plf2
+ LDA #112               \ We do have an escape pod fitted, so print recursive
+ JSR plf2               \ token 112 ("ESCAPE POD"), followed by a newline and an
+                        \ indent of 6 characters
 
  LDA BST                \ If we don't have fuel scoops fitted, skip the
  BEQ P%+7               \ following two instructions
@@ -16300,16 +16347,27 @@ LOAD_C% = LOAD% +P% - CODE%
 
 .TAX35
 
- LDA INWK               \ ???
+                        \ If we get here, the missile has been destroyed by
+                        \ E.C.M. or by the space station
+
+ LDA INWK               \ Set A = x_lo OR y_lo OR z_lo of the missile
  ORA INWK+3
  ORA INWK+6
- BNE P%+7
 
- LDA #&50
- JSR OOPS
+ BNE P%+7               \ If A is non-zero then the missile is not near our
+                        \ ship, so skip the next two instructions to avoid
+                        \ damaging our ship
 
- LDX #&04
- BNE TA87
+ LDA #80                \ Otherwise the missile just got destroyed near us, so
+ JSR OOPS               \ call OOPS to damage the ship by 80, which is nowhere
+                        \ near as bad as the 250 damage from a missile slamming
+                        \ straight into us, but it's still pretty nasty
+
+ LDX #PLT               \ Set X to the ship type for plate alloys, so we get
+                        \ awarded the kill points for the missile scraps in TA87
+
+ BNE TA87               \ Jump to TA87 to process the missile kill tally and
+                        \ make an explosion sound
 
 .TA34
 
@@ -16321,7 +16379,8 @@ LOAD_C% = LOAD% +P% - CODE%
  BEQ P%+5               \ If A = 0 then the missile is very close to our ship,
                         \ so skip the following instruction
 
- JMP TN4                \ ???
+ JMP TN4                \ Jump down to part 3 to set up the vectors and skip
+                        \ straight to aggressive manoeuvring
 
  JSR TA87+3             \ The missile has hit our ship, so call TA87+3 to set
                         \ bit 7 of the missile's byte #31, which marks the
@@ -16339,7 +16398,7 @@ LOAD_C% = LOAD% +P% - CODE%
                         \ called from the main TACTICS routine below
 
  LDA ECMA               \ If an E.C.M. is currently active (either our's or an
- BNE TAX35              \ opponent's), jump to TAX35 to ???
+ BNE TAX35              \ opponent's), jump to TAX35 to destroy this missile
 
  LDA INWK+32            \ Fetch the AI flag from byte #32 and if bit 6 is set
  ASL A                  \ (i.e. missile is hostile), jump up to TA34 to check
@@ -16386,7 +16445,8 @@ LOAD_C% = LOAD% +P% - CODE%
 
  LDA INWK+32            \ Fetch the AI flag from byte #32 and if only bits 7 and
  CMP #%10000010         \ 1 are set (AI is enabled and the target is slot 1, the
- BEQ TAX35               \ space station), jump to TAX35 to ???
+ BEQ TAX35              \ space station), jump to TAX35 to destroy this missile,
+                        \ as the space station ain't kidding around
 
  LDY #31                \ Fetch byte #31 (the exploding flag) of the target ship
  LDA (V),Y              \ into A
@@ -16416,10 +16476,12 @@ LOAD_C% = LOAD% +P% - CODE%
                         \ near as bad as the 250 damage from a missile slamming
                         \ straight into us, but it's still pretty nasty
 
- LDA INWK+32            \ ???
- AND #%01111111
- LSR A
- TAX
+ LDA INWK+32            \ Set X to bits 1-6 of the missile's AI flag in ship
+ AND #%01111111         \ byte #32, so bits 0-3 of X are the target's slot
+ LSR A                  \ number, and bit 4 is set (as the missile is hostile)
+ TAX                    \ so X is fairly random and in the range 16-31. This is
+                        \ used to determine the number of kill points awarded
+                        \ for the destruction of the missile
 
 .TA87
 
@@ -16596,10 +16658,10 @@ LOAD_C% = LOAD% +P% - CODE%
  LDX #0                 \ Set byte #32 to %00000000 to disable AI, aggression
  STX INWK+32            \ and E.C.M.
 
- LDX #%00100100         \ ???
-
- STX NEWB               \ Set the ship's NEWB flags to %00000000 so the ship we
-                        \ spawn below will inherit the default values from E%
+ LDX #%00100100         \ Set the ship's NEWB flags to %00100100 so the ship we
+ STX NEWB               \ spawn below will inherit the default values from E% as
+                        \ well as having bit 2 (hostile) and bit 5 (innocent
+                        \ bystander) set
 
  AND #3                 \ Set A = a random number that's in the range 0-3
 
@@ -19796,7 +19858,7 @@ LOAD_C% = LOAD% +P% - CODE%
 
 .MU3again
 
- LDA #0                 \ Set A = 0 ???
+ LDA #0                 \ Set A = 0
 
 .MU3
 
@@ -22054,7 +22116,15 @@ LOAD_D% = LOAD% + P% - CODE%
 \       Name: LSR1
 \       Type: Subroutine
 \   Category: Utility routines
-\    Summary: ???
+\    Summary: Scaling routine for A (which halves the value in A)
+\
+\ ------------------------------------------------------------------------------
+\
+\ This routine (and the related LSR2 and LSR3 routines) are called from various
+\ places in the code to scale the value in A. This scaling can be changed by
+\ changing these routines (for example, by changing an RTS to an LSR A), so
+\ perhaps this is code left over from the conversion to other platforms, where
+\ the scale factor might need to be different.
 \
 \ ******************************************************************************
 
@@ -22067,7 +22137,15 @@ LOAD_D% = LOAD% + P% - CODE%
 \       Name: LSR2
 \       Type: Subroutine
 \   Category: Utility routines
-\    Summary: ???
+\    Summary: Scaling routine for A (which leaves A alone)
+\
+\ ------------------------------------------------------------------------------
+\
+\ This routine (and the related LSR1 and LSR3 routines) are called from various
+\ places in the code to scale the value in A. This scaling can be changed by
+\ changing these routines (for example, by changing an RTS to an LSR A), so
+\ perhaps this is code left over from the conversion to other platforms, where
+\ the scale factor might need to be different.
 \
 \ ******************************************************************************
 
@@ -22080,7 +22158,15 @@ LOAD_D% = LOAD% + P% - CODE%
 \       Name: LSR3
 \       Type: Subroutine
 \   Category: Utility routines
-\    Summary: ???
+\    Summary: Scaling routine for A (which leaves A alone)
+\
+\ ------------------------------------------------------------------------------
+\
+\ This routine (and the related LSR1 and LSR2 routines) are called from various
+\ places in the code to scale the value in A. This scaling can be changed by
+\ changing these routines (for example, by changing an RTS to an LSR A), so
+\ perhaps this is code left over from the conversion to other platforms, where
+\ the scale factor might need to be different.
 \
 \ ******************************************************************************
 
@@ -23103,7 +23189,17 @@ LOAD_D% = LOAD% + P% - CODE%
  LDA QQ15+1             \ Fetch the s0_hi seed into A, which gives us the
                         \ galactic y-coordinate of this system
 
- JSR LSR1              \ ???
+ JSR LSR1               \ We halve the y-coordinate because the galaxy in
+                        \ in Elite is rectangular rather than square, and is
+                        \ twice as wide (x-axis) as it is high (y-axis), so the
+                        \ chart is 256 pixels wide and 128 high
+                        \
+                        \ The call to LSR1 simply does an LSR A, but having this
+                        \ call instruction here would enable different scaling
+                        \ to be applied by altering the LSR routines, so perhaps
+                        \ this is code left over from the conversion to other
+                        \ platforms, where the scale factor might need to be
+                        \ different
 
  CLC                    \ Add 24 to the halved y-coordinate ???
  ADC #24                \ (as the top of the chart is on pixel row 24, just
@@ -23125,14 +23221,24 @@ LOAD_D% = LOAD% + P% - CODE%
  BNE TT83               \ If X > 0 then we haven't done all 256 systems yet, so
                         \ loop back up to TT83
 
- LDA QQ9                \ ???
- JSR LSR3
+ LDA QQ9                \ Set QQ19 to the selected system's x-coordinate
+ JSR LSR3               \
+ STA QQ19               \ The call to LSR3 has no effect as it only contains an
+                        \ RTS, but having this call instruction here would
+                        \ enable different scaling to be applied by altering
+                        \ the LSR routines, so perhaps this is code left over
+                        \ from the conversion to other platforms, where the
+                        \ scale factor might need to be different
 
- STA QQ19
- LDA QQ10
- JSR LSR1
-
- STA QQ19+1
+ LDA QQ10               \ Set QQ19+1 to the selected system's y-coordinate,
+ JSR LSR1               \ halved to fit it into the chart
+ STA QQ19+1             \
+                        \ The call to LSR1 simply does an LSR A, but having this
+                        \ call instruction here would enable different scaling
+                        \ to be applied by altering the LSR routines, so perhaps
+                        \ this is code left over from the conversion to other
+                        \ platforms, where the scale factor might need to be
+                        \ different
 
  LDA #4                 \ Set QQ19+2 to size 4 for the crosshairs size
  STA QQ19+2
@@ -23241,7 +23347,7 @@ LOAD_D% = LOAD% + P% - CODE%
  ADC QQ19+5             \ crosshairs
  STA XX15+1
 
- JSR HLOIN3             \ ???
+ JSR HLOIN3             \ Call HLOIN3 to draw a line from (X1, Y1) to (X2, Y1)
 
  LDA QQ19+1             \ Set A = crosshairs y-coordinate - crosshairs size
  SEC                    \ to get the y-coordinate of the top edge of the
@@ -23323,9 +23429,15 @@ LOAD_D% = LOAD% + P% - CODE%
  JSR TT15               \ Draw the set of crosshairs defined in QQ19, at the
                         \ exact coordinates as this is the Short-range Chart
 
- LDA QQ14               \ ???
- JSR LSR2
- STA K
+ LDA QQ14               \ Set K to the fuel level from QQ14, so this can act as
+ JSR LSR2               \ the circle's radius (70 being a full tank)
+ STA K                  \
+                        \ The call to LSR2 has no effect as it only contains an
+                        \ RTS, but having this call instruction here would
+                        \ enable different scaling to be applied by altering
+                        \ the LSR routines, so perhaps this is code left over
+                        \ from the conversion to other platforms, where the
+                        \ scale factor might need to be different
 
  JMP TT128              \ Jump to TT128 to draw a circle with the centre at the
                         \ same coordinates as the crosshairs, (QQ19, QQ19+1),
@@ -23341,18 +23453,35 @@ LOAD_D% = LOAD% + P% - CODE%
                         \ Otherwise this is the Long-range Chart, so we draw the
                         \ crosshairs and circle for that view instead
 
- LDA QQ14               \ ???
- LSR A
- JSR LSR1
- STA K
+ LDA QQ14               \ Set K to the fuel level from QQ14 divided by 4, so
+ LSR A                  \ this can act as the circle's radius (70 being a full
+ JSR LSR1               \ tank, which divides down to a radius of 17)
+ STA K                  \
+                        \ The call to LSR1 simply does an LSR A, but having this
+                        \ call instruction here would enable different scaling
+                        \ to be applied by altering the LSR routines, so perhaps
+                        \ this is code left over from the conversion to other
+                        \ platforms, where the scale factor might need to be
+                        \ different
 
- LDA QQ0
- JSR LSR3
- STA QQ19
+ LDA QQ0                \ Set QQ19 to the x-coordinate of the current system,
+ JSR LSR3               \ which will be the centre of the circle and crosshairs
+ STA QQ19               \ we draw
+                        \
+                        \ The call to LSR3 has no effect as it only contains an
+                        \ RTS, but having this call instruction here would
+                        \ enable different scaling to be applied by altering
+                        \ the LSR routines, so perhaps this is code left over
+                        \ from the conversion to other platforms, where the
+                        \ scale factor might need to be different
 
- LDA QQ1
- JSR LSR1
- STA QQ19+1
+ LDA QQ1                \ Set QQ19+1 to the y-coordinate of the current system,
+ JSR LSR1               \ halved because the galactic chart is half as high as
+ STA QQ19+1             \ it is wide, which will again be the centre of the
+                        \ circle and crosshairs we draw
+                        \
+                        \ Again, the call to LSR1 simply does an LSR A (see the
+                        \ comment above)
 
  LDA #7                 \ Set QQ19+2 = 7, the size of the crosshairs on the
  STA QQ19+2             \ Long-range Chart
@@ -24213,13 +24342,25 @@ LOAD_D% = LOAD% + P% - CODE%
 
  BMI TT105              \ If this is the Short-range Chart screen, jump to TT105
 
- LDA QQ9                \ ???
- JSR LSR3
+ LDA QQ9                \ Store the crosshairs x-coordinate in QQ19
+ JSR LSR3               \
+ STA QQ19               \ The call to LSR3 has no effect as it only contains an
+                        \ RTS, but having this call instruction here would
+                        \ enable different scaling to be applied by altering
+                        \ the LSR routines, so perhaps this is code left over
+                        \ from the conversion to other platforms, where the
+                        \ scale factor might need to be different
 
- STA QQ19
- LDA QQ10
- JSR LSR1
- STA QQ19+1
+ LDA QQ10               \ Halve the crosshairs y-coordinate and store it in QQ19
+ JSR LSR1               \ (we halve it because the Long-range Chart is half as
+ STA QQ19+1             \ high as it is wide)
+                        \
+                        \ The call to LSR1 simply does an LSR A, but having this
+                        \ call instruction here would enable different scaling
+                        \ to be applied by altering the LSR routines, so perhaps
+                        \ this is code left over from the conversion to other
+                        \ platforms, where the scale factor might need to be
+                        \ different
 
  LDA #4                 \ Set QQ19+2 to 4 denote crosshairs of size 4
  STA QQ19+2
@@ -24332,12 +24473,17 @@ LOAD_D% = LOAD% + P% - CODE%
 
 .TT179
 
- ASL A                  \ ???
- ASL A
- CLC
- ADC #&68
- JSR LSR2
- STA QQ19
+ ASL A                  \ Set QQ19 = 104 + A * 4
+ ASL A                  \
+ CLC                    \ 104 is the x-coordinate of the centre of the chart,
+ ADC #104               \ so this sets QQ19 to the screen pixel x-coordinate
+ JSR LSR2               \
+ STA QQ19               \ The call to LSR2 has no effect as it only contains an
+                        \ RTS, but having this call instruction here would
+                        \ enable different scaling to be applied by altering
+                        \ the LSR routines, so perhaps this is code left over
+                        \ from the conversion to other platforms, where the
+                        \ scale factor might need to be different
 
  LDA QQ10               \ Set A = QQ10 - QQ1, the vertical distance between the
  SEC                    \ crosshairs (QQ10) and the current system (QQ1)
@@ -24357,11 +24503,18 @@ LOAD_D% = LOAD% + P% - CODE%
  SEC
  SBC QQ1
 
- ASL A                  \ ???
- CLC
- ADC #&5A
- JSR LSR2
- STA QQ19+1
+ ASL A                  \ Set QQ19+1 = 90 + A * 2
+ CLC                    \
+ ADC #90                \ 90 is the y-coordinate of the centre of the chart,
+ JSR LSR2               \ so this sets QQ19+1 to the screen pixel x-coordinate
+ STA QQ19+1             \ of the crosshairs
+                        \
+                        \ The call to LSR2 has no effect as it only contains an
+                        \ RTS, but having this call instruction here would
+                        \ enable different scaling to be applied by altering
+                        \ the LSR routines, so perhaps this is code left over
+                        \ from the conversion to other platforms, where the
+                        \ scale factor might need to be different
 
  LDA #8                 \ Set QQ19+2 to 8 denote crosshairs of size 8
  STA QQ19+2
@@ -24500,8 +24653,15 @@ LOAD_D% = LOAD% + P% - CODE%
  ASL A                  \ Set XX12 = 104 + x-delta * 4
  ASL A                  \
  ADC #104               \ 104 is the x-coordinate of the centre of the chart,
- JSR LSR2              \ so this sets XX12 to the centre 104 +/- 76, the pixel
- STA XX12               \ x-coordinate of this system ???
+ JSR LSR2               \ so this sets XX12 to the centre 104 +/- 76, the pixel
+ STA XX12               \ x-coordinate of this system
+                        \
+                        \ The call to LSR2 has no effect as it only contains an
+                        \ RTS, but having this call instruction here would
+                        \ enable different scaling to be applied by altering
+                        \ the LSR routines, so perhaps this is code left over
+                        \ from the conversion to other platforms, where the
+                        \ scale factor might need to be different
 
  LSR A                  \ Move the text cursor to column x-delta / 2 + 1
  LSR A                  \ which will be in the range 1-10
@@ -24519,9 +24679,16 @@ LOAD_D% = LOAD% + P% - CODE%
 
  ASL A                  \ Set K4 = 90 + y-delta * 2
  ADC #90                \
- JSR LSR2              \ 90 is the y-coordinate of the centre of the chart,
+ JSR LSR2               \ 90 is the y-coordinate of the centre of the chart,
  STA K4                 \ so this sets K4 to the centre 90 +/- 74, the pixel
-                        \ y-coordinate of this system ???
+                        \ y-coordinate of this system
+                        \
+                        \ The call to LSR2 has no effect as it only contains an
+                        \ RTS, but having this call instruction here would
+                        \ enable different scaling to be applied by altering
+                        \ the LSR routines, so perhaps this is code left over
+                        \ from the conversion to other platforms, where the
+                        \ scale factor might need to be different
 
  LSR A                  \ Set Y = K4 / 8, so Y contains the number of the text
  LSR A                  \ row that contains this system
@@ -43790,6 +43957,9 @@ LOAD_H% = LOAD% + P% - CODE%
 \ message of encouragement if the kill total is a multiple of 256, and then
 \ make a nearby explosion sound.
 \
+\ Arguments:
+\
+\   X                   The type of the ship that was killed
 \ Other entry points:
 \
 \   EXNO-2              Set X = 7 and fall through into EXNO to make the sound
