@@ -593,6 +593,7 @@ ORG &0000
                         \   6   = Death screen
                         \   8   = Status Mode screen (red key f8)
                         \         Inventory screen (red key f9)
+                        \   13  = Rotating ship view (title or debrief screen)
                         \   16  = Market Price screen (red key f7)
                         \   32  = Equip Ship screen (red key f3)
                         \   64  = Long-range Chart (red key f4)
@@ -726,7 +727,9 @@ ORG &0000
 .YMAX
 
  SKIP 1                 \ This is used to store the number of pixel rows in the
-                        \ space view (it is set to 191 in the RES2 routine)
+                        \ space view, which is also the y-coordinate of the
+                        \ bottom pixel row of the space view (it is set to 191
+                        \ in the RES2 routine)
 
 .messXC
 
@@ -1630,13 +1633,13 @@ ORG &0E41
 
  SKIP 1                 \ This byte appears to be unused
 
-.L1264
+.TRUMBLE
 
- SKIP 1                 \ Low byte of Trumble count ???
-
-.L1265
-
- SKIP 1                 \ High byte of Trumble count, this many tons of space are taken up, see tnpr, so 256 Trumbles = 1 ton ???
+ SKIP 2                 \ The number of Trumbles in the cargo hold
+                        \
+                        \ The Master version doesn't actually haveTrumbles, but
+                        \ the Trumble code from the other versions was kept when
+                        \ the Master version was put together
 
 .TALLYF
 
@@ -2762,14 +2765,14 @@ LOAD_A% = LOAD%
 
 \ ******************************************************************************
 \
-\       Name: LOADZP
+\       Name: SWAPZP
 \       Type: Subroutine
 \   Category: Utility routines
 \    Summary: Swap zero page (&0090 to &00EF) with the buffer at &3000
 \
 \ ******************************************************************************
 
-.LOADZP
+.SWAPZP
 
  LDA #%00001111         \ Set bits 1 and 2 of the Access Control Register at
  STA VIA+&34            \ SHEILA+&34 to switch screen memory into &3000-&7FFF
@@ -10478,10 +10481,18 @@ ENDIF
 
  JSR BOMBFX             \ ???
 
- ASL BOMB
- BMI MA77
+ ASL BOMB               \ We set off our energy bomb, so rotate BOMB to the
+                        \ left by one place. BOMB was rotated left once already
+                        \ during this iteration of the main loop, back at MA24,
+                        \ so if this is the first pass it will already be
+                        \ %11111110, and this will shift it to %11111100 - so
+                        \ if we set off an energy bomb, it stays activated
+                        \ (BOMB > 0) for four iterations of the main loop
 
- JSR L31AC
+ BMI MA77               \ If the result has bit 7 set, skip the following
+                        \ instruction
+
+ JSR L31AC              
 
 .MA77
 
@@ -21699,14 +21710,13 @@ LOAD_C% = LOAD% +P% - CODE%
  STA INWK+7             \ Set z_hi = 1, the distance at which we show the
                         \ rotating ship
 
- LDA #&0D               \ ???
-
- JSR TT66               \ Clear the top part of the screen, draw a white border,
-                        \ and set the current view type in QQ11 to 1
+ LDA #13                \ Clear the top part of the screen, draw a white border,
+ JSR TT66               \ and set the current view type in QQ11 to 13 (rotating
+                        \ ship view)
 
  LDA #64                \ Set the main loop counter to 64, so the ship rotates
-                        \ for 64 iterations through MVEIT
- STA MCNT
+ STA MCNT               \ for 64 iterations through MVEIT
+ 
 
 .BRL1
 
@@ -21748,7 +21758,7 @@ LOAD_C% = LOAD% +P% - CODE%
  BCC P%+4
 
  LDX #120               \ X is bigger than 120, so set X = 120 so that X has a
-                        \ maximum value of 120 ???
+                        \ maximum value of 120
 
  STX INWK+3             \ Set y_lo = X
                         \          = y_lo + 1
@@ -21760,7 +21770,7 @@ LOAD_C% = LOAD% +P% - CODE%
 
  JSR MVEIT              \ Call MVEIT to move and rotate the ship in space
 
- DEC MCNT               \ ???
+ DEC MCNT               \ Decrease the counter in MCNT
 
  JMP BRL2               \ Loop back to keep moving the ship up the screen and
                         \ away from us
@@ -21770,7 +21780,10 @@ LOAD_C% = LOAD% +P% - CODE%
  INC INWK+7             \ Increment z_hi, to keep the ship at the same distance
                         \ as we just incremented z_lo past 255
 
- JSR PAS1               \ ???
+ JSR PAS1               \ Call PAS1 to display the rotating ship at space
+                        \ coordinates (0, 112, 256) and scan the keyboard,
+                        \ returning the internal key number in X (or 0 for no
+                        \ key press)
 
  LDA #10                \ Set A = 10 so the call to BRP prints extended token 10
                         \ (the briefing for mission 1 where we find out all
@@ -22304,7 +22317,8 @@ LOAD_D% = LOAD% + P% - CODE%
                         \ until we have added up all market items from 12
                         \ (minerals) down to 0 (food)
 
- ADC L1265              \ ???
+ ADC TRUMBLE+1          \ Add the high byte of the number of Trumbles in the
+                        \ hold, as 256 Trumbles take up one ton of cargo space
 
  CMP CRGO               \ If A < CRGO then the C flag will be clear (we have
                         \ room in the hold)
@@ -24122,46 +24136,54 @@ LOAD_D% = LOAD% + P% - CODE%
  JMP BAY2               \ And then jump to BAY2 to display the Inventory
                         \ screen, as we have finished selling cargo
 
- JSR TT69               \ ??? Would show special cargo of some kind? But tokens
-                        \ are blank
+ JSR TT69               \ Call TT69 to set Sentence Case and print a newline
 
- LDA L1264
- ORA L1265
- BNE L4F4A
+ LDA TRUMBLE            \ If there are any Trumbles in the hold, skip the
+ ORA TRUMBLE+1          \ following RTS and continue on (in the Master version,
+ BNE P%+3               \ there are never any Trumbles, so this value will
+                        \ always be zero)
 
-.L4F49
+.TRRTS
 
- RTS
+ RTS                    \ There are no Trumbles in the hold, so return from the
+                        \ subroutine
 
-.L4F4A
+                        \ If we get here then we have Trumbles in the hold, so
+                        \ we print out the number (though we never get here in
+                        \ the Master version)
 
+ CLC                    \ Clear the C flag
+
+ LDA #0                 \ Set A = 0, for the call to TT11 below, so we don't pad
+                        \ out the number of Trumbles
+
+ LDX TRUMBLE            \ Fetch the number of Trumbles into (Y X)
+ LDY TRUMBLE+1
+
+ JSR TT11               \ Call TT11 to print the number of Trumbles in (Y X), with
+                        \ no decimal point
+
+ JSR DORND              \ Print out a random extended token from 111 to 114, all
+ AND #3                 \ of which are blank in this version of Elite
  CLC
- LDA #&00
- LDX L1264
- LDY L1265
- JSR TT11
-
- JSR DORND
-
- AND #&03
- CLC
- ADC #&6F
+ ADC #111
  JSR DETOK
 
- LDA #&C6
- JSR DETOK
+ LDA #198               \ Print extended token 198, which is blank, but would
+ JSR DETOK              \ presumably contain the word "TRUMBLE" if they were
+                        \ enabled
 
- LDA L1265
- BNE L4F71
+ LDA TRUMBLE+1          \ If we have more than 256 Trumbles, skip to TRDONE
+ BNE TRDONE
 
- LDX L1264
- DEX
- BEQ L4F49
+ LDX TRUMBLE            \ If we have exactly one Trumble, return from the
+ DEX                    \ subroutine (as TRRTS contains an RTS)
+ BEQ TRRTS
 
-.L4F71
+.TRDONE
 
- LDA #&73
- JMP DASC
+ LDA #'s'               \ We have more than one Trumble, so print an 's' and
+ JMP DASC               \ return from the subroutine using a tail call
 
 \ ******************************************************************************
 \
@@ -26383,7 +26405,9 @@ LOAD_D% = LOAD% + P% - CODE%
 
  JSR RES2               \ Reset a number of flight variables and workspaces
 
- JSR SOLARX             \ ???
+ JSR SOLARX             \ Halve our legal status, update the missile indicators,
+                        \ and set up data blocks and slots for the planet and
+                        \ sun
 
  LDA QQ11               \ If the current view in QQ11 is not a space view (0) or
  AND #%00111111         \ one of the charts (64 or 128), return from the
@@ -28902,24 +28926,29 @@ LOAD_E% = LOAD% + P% - CODE%
 
 .SOLARX
 
- LDA L1264
+ LDA TRUMBLE            \ If we have no Trumbles in the hold, skip to SOLAR 
  BEQ SOLAR
 
- LDA #0                 \ Trumbles eat food and narcotics
- STA QQ20
- STA QQ20+6
+                        \ If we get here then we have Trumbles in the hold, so
+                        \ this is where they breed (though we never get here in
+                        \ the Master version)
 
- JSR DORND              \ L1264 increases exponentially
- AND #&0F
- ADC L1264
- ORA #&04
- ROL A
- STA L1264
+ LDA #0                 \ Trumbles eat food and narcotics during the hyperspace
+ STA QQ20               \ journey, so zero the amount of food and narcotics in
+ STA QQ20+6             \ the hold
 
- ROL L1265              \ Rotate carry into bit 0 of L1265 until bit 6 is set
- BPL SOLAR              \ Change to P%+5
+ JSR DORND              \ Take the lnumber of Trumbles from TRUMBLE(1 0), add a
+ AND #15                \ random number between 4 and 15, and double the result,
+ ADC TRUMBLE            \ storing the resulting number in TRUMBLE(1 0)
+ ORA #4                 \
+ ROL A                  \ We start with the low byte
+ STA TRUMBLE
 
- ROR L1265
+ ROL TRUMBLE+1          \ And then do the high byte
+
+ BPL P%+5               \ If bit 7 of the high byte is set, then rotate the high
+ ROR TRUMBLE+1          \ byte back to the right, so the number of Trumbles is
+                        \ always positive
 
 \ ******************************************************************************
 \
@@ -30998,7 +31027,8 @@ LOAD_E% = LOAD% + P% - CODE%
                         \ new sun, given that P(2 1) contains the 16-bit maximum
                         \ y-coordinate of the new sun on-screen
 
- LDA YMAX               \ ???
+ LDA YMAX               \ Set Y to the y-coordinate of the bottom of the space
+                        \ view, i.e. 191
 
  LDX P+2                \ If P+2 is non-zero, the maximum y-coordinate is off
  BNE PLF2               \ the bottom of the screen, so skip to PLF2 with A = 191
@@ -31025,7 +31055,7 @@ LOAD_E% = LOAD% + P% - CODE%
 
  LDA YMAX               \ Set (A X) = y-coordinate of bottom of screen - K4(1 0)
  SEC                    \
- SBC K4                 \ Starting with the low bytes ???
+ SBC K4                 \ Starting with the low bytes
  TAX
 
  LDA #0                 \ And then doing the high bytes, so (A X) now contains
@@ -31091,7 +31121,9 @@ LOAD_E% = LOAD% + P% - CODE%
 \
 \ ******************************************************************************
 
- LDY YMAX               \ ???
+ LDY YMAX               \ Set Y = y-coordinate of the bottom of the screen,
+                        \ which we use as a counter in the following routine to
+                        \ redraw the old sun
 
  LDA SUNX               \ Set YY(1 0) = SUNX(1 0), the x-coordinate of the
  STA YY                 \ vertical centre axis of the old sun that's currently
@@ -33216,10 +33248,11 @@ LOAD_F% = LOAD% + P% - CODE%
 
  STA ALP1               \ Reset ALP1 (magnitude of roll angle alpha) to 3
 
- LDA #&00               \ ???
- STA XMAX
- LDA #&BF
- STA YMAX
+ LDA #0                 \ Set XMAX to 0 (though this variable is never used, so
+ STA XMAX               \ this has no effect)
+
+ LDA #191               \ Set YMAX to 191, the number of pixel lines in the
+ STA YMAX               \ space view
 
  LDA SSPR               \ Fetch the "space station present" flag, and if we are
  BEQ P%+5               \ not inside the safe zone, skip the next instruction
@@ -34148,9 +34181,9 @@ LOAD_F% = LOAD% + P% - CODE%
 
  LDA QQ12               \ Fetch the docked flag from QQ12 into A
 
- BEQ P%+5               \ ???
-
- JMP MLOOP
+ BEQ P%+5               \ If we are docked, loop back up to MLOOP just above
+ JMP MLOOP              \ to restart the main loop, but skipping all the flight
+                        \ and spawning code in the top part of the main loop
 
  JMP TT100              \ Otherwise jump to TT100 to restart the main loop from
                         \ the start
@@ -34590,10 +34623,11 @@ LOAD_F% = LOAD% + P% - CODE%
 
 .BRBR
 
- LDX stack              \ ???
- TXS
+ LDX stack              \ Set the stack pointer to the value that we stored in
+ TXS                    \ location stack, so that's back to the value it had
+                        \ before we change it in the SVE routine
 
- JSR LOADZP             \ Call LOADZP to restore the top part of zero page
+ JSR SWAPZP             \ Call SWAPZP to restore the top part of zero page
 
  STZ CATF
  LDY #&00
@@ -35126,11 +35160,14 @@ ENDIF
 \   X                   The type of the ship to show (see variable XX21 for a
 \                       list of ship types)
 \
+\
+\   Y                   The distance to show the ship rotating, once it has
+\                       finished moving towards us
 \ ******************************************************************************
 
 .TITLE
 
- STY SDIST              \ ???
+ STY SDIST              \ Store the ship distance in SDIST
 
  PHA                    \ Store the token number on the stack for later
 
@@ -35146,8 +35183,9 @@ ENDIF
  LDA #32                \ Set the mode 1 palette to yellow (colour 1), white
  JSR DOVDU19            \ (colour 2) and cyan (colour 3)
 
- LDA #&0D               \ ???
- JSR TT66
+ LDA #13                \ Clear the top part of the screen, draw a white border,
+ JSR TT66               \ and set the current view type in QQ11 to 13 (rotating
+                        \ ship view)
 
  LDA #RED               \ Switch to colour 2, which is white in the title screen
  STA COL
@@ -35158,7 +35196,7 @@ ENDIF
  LDA #96                \ Set nosev_z hi = 96 (96 is the value of unity in the
  STA INWK+14            \ rotation vector)
 
- LDA #&60               \ ???
+ LDA #96               \ Set A = 96 as the distance that the ship starts at
 
 \LSR A                  \ This instruction is commented out in the original
                         \ source. It would halve the value of z_hi to 48, so the
@@ -35333,25 +35371,29 @@ ENDIF
 \       Name: JAMESON
 \       Type: Subroutine
 \   Category: Save and load
-\    Summary: Restore the default JAMESON commander file
+\    Summary: Restore the default JAMESON commander
 \
 \ ******************************************************************************
 
 .JAMESON
 
- LDY #&60               \ ???
+ LDY #96                \ We are going to copy the default commander at DEFAULT%
+                        \ over the top of the last saved commander at NA%, so
+                        \ set a counter to copy 97 bytes
 
 .JAMESL
 
- LDA DEFAULT%,Y
- STA NA%,Y
- DEY
- BPL JAMESL
+ LDA DEFAULT%,Y         \ Copy the Y-th byte of DEFAULT% to the Y-th byte of 
+ STA NA%,Y              \ NA%
 
- LDY #7
- STY NAMELEN2
+ DEY                    \ Decrement the loop counter
 
- RTS
+ BPL JAMESL             \ Loop back until we have copied the whole commander
+
+ LDY #7                 \ Set NAMELEN2 to 7, the length of the commander name
+ STY NAMELEN2           \ "JAMESON"
+
+ RTS                    \ Return from the subroutine
 
 \ ******************************************************************************
 \
@@ -35368,8 +35410,9 @@ ENDIF
                         \ characters, and is terminated by a carriage return,
                         \ so set up a counter in X to copy 8 characters
 
- LDA NAMELEN1           \ ???
- STA NAMELEN2
+ LDA NAMELEN1           \ Copy the length of the commander's name from NAMELEN1
+ STA NAMELEN2           \ to NAMELEN2 (though this is never used, so this
+                        \ doesn't have any effect)
 
 .GTL1
 
@@ -35477,7 +35520,8 @@ ENDIF
                         \ the last saved commander's name from NA% to INWK
                         \ and return from the subroutine there
 
- STY NAMELEN1           \ ???
+ STY NAMELEN1           \ Store the length of the length of the commander's that
+                        \ was entered in NAMELEN1
 
  RTS                    \ Return from the subroutine
 
@@ -35718,7 +35762,7 @@ ENDIF
 
  STA XC                 \ Move the text cursor to column 1
 
- JSR LOADZP             \ Call LOADZP to restore the top part of zero page
+ JSR SWAPZP             \ Call SWAPZP to restore the top part of zero page
 
  LDX #LO(CTLI)          \ Set (Y X) to point to the OS command at CTLI, which
  LDY #HI(CTLI)          \ contains a dot and the drive number, which is the
@@ -35728,7 +35772,7 @@ ENDIF
  JSR OSCLI              \ Call OSCLI to execute the OS command at (Y X), which
                         \ catalogues the disc
 
- JSR LOADZP             \ Call LOADZP to restore the top part of zero page
+ JSR SWAPZP             \ Call SWAPZP to restore the top part of zero page
 
  STZ CATF               \ Set the CATF flag to 0, so the TT26 routine reverts to
                         \ standard formatting
@@ -35799,7 +35843,7 @@ ENDIF
  BNE DELL1              \ Loop back to DELL1 to copy the next character until we
                         \ have copied the whole filename
 
- JSR LOADZP             \ Call LOADZP to restore the top part of zero page
+ JSR SWAPZP             \ Call SWAPZP to restore the top part of zero page
 
  LDX #LO(DELI)          \ Set (Y X) to point to the OS command at DELI, which
  LDY #HI(DELI)          \ contains the DFS command for deleting this file
@@ -35807,7 +35851,7 @@ ENDIF
  JSR OSCLI              \ Call OSCLI to execute the OS command at (Y X), which
                         \ catalogues the disc
 
- JSR LOADZP             \ Call LOADZP to restore the top part of zero page
+ JSR SWAPZP             \ Call SWAPZP to restore the top part of zero page
 
  JMP SVE                \ Jump to SVE to display the disc access menu and return
                         \ from the subroutine using a tail call
@@ -35825,9 +35869,11 @@ ENDIF
 
 .SVE
 
- TSX                    \ ???
- STX stack
- JSR TRADE
+ TSX                    \ Transfer the stack pointer to X and store it in stack,
+ STX stack              \ so we can restore it in the BRBR routine
+
+ JSR TRADE              \ Set the palette for trading screens and switch the
+                        \ current colour to white
 
  LDA #1                 \ ???
  JSR DETOK
@@ -36211,13 +36257,13 @@ ENDIF
  CPY #&07
  BCC SAVEL4
 
- JSR LOADZP             \ Call LOADZP to restore the top part of zero page
+ JSR SWAPZP             \ Call SWAPZP to restore the top part of zero page
 
  LDX #&DF
  LDY #&6A
  JSR OSCLI
 
- JMP LOADZP             \ Call LOADZP to restore the top part of zero page
+ JMP SWAPZP             \ Call SWAPZP to restore the top part of zero page
                         \ and return from the subroutine using a tail call
 
 \ ******************************************************************************
@@ -36252,13 +36298,13 @@ ENDIF
  CPY #&07
  BCC LOADL2
 
- JSR LOADZP             \ Call LOADZP to restore the top part of zero page
+ JSR SWAPZP             \ Call SWAPZP to restore the top part of zero page
 
  LDX #&FF
  LDY #&6A
  JSR OSCLI
 
- JSR LOADZP             \ Call LOADZP to restore the top part of zero page
+ JSR SWAPZP             \ Call SWAPZP to restore the top part of zero page
 
  LDY #&4C
 
@@ -36706,9 +36752,11 @@ ENDIF
 
 .WA1
 
- JMP LOWBEEP            \ ???
+ JMP LOWBEEP            \ Call the LOWBEEP routine to make a long, low beep, and
+                        \ return from the subroutine using a tail call
 
- RTS
+ RTS                    \ This instruction has no effect as we already returned
+                        \ from the subroutine
 
 \ ******************************************************************************
 \
@@ -43362,12 +43410,11 @@ LOAD_H% = LOAD% + P% - CODE%
 
  JSR SIGHT              \ Draw the laser crosshairs
 
- LDA BOMB               \ ???
- BPL L7D32
+ LDA BOMB               \ If our energy bomb has been set off, then BOMB will be
+ BPL P%+5               \ negative, so this skips the following instruction if
+                        \ our energy bomb is not going off
 
- JSR L31AC
-
-.L7D32
+ JSR L31AC              \ Our energy bomb is going off, so ???
 
  JMP NWSTARS            \ Set up a new stardust field and return from the
                         \ subroutine using a tail call
@@ -43396,12 +43443,11 @@ LOAD_H% = LOAD% + P% - CODE%
  JSR FLIP               \ Swap the x- and y-coordinates of all the stardust
                         \ particles
 
- LDA BOMB               \ ???
- BPL L7D54
+ LDA BOMB               \ If our energy bomb has been set off, then BOMB will be
+ BPL P%+5               \ negative, so this skips the following instruction if
+                        \ our energy bomb is not going off
 
- JSR L31AC
-
-.L7D54
+ JSR L31AC              \ Our energy bomb is going off, so ???
 
  JSR WPSHPS             \ Wipe all the ships from the scanner
 
