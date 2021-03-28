@@ -2585,41 +2585,51 @@ LOAD_A% = LOAD%
  BNE VNT2               \ Loop back to VNT2 until we have copied all the palette
                         \ bytes bar the first one
 
- LDA VIA+&18            \ ??? A to D joystick status byte (channel?)
- AND #&03
+ LDA VIA+&18            \ Fetch the ADC channel number into Y from bits 1-2 in
+ AND #3                 \ the ADC status byte at SHEILA &18
  TAY
- LDA VIA+&19            \ A to D joystick high byte
- STA ADCH1,Y
- INY
- TYA
- CMP #&03
+
+ LDA VIA+&19            \ Fetch the high byte of the value on this ADC channel
+                        \ to read the relevant joystick position
+
+ STA ADCH1,Y            \ Store this value in the apropriate ADCH1-ADCH3 byte
+
+ INY                    \ Increment the channel number
+
+ TYA                    \ If the new channel number in A < 3, skip the next two
+ CMP #3                 \ instructions
  BCC P%+4
 
- LDA #&00
+ LDA #0                 \ Set the ADC status byte at SHEILA &18 to 0
  STA VIA+&18
 
  PLY                    \ Restore Y from the stack
 
- LDA VIA+&44
+ LDA VIA+&44            \ Read 6522 System VIA T1C-L timer 1 low-order counter
+                        \ (SHEILA &44)
 
  LDA &FC                \ Restore the value of A from before the call to the
                         \ interrupt handler (the MOS stores the value of A in
                         \ location &FC before calling the interrupt handler)
 
- RTI
+ RTI                    \ Return from interrupts, so this interrupt is not
+                        \ passed on to the next interrupt handler, but instead
+                        \ the interrupt terminates here
 
 .LINSCN
 
- LDA VIA+&41            \ ???
+ LDA VIA+&41            \ Read 6522 System VIA input register IRA (SHEILA &41)
 
  LDA &FC                \ Fetch the value of A from before the call to the
                         \ interrupt handler (the MOS stores the value of A in
                         \ location &FC before calling the interrupt handler)
 
- PHA
+ PHA                    \ Store the original value of A on the stack
 
- LDA DLCNT
- STA DL
+ LDA DLCNT              \ Set the line scan counter to the value of DLCNT (which
+ STA DL                 \ contains 30 by default and doesn't change), so
+                        \ routines like WSCAN can set DL to 0 and then wait for
+                        \ it to change to this value to catch the vertical sync
 
  STA VIA+&44            \ Set 6522 System VIA T1C-L timer 1 low-order counter
                         \ (SHEILA &44) to 30
@@ -2664,9 +2674,9 @@ LOAD_A% = LOAD%
 
 .jvec
 
- PHX                    \ ???
- JSR NOISE2
- PLX
+ PHX                    \ Call NOISE2 to send the current sound data to the
+ JSR NOISE2             \ 76489 sound chip, stashing X on the stack so it gets
+ PLX                    \ preserved across the call
 
  PLA                    \ Restore A from the stack
 
@@ -23372,14 +23382,14 @@ LOAD_D% = LOAD% + P% - CODE%
  CLC                    \ to get the x-coordinate of the right edge of the
  ADC QQ19+2             \ crosshairs
 
- BCS L4CD6              \ ???
+ BCS P%+6               \ If the above addition overflowed, skip the following
+                        \ two instructions to set A = 254
 
- CMP #&FE
- BCC TT85
+ CMP #254               \ The addition didn't overflow, so if A < 254, jump to
+ BCC TT85               \ TT85
 
-.L4CD6
-
- LDA #&FE
+ LDA #254               \ Set A = 254, so the crosshairs don't spill out of the
+                        \ right of the screen
 
 .TT85
 
@@ -24189,8 +24199,8 @@ LOAD_D% = LOAD% + P% - CODE%
  LDX TRUMBLE            \ Fetch the number of Trumbles into (Y X)
  LDY TRUMBLE+1
 
- JSR TT11               \ Call TT11 to print the number of Trumbles in (Y X), with
-                        \ no decimal point
+ JSR TT11               \ Call TT11 to print the number of Trumbles in (Y X),
+                        \ with no decimal point
 
  JSR DORND              \ Print out a random extended token from 111 to 114, all
  AND #3                 \ of which are blank in this version of Elite
@@ -24504,23 +24514,29 @@ LOAD_D% = LOAD% + P% - CODE%
  SEC                    \ crosshairs (QQ9) and the current system (QQ0)
  SBC QQ0
 
- BCS L5017              \ ???
+ BCS P%+6               \ If the subtraction didn't underflow, skip the next two
+                        \ instructions
 
- EOR #&FF
- ADC #&01
+ EOR #&FF               \ The subtraction underflowed, so negate the result
+ ADC #1                 \ using two's complement so that it is positive, i.e.
+                        \ A = |QQ9 - QQ0|, the absolute horizontal distance
 
-.L5017
+ CMP #29                \ If the absolute horizontal distance in A >= 29, then
+ BCS TT180              \ the crosshairs are too far from the current system to
+                        \ appear in the Short-range Chart, so jump to TT180 to
+                        \ return from the subroutine (as TT180 contains an RTS)
 
- CMP #&1D
- BCS TT180
-
- LDA QQ9
- SEC
+ LDA QQ9                \ Set A = QQ9 - QQ0, the horizontal distance between the
+ SEC                    \ crosshairs (QQ9) and the current system (QQ0)
  SBC QQ0
- BPL TT179
 
- CMP #&E9
- BCC TT180
+ BPL TT179              \ If the horizontal distance in A is positive, then skip
+                        \ the next two instructions
+
+ CMP #233               \ If the horizontal distance in A < -23, then the
+ BCC TT180              \ crosshairs are too far from the current system to
+                        \ appear in the Short-range Chart, so jump to TT180 to
+                        \ return from the subroutine (as TT180 contains an RTS)
 
 .TT179
 
@@ -24540,18 +24556,20 @@ LOAD_D% = LOAD% + P% - CODE%
  SEC                    \ crosshairs (QQ10) and the current system (QQ1)
  SBC QQ1
 
- BCS L503D              \ ???
+ BCS P%+6               \ If the subtraction didn't underflow, skip the next two
+                        \ instructions
 
- EOR #&FF
- ADC #&01
+ EOR #&FF               \ The subtraction underflowed, so negate the result
+ ADC #1                 \ using two's complement so that it is positive, i.e.
+                        \ A = |QQ10 - QQ0|, the absolute vertical distance
 
-.L503D
+ CMP #35                \ If the absolute vertical distance in A >= 35, then
+ BCS TT180              \ the crosshairs are too far from the current system to
+                        \ appear in the Short-range Chart, so jump to TT180 to
+                        \ return from the subroutine (as TT180 contains an RTS)
 
- CMP #&23
- BCS TT180
-
- LDA QQ10
- SEC
+ LDA QQ10               \ Set A = QQ10 - QQ1, the vertical distance between the
+ SEC                    \ crosshairs (QQ10) and the current system (QQ1)
  SBC QQ1
 
  ASL A                  \ Set QQ19+1 = 90 + A * 2
@@ -24667,9 +24685,9 @@ LOAD_D% = LOAD% + P% - CODE%
 .TT184
 
  CMP #29                \ If the horizontal distance in A is >= 29, then this
- BCS L50FB              \ system is too far away from the current system to
-                        \ appear in the Short-range Chart, so jump to L50FB to
-                        \ move on to the next system ???
+ BCS TT187S             \ system is too far away from the current system to
+                        \ appear in the Short-range Chart, so jump to TT187 via
+                        \ TT187S to move on to the next system
 
  LDA QQ15+1             \ Set A = s0_hi - QQ1, the vertical distance between
  SEC                    \ (s1_hi, s0_hi) and (QQ0, QQ1)
@@ -24684,8 +24702,10 @@ LOAD_D% = LOAD% + P% - CODE%
 
 .TT186
 
- CMP #&28
- BCS L50FB
+ CMP #40                \ If the vertical distance in A is >= 40, then this
+ BCS TT187S             \ system is too far away from the current system to
+                        \ appear in the Short-range Chart, so jump to TT187 via
+                        \ TT187S to move on to the next system
 
                         \ This system should be shown on the Short-range Chart,
                         \ so now we need to work out where the label should go,
@@ -24799,7 +24819,7 @@ LOAD_D% = LOAD% + P% - CODE%
  LDA QQ8
  CMP #&46
 
-.L50FB
+.TT187S
 
  BCS TT187
 
@@ -24861,14 +24881,13 @@ LOAD_D% = LOAD% + P% - CODE%
 
  INC XX20               \ Increment the counter
 
- BEQ L5134              \ ???
+ BEQ P%+5               \ If X = 0 then we have done all 256 systems, so skip
+                        \ the next instruction to return from the subroutine
 
  JMP TT182              \ Otherwise jump back up to TT182 to process the next
                         \ system
 
-.L5134
-
- RTS
+ RTS                    \ Return from the subroutine
 
 \ ******************************************************************************
 \
@@ -25109,9 +25128,9 @@ LOAD_D% = LOAD% + P% - CODE%
  LDA P
  STA K
 
- LDA QQ15+1             \ ???
- SEC
- SBC QQ1
+ LDA QQ15+1             \ Set A = QQ15+1 - QQ1, the vertical distance between
+ SEC                    \ the selected system's y-coordinate (QQ15+1) and the
+ SBC QQ1                \ current system's y-coordinate (QQ1)
 
  BCS TT141              \ If a borrow didn't occur, i.e. QQ10 >= QQ1, then the
                         \ result is positive, so jump to TT141 and skip the
@@ -29554,7 +29573,7 @@ LOAD_E% = LOAD% + P% - CODE%
                         \   COMY = 204 - X - (1 - 0) = 203 - X
 
  LDA #YELLOW2           \ Set A to yellow, the colour for when the planet or
-                        \ station in the compass is in front of us ???
+                        \ station in the compass is in front of us
 
  LDX XX15+2             \ If the z-coordinate of the XX15 vector is positive,
  BPL P%+4               \ skip the following instruction
@@ -34336,27 +34355,39 @@ LOAD_F% = LOAD% + P% - CODE%
 
 .INSP
 
- CMP #f1                \ ???
+ CMP #f1                \ If red key f1 was pressed, jump to BVIEW
  BEQ BVIEW
 
- CMP #f2
+ CMP #f2                \ If red key f2 was pressed, jump to LVIEW
  BEQ LVIEW
 
- CMP #f3
- BNE LABEL_3
+ CMP #f3                \ If red key f3 was not pressed, jump to LABEL_3 to keep
+ BNE LABEL_3            \ checking for which key was pressed
 
- LDX #3
- EQUB &2C
+ LDX #3                 \ Red key f3 was pressed, so set the view number in X to
+                        \ 3 for the right view
+
+ EQUB &2C               \ Skip the next instruction by turning it into
+                        \ &2C &A2 &02, or BIT &02A2, which does nothing apart
+                        \ from affect the flags
 
 .LVIEW
 
- LDX #2
- EQUB &2C
+ LDX #2                 \ If we jump to here, red key f2 was pressed, so set the
+                        \ view number in X to 2 for the left view
+
+ EQUB &2C               \ Skip the next instruction by turning it into
+                        \ &2C &A2 &01, or BIT &02A2, which does nothing apart
+                        \ from affect the flags
 
 .BVIEW
 
- LDX #1
- JMP LOOK1
+ LDX #1                 \ If we jump to here, red key f1 was pressed, so set the
+                        \ view number in X to 1 for the rear view
+
+ JMP LOOK1              \ Jump to LOOK1 to switch to view X (rear, left or
+                        \ right), returning from the subroutine using a tail
+                        \ call
 
 .LABEL_3
 
@@ -34491,7 +34522,7 @@ LOAD_F% = LOAD% + P% - CODE%
  LDA #%10000000         \ Set bit 7 of QQ17 to switch to Sentence Case, with the
  STA QQ17               \ next letter in capitals
 
- LDA #12                \ ???
+ LDA #12                \ Print a line feed to move the text cursor down a line
  JSR TT26
 
  JMP TT146              \ Print the distance to the selected system and return
@@ -35598,14 +35629,13 @@ ENDIF
 \
 \ ------------------------------------------------------------------------------
 \
-\ If ESCAPE is pressed or a blank name is entered, then an empty string is
-\ returned.
-\
 \ Returns:
 \
-\   Y                   The size of the entered text, or 0 if ESCAPE was pressed
+\   Y                   The size of the entered text, or 0 if none was entered
 \
 \   INWK+5              The entered text, terminated by a carriage return
+\
+\   C flag              Set if ESCAPE was pressed
 \
 \ ******************************************************************************
 
@@ -35622,69 +35652,91 @@ ENDIF
 
  JSR FLKB               \ Call FLKB to flush the keyboard buffer
 
- LDY #0                 \ ???
+ LDY #0                 \ Set Y = 0 to hold the length of the text entered
 
-.L691B
+.MT26L
 
- JSR TT217
+ JSR TT217              \ Scan the keyboard until a key is pressed, and return
+                        \ the key's ASCII code in A (and X)
 
- CMP #&0D
- BEQ L6945
+ CMP #13                \ If RETURN was pressed, jump to MT26ret
+ BEQ MT26ret
 
- CMP #&1B
- BEQ L694E
+ CMP #27                \ If ESCAPE was pressed, jump to MT26esc
+ BEQ MT26esc
 
- CMP #&7F
- BEQ L6953
+ CMP #127               \ If DELETE was pressed, jump to MT26ret
+ BEQ MT26del
 
- CPY RLINE+2
- BCS L693E
+ CPY RLINE+2            \ If Y >= RLINE+2 (the maximum line length from the
+ BCS MT26err            \ OSWORD configuration block at RLINE), then jump to
+                        \ MT26err to give an error beep as we have reached the
+                        \ character limit
 
- CMP RLINE+3
- BCC L693E
+ CMP RLINE+3            \ If the key pressed is less than the character in
+ BCC MT26err            \ RLINE+3 (the lowest allowed character from the OSWORD
+                        \ configuration block at RLINE), then jump to MT26err
+                        \ to give an error beep as the key pressed is out of
+                        \ range
 
- CMP RLINE+4
- BCS L693E
+ CMP RLINE+4            \ If the key pressed is geater than or equal to the
+ BCS MT26err            \ character in RLINE+4 (the highest allowed character
+                        \ from the OSWORD configuration block at RLINE), then
+                        \ jump to MT26err to give an error beep as the key
+                        \ pressed is out of range
 
- STA INWK+5,Y
- INY
- EQUB &2C
+ STA INWK+5,Y           \ Store the key's ASCII code in the Y-th byte of INWK+5
 
-.L693E
+ INY                    \ Increment Y to point to the next free byte in INWK+5
 
- LDA #&07
+ EQUB &2C               \ Skip the next instruction by turning it into
+                        \ &2C &A9 &07, or BIT &07A9, which does nothing apart
+                        \ from affect the flags
 
-.L6940
+.MT26err
 
+ LDA #7                 \ Set A to the beep character, so the next instruction
+                        \ makes a system beep
+
+.MT26LS
+
+ JSR CHPR               \ Print the character in A (and clear the C flag)
+
+ BCC MT26L              \ Loop back to MT26L to fetch another key press (this
+                        \ BCC is effectively a JMP as CHPR clears the C flag)
+
+.MT26ret
+
+ STA INWK+5,Y           \ Store the return character in the Y-th byte of INWK+5
+
+ LDA #12                \ Print a newline
  JSR CHPR
 
- BCC L691B
+ EQUB &24               \ Skip the next instruction by turning it into &24 &38,
+                        \ or BIT &0038, which does nothing apart from affect the
+                        \ flags
 
-.L6945
+.MT26esc
 
- STA INWK+5,Y
- LDA #&0C
- JSR CHPR
-
- EQUB &24
-
-.L694E
-
- SEC
+ SEC                    \ Set the C flag as ESCAPE was pressed
 
  PLA                    \ Restore the original colour from the stack and set it
  STA COL                \ as the current colour
 
- RTS
+ RTS                    \ Return from the subroutine
 
-.L6953
+.MT26del
 
- TYA
- BEQ L693E
+ TYA                    \ If the length of the line so far in Y is 0, then we
+ BEQ MT26err            \ just pressed DELETE on an empty line, so jump to
+                        \ MT26err give an error beep
 
- DEY
- LDA #&7F
- BNE L6940
+ DEY                    \ Otherwise we want to delete a character, so decrement
+                        \ the length of the line so far in Y
+
+ LDA #127               \ Set A = 127 and jump back to MT26LS to print the
+ BNE MT26LS             \ character in A (i.e. the DELETE character) and listen
+                        \ for the next key press
 
 \ ******************************************************************************
 \
@@ -43722,18 +43774,21 @@ LOAD_H% = LOAD% + P% - CODE%
 \       Name: SIGHTCOL
 \       Type: Variable
 \   Category: Drawing lines
-\    Summary: ???
+\    Summary: Colours for the crosshair sights on the different laser types
 \
 \ ******************************************************************************
 
 .SIGHTCOL
 
- EQUB YELLOW            \ Pulse laser
- EQUB CYAN              \ Beam laser
- EQUB CYAN              \ Military laser
- EQUB YELLOW            \ Mining laser
+ EQUB YELLOW            \ Pulse lasers have yellow sights
 
- EQUB WHITE             \ These bytes appear to be unuused - perhaps they were
+ EQUB CYAN              \ Beam lasers have cyan sights
+
+ EQUB CYAN              \ Military lasers have cyan sights
+
+ EQUB YELLOW            \ Mining lasers have yellow sights
+
+ EQUB WHITE             \ These bytes appear to be unused - perhaps they were
  EQUB WHITE             \ going to be used to set different colours of laser
  EQUB WHITE             \ beam for the different lasers?
  EQUB WHITE
