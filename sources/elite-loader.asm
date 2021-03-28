@@ -322,9 +322,9 @@ ORG CODE%
                         \ SHEILA+&30 that we are about to set
 
  LDA VIA+&30            \ Set bits 0-3 of the ROM Select latch at SHEILA+&30 to
- AND #%11110000         \ 6, to switch sideways ROM bank 6 into into &8000-&BFFF
- ORA #6                 \ in main memory
- STA VIA+&30
+ AND #%11110000         \ 6, to switch sideways RAM bank 6 into into &8000-&BFFF
+ ORA #6                 \ in main memory (LYNNE), and the filing system RAM
+ STA VIA+&30            \ space into &C000-&DFFF (HAZEL)
 
  LDA #%10101010         \ Set A and location &8000 to %10101010
  STA &8000
@@ -334,8 +334,8 @@ ORG CODE%
 
  CMP &8000              \ If A matches location &8000 (i.e. both now contain
  BEQ OK                 \ %01010101) then jump to OK, as ROM bank 6 is writable
-                        \ and is therefore RAM, which is what we need for
-                        \ running the game
+                        \ and does indeed contain sideways RAM rather than a
+                        \ paged ROM, which is what we need for running the game
 
  BRK                    \ Otherwise we can't run the game, so terminate the
                         \ loader with the following error message

@@ -8082,7 +8082,7 @@ ENDMACRO
  EQUB VE
 
  EJMP 12                \ Token 255:    "{cr}
- EJMP 30                \                {white}
+ EJMP 30                \                {currently selected media}
  ECHR ' '               \                 ERROR"
  ETWO 'E', 'R'          \
  ECHR 'R'               \ Encoded as:   "{12}{30} <244>R<253>"

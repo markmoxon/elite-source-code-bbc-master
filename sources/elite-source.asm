@@ -698,7 +698,15 @@ ORG &0000
 
 .XX14
 
- SKIP 2                 \ ???
+ SKIP 1                 \ The pointer to the current position in the ship line
+                        \ heap as we work our way through the new ship's edges
+                        \ (and the corresponding old ship's edges) when drawing
+                        \ the ship in the main ship-drawing routine at LL9
+
+ SKIP 1                 \ The size of the existing ship line heap for the ship
+                        \ we are drawing in LL9, i.e. the number of lines in the
+                        \ old ship that is currently shown on-screen and which
+                        \ we need to erase
 
 .RAT
 
@@ -2130,16 +2138,16 @@ LOAD_A% = LOAD%
 
 \ ******************************************************************************
 \
-\       Name: L1377
+\       Name: SRESET
 \       Type: Subroutine
 \   Category: Sound
-\    Summary: ???
+\    Summary: Reset the sound buffers
 \
 \ ******************************************************************************
 
-.L1377
+.SRESET
 
- LDY #3
+ LDY #3                 \ ???
  LDA #0
 
 .L137B
@@ -2914,14 +2922,15 @@ NEXT
                         \ this gives A the sign of x_sign and gives it a value
                         \ range of -63 (%11000001) to 0
 
- CLC                    \ ???
+ CLC                    \ Clear the C flag so we can do addition below
 
 .SC2
 
- ADC #125               \ ???
- AND #&FE
- STA X1
- TAX
+ ADC #125               \ Set X1 = 125 + x_hi
+ AND #%11111110         \
+ STA X1                 \ and if the result is odd, subtract 1 to make it even
+
+ TAX                    \ Set X = X1 - 2
  DEX
  DEX
 
@@ -7597,9 +7606,9 @@ NEXT
  LDA #%00001001         \ Clear bits 1 and 2 of the Access Control Register at
  STA VIA+&34            \ SHEILA+&34 to switch main memory back into &3000-&7FFF
 
- PLX                    \ ???
- PLY
- LDA K3
+ PLX                    \ We're done printing, so restore the values of the
+ PLY                    \ A, X and Y registers that we saved above and clear the
+ LDA K3                 \ C flag, so everything is back to how it was
  CLC
 
  RTS                    \ Return from the subroutine
@@ -7932,8 +7941,9 @@ NEXT
  LDA #%00001111         \ Set bits 1 and 2 of the Access Control Register at
  STA VIA+&34            \ SHEILA+&34 to switch screen memory into &3000-&7FFF
 
- LDA #1                 \ ???
- STA &DDEB
+ LDA #1                 \ Set location &DDEB to 1. This location is in HAZEL,
+ STA &DDEB              \ which contains the filing system RAM space, though
+                        \ I'm not sure what effect this has
 
  LDA #&A0               \ Set SC(1 0) = &71A0, which is the screen address for
  STA SC                 \ the character block containing the left end of the
@@ -8928,15 +8938,21 @@ ENDIF
                         \ Toggled by pressing "K" when paused, see the DKS3
                         \ routine for details
 
+.LCASE
+
  SKIP 1                 \ The configuration setting for toggle key "U", which
                         \ isn't actually used but is still updated by pressing
-                        \ "U" while the game is paused
+                        \ "U" while the game is paused. This is a configuration
+                        \ option from some non-BBC versions of Elite that lets
+                        \ you switch between lower-case and upper-case text
 
-.L2C5E
+.DTAPE
 
  SKIP 1                 \ The configuration setting for toggle key "T", which
                         \ isn't actually used but is still updated by pressing
-                        \ "T" while the game is paused
+                        \ "T" while the game is paused. This is a configuration
+                        \ option from some non-BBC versions of Elite that lets 
+                        \ you switch between tape and disc
 
 .BSTK
 
@@ -8976,8 +8992,6 @@ ENDIF
                         \ the relevant configuration bytes, those values ar not
                         \ used, so those keys have no effect
 
- EQUB &60               \ This byte appears to be unused
-
 \ ******************************************************************************
 \
 \       Name: S%
@@ -8987,15 +9001,19 @@ ENDIF
 \
 \ ******************************************************************************
 
+ RTS                    \ This byte appears to be unused, but it might be a
+                        \ hangover from the cassette version, where this byte is
+                        \ used for a checksum
+
 .S%
 
- CLD                    \ ???
+ CLD                    \ Clear the D flag to make sure we are in binary mode
 
- JSR scramble
+ JSR scramble           \ Call scramble to unscramble the main code
 
- JSR BRKBK
+ JSR BRKBK              \ Call BRKBK to set up the break handler
 
- JMP BEGIN
+ JMP BEGIN              \ Jump to BEGIN to start the game
 
 \ ******************************************************************************
 \
@@ -10519,7 +10537,7 @@ ENDIF
  ADC ENERGY             \ otherwise it goes up by 1
 
  BCS P%+4               \ If the value of A did not overflow (the maximum
- STA ENERGY             \ energy level is &FF), then store A in ENERGY ???
+ STA ENERGY             \ energy level is &FF), then store A in ENERGY
 
 \ ******************************************************************************
 \
@@ -12104,8 +12122,8 @@ ENDIF
  EQUW MT27              \ Token 27: Print mission captain's name (217-219)
  EQUW MT28              \ Token 28: Print mission 1 location hint (220-221)
  EQUW MT29              \ Token 29: Column 6, white text, lower case in words
- EQUW MT30              \ Token 30: ???
- EQUW MT31              \ Token 31: ???
+ EQUW MT30              \ Token 30: Display disc or tape (unused)
+ EQUW MT31              \ Token 31: Display tape or disc (unused)
  EQUW DASC              \ Token 32: Unused
 
 \ ******************************************************************************
@@ -12702,6 +12720,11 @@ NEXT
 \ Arguments:
 \
 \   A                   The pixel row on which to draw the horizontal line
+\
+\ Other entry points:
+\
+\   NLIN2-2             Move the text cursor down one line before drawing the
+\                       line
 \
 \ ******************************************************************************
 
@@ -18953,7 +18976,7 @@ LOAD_C% = LOAD% +P% - CODE%
                         \ This represents the distance we should move this
                         \ particle along the x-axis, let's call it delta_x
 
- LDA P                  \ ???
+ LDA P                  \ Store the high byte of delta_x in deltX
  STA deltX
 
  EOR RAT2               \ Set S = P but with the sign from RAT2, so we now have
@@ -19104,7 +19127,7 @@ LOAD_C% = LOAD% +P% - CODE%
  STA SX,Y               \ the new x-coordinate is in (x_hi x_lo) and the high
  STA X1                 \ byte is in X1
 
- AND #%01111111         \ If |x_hi| >= ??? then jump to KILL2 to recycle this
+ AND #%01111111         \ If |x_hi| <= deltX then jump to KILL2 to recycle this
  EOR #%01111111         \ particle, as it's gone off the side of the screen,
  CMP deltX              \ and re-join at STC2 with the new particle ???
  BCC KILL2
@@ -22126,77 +22149,83 @@ LOAD_D% = LOAD% + P% - CODE%
 
 \ ******************************************************************************
 \
-\       Name: LSR1
+\       Name: SCALEY
 \       Type: Subroutine
 \   Category: Utility routines
-\    Summary: Scaling routine for A (which halves the value in A)
+\    Summary: Scale the y-coordinate in A
 \
 \ ------------------------------------------------------------------------------
 \
-\ This routine (and the related LSR2 and LSR3 routines) are called from various
-\ places in the code to scale the value in A. This scaling can be changed by
-\ changing these routines (for example, by changing an RTS to an LSR A), so
-\ perhaps this is code left over from the conversion to other platforms, where
+\ This routine (and the related SCALEY2 and SCALEX routines) are called from
+\ various places in the code to scale the value in A. This scaling can be
+\ changed by changing these routines (for example, by changing an RTS to an LSR
+\ A). This code is left over from the conversion to other platforms, where
 \ the scale factor might need to be different.
 \
 \ ******************************************************************************
 
-.LSR1
+.SCALEY
 
  LSR A
 
 \ ******************************************************************************
 \
-\       Name: LSR2
+\       Name: SCALEY2
 \       Type: Subroutine
 \   Category: Utility routines
-\    Summary: Scaling routine for A (which leaves A alone)
+\    Summary: Scale the y-coordinate in A
 \
 \ ------------------------------------------------------------------------------
 \
-\ This routine (and the related LSR1 and LSR3 routines) are called from various
-\ places in the code to scale the value in A. This scaling can be changed by
-\ changing these routines (for example, by changing an RTS to an LSR A), so
-\ perhaps this is code left over from the conversion to other platforms, where
+\ This routine (and the related SCALEY and SCALEX routines) are called from
+\ various places in the code to scale the value in A. This scaling can be
+\ changed by changing these routines (for example, by changing an RTS to an LSR
+\ A). This code is left over from the conversion to other platforms, where
 \ the scale factor might need to be different.
 \
 \ ******************************************************************************
 
-.LSR2
+.SCALEY2
 
  RTS
 
 \ ******************************************************************************
 \
-\       Name: LSR3
+\       Name: SCALEX
 \       Type: Subroutine
 \   Category: Utility routines
-\    Summary: Scaling routine for A (which leaves A alone)
+\    Summary: Scale the x-coordinate in A
 \
 \ ------------------------------------------------------------------------------
 \
-\ This routine (and the related LSR1 and LSR2 routines) are called from various
-\ places in the code to scale the value in A. This scaling can be changed by
-\ changing these routines (for example, by changing an RTS to an LSR A), so
-\ perhaps this is code left over from the conversion to other platforms, where
+\ This routine (and the related SCALEY and SCALEY2 routines) are called from
+\ various places in the code to scale the value in A. This scaling can be
+\ changed by changing these routines (for example, by changing an RTS to an LSR
+\ A). This code is left over from the conversion to other platforms, where
 \ the scale factor might need to be different.
 \
 \ ******************************************************************************
 
-.LSR3
+.SCALEX
 
  RTS
 
 \ ******************************************************************************
 \
-\       Name: Unused
+\       Name: DVLOIN
 \       Type: Subroutine
 \   Category: Drawing lines
-\    Summary: ???
+\    Summary: Draw a horizontal line from (A, 24) to (A, 152)
+\
+\ ------------------------------------------------------------------------------
+\
+\ This routine is not used in this version of Elite.
 \
 \ ******************************************************************************
 
- STA X1                 \ This code appears to be unused
+.DVLOIN
+
+ STA X1                 \ Draw a horizontal line from (A, 24) to (A, 152)
  STA X2
  LDA #24
  STA Y1
@@ -23170,10 +23199,10 @@ LOAD_D% = LOAD% + P% - CODE%
                         \ title and act as the top frame of the chart, and move
                         \ the text cursor down one line
 
- LDA #153               \ Draw a screen-wide horizontal line at pixel row 152
- JSR NLIN2-2            \ for the bottom edge of the chart, so the chart itself
-                        \ is 128 pixels high, starting on row 24 and ending on
-                        \ row 151 ???
+ LDA #153               \ Move the text cursor down one line and draw a
+ JSR NLIN2-2            \ screen-wide horizontal line at pixel row 153 for the
+                        \ bottom edge of the chart, so the chart itself is 128
+                        \ pixels high, starting on row 24 and ending on row 153
 
  JSR TT14               \ Call TT14 to draw a circle with crosshairs at the
                         \ current system's galactic coordinates
@@ -23203,21 +23232,21 @@ LOAD_D% = LOAD% + P% - CODE%
  LDA QQ15+1             \ Fetch the s0_hi seed into A, which gives us the
                         \ galactic y-coordinate of this system
 
- JSR LSR1               \ We halve the y-coordinate because the galaxy in
+ JSR SCALEY             \ We halve the y-coordinate because the galaxy in
                         \ in Elite is rectangular rather than square, and is
                         \ twice as wide (x-axis) as it is high (y-axis), so the
                         \ chart is 256 pixels wide and 128 high
                         \
-                        \ The call to LSR1 simply does an LSR A, but having this
-                        \ call instruction here would enable different scaling
-                        \ to be applied by altering the LSR routines, so perhaps
-                        \ this is code left over from the conversion to other
+                        \ The call to SCALEY simply does an LSR A, but having
+                        \ this call instruction here would enable different
+                        \ scaling to be applied by altering the SCALE routines.
+                        \ This code is left over from the conversion to other
                         \ platforms, where the scale factor might need to be
                         \ different
 
- CLC                    \ Add 24 to the halved y-coordinate ???
- ADC #24                \ (as the top of the chart is on pixel row 24, just
-                        \ below the line we drew on row 23 above)
+ CLC                    \ Add 24 to the halved y-coordinate in A (as the top of
+ ADC #24                \ the chart is on pixel row 24, just below the line we
+                        \ drew on row 23 above)
 
  JSR PIXEL              \ Call PIXEL to draw a point at (X, A), with the size of
                         \ the point dependent on the distance specified in ZZ
@@ -23236,21 +23265,21 @@ LOAD_D% = LOAD% + P% - CODE%
                         \ loop back up to TT83
 
  LDA QQ9                \ Set QQ19 to the selected system's x-coordinate
- JSR LSR3               \
- STA QQ19               \ The call to LSR3 has no effect as it only contains an
-                        \ RTS, but having this call instruction here would
+ JSR SCALEX             \
+ STA QQ19               \ The call to SCALEX has no effect as it only contains
+                        \ an RTS, but having this call instruction here would
                         \ enable different scaling to be applied by altering
-                        \ the LSR routines, so perhaps this is code left over
-                        \ from the conversion to other platforms, where the
-                        \ scale factor might need to be different
+                        \ the SCALE routines. This code is left over from the
+                        \ conversion to other platforms, where the scale factor
+                        \ might need to be different
 
  LDA QQ10               \ Set QQ19+1 to the selected system's y-coordinate,
- JSR LSR1               \ halved to fit it into the chart
+ JSR SCALEY             \ halved to fit it into the chart
  STA QQ19+1             \
-                        \ The call to LSR1 simply does an LSR A, but having this
-                        \ call instruction here would enable different scaling
-                        \ to be applied by altering the LSR routines, so perhaps
-                        \ this is code left over from the conversion to other
+                        \ The call to SCALEY simply does an LSR A, but having
+                        \ this call instruction here would enable different
+                        \ scaling to be applied by altering the SCALE routines.
+                        \ This code is left over from the conversion to other
                         \ platforms, where the scale factor might need to be
                         \ different
 
@@ -23307,17 +23336,18 @@ LOAD_D% = LOAD% + P% - CODE%
  SEC                    \ to get the x-coordinate of the left edge of the
  SBC QQ19+2             \ crosshairs
 
- BIT QQ11               \ ???
- BMI TT84
+ BIT QQ11               \ If bit 7 of QQ11 is set, then this this is the
+ BMI TT84               \ Short-range Chart, so jump to TT84
 
- BCC L4CC7
+ BCC P%+6               \ If the above subtraction underflowed, then A is
+                        \ positive, so skip the next two instructions
 
- CMP #&02
+ CMP #2                 \ If A >= 2, skip the next instruction
  BCS TT84
 
-.L4CC7
-
- LDA #&02
+ LDA #2                 \ The subtraction underflowed or A < 2, so set A to 2
+                        \ so the crosshairs don't spill out of the left of the
+                        \ screen
 
 .TT84
 
@@ -23395,7 +23425,6 @@ LOAD_D% = LOAD% + P% - CODE%
 
  LDA #152               \ Otherwise this is the Long-range Chart, so we need to
                         \ clip the crosshairs at a maximum y-coordinate of 152
-                        \ ???
 
 .TT87
 
@@ -23444,14 +23473,14 @@ LOAD_D% = LOAD% + P% - CODE%
                         \ exact coordinates as this is the Short-range Chart
 
  LDA QQ14               \ Set K to the fuel level from QQ14, so this can act as
- JSR LSR2               \ the circle's radius (70 being a full tank)
+ JSR SCALEY2            \ the circle's radius (70 being a full tank)
  STA K                  \
-                        \ The call to LSR2 has no effect as it only contains an
-                        \ RTS, but having this call instruction here would
+                        \ The call to SCALEY2 has no effect as it only contains
+                        \ an RTS, but having this call instruction here would
                         \ enable different scaling to be applied by altering
-                        \ the LSR routines, so perhaps this is code left over
-                        \ from the conversion to other platforms, where the
-                        \ scale factor might need to be different
+                        \ the SCALE routines. This code is left over from the
+                        \ conversion to other platforms, where the scale factor
+                        \ might need to be different
 
  JMP TT128              \ Jump to TT128 to draw a circle with the centre at the
                         \ same coordinates as the crosshairs, (QQ19, QQ19+1),
@@ -23469,33 +23498,33 @@ LOAD_D% = LOAD% + P% - CODE%
 
  LDA QQ14               \ Set K to the fuel level from QQ14 divided by 4, so
  LSR A                  \ this can act as the circle's radius (70 being a full
- JSR LSR1               \ tank, which divides down to a radius of 17)
+ JSR SCALEY             \ tank, which divides down to a radius of 17)
  STA K                  \
-                        \ The call to LSR1 simply does an LSR A, but having this
-                        \ call instruction here would enable different scaling
-                        \ to be applied by altering the LSR routines, so perhaps
-                        \ this is code left over from the conversion to other
+                        \ The call to SCALEY simply does an LSR A, but having
+                        \ this call instruction here would enable different
+                        \ scaling to be applied by altering the SCALE routines.
+                        \ This code is left over from the conversion to other
                         \ platforms, where the scale factor might need to be
                         \ different
 
  LDA QQ0                \ Set QQ19 to the x-coordinate of the current system,
- JSR LSR3               \ which will be the centre of the circle and crosshairs
+ JSR SCALEX             \ which will be the centre of the circle and crosshairs
  STA QQ19               \ we draw
                         \
-                        \ The call to LSR3 has no effect as it only contains an
-                        \ RTS, but having this call instruction here would
+                        \ The call to SCALEX has no effect as it only contains
+                        \ an RTS, but having this call instruction here would
                         \ enable different scaling to be applied by altering
-                        \ the LSR routines, so perhaps this is code left over
-                        \ from the conversion to other platforms, where the
-                        \ scale factor might need to be different
+                        \ the SCALE routines. This code is left over from the
+                        \ conversion to other platforms, where the scale factor
+                        \ might need to be different
 
  LDA QQ1                \ Set QQ19+1 to the y-coordinate of the current system,
- JSR LSR1               \ halved because the galactic chart is half as high as
+ JSR SCALEY             \ halved because the galactic chart is half as high as
  STA QQ19+1             \ it is wide, which will again be the centre of the
                         \ circle and crosshairs we draw
                         \
-                        \ Again, the call to LSR1 simply does an LSR A (see the
-                        \ comment above)
+                        \ Again, the call to SCALEY simply does an LSR A (see
+                        \ the comment above)
 
  LDA #7                 \ Set QQ19+2 = 7, the size of the crosshairs on the
  STA QQ19+2             \ Long-range Chart
@@ -24365,22 +24394,22 @@ LOAD_D% = LOAD% + P% - CODE%
  BMI TT105              \ If this is the Short-range Chart screen, jump to TT105
 
  LDA QQ9                \ Store the crosshairs x-coordinate in QQ19
- JSR LSR3               \
- STA QQ19               \ The call to LSR3 has no effect as it only contains an
-                        \ RTS, but having this call instruction here would
+ JSR SCALEX             \
+ STA QQ19               \ The call to SCALEX has no effect as it only contains
+                        \ an RTS, but having this call instruction here would
                         \ enable different scaling to be applied by altering
-                        \ the LSR routines, so perhaps this is code left over
-                        \ from the conversion to other platforms, where the
-                        \ scale factor might need to be different
+                        \ the SCALE routines. This code is left over from the
+                        \ conversion to other platforms, where the scale factor
+                        \ might need to be different
 
  LDA QQ10               \ Halve the crosshairs y-coordinate and store it in QQ19
- JSR LSR1               \ (we halve it because the Long-range Chart is half as
+ JSR SCALEY             \ (we halve it because the Long-range Chart is half as
  STA QQ19+1             \ high as it is wide)
                         \
-                        \ The call to LSR1 simply does an LSR A, but having this
-                        \ call instruction here would enable different scaling
-                        \ to be applied by altering the LSR routines, so perhaps
-                        \ this is code left over from the conversion to other
+                        \ The call to SCALEY simply does an LSR A, but having
+                        \ this call instruction here would enable different
+                        \ scaling to be applied by altering the SCALE routines.
+                        \ This code is left over from the conversion to other
                         \ platforms, where the scale factor might need to be
                         \ different
 
@@ -24499,13 +24528,13 @@ LOAD_D% = LOAD% + P% - CODE%
  ASL A                  \
  CLC                    \ 104 is the x-coordinate of the centre of the chart,
  ADC #104               \ so this sets QQ19 to the screen pixel x-coordinate
- JSR LSR2               \
- STA QQ19               \ The call to LSR2 has no effect as it only contains an
-                        \ RTS, but having this call instruction here would
+ JSR SCALEY2            \
+ STA QQ19               \ The call to SCALEY2 has no effect as it only contains
+                        \ an RTS, but having this call instruction here would
                         \ enable different scaling to be applied by altering
-                        \ the LSR routines, so perhaps this is code left over
-                        \ from the conversion to other platforms, where the
-                        \ scale factor might need to be different
+                        \ the SCALE routines. This code is left over from the
+                        \ conversion to other platforms, where the scale factor
+                        \ might need to be different
 
  LDA QQ10               \ Set A = QQ10 - QQ1, the vertical distance between the
  SEC                    \ crosshairs (QQ10) and the current system (QQ1)
@@ -24528,15 +24557,15 @@ LOAD_D% = LOAD% + P% - CODE%
  ASL A                  \ Set QQ19+1 = 90 + A * 2
  CLC                    \
  ADC #90                \ 90 is the y-coordinate of the centre of the chart,
- JSR LSR2               \ so this sets QQ19+1 to the screen pixel x-coordinate
+ JSR SCALEY2            \ so this sets QQ19+1 to the screen pixel x-coordinate
  STA QQ19+1             \ of the crosshairs
                         \
-                        \ The call to LSR2 has no effect as it only contains an
-                        \ RTS, but having this call instruction here would
+                        \ The call to SCALEY2 has no effect as it only contains
+                        \ an RTS, but having this call instruction here would
                         \ enable different scaling to be applied by altering
-                        \ the LSR routines, so perhaps this is code left over
-                        \ from the conversion to other platforms, where the
-                        \ scale factor might need to be different
+                        \ the SCALE routines. This code is left over from the
+                        \ conversion to other platforms, where the scale factor
+                        \ might need to be different
 
  LDA #8                 \ Set QQ19+2 to 8 denote crosshairs of size 8
  STA QQ19+2
@@ -24675,15 +24704,15 @@ LOAD_D% = LOAD% + P% - CODE%
  ASL A                  \ Set XX12 = 104 + x-delta * 4
  ASL A                  \
  ADC #104               \ 104 is the x-coordinate of the centre of the chart,
- JSR LSR2               \ so this sets XX12 to the centre 104 +/- 76, the pixel
+ JSR SCALEY2            \ so this sets XX12 to the centre 104 +/- 76, the pixel
  STA XX12               \ x-coordinate of this system
                         \
-                        \ The call to LSR2 has no effect as it only contains an
-                        \ RTS, but having this call instruction here would
+                        \ The call to SCALEY2 has no effect as it only contains
+                        \ an RTS, but having this call instruction here would
                         \ enable different scaling to be applied by altering
-                        \ the LSR routines, so perhaps this is code left over
-                        \ from the conversion to other platforms, where the
-                        \ scale factor might need to be different
+                        \ the SCALE routines. This code is left over from the
+                        \ conversion to other platforms, where the scale factor
+                        \ might need to be different
 
  LSR A                  \ Move the text cursor to column x-delta / 2 + 1
  LSR A                  \ which will be in the range 1-10
@@ -24701,16 +24730,16 @@ LOAD_D% = LOAD% + P% - CODE%
 
  ASL A                  \ Set K4 = 90 + y-delta * 2
  ADC #90                \
- JSR LSR2               \ 90 is the y-coordinate of the centre of the chart,
+ JSR SCALEY2            \ 90 is the y-coordinate of the centre of the chart,
  STA K4                 \ so this sets K4 to the centre 90 +/- 74, the pixel
                         \ y-coordinate of this system
                         \
-                        \ The call to LSR2 has no effect as it only contains an
-                        \ RTS, but having this call instruction here would
+                        \ The call to SCALEY2 has no effect as it only contains
+                        \ an RTS, but having this call instruction here would
                         \ enable different scaling to be applied by altering
-                        \ the LSR routines, so perhaps this is code left over
-                        \ from the conversion to other platforms, where the
-                        \ scale factor might need to be different
+                        \ the SCALE routines. This code is left over from the
+                        \ conversion to other platforms, where the scale factor
+                        \ might need to be different
 
  LSR A                  \ Set Y = K4 / 8, so Y contains the number of the text
  LSR A                  \ row that contains this system
@@ -24758,7 +24787,9 @@ LOAD_D% = LOAD% + P% - CODE%
  TYA
  PHA
  LDA QQ15+3
- JSR L5193
+
+ JSR DIST               \ Calculate the distance between the selected system and
+                        \ the current system
 
  PLA
  TAY
@@ -24907,7 +24938,8 @@ LOAD_D% = LOAD% + P% - CODE%
 \
 \   TT111-1             Contains an RTS
 \
-\   L5193               ???
+\   DIST                Calculate the distance between the selected system and
+\                       the current system
 \
 \ ******************************************************************************
 
@@ -25049,7 +25081,7 @@ LOAD_D% = LOAD% + P% - CODE%
                         \ need to work out the distance between the selected
                         \ system and the current system
 
-.L5193                  \ ???
+.DIST
 
  SEC                    \ Set A = QQ9 - QQ0, the horizontal distance between
  SBC QQ0                \ the selected system's x-coordinate (QQ9) and the
@@ -25126,14 +25158,16 @@ LOAD_D% = LOAD% + P% - CODE%
  PLA                    \ Restore the high byte of the y-axis value from the
                         \ stack into A again
 
- ADC K+1                \ ???
- BCC L51C5
+ ADC K+1                \ Set A = A + K+1, which adds the high bytes of the two
+                        \ calculated values
 
- LDA #&FF
+ BCC P%+4               \ If the above addition overflowed, set A = 255
+ LDA #255
 
-.L51C5
-
- STA R
+ STA R                  \ Store A in R, so we now have R = A + K+1, and:
+                        \
+                        \   (R Q) = K(1 0) + (A P)
+                        \         = (x_delta ^ 2) + (y_delta ^ 2)
 
  JSR LL5                \ Set Q = SQRT(R Q), so Q now contains the distance
                         \ between the two systems, in terms of coordinates
@@ -26314,8 +26348,8 @@ LOAD_D% = LOAD% + P% - CODE%
  JSR GTHG               \ Call GTHG to spawn a Thargoid ship
 
  LDA #2                 \ Fetch the number of Thargoid ships from MANY+THG, and
- CMP MANY+THG           \ if it is less than 2, loop back to MJP1 to spawn
- BCS MJP1               \ another one, until we have three Thargoids ???
+ CMP MANY+THG           \ if it is less than or equal to 2, loop back to MJP1 to
+ BCS MJP1               \ spawn another one, until we have three Thargoids
 
  STA NOSTM              \ Set NOSTM (the maximum number of stardust particles)
                         \ to 3, so there are fewer bits of stardust in
@@ -28920,7 +28954,8 @@ LOAD_E% = LOAD% + P% - CODE%
 \       Name: SOLARX
 \       Type: Subroutine
 \   Category: Universe
-\    Summary: ??? Does this implement Trumbles multiplying 
+\    Summary: Set up various aspects of arriving in a new system, including
+\             Trumble breeding
 \
 \ ******************************************************************************
 
@@ -28931,7 +28966,8 @@ LOAD_E% = LOAD% + P% - CODE%
 
                         \ If we get here then we have Trumbles in the hold, so
                         \ this is where they breed (though we never get here in
-                        \ the Master version)
+                        \ the Master version as the number of Trumbles is always
+                        \ zero)
 
  LDA #0                 \ Trumbles eat food and narcotics during the hyperspace
  STA QQ20               \ journey, so zero the amount of food and narcotics in
@@ -32411,12 +32447,17 @@ LOAD_E% = LOAD% + P% - CODE%
 
 .TT17
 
- LDA QQ11               \ ???
- BNE P%+7
+ LDA QQ11               \ If this not the space view, skip the following
+ BNE P%+7               \ three instructions
 
- JSR DOKEY
- TXA
- RTS
+ JSR DOKEY              \ This is the space view, so scan the keyboard for
+                        \ flight controls and pause keys, (or the equivalent on
+                        \ joystick) and update the key logger, setting KL to the
+                        \ key pressed
+
+ TXA                    \ Transfer the value of X into A ???
+
+ RTS                    \ Return from the subroutine
 
  JSR DOKEY              \ Scan the keyboard for flight controls and pause keys,
                         \ (or the equivalent on joystick) and update the key
@@ -32425,9 +32466,12 @@ LOAD_E% = LOAD% + P% - CODE%
  LDA JSTK               \ If the joystick was not used, jump down to TJ1,
  BEQ TJ1                \ otherwise we move the cursor with the joystick
 
- LDA JSTY               \ ???
- JSR TJS1
- TAY
+ LDA JSTY               \ Fetch the joystick pitch, ranging from 1 to 255 with
+                        \ 128 as the centre point
+
+ JSR TJS1               \ Call TJS1 just below to ???
+
+ TAY                    \ ???
 
  LDA JSTX               \ Fetch the joystick roll, ranging from 1 to 255 with
                         \ 128 as the centre point
@@ -33399,8 +33443,8 @@ LOAD_F% = LOAD% + P% - CODE%
 
 .me2
 
- LDA QQ11               \ ???
- BNE L63D9
+ LDA QQ11               \ If this is not the space view, jump down to nomess to
+ BNE nomess             \ skip displaying the in-flight message
 
  LDA MCH                \ Fetch the token number of the current message into A
 
@@ -33412,9 +33456,11 @@ LOAD_F% = LOAD% + P% - CODE%
 
  JMP me3                \ Jump back into the main spawning loop at TT100
 
-.L63D9
+.nomess
 
- JSR CLYNS              \ ???
+ JSR CLYNS              \ Clear the bottom three text rows of the upper screen,
+                        \ and move the text cursor to column 1 on row 21, i.e.
+                        \ the start of the top row of the three bottom rows
 
  JMP me3                \ Jump back into the main spawning loop at TT100
 
@@ -33883,7 +33929,7 @@ LOAD_F% = LOAD% + P% - CODE%
  JSR DORND              \ Set A and X to random numbers
 
  CMP #220               \ If the random number in A < 220 (86% chance), jump to
- BCC nopl               \ nopl to skip spawning a Thargoid ???
+ BCC nopl               \ nopl to skip spawning a Thargoid
 
 .fothg2
 
@@ -34314,11 +34360,13 @@ LOAD_F% = LOAD% + P% - CODE%
 
 .LABEL_3
 
- LDA KL                 \ ???
- CMP #&48
+ LDA KL                 \ If "H" was not pressed, jump to NWDAV5 to skip the
+ CMP #'H'               \ following
  BNE NWDAV5
 
- JMP hyp
+ JMP hyp                \ Jump to hyp to do a hyperspace jump (if we are in
+                        \ space), returning from the subroutine using a tail
+                        \ call
 
 .NWDAV5
 
@@ -34637,7 +34685,9 @@ LOAD_F% = LOAD% + P% - CODE%
 
 .BRBRLOOP
 
- JSR CHPR               \ ???
+ JSR CHPR               \ Print the character in A, which contains a line feed
+                        \ on the first loop iteration, and then any non-zero
+                        \ characters we fetch from the error message
 
  INY                    \ Increment the loop counter
 
@@ -34650,8 +34700,11 @@ LOAD_F% = LOAD% + P% - CODE%
                         \ until we fetch a zero (which marks the end of the
                         \ message)
 
- JSR t                  \ ???
- JMP SVE
+ JSR t                  \ Scan the keyboard until a key is pressed, returning
+                        \ the ASCII code in A and X
+
+ JMP SVE                \ Jump to SVE to display the disc access menu and return
+                        \ from the subroutine using a tail call
 
 \ ******************************************************************************
 \
@@ -34847,7 +34900,9 @@ LOAD_F% = LOAD% + P% - CODE%
 
 .BEGIN
 
- LDX #&1E               \ ???
+ LDX #(DTAPE-COMC)      \ We start by zeroing all the configuration variables
+                        \ between COMC and DTAPE, to set them to their default
+                        \ values, so set a counter in X for DTAPE - COMC bytes
 
  LDA #0                 \ Set A = 0 so we can zero the variables
 
@@ -34865,7 +34920,8 @@ LOAD_F% = LOAD% + P% - CODE%
  LDA XX21+SST*2-1       \ spasto(1 0) points to the Coriolis blueprint)
  STA spasto+1
 
- JSR JAMESON            \ ??? Could also be at start of TT170
+ JSR JAMESON            \ Call JAMESON to set the last saved commander to the
+                        \ default "JAMESON" commander
 
                         \ Fall through into TT170 to start the game
 
@@ -34880,9 +34936,6 @@ LOAD_F% = LOAD% + P% - CODE%
 \ ------------------------------------------------------------------------------
 \
 \ This is the main entry point for the main game code.
-\
-\ It is also called following death, and when the game is quit by pressing
-\ ESCAPE when paused.
 \
 \ ******************************************************************************
 
@@ -34902,6 +34955,11 @@ LOAD_F% = LOAD% + P% - CODE%
 \       Type: Subroutine
 \   Category: Start and end
 \    Summary: Reset most of the game and restart from the title screen
+\
+\ ------------------------------------------------------------------------------
+\
+\ This routine is called following death, and when the game is quit by pressing
+\ ESCAPE when paused.
 \
 \ ******************************************************************************
 
@@ -35196,7 +35254,7 @@ ENDIF
  LDA #96                \ Set nosev_z hi = 96 (96 is the value of unity in the
  STA INWK+14            \ rotation vector)
 
- LDA #96               \ Set A = 96 as the distance that the ship starts at
+ LDA #96                \ Set A = 96 as the distance that the ship starts at
 
 \LSR A                  \ This instruction is commented out in the original
                         \ source. It would halve the value of z_hi to 48, so the
@@ -35238,23 +35296,27 @@ ENDIF
 
 .awe
 
- LDY #&00               \ ???
+ LDY #0                 \ Set DELTA = 0 (i.e. ship speed = 0)
  STY DELTA
- STY JSTK
 
- LDA #&14               \ ???
+ STY JSTK               \ Set JSTK = 0 (i.e. keyboard, not joystick)
+
+ LDA #20                \ Move the text cursor to row 20
  STA YC
- LDA #1
+
+ LDA #1                 \ Move the text cursor to column 1
  STA XC
 
- PLA                    \ ???
- JSR DETOK
+ PLA                    \ Restore the recursive token number we stored on the
+                        \ stack at the start of this subroutine
 
- LDA #7
+ JSR DETOK              \ Print the extended token in A
+
+ LDA #7                 \ Move the text cursor to column 7
  STA XC
 
- LDA #&0C
- JSR DETOK
+ LDA #12                \ Print extended token 12 ("({single cap}C) ACORNSOFT
+ JSR DETOK              \ 1986")
 
  LDA #12                \ Set CNT2 = 12 as the outer loop counter for the loop
  STA CNT2               \ starting at TLL2
@@ -35262,7 +35324,7 @@ ENDIF
  LDA #5                 \ Set the main loop counter in MCNT to 5, to act as the
  STA MCNT               \ inner loop counter for the loop starting at TLL2
 
- STZ JSTK               \ ???
+ STZ JSTK               \ Set JSTK = 0 (i.e. keyboard, not joystick)
 
 .TLL2
 
@@ -35278,12 +35340,13 @@ ENDIF
  JSR MVEIT              \ Move the ship in space according to the orientation
                         \ vectors and the new value in z_hi
 
- LDX SDIST              \ ???
- STX INWK+6
+ LDX SDIST              \ Set z_lo to the distance value we passed to the
+ STX INWK+6             \ routine, so this is the closest the ship gets to us
 
- LDA #0
+ LDA #0                 \ Set x_lo = 0, so the ship remains in the screen centre
  STA INWK
- STA INWK+3
+
+ STA INWK+3             \ Set y_lo = 0, so the ship remains in the screen centre
 
  JSR LL9                \ Call LL9 to display the ship
 
@@ -35649,34 +35712,40 @@ ENDIF
 \       Name: MT30
 \       Type: Subroutine
 \   Category: Text
-\    Summary: ???
+\    Summary: Display the currently selected media (disc or tape)
 \  Deep dive: Extended text tokens
 \
 \ ******************************************************************************
 
 .MT30
 
- LDA #3                 \ ???
- CLC
- ADC L2C5E
- JMP DETOK
+ LDA #3                 \ Print extended token 3 + DTAPE, i.e. token 3 or 2 (as
+ CLC                    \ DTAPE can be 0 or &FF). In other versions of the game,
+ ADC DTAPE              \ such as the Commodore 64 version, token 2 is "disk"
+ JMP DETOK              \ and token 3 is "tape", so this displays the currently
+                        \ selected media, but this system is unused in the
+                        \ Master version and tokens 2 and 3 contain different
+                        \ text
 
 \ ******************************************************************************
 \
 \       Name: MT31
 \       Type: Subroutine
 \   Category: Text
-\    Summary: ???
+\    Summary: Display the non-selected media (disc or tape)
 \  Deep dive: Extended text tokens
 \
 \ ******************************************************************************
 
 .MT31
 
- LDA #2                 \ ???
- SEC
- SBC L2C5E
- JMP DETOK
+ LDA #2                 \ Print extended token 2 - DTAPE, i.e. token 2 or 3 (as
+ SEC                    \ DTAPE can be 0 or &FF). In other versions of the game,
+ SBC DTAPE              \ such as the Commodore 64 version, token 2 is "disk"
+ JMP DETOK              \ and token 3 is "tape", so this displays the other,
+                        \ non-selected media, but this system is unused in the
+                        \ Master version and tokens 2 and 3 contain different
+                        \ text
 
 \ ******************************************************************************
 \
@@ -35878,7 +35947,8 @@ ENDIF
  LDA #1                 \ ???
  JSR DETOK
 
- JSR t
+ JSR t                  \ Scan the keyboard until a key is pressed, returning
+                        \ the ASCII code in A and X
 
  CMP #&31
  BEQ MASTER_LOAD
@@ -35894,7 +35964,8 @@ ENDIF
 
  JSR DELT
 
- JMP SVE
+ JMP SVE                \ Jump to SVE to display the disc access menu and return
+                        \ from the subroutine using a tail call
 
 .L69FB
 
@@ -35908,7 +35979,8 @@ ENDIF
 
  BCC L6A0F
 
- JSR JAMESON
+ JSR JAMESON            \ Call JAMESON to set the last saved commander to the
+                        \ default "JAMESON" commander
 
  JMP DFAULT
 
@@ -35921,9 +35993,11 @@ ENDIF
 
  JSR CATS
 
- JSR t
+ JSR t                  \ Scan the keyboard until a key is pressed, returning
+                        \ the ASCII code in A and X
 
- JMP SVE
+ JMP SVE                \ Jump to SVE to display the disc access menu and return
+                        \ from the subroutine using a tail call
 
 .MASTER_LOAD
 
@@ -36028,7 +36102,7 @@ ENDIF
 \       Name: NAMELEN1
 \       Type: Variable
 \   Category: Save and load
-\    Summary: ???
+\    Summary: Contains the length of the most recently entered commander name
 \
 \ ******************************************************************************
 
@@ -36041,7 +36115,7 @@ ENDIF
 \       Name: NAMELEN2
 \       Type: Variable
 \   Category: Save and load
-\    Summary: ???
+\    Summary: Contains the length of the last saved commander name
 \
 \ ******************************************************************************
 
@@ -36140,16 +36214,19 @@ ENDIF
 
 .ELT2F
 
- LDA #9                 \ ???
- JSR DETOK
+ LDA #9                 \ Print extended token 9 ("{cr}{all caps}ILLEGAL ELITE
+ JSR DETOK              \ II FILE{sentence case}")
 
- JSR t
+ JSR t                  \ Scan the keyboard until a key is pressed, returning
+                        \ the ASCII code in A and X
 
- JMP SVE
+ JMP SVE                \ Jump to SVE to display the disc access menu and return
+                        \ from the subroutine using a tail call
 
- RTS
+ RTS                    \ Return from the subroutine
 
- RTS
+ RTS                    \ This instruction has no effect as we already returned
+                        \ from the subroutine
 
 \ ******************************************************************************
 \
@@ -36315,9 +36392,10 @@ ENDIF
  DEY
  BPL LOADL3
 
- RTS
+ RTS                    \ Return from the subroutine
 
- RTS
+ RTS                    \ This instruction has no effect as we already returned
+                        \ from the subroutine
 
 \ ******************************************************************************
 \
@@ -37338,32 +37416,39 @@ ENDIF
 
 .MESS
 
- PHA                    \ ???
- LDX QQ11
- BEQ L6DDE
+ PHA                    \ Store A on the stack so we can restore it after the
+                        \ the call to DOCOL
 
- JSR CLYNS
+ LDX QQ11               \ If this is the space view, skip the following
+ BEQ P%+5               \ instruction
 
-.L6DDE
+ JSR CLYNS              \ Clear the bottom three text rows of the upper screen,
+                        \ and move the text cursor to column 1 on row 21, i.e.
+                        \ the start of the top row of the three bottom rows
 
- LDA #&15
+ LDA #21                \ Move the text cursor to row 21
  STA YC
- LDA #&0F
+
+ LDA #YELLOW            \ Switch to colour 1, which is yellow
  STA COL
 
  LDX #0                 \ Set QQ17 = 0 to switch to ALL CAPS
  STX QQ17
 
- LDA messXC             \ ???
- STA XC
- PLA
- LDY #&14
+ LDA messXC             \ Move the text cursor to column messXC, in case we
+ STA XC                 \ jump to me1 below to erase the current in-flight
+                        \ message (whose column we stored in messXC when we
+                        \ called MESS to put it there in the first place)
+
+ PLA                    \ Restore A from the stack
+
+ LDY #20                \ Set Y = 20 for setting the message delay below
 
  CPX DLY                \ If the message delay in DLY is not zero, jump up to
  BNE me1                \ me1 to erase the current message first (whose token
                         \ number will be in MCH)
 
- STY DLY                \ Set the message delay in DLY to 22
+ STY DLY                \ Set the message delay in DLY to 20
 
  STA MCH                \ Set MCH to the token we are about to display
 
@@ -38184,19 +38269,23 @@ LOAD_G% = LOAD% + P% - CODE%
  BCS nono               \ the bottom of the screen, jump to nono as the ship's
                         \ dot is off the bottom of the space view
 
- JSR Shpt               \ ???
+ JSR Shpt               \ Call Shpt to draws a horizontal 4-pixel dash for the 
+                        \ first row of the dot (i.e. a four-pixel dash)
 
  LDA K4                 \ Set A = y-coordinate of dot + 1 (so this is the second
- CLC                    \ row of the two-pixel-high dot) ???
+ CLC                    \ row of the two-pixel-high dot)
  ADC #1
 
- JSR Shpt               \ ???
+ JSR Shpt               \ Call Shpt to draws a horizontal 4-pixel dash for the 
+                        \ first row of the dot (i.e. a four-pixel dash)
 
  LDA #%00001000         \ Set bit 3 of the ship's byte #31 to record that we
  ORA XX1+31             \ have now drawn something on-screen for this ship
  STA XX1+31
 
- JMP LL155              \ ???
+ JMP LL155              \ Jump to LL155 to draw any remaining lines that are
+                        \ still in the ship line heap and return from the
+                        \ subroutine using a tail call
 
 .nono
 
@@ -38204,26 +38293,36 @@ LOAD_G% = LOAD% + P% - CODE%
  AND XX1+31             \ nothing is being drawn on-screen for this ship
  STA XX1+31
 
- JMP LL155              \ ???
+ JMP LL155              \ Jump to LL155 to draw any remaining lines that are
+                        \ still in the ship line heap and return from the
+                        \ subroutine using a tail call
 
 .Shpt
 
- STA Y1                 \ ???
- STA Y2
+                        \ This routine draws a horizontal 4-pixel dash, for
+                        \ either the top or the bottom of the ship's dot
+
+ STA Y1                 \ Store A in both y-coordinates, as this is a horizontal
+ STA Y2                 \ dash at y-coordinate A
 
  LDA K3                 \ Set A = screen x-coordinate of the ship dot
 
- STA XX15
- CLC
- ADC #&03
- BCC L7012
+ STA X1                 \ Store the x-coordinate of the ship dot in X1, as this
+                        \ is where the dash starts
 
- LDA #&FF
+ CLC                    \ Set A = screen x-coordinate of the ship dot + 3
+ ADC #3
 
-.L7012
+ BCC P%+4               \ If the addition overflowed, set A = 255, the
+ LDA #255               \ x-coordinate of the right edge of the screen
 
- STA X2
- JMP LLX30
+ STA X2                 \ Store the x-coordinate of the ship dot in X1, as this
+                        \ is where the dash starts
+
+ JMP LLX30              \ Draw this edge using smooth animation, by first
+                        \ drawing the ship's new line and then erasing the
+                        \ corresponding old line from the screen, and return
+                        \ from the subroutine using a tail call
 
 \ ******************************************************************************
 \
@@ -38668,8 +38767,7 @@ LOAD_G% = LOAD% + P% - CODE%
 \
 \ This routine draws the current ship on the screen. This part checks to see if
 \ the ship is exploding, or if it should start exploding, and if it does it sets
-\ things up accordingly. It also does some basic checks to see if we can see the
-\ ship, and if not it removes it from the screen.
+\ things up accordingly.
 \
 \ In this code, XX1 is used to point to the current ship's data block at INWK
 \ (the two labels are interchangeable).
@@ -38693,11 +38791,6 @@ LOAD_G% = LOAD% + P% - CODE%
 \   EE51                Remove the current ship from the screen, called from
 \                       SHPPT before drawing the ship as a point
 \
-\   LL81+2              Draw the contents of the ship lone heap, used to draw
-\                       the ship as a dot from SHPPT
-\
-\   LL10-1              Contains an RTS
-\
 \ ******************************************************************************
 
 .LL25
@@ -38720,20 +38813,36 @@ LOAD_G% = LOAD% + P% - CODE%
                         \ update this value below with the actual ship's
                         \ distance if it turns out to be visible on-screen
 
- LDY #&01               \ ???
- STY XX14
- DEY
- LDA #&08
- BIT INWK+31
- BNE L712B
+                        \ We now set things up for smooth ship plotting, by
+                        \ setting the following:
+                        \
+                        \   XX14 = offset to the first coordinate in the ship's
+                        \          line heap
+                        \
+                        \   XX14+1 = the number of bytes in the heap for the
+                        \            ship that's currently on-screen (or 0 if
+                        \            there is no ship currently on-screen)
 
- LDA #&00
- EQUB &2C
+ LDY #1                 \ Set XX14 = 1, the offset of the first set of line
+ STY XX14               \ coordinates in the ship line heap
 
-.L712B
+ DEY                    \ Decrement Y to 0
 
- LDA (XX19),Y
- STA XX14+1
+ LDA #%00001000         \ If bit 3 of the ship's byte #31 is set, then the ship
+ BIT INWK+31            \ is currently being drawn on-screen, so skip the
+ BNE P%+5               \ following two instructions
+
+ LDA #0                 \ The ship is not being drawn on screen, so set A = 0
+                        \ so that XX14+1 gets set to 0 below (as there are no
+                        \ existing coordinates on the ship line heap for this
+                        \ ship)
+ 
+ EQUB &2C               \ Skip the next instruction by turning it into
+                        \ &2C &B1 &BD, or BIT &BDB1 which does nothing apart
+                        \ from affect the flags
+
+ LDA (XX19),Y           \ Set XX14+1 to the first byte of the ship's line heap,
+ STA XX14+1             \ which contains the number of bytes in the heap
 
  LDA NEWB               \ If bit 7 of the ship's NEWB flags is set, then the
  BMI EE51               \ ship has been scooped or has docked, so jump down to
@@ -38859,6 +38968,10 @@ LOAD_G% = LOAD% + P% - CODE%
 \
 \ This part checks whether the ship is in our field of view, and whether it is
 \ close enough to be fully drawn (if not, we jump to SHPPT to draw it as a dot).
+\
+\ Other entry points:
+\
+\   LL10-1              Contains an RTS
 \
 \ ******************************************************************************
 
@@ -40499,8 +40612,8 @@ LOAD_G% = LOAD% + P% - CODE%
 
 .EE31
 
- LDY #&09               \ ???
- LDA (XX0),Y
+ LDY #9                 \ Fetch byte #9 of the ship's blueprint, which is the
+ LDA (XX0),Y            \ number of edges, and store it in XX20
  STA XX20
 
  LDA #%00001000         \ Set bit 3 of A so the next instruction sets bit 3 of
@@ -40513,8 +40626,8 @@ LOAD_G% = LOAD% + P% - CODE%
  STA XX1+31             \ was no ship already on screen, the bit is clear,
                         \ otherwise it is set
 
- LDY #&00               \ ???
- STY XX17
+ LDY #0                 \ Set XX17 = 0, which we are going to use as a counter
+ STY XX17               \ for stepping through the ship's edges
 
  BIT XX1+31             \ If bit 6 of the ship's byte #31 is clear, then the
  BVC LL170              \ ship is not firing its lasers, so jump to LL170 to
@@ -40596,7 +40709,9 @@ LOAD_G% = LOAD% + P% - CODE%
                         \ screen, so jump to LL170 so we don't store this line
                         \ in the ship line heap
 
- JSR LLX30              \ ???
+ JSR LLX30              \ Draw the laser line using smooth animation, by first
+                        \ drawing the new laser line and then erasing the
+                        \ corresponding old line from the screen
 
 \ ******************************************************************************
 \
@@ -40604,12 +40719,16 @@ LOAD_G% = LOAD% + P% - CODE%
 \       Type: Subroutine
 \   Category: Drawing ships
 \    Summary: Draw ship: Calculate the visibility of each of the ship's edges
+\             and draw the visible ones using smooth animation
 \  Deep dive: Drawing ships
 \
 \ ------------------------------------------------------------------------------
 \
 \ This part calculates which edges are visible - in other words, which lines we
 \ should draw - and clips them to fit on the screen.
+\
+\ Visible edges are drawn using smooth animation, which erases the corresponding
+\ edge from the on-scren ship at the same time.
 \
 \ When we get here, the heap at XX3 contains all the visible vertex screen
 \ coordinates.
@@ -40640,7 +40759,7 @@ LOAD_G% = LOAD% + P% - CODE%
 
 .LL75
 
- LDY #0                 \ ???
+ LDY #0                 \ Set Y = 0 so we start with byte #0
 
  LDA (V),Y              \ Fetch byte #0 for this edge, which contains the
                         \ visibility distance for this edge, beyond which the
@@ -40697,7 +40816,7 @@ LOAD_G% = LOAD% + P% - CODE%
                         \ before storing the resulting line in the ship line
                         \ heap
 
- INY                    \ ???
+ INY                    \ Increment Y to point to byte #2
 
  LDA (V),Y              \ Fetch byte #2 for this edge into X, which contains
  TAX                    \ the number of the vertex at the start of the edge
@@ -40714,9 +40833,10 @@ LOAD_G% = LOAD% + P% - CODE%
  LDA XX3+3,X            \ Fetch the y_hi coordinate of the edge's start vertex
  STA XX15+3             \ from the XX3 heap into XX15+3
 
- INY                    \ ???
- LDA (V),Y
- TAX
+ INY                    \ Increment Y to point to byte #3
+
+ LDA (V),Y              \ Fetch byte #3 for this edge into X, which contains
+ TAX                    \ the number of the vertex at the end of the edge
 
  LDA XX3,X              \ Fetch the x_lo coordinate of the edge's end vertex
  STA XX15+4             \ from the XX3 heap into XX15+4
@@ -40738,28 +40858,34 @@ LOAD_G% = LOAD% + P% - CODE%
                         \ screen, so jump to LL78 so we don't store this line
                         \ in the ship line heap
 
- JSR LLX30              \ ???
+ JSR LLX30              \ Draw this edge using smooth animation, by first
+                        \ drawing the ship's new line and then erasing the
+                        \ corresponding old line from the screen
 
 \ ******************************************************************************
 \
 \       Name: LL9 (Part 11 of 12)
 \       Type: Subroutine
 \   Category: Drawing ships
-\    Summary: Draw ship: Add all visible edges to the ship line heap
+\    Summary: Draw ship: Loop back for the next edge
 \  Deep dive: Drawing ships
 \
 \ ------------------------------------------------------------------------------
 \
-\ This part adds all the visible edges to the ship line heap, so we can draw
-\ them in part 12.
+\ Other entry points:
+\
+\   LL81+2              Draw the contents of the ship line heap, used to draw
+\                       the ship as a dot from SHPPT
 \
 \ ******************************************************************************
 
 .LL78
 
- LDA XX14               \ ???
- CMP CNT
- BCS LL81
+ LDA XX14               \ If XX14 >= CNT, skip to LL81 so we don't loop back for
+ CMP CNT                \ the next edge (CNT was set to the maximum heap size
+ BCS LL81               \ for this ship in part 10, so this checks whether we
+                        \ have just run out of space in the ship line heap, and
+                        \ stops drawing edges if we have)
 
  LDA V                  \ Increment V by 4 so V(1 0) points to the data for the
  CLC                    \ next edge
@@ -40773,14 +40899,16 @@ LOAD_G% = LOAD% + P% - CODE%
 
 .ll81
 
- INC XX17               \ ???
- LDY XX17
- CPY XX20
- BCC LL75
+ INC XX17               \ Increment the edge counter to point to the next edge
+
+ LDY XX17               \ If Y < XX20, which contains the number of edges in
+ CPY XX20               \ the blueprint, loop back to LL75 to process the next
+ BCC LL75               \ edge
 
 .LL81
 
- JMP LL155              \ ???
+ JMP LL155              \ Jump down to part 12 below to draw any remaining lines
+                        \ from the old ship that are still in the ship line heap
 
 \ ******************************************************************************
 \
@@ -41804,40 +41932,53 @@ LOAD_G% = LOAD% + P% - CODE%
 \
 \ ------------------------------------------------------------------------------
 \
-\ This part draws the lines in the ship line heap, which is used both to draw
-\ the ship, and to remove it from the screen.
+\ This part draws any remaining lines from the old ship that are still in the
+\ ship line heap.
 \
 \ ******************************************************************************
 
 .LL155
 
- LDY XX14               \ ???
+ LDY XX14               \ Set Y to the offset in the line heap XX14
 
 .LL27
 
- CPY XX14+1             \ ???
- BCS L78F1
+ CPY XX14+1             \ If Y >= XX14+1, jump to LLEX to return from the ship
+ BCS LLEX               \ drawing routine, because the index in Y is greater
+                        \ than the size of the existing ship line heap, which
+                        \ means we have alrady erased all the old ships lines
+                        \ when drawing the new ship
 
- LDA (XX19),Y
- INY
+                        \ If we get here then Y < XX14+1, which means Y is
+                        \ pointing to an on-screen line from the old ship that
+                        \ we need to erase
+
+ LDA (XX19),Y           \ Fetch the X1 line coordinate from the heap and store
+ INY                    \ it in XX15, incrementing the heap pointer
  STA XX15
- LDA (XX19),Y
- INY
- STA Y1
- LDA (XX19),Y
- INY
- STA X2
- LDA (XX19),Y
- INY
- STA Y2
- JSR LL30
 
- JMP LL27               \ ???
+ LDA (XX19),Y           \ Fetch the Y1 line coordinate from the heap and store
+ INY                    \ it in XX15+1, incrementing the heap pointer
+ STA XX15+1
 
-.L78F1
+ LDA (XX19),Y           \ Fetch the X2 line coordinate from the heap and store
+ INY                    \ it in XX15+2, incrementing the heap pointer
+ STA XX15+2
 
- LDA XX14
- LDY #&00
+ LDA (XX19),Y           \ Fetch the Y2 line coordinate from the heap and store
+ INY                    \ it in XX15+3, incrementing the heap pointer
+ STA XX15+3
+
+ JSR LL30               \ Draw a line from (X1, Y1) to (X2, Y2) to erase it from
+                        \ the screen
+
+ JMP LL27               \ Loop back to LL27 to draw (i.e. erase) the next line
+                        \ from the heap
+
+.LLEX
+
+ LDA XX14               \ Store XX14 in the first byte of the ship line heap
+ LDY #0
  STA (XX19),Y
 
 .LL82
@@ -41849,56 +41990,117 @@ LOAD_G% = LOAD% + P% - CODE%
 \       Name: LLX30
 \       Type: Subroutine
 \   Category: Drawing lines
-\    Summary: Draw a one-segment line using smooth animation
+\    Summary: Draw a ship line using smooth animation, by drawing the ship's new
+\             line and erasing the corresponding old line from the screen
+\
+\ ------------------------------------------------------------------------------
+\
+\ This routine implements smoother ship animation by erasing and redrawing each
+\ individual line in the ship, rather than the approach in the other Acornsoft
+\ versions of the game, which erase the entire existing ship before drawing the
+\ new one.
+\
+\ Here's the new approach in this routine:
+\
+\   * Draw the new line
+\   * Fetch the corresponding existing line (in position XX14) from the heap
+\   * Store the new line in the heap at this position, replacing the old one
+\   * If the existing line we just took from the heap is on-screen, erase it
+\
+\ Arguments:
+\
+\   XX14                The offset within the line heap where we add the new
+\                       line's coordinates
+\
+\   X1                  The screen x-coordinate of the start of the line to add
+\                       to the ship line heap
+\
+\   Y1                  The screen y-coordinate of the start of the line to add
+\                       to the ship line heap
+\
+\   X2                  The screen x-coordinate of the end of the line to add
+\                       to the ship line heap
+\
+\   Y2                  The screen y-coordinate of the end of the line to add
+\                       to the ship line heap
+\
+\   XX19(1 0)           XX19(1 0) shares its location with INWK(34 33), which
+\                       contains the ship line heap address pointer
+\
+\ Returns:
+\
+\   XX14                The offset of the next line in the line heap
 \
 \ ******************************************************************************
 
 .LLX30
 
- LDY XX14               \ ???
- CPY XX14+1
- PHP
- LDX #3
+ LDY XX14               \ Set Y = XX14, to get the offset within the ship line
+                        \ heap where we want to insert our new line
+
+ CPY XX14+1             \ Compare XX14 and XX14+1 and store the flags on the
+ PHP                    \ stack so we can retrieve them later
+
+ LDX #3                 \ We now want to copy the line coordinates (X1, Y1) and
+                        \ (X2, Y2) to XX12...XX12+3, so set a counter to copy
+                        \ 4 bytes
 
 .LLXL
 
- LDA XX15,X
- STA XX12,X
- DEX
- BPL LLXL
+ LDA X1,X               \ Copy the X-th byte of X1/Y1/X2/Y2 to the X-th byte of
+ STA XX12,X             \ XX12
 
- JSR LL30
+ DEX                    \ Decrement the loop counter
 
- LDA (XX19),Y
- STA XX15
+ BPL LLXL               \ Loop back until we have copied all four bytes
 
- LDA XX12
+ JSR LL30               \ Draw a line from (X1, Y1) to (X2, Y2)
+
+ LDA (XX19),Y           \ Set X1 to the Y-th coordinate on the ship line heap,
+ STA X1                 \ i.e. one we are replacing in the heap
+
+ LDA XX12               \ Replace it with the X1 coordinate in XX12
  STA (XX19),Y
- INY
- LDA (XX19),Y
- STA Y1
 
- LDA XX12+1
+ INY                    \ Increment the index to point to the Y1 coordinate
+
+ LDA (XX19),Y           \ Set Y1 to the Y-th coordinate on the ship line heap,
+ STA Y1                 \ i.e. one we are replacing in the heap
+
+ LDA XX12+1             \ Replace it with the Y1 coordinate in XX12+1
  STA (XX19),Y
- INY
- LDA (XX19),Y
+
+ INY                    \ Increment the index to point to the X2 coordinate
+
+ LDA (XX19),Y           \ Set X1 to the Y-th coordinate on the ship line heap,
  STA X2
 
- LDA XX12+2
+ LDA XX12+2             \ Replace it with the X2 coordinate in XX12+2
  STA (XX19),Y
- INY
- LDA (XX19),Y
+
+ INY                    \ Increment the index to point to the Y2 coordinate
+
+ LDA (XX19),Y           \ Set Y2 to the Y-th coordinate on the ship line heap,
  STA Y2
 
- LDA XX12+3
+ LDA XX12+3             \ Replace it with the Y2 coordinate in XX12+3
  STA (XX19),Y
- INY
- STY XX14
 
- PLP
- BCS LL82
+ INY                    \ Increment the index to point to the next coordinate
+ STY XX14               \ and store the updated index in XX14
 
- JMP LL30
+ PLP                    \ Restore the result of the comparison above, so if the
+ BCS LL82               \ original value of XX14 >= XX14+1, then we have already
+                        \ redrawn all the lines from the old ship's line heap,
+                        \ so return from the subroutine (as LL82 contains an
+                        \ RTS)
+
+ JMP LL30               \ Otherwise there are still more lines to erase from the
+                        \ old ship on-screen, so the coordinates in (X1, Y1) and
+                        \ (X2, Y2) that we just pulled from the ship line heap
+                        \ point to a line that is still on-screen, so call LL30
+                        \ to draw this line and erase it from the screen,
+                        \ returning from the subroutine using a tail call
 
 \ ******************************************************************************
 \
@@ -43472,23 +43674,26 @@ LOAD_H% = LOAD% + P% - CODE%
                         \ view), jump to LO2 to return from the subroutine (as
                         \ LO2 contains an RTS)
 
- LDY #&00               \ ???
- CMP #&0F
- BEQ L7D70
+ LDY #0                 \ Set Y to 0, to represent a pulse laser
 
- INY
- CMP #&8F
- BEQ L7D70
+ CMP #POW               \ If the laser power in A is equal to a pulse laser,
+ BEQ SIGHT1             \ jump to SIGHT1 with Y = 0
 
- INY
- CMP #&97
- BEQ L7D70
+ INY                    \ Increment Y to 1, to represent a beam laser
 
- INY
+ CMP #(POW+128)         \ If the laser power in A is equal to a beam laser,
+ BEQ SIGHT1             \ jump to SIGHT1 with Y = 1
 
-.L7D70
+ INY                    \ Increment Y to 2, to represent a military laser
 
- LDA SIGHTCOL,Y
+ CMP #Armlas            \ If the laser power in A is equal to a military laser,
+ BEQ SIGHT1             \ jump to SIGHT1 with Y = 2
+
+ INY                    \ Increment Y to 3, to represent a mining laser
+
+.SIGHT1
+
+ LDA SIGHTCOL,Y         \ Set the colour from the SIGHTCOL table
  STA COL
 
  LDA #128               \ Set QQ19 to the x-coordinate of the centre of the
@@ -43523,8 +43728,15 @@ LOAD_H% = LOAD% + P% - CODE%
 
 .SIGHTCOL
 
- EQUB &0F,&FF,&FF,&0F
- EQUB &FA,&FA,&FA,&FA
+ EQUB YELLOW            \ Pulse laser
+ EQUB CYAN              \ Beam laser
+ EQUB CYAN              \ Military laser
+ EQUB YELLOW            \ Mining laser
+
+ EQUB WHITE             \ These bytes appear to be unuused - perhaps they were
+ EQUB WHITE             \ going to be used to set different colours of laser
+ EQUB WHITE             \ beam for the different lasers?
+ EQUB WHITE
 
 \ ******************************************************************************
 \
@@ -43568,7 +43780,8 @@ LOAD_H% = LOAD% + P% - CODE%
 
 .TTX662
 
- JSR TTX66              \ ???
+ JSR TTX66              \ Call TTX66 to clear the top part of the screen and
+                        \ draw a white border
 
  JSR MT2                \ Switch to Sentence Case when printing extended tokens
 
@@ -43889,11 +44102,12 @@ LOAD_H% = LOAD% + P% - CODE%
  LDA #0                 \ Set A to 0, as this means "key not pressed" in the
                         \ key logger at KL
 
- LDX #17                \ ???
+ LDX #17                \ We want to clear the 17 key logger locations from
+                        \ KL to KY20, so set a counter in Y
 
 .DKL3
 
- STA JSTY,X             \ Store 0 in the Y-th byte of the key logger ???
+ STA JSTY,X             \ Store 0 in the Y-th byte of the key logger
 
  DEX                    \ Decrement the counter
 
@@ -44114,7 +44328,7 @@ LOAD_H% = LOAD% + P% - CODE%
  JSR STARTUP            \ Call STARTUP to set various vectors, interrupts and
                         \ timers
 
- JMP L1377              \ ???
+ JMP SRESET             \ Call SRESET to reset the sound buffers
 
  CLI                    \ Enable interrupts
 
