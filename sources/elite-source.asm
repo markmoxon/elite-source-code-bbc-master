@@ -16988,10 +16988,12 @@ LOAD_C% = LOAD% +P% - CODE%
                         \ By this point, the ship has run out of both energy and
                         \ luck, so it's time to bail
 
- LDA NEWB               \ ???
- AND #&F0
- STA NEWB
- LDY #&24
+ LDA NEWB               \ Clear bits 0-3 of the NEWB flags, so the ship is no
+ AND #%11110000         \ longer a trader, a bounty hunter, hostile or a pirate
+ STA NEWB               \ and the escape pod we are about to spawn won't inherit
+                        \ any of these traits
+
+ LDY #36                \ Update the NEWB flags in the ship's data block
  STA (INF),Y
 
  LDA #0                 \ Set the AI flag to 0 to disable AI, hostility and
@@ -17290,8 +17292,8 @@ LOAD_C% = LOAD% +P% - CODE%
 
  ASL A                  \ Shift A left to double it and drop the sign bit
 
- CMP #32                \ If A >= 32 then jump to TA12, as the ship is already
- BCS TA12               \ in the process of rolling ???
+ CMP #32                \ If A >= 32 then jump to TA6, as the ship is already
+ BCS TA6                \ in the process of rolling
 
  LDY #22                \ Set (A X) = sidev . XX15
  JSR TAS3               \
@@ -32465,15 +32467,15 @@ LOAD_E% = LOAD% + P% - CODE%
 
 .TT17
 
- LDA QQ11               \ If this not the space view, skip the following
- BNE P%+7               \ three instructions
+ LDA QQ11               \ If this not the space view, skip the following three
+ BNE P%+7               \ instructions
 
  JSR DOKEY              \ This is the space view, so scan the keyboard for
                         \ flight controls and pause keys, (or the equivalent on
                         \ joystick) and update the key logger, setting KL to the
                         \ key pressed
 
- TXA                    \ Transfer the value of X into A ???
+ TXA                    \ Transfer the value of the key pressed from X to A
 
  RTS                    \ Return from the subroutine
 
@@ -32487,9 +32489,11 @@ LOAD_E% = LOAD% + P% - CODE%
  LDA JSTY               \ Fetch the joystick pitch, ranging from 1 to 255 with
                         \ 128 as the centre point
 
- JSR TJS1               \ Call TJS1 just below to ???
+ JSR TJS1               \ Call TJS1 just below to set A to a value between -4
+                        \ and +4 depending on the joystick pitch value (moving
+                        \ the stick up and down)
 
- TAY                    \ ???
+ TAY                    \ Copy the result into Y
 
  LDA JSTX               \ Fetch the joystick roll, ranging from 1 to 255 with
                         \ 128 as the centre point
@@ -32498,11 +32502,11 @@ LOAD_E% = LOAD% + P% - CODE%
                         \ works in the opposite way to moving a cursor on-screen
                         \ in terms of left and right
 
- JSR TJS1               \ Call TJS1 just below to set Y to a value between -2
-                        \ and +2 depending on the joystick roll value (moving
+ JSR TJS1               \ Call TJS1 just below to set A to a value between -4
+                        \ and +4 depending on the joystick roll value (moving
                         \ the stick sideways)
 
- TAX                    \ Copy the value of A into X ???
+ TAX                    \ Copy the value of A into X
 
  LDA KL                 \ Set A to the value of KL (the key pressed)
 
@@ -32515,52 +32519,87 @@ LOAD_E% = LOAD% + P% - CODE%
  LDX #0                 \ Set the results, X = Y = 0
  LDY #0
 
- CMP #&8C               \ ???
+ CMP #&8C               \ If left arrow was pressed, set X = X - 1
  BNE P%+3
  DEX
 
- CMP #&8D
+ CMP #&8D               \ If right arrow was pressed, set X = X + 1
  BNE P%+3
  INX
 
- CMP #&8E
+ CMP #&8E               \ If down arrow was pressed, set Y = Y - 1
  BNE P%+3
  DEY
 
- CMP #&8F
+ CMP #&8F               \ If up arrow was pressed, set Y = Y + 1
  BNE P%+3
  INY
 
- PHX
- LDA #0
- JSR DKS4
+ PHX                    \ Store X (which contains the change in the
+                        \ x-coordinate) on the stack so we can retrieve it later
 
- BMI P%+6
+ LDA #0                 \ Call DKS4 to check whether the SHIFT key is being
+ JSR DKS4               \ pressed
 
- PLX
- LDA KL
- RTS
+ BMI P%+6               \ If SHIFT is being pressed, skip the next three
+                        \ instructions
 
- PLA
- ASL A
- ASL A
- TAX
- TYA
- ASL A
- ASL A
- TAY
- LDA KL
- RTS
+ PLX                    \ SHIFT is not being pressed, so retrieve the value of X
+                        \ we stored above so we can return it
+
+ LDA KL                 \ Set A to the value of KL (the key pressed)
+
+ RTS                    \ Return from the subroutine
+
+ PLA                    \ Pull the value of X from the stack into A, so A now
+                        \ contains the change in the x-coordinate
+
+ ASL A                  \ SHIFT is being held down, so quadruple the value of A
+ ASL A                  \ (i.e. SHIFT moves the cursor at four times the speed
+                        \ when using the joystick)
+
+ TAX                    \ Put the amended value of A back into X
+
+ TYA                    \ Now to do the same with the change in y-coordinate, so
+                        \ fetch the value of Y into A
+
+ ASL A                  \ SHIFT is being held down, so quadruple the value of A
+ ASL A                  \ (i.e. SHIFT moves the cursor at four times the speed
+                        \ when using the joystick)
+
+ TAY                    \ Put the amended value of A back into Y
+
+ LDA KL                 \ Set A to the value of KL (the key pressed)
+
+ RTS                    \ Return from the subroutine
 
 .TJS1
 
+                        \ This routine calculates the following:
+                        \
+                        \   A = round(A / 16) - 4
+                        \
+                        \ This set A to a value between -4 and +4, given an
+                        \ initial value ranging from 1 to 255 with 128 as
+                        \ the centre point
+
+ LSR A                  \ Set A = A / 16
+ LSR A                  \
+ LSR A                  \ and C contains the last bit to be shifted out
  LSR A
  LSR A
- LSR A
- LSR A
- LSR A
- ADC #0
- SBC #3
+
+ ADC #0                 \ If that last bit was a 1, this increments A, so
+                        \ this effectively implements a rounding function,
+                        \ where 0.5 and above get rounded up
+
+ SBC #3                 \ The addition will not overflow, so the C flag is
+                        \ clear at this point, so this performs:
+                        \
+                        \   A = A - 3 - (1 - C)
+                        \     = A - 3 - (1 - 0)
+                        \     = A - 3 - 1
+                        \     = A - 4
 
  RTS                    \ Return from the subroutine
 
@@ -35995,54 +36034,65 @@ ENDIF
  JSR TRADE              \ Set the palette for trading screens and switch the
                         \ current colour to white
 
- LDA #1                 \ ???
- JSR DETOK
+ LDA #1                 \ Print extended token 1, the disc access menu, which
+ JSR DETOK              \ presents these options:
+                        \
+                        \   1. Load New Commander
+                        \   2. Save Commander {commander name}
+                        \   3. Catalogue
+                        \   4. Delete A File
+                        \   5. Default JAMESON
+                        \   6. Exit
 
  JSR t                  \ Scan the keyboard until a key is pressed, returning
                         \ the ASCII code in A and X
 
- CMP #&31
- BEQ MASTER_LOAD
+ CMP #'1'               \ Option 1 was chosen, so jump to LD1 to load a new
+ BEQ LD1                \ commander
 
- CMP #&32
- BEQ SV1
+ CMP #'2'               \ Option 2 was chosen, so jump to LD1 to save the
+ BEQ SV1                \ current commander
 
- CMP #&33
- BEQ CAT
+ CMP #'3'               \ Option 3 was chosen, so jump to CAT to catalogue a
+ BEQ CAT                \ disc
 
- CMP #&34
- BNE L69FB
+ CMP #'4'               \ If option 4 wasn't chosen, skip the next two
+ BNE P%+8               \ instructions
 
- JSR DELT
+ JSR DELT               \ Option 4 was chosen, so call DELT to delete a file
 
- JMP SVE                \ Jump to SVE to display the disc access menu and return
-                        \ from the subroutine using a tail call
+ JMP SVE                \ Jump to SVE to display the disc access menu again and
+                        \ return from the subroutine using a tail call
 
-.L69FB
+ CMP #'5'               \ If option 5 wasn't chosen, skip to exit to exit the menu
+ BNE exit
 
- CMP #&35
- BNE L6A0F
-
- LDA #&E0
+ LDA #224               \ Print extended token 224 ("ARE YOU SURE?")
  JSR DETOK
 
- JSR GETYN
+ JSR GETYN              \ Call GETYN to wait until either "Y" or "N" is pressed
 
- BCC L6A0F
+ BCC exit               \ If "N" was pressed, jump to exit
 
- JSR JAMESON            \ Call JAMESON to set the last saved commander to the
-                        \ default "JAMESON" commander
+ JSR JAMESON            \ Otherwise "Y" was pressed, so call JAMESON to set the
+                        \ last saved commander to the default "JAMESON"
+                        \ commander
 
- JMP DFAULT
+ JMP DFAULT             \ Jump to DFAULT to reset the current commander data
+                        \ block to the last saved commander, returning from the
+                        \ subroutine using a tail call
 
-.L6A0F
+.exit
 
- CLC
- RTS
+ CLC                    \ Option 5 was chosen, so clear the C flag to indicate
+                        \ that nothing was loaded
+
+ RTS                    \ Return from the subroutine
 
 .CAT
 
- JSR CATS
+ JSR CATS               \ Call CATS to ask for a drive number, catalogue that
+                        \ disc and update the catalogue command at CTLI
 
  JSR t                  \ Scan the keyboard until a key is pressed, returning
                         \ the ASCII code in A and X
@@ -36050,24 +36100,33 @@ ENDIF
  JMP SVE                \ Jump to SVE to display the disc access menu and return
                         \ from the subroutine using a tail call
 
-.MASTER_LOAD
+.LD1
 
- JSR GTNMEW
+ JSR GTNMEW             \ If we get here then option 1 (load) was chosen, so
+                        \ call GTNMEW to fetch the name of the commander file
+                        \ to load (including drive number and directory) into
+                        \ INWK
 
- JSR GTDRV
+ JSR GTDRV              \ Get an ASCII disc drive drive number from the keyboard
+                        \ in A, setting the C flag if an invalid drive number
+                        \ was entered
 
- BCS L6A2C
+ BCS LDdone             \ If the C flag is set, then an invalid drive number was
+                        \ entered, so return from the subroutine (as DELT-1
+                        \ contains an RTS)
 
- STA LDLI+6
- JSR LOD
+ STA LDLI+6             \ Store the ASCII drive number in LDLI+6, which is the
+                        \ drive character of the load filename string ":1.E."
 
- JSR TRNME
+ JSR LOD                \ Call LOD to load the commander file
 
- SEC
+ JSR TRNME              \ Transfer the commander filename from INWK to NA%
 
-.L6A2C
+ SEC                    \ Set the C flag to indicate we loaded a new commander
 
- RTS
+.LDdone
+
+ RTS                    \ Return from the subroutine
 
 .SV1
 
@@ -36991,10 +37050,12 @@ ENDIF
 
 .DOKEY
 
- JSR RDKEY-1            \ ???
+ JSR RDKEY-1            \ Scan the keyboard for a key press and return the
+                        \ internal key number in X (or 0 for no key press)
 
- LDA auto               \ ???
- BEQ L6CF2
+ LDA auto               \ If auto is 0, then the docking computer is not
+ BEQ DK16               \ currently activated, so jump to DK16 to skip the
+                        \ docking computer manoeuvring code below
 
 .auton
 
@@ -37032,19 +37093,23 @@ ENDIF
  LDA #&FF               \ Set A = &FF, which we can insert into the key logger
                         \ to "fake" the docking computer working the keyboard
 
- LDX #&0F               \ Set X = 0, so we "press" KY1 below ("?", slow down)
-                        \ ???
+ LDX #15                \ Set X = 0, so we "press" KY+15, i.e. KY1, below
+                        \ ("?", slow down)
 
  LDY INWK+28            \ If the updated acceleration in byte #28 is zero, skip
  BEQ DK11               \ to DK11
 
- BMI L6CC2
+ BMI P%+4               \ If the updated acceleration is negative, skip the
+                        \ following instruction
 
- LDX #&0B
+ LDX #11                \ Set X = 11, so we "press" KY+11, i.e. KY2, with the next
+                        \ instruction (Space, speed up)
 
-.L6CC2
-
- STA KL,X
+ STA KL,X               \ Store &FF in either KY1 or KY2 to "press" the relevant
+                        \ key, depending on whether the updated acceleration is
+                        \ negative (in which case we "press" KY1, "?", to slow
+                        \ down) or positive (in which case we "press" KY2,
+                        \ Space, to speed up)
 
 .DK11
 
@@ -37054,7 +37119,8 @@ ENDIF
  LDA #128               \ Set A = 128, which indicates no change in roll when
                         \ stored in JSTX (i.e. the centre of the roll indicator)
 
- LDX #&0D               \ ???
+ LDX #13                \ Set X = 13, so we "press" KY+13, i.e. KY3, below
+                        \ ("<", increase roll)
 
  ASL INWK+29            \ Shift ship byte #29 left, which shifts bit 7 of the
                         \ updated roll counter (i.e. the roll direction) into
@@ -37064,11 +37130,11 @@ ENDIF
                         \ roll counter is zero, so jump to DK12 set JSTX to 128,
                         \ to indicate there's no change in the roll
 
- BCC L6CD0              \ ???
+ BCC P%+4               \ If the C flag is clear, skip the following instruction
 
- LDX #&0E
-
-.L6CD0
+ LDX #14                \ The C flag is set, i.e. the direction of the updated
+                        \ roll counter is negative, so set X to 14 so we
+                        \ "press" KY+14. i.e. KY4, below (">", decrease roll)
 
  BIT INWK+29            \ We shifted the updated roll counter to the left above,
  BPL DK14               \ so this tests bit 6 of the original value, and if it
@@ -37086,7 +37152,9 @@ ENDIF
 
 .DK14
 
- STA KL,X               \ ???
+ STA KL,X               \ Store A in either KY3 or KY4, depending on whether
+                        \ the updated roll rate is increasing (KY3) or
+                        \ decreasing (KY4)
 
  LDA JSTX               \ Fetch A from JSTX so the next instruction has no
                         \ effect
@@ -37102,7 +37170,8 @@ ENDIF
                         \ stored in JSTX (i.e. the centre of the pitch
                         \ indicator)
 
- LDX #&06               \ ???
+ LDX #6                 \ Set X = 6, so we "press" KY+6, i.e. KY5, below
+                        \ ("X", decrease pitch)
 
  ASL INWK+30            \ Shift ship byte #30 left, which shifts bit 7 of the
                         \ updated pitch counter (i.e. the pitch direction) into
@@ -37112,13 +37181,16 @@ ENDIF
                         \ pitch counter is zero, so jump to DK13 set JSTY to
                         \ 128, to indicate there's no change in the pitch
 
- BCS L6CEC              \ ???
+ BCS P%+4               \ If the C flag is set, skip the following instruction
 
- LDX #&08
+ LDX #8                 \ Set X = 6, so we "press" KY+8, i.e. KY6, with the next
+                        \ instruction ("S", increase pitch)
 
-.L6CEC
-
- STA KL,X
+ STA KL,X               \ Store 128 in either KY5 or KY6 to "press" the relevant
+                        \ key, depending on whether the pitch direction is
+                        \ negative (in which case we "press" KY5, "X", to
+                        \ decrease the pitch) or positive (in which case we
+                        \ "press" KY6, "S", to increase the pitch)
 
  LDA JSTY               \ Fetch A from JSTY so the next instruction has no
                         \ effect
@@ -37127,64 +37199,100 @@ ENDIF
 
  STA JSTY               \ Store A in JSTY to update the current pitch rate
 
-.L6CF2
+.DK16
 
- LDA JSTK               \ ???
- BEQ DK15
+ LDA JSTK               \ If JSTK is zero, then we are configured to use the
+ BEQ DK15               \ keyboard rather than the joystick, so jump to DK15 to
+                        \ skip reading the joystick
 
- LDA ADCH1
- EOR JSTE
- ORA #&01
- STA JSTX
- LDA ADCH2
- EOR #&FF
- EOR JSTE
- EOR JSTGY
- STA JSTY
- LDA VIA+&40
- AND #&10
- BNE DK4
+ LDA ADCH1              \ Fetch the high byte of the joystick X value
 
- LDA #&FF
- STA KY7
- BNE DK4
+ EOR JSTE               \ The high byte A is now EOR'd with the value in
+                        \ location JSTE, which contains &FF if both joystick
+                        \ channels are reversed and 0 otherwise (so A now
+                        \ contains the high byte but inverted, if that's what
+                        \ the current settings say)
+
+ ORA #1                 \ Ensure the value is at least 1
+
+ STA JSTX               \ Store the resulting joystick X value in JSTX
+
+ LDA ADCH2              \ Fetch the high byte of the joystick Y value
+
+ EOR #&FF               \ This EOR is used in conjunction with the EOR JSTGY
+                        \ below, as having a value of 0 in JSTGY means we have
+                        \ to invert the joystick Y value, and this EOR does
+                        \ that part
+
+ EOR JSTE               \ The high byte A is now EOR'd with the value in
+                        \ location JSTE, which contains &FF if both joystick
+                        \ channels are reversed and 0 otherwise (so A now
+                        \ contains the high byte but inverted, if that's what
+                        \ the current settings say)
+
+ EOR JSTGY              \ JSTGY will be 0 if the game is configured to reverse
+                        \ the joystick Y channel, so this EOR along with the
+                        \ EOR #&FF above does exactly that
+
+ STA JSTY               \ Store the resulting joystick Y value in JSTY
+
+ LDA VIA+&40            \ Read 6522 System VIA input register IRB (SHEILA &40)
+
+ AND #%00010000         \ Bit 4 of IRB (PB4) is clear if joystick 1's fire
+                        \ button is pressed, otherwise it is set, so AND'ing
+                        \ the value of IRB with %10000 extracts this bit
+
+ BNE DK4                \ If the joystick fire button is not being pressed,
+                        \ jump to DK4 to scan for other keys
+
+ LDA #&FF               \ Update the key logger at KY7 to "press" the "A" (fire)
+ STA KY7                \ button
+
+ BNE DK4                \ Jump to DK4 to scan for other keys (this BNE is
+                        \ effectively a JMP as A is never 0)
 
 .DK15
 
- LDX JSTX               \ ???
- LDA #&07
- LDY KY3
- BEQ L6D26
+ LDX JSTX               \ Set X = JSTX, the current roll rate (as shown in the
+                        \ RL indicator on the dashboard)
 
- JSR BUMP2
+ LDA #7                 \ Set A to 7, which is the amount we want to alter the
+                        \ roll rate by if the roll keys are being pressed
 
-.L6D26
+ LDY KY3                \ If the "<" key is not being pressed, skip the next
+ BEQ P%+5               \ instruction
 
- LDY KY4
- BEQ L6D2D
+ JSR BUMP2              \ The "<" key is being pressed, so call the BUMP2
+                        \ routine to increase the roll rate in X by A
 
- JSR REDU2
+ LDY KY4                \ If the ">" key is not being pressed, skip the next
+ BEQ P%+5               \ instruction
 
-.L6D2D
+ JSR REDU2              \ The "<" key is being pressed, so call the REDU2
+                        \ routine to decrease the roll rate in X by A, taking
+                        \ the keyboard auto re-centre setting into account
 
- STX JSTX
- ASL A
- LDX JSTY
- LDY KY5
- BEQ L6D39
+ STX JSTX               \ Store the updated roll rate in JSTX
 
- JSR REDU2
+ ASL A                  \ Double the value of A, to 14
 
-.L6D39
+ LDX JSTY               \ Set X = JSTY, the current pitch rate (as shown in the
+                        \ DC indicator on the dashboard)
 
- LDY KY6
- BEQ L6D40
+ LDY KY5                \ If the "X" key is not being pressed, skip the next
+ BEQ P%+5               \ instruction
 
- JSR BUMP2
+ JSR REDU2              \ The "X" key is being pressed, so call the REDU2
+                        \ routine to decrease the pitch rate in X by A, taking
+                        \ the keyboard auto re-centre setting into account
 
-.L6D40
+ LDY KY6                \ If the "S" key is not being pressed, skip the next
+ BEQ P%+5               \ instruction
 
- STX JSTY
+ JSR BUMP2              \ The "S" key is being pressed, so call the BUMP2
+                        \ routine to increase the pitch rate in X by A
+
+ STX JSTY               \ Store the updated roll rate in JSTY
 
                         \ Fall through into DK4 to scan for other keys
 
@@ -44182,10 +44290,18 @@ LOAD_H% = LOAD% + P% - CODE%
 \   Category: Keyboard
 \    Summary: Scan the keyboard for key presses
 \
+\ ------------------------------------------------------------------------------
+\
+\ Other entry points:
+\
+\   RDKEY-1             Only scan the keyboard for valid BCD key numbers
+
 \ ******************************************************************************
 
- SED                    \ ???
-
+ SED                    \ Set the D flag to enter decimal mode. Because
+                        \ internal key numbers are all valid BCD (Binary Coded
+                        \ Decimal) numbers, setting this flag ensures we only
+                        \ loop through valid key numbers
 .RDKEY
 
  TYA
