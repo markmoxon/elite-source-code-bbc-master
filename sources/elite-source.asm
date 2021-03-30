@@ -1753,9 +1753,9 @@ ORG &0E41
                         \ copied from here to the last saved commander block at
                         \ NA%, CHK and CHK2 get overwritten
 
-NT% = SVC + 2 - TP      \ This sets the variable NT% to the size of the current
+NT% = SVC + 3 - TP      \ This sets the variable NT% to the size of the current
                         \ commander data block, which starts at TP and ends at
-                        \ SVC+2 (inclusive)
+                        \ SVC+3 (inclusive), i.e. with the last checksum byte
 
  SKIP 1                 \ This byte appears to be unused
 
@@ -2795,10 +2795,10 @@ LOAD_A% = LOAD%
  LDA #%00001111         \ Set bits 1 and 2 of the Access Control Register at
  STA VIA+&34            \ SHEILA+&34 to switch screen memory into &3000-&7FFF
 
- LDX #&90               \ We want to swap zero page from &0900 and up, so set an
+ LDX #&90               \ We want to swap zero page from &0090 and up, so set an
                         \ index in X, starting from &90
 
-.LZPL1
+.SWPL1
 
  LDA ZP,X               \ Swap the X-th byte of ZP with the X-th byte of &3000
  LDY &3000,X
@@ -2808,7 +2808,7 @@ LOAD_A% = LOAD%
  INX                    \ Increment the loop counter
 
  CPX #&F0               \ Loop back until we have swapped up to location &00EF
- BNE LZPL1
+ BNE SWPL1
 
  LDA #%00001001         \ Clear bits 1 and 2 of the Access Control Register at
  STA VIA+&34            \ SHEILA+&34 to switch main memory back into &3000-&7FFF
@@ -8824,6 +8824,15 @@ ELSE
 
 ENDIF
 
+\ ******************************************************************************
+\
+\       Name: UP
+\       Type: Workspace
+\   Category: Workspaces
+\    Summary: Configuration variables
+\
+\ ******************************************************************************
+
 .COMC
 
  SKIP 1                 \ The colour of the dot on the compass
@@ -9032,28 +9041,46 @@ ENDIF
 \   Category: Utility routines
 \    Summary: Unscramble the main code
 \
+\ ------------------------------------------------------------------------------
+\
+\ The main game code and data are encrypted. This routine decrypts the game code
+\ in two parts: the main game code between DOENTRY and F%, and the game data
+\ between XX21 and the end of the game data at &BFFF.
+\
+\ In the BeebAsm version, the encryption is done by elite-checksum.py, but in
+\ the original this would have been done by the BBC BASIC build scripts.
+\
 \ ******************************************************************************
 
 .scramble
 
- LDA #&C0               \ See elite-checksum.py ???
- STA FRIN
- LDA #&2C
+ LDA #LO(DOENTRY-1)     \ Set FRIN(1 0) = DECRYPT-1 as the low address of the
+ STA FRIN               \ decryption block, so we decrypt from just after the
+ LDA #HI(DOENTRY-1)     \ DECRYPT routine
  STA FRIN+1
 
- LDA #&7F
- LDY #&47
- LDX #&19
- JSR DECRYPT
+ LDA #HI(F%-1)          \ Set (A Y) to F% as the high address of the decryption
+ LDY #LO(F%-1)          \ block, so we decrypt to the end of the main game code
+                        \ at F%
 
- LDA #&FF
- STA FRIN
- LDA #&7F
+ LDX #&19               \ Set X = &19 as the decryption seed (the value used to
+                        \ encrypt the code, which is done in elite-checksum.py)
+
+ JSR DECRYPT            \ Call DECRYPT to decrypt between DOENTRY and F%
+
+ LDA #LO(XX21-1)        \ Set FRIN(1 0) = XX21-1 as the low address of the
+ STA FRIN               \ decryption block
+ LDA #HI(XX21-1)
  STA FRIN+1
 
- LDA #&B1
- LDY #&FF
- LDX #&62
+ LDA #&B1               \ Set (A Y) = &B1FF as the high address of the
+ LDY #&FF               \ decryption block
+
+ LDX #&62               \ Set X = &62 as the decryption seed (the value used to
+                        \ encrypt the code, which is done in elite-checksum.py)
+
+                        \ Fall througn into DECRYPT to decrypt between XX21 and
+                        \ &B1FF
 
 \ ******************************************************************************
 \
@@ -9062,36 +9089,53 @@ ENDIF
 \   Category: Utility routines
 \    Summary: Decrypt a multi-page block of memory
 \
+\ ------------------------------------------------------------------------------
+\
+\ Arguments:
+\
+\   FRIN(1 0)           The start address of the block to decrypt
+\
+\   (A Y)               The end address of the block to decrypt
+\
+\   X                   The decryption seed
+\
 \ ******************************************************************************
 
 .DECRYPT
 
- STX T                  \ ???
- STA SC+1
- LDA #&00
- STA SC
+ STX T                  \ Store the decryption seed in T as our starting point
+
+ STA SC+1               \ Set SC(1 0) = (A 0) to point to the start of page A,
+ LDA #0                 \ so we can use SC(1 0) + Y as our pointer to the next
+ STA SC                 \ byte to decrypt
 
 .DEL
 
- LDA (SC),Y
- SEC
+ LDA (SC),Y             \ Set A to the Y-th byte of SC(1 0)
+
+ SEC                    \ Set A = A - T
  SBC T
- STA (SC),Y
- STA T
- TYA
- BNE P%+4
 
- DEC SC+1
+ STA (SC),Y             \ Update the Y-th byte of SC to the new value in A
 
- DEY
- CPY FRIN
- BNE DEL
+ STA T                  \ Update T with the new value in A
 
- LDA SC+1
- CMP FRIN+1
- BNE DEL
+ TYA                    \ Set A to the current byte index in Y
 
- RTS
+ BNE P%+4               \ If A <> 0 then decrement the high byte of SC(1 0) to
+ DEC SC+1               \ point to the previous page
+
+ DEY                    \ Decrement the byte pointer
+
+ CPY FRIN               \ Loop back to decrypt the next byte, until Y = the low
+ BNE DEL                \ byte of FRIN(1 0), at which point we have decrypted a
+                        \ whole page
+
+ LDA SC+1               \ Check whether SC(1 0) matches FRIN(1 0) and loop back
+ CMP FRIN+1             \ to decrypt the next byte until it does, at which point
+ BNE DEL                \ we have decrypted the whole block
+
+ RTS                    \ Return from the subroutine
 
  EQUB &B7, &AA          \ These bytes appear to be unused
  EQUB &45, &23
@@ -9585,7 +9629,8 @@ ENDIF
                         \ any more (or it never was), so skip the following
                         \ instruction
 
- JSR BOMBFX2            \ Call BOMBFX2 to show the energy bomb effect
+ JSR BOMBSFX            \ Call BOMBSFX to make the sound of our energy bomb
+                        \ going off
 
 .MA76
 
@@ -10507,7 +10552,8 @@ ENDIF
  BPL MA77               \ MA24 above), then BOMB is now negative, so this skips
                         \ to MA77 if our energy bomb is not going off
 
- JSR BOMBFX             \ ???
+ JSR BOMBFX             \ Call BOMBFX to make the sound of our energy bomb
+                        \ going off
 
  ASL BOMB               \ We set off our energy bomb, so rotate BOMB to the
                         \ left by one place. BOMB was rotated left once already
@@ -10520,7 +10566,8 @@ ENDIF
  BMI MA77               \ If the result has bit 7 set, skip the following
                         \ instruction
 
- JSR L31AC              
+ JSR BOMBLINES          \ Our energy bomb is going off, so call BOMBLINES to
+                        \ draw the zigzag "electricity" lines
 
 .MA77
 
@@ -11023,22 +11070,23 @@ ENDIF
 
 \ ******************************************************************************
 \
-\       Name: L31AC
+\       Name: BOMBLINES
 \       Type: Subroutine
-\   Category: Drawing lines
-\    Summary: ??? energy bomb
+\   Category: Flight
+\    Summary: Draw the zigzag "electricity" lines for the energy bomb
 \
 \ ******************************************************************************
 
-.L31AC
+.BOMBLINES
 
- LDA #&FF
+ LDA #CYAN              \ Change the current colour to cyan
  STA COL
 
- LDA QQ11
- BNE L31DE
+ LDA QQ11               \ If the current view is non-zero (i.e. not a space
+ BNE BOMBRTS            \ view), return from the subroutine (as L31DE contains
+                        \ an RTS)
 
- LDY #&01
+ LDY #1
 
  LDA L321D
  STA XX12
@@ -11046,7 +11094,7 @@ ENDIF
  LDA L3227
  STA XX12+1
 
-.L31C0
+.BOMBL1
 
  LDA XX12
  STA X1
@@ -11064,50 +11112,56 @@ ENDIF
 
  STA XX12+1
 
- JSR LL30
+ JSR LL30               \ Draw a line from (X1, Y1) to (X2, Y2)
 
- INY
- CPY #&0A
- BCC L31C0
+ INY                    \ Increment the loop counter
 
-.L31DE
+ CPY #10                \ If Y < 10, loop back until we have drawn all the lines
+ BCC BOMBL1
 
- RTS
+.BOMBRTS
+
+ RTS                    \ Return from the subroutine
 
 \ ******************************************************************************
 \
 \       Name: BOMBFX
 \       Type: Subroutine
-\   Category: Screen mode
-\    Summary: ???
+\   Category: Flight
+\    Summary: Draw the "electricity" lines and make the sound of the energy bomb
+\             going off
 \
 \ ******************************************************************************
 
 .BOMBFX
 
- JSR P%+3
-
+ JSR P%+3               \ This pair of JSRs runs the following code four times
  JSR P%+3
 
  LDY #6                 \ Call the NOISE routine with Y = 6 to make the sound of
  JSR NOISE              \ an energy bomb going off
 
- JSR L31AC
+ JSR BOMBLINES          \ Our energy bomb is going off, so call BOMBLINES to
+                        \ draw the zigzag "electricity" lines
+
+                        \ Fall through into BOMBSFX to make the sound of the
+                        \ energy bomb going off
 
 \ ******************************************************************************
 \
-\       Name: BOMBFX2
+\       Name: BOMBSFX
 \       Type: Subroutine
-\   Category: Screen mode
-\    Summary: ???
+\   Category: Flight
+\    Summary: Make the sound of the energy bomb going off, randomise the energy
+\             bomb "electricity" lines and draw them again
 \
 \ ******************************************************************************
 
-.BOMBFX2
+.BOMBSFX
 
  LDY #0
 
-.L31EF
+.BOMBSL1
 
  JSR DORND
 
@@ -11123,7 +11177,7 @@ ENDIF
 
  INY
  CPY #&0A
- BCC L31EF
+ BCC BOMBSL1
 
  LDX #&00
  STX L321D+9
@@ -11132,13 +11186,16 @@ ENDIF
 
  STX L321D
 
- BCS L31AC
+ BCS BOMBLINES          \ Our energy bomb is going off, so call BOMBLINES to
+                        \ draw the zigzag "electricity" lines and return from
+                        \ the subroutine using a tail call (this BCS is
+                        \ effectively a JMP as we passed through the BCC above)
 
 \ ******************************************************************************
 \
 \       Name: L3213
 \       Type: Variable
-\   Category: Screen mode
+\   Category: Flight
 \    Summary: ???
 \
 \ ******************************************************************************
@@ -11166,7 +11223,7 @@ ENDIF
 \
 \       Name: L321D
 \       Type: Variable
-\   Category: Screen mode
+\   Category: Flight
 \    Summary: ???
 \
 \ ******************************************************************************
@@ -11179,7 +11236,7 @@ ENDIF
 \
 \       Name: L3227
 \       Type: Variable
-\   Category: Screen mode
+\   Category: Flight
 \    Summary: ???
 \
 \ ******************************************************************************
@@ -12340,7 +12397,7 @@ ENDIF
 \
 \ Contains the default commander data, with the name at NA% and the data at
 \ NA%+8 onwards. The size of the data block is given in NT% (which also includes
-\ the two checksum bytes that follow this block. This block is initially set up
+\ the two checksum bytes that follow this block). This block is initially set up
 \ with the default commander, which can be maxed out for testing purposes by
 \ setting Q% to TRUE.
 \
@@ -28472,25 +28529,30 @@ LOAD_E% = LOAD% + P% - CODE%
 
 \ ******************************************************************************
 \
-\       Name: Unused2
+\       Name: SWAPZP2
 \       Type: Subroutine
 \   Category: Utility routines
-\    Summary: ???
+\    Summary: An unused placeholder routine for swapping zero page bytes
 \
 \ ******************************************************************************
 
- LDX #&15               \ This code appears to be unused
+.SWAPZP2
 
-.L58B9
+ LDX #&15               \ This routine starts copying zero page from &0015 and
+                        \ up, using X as an index
 
- LDA ZP,X
- LDY ZP,X
- STA ZP,X
+.SWPL2
+
+ LDA ZP,X               \ These instructions have no effect, though they look
+ LDY ZP,X               \ like they may have been used to swap two sets of bytes
+ STA ZP,X               \ within zero page
  STY ZP,X
- INX
- BNE L58B9
 
- RTS
+ INX                    \ Increment the loop counter
+
+ BNE SWPL2              \ Loop back for the next byte
+
+ RTS                    \ Return from the subroutine
 
 \ ******************************************************************************
 \
@@ -33196,31 +33258,46 @@ LOAD_F% = LOAD% + P% - CODE%
 
 \ ******************************************************************************
 \
-\       Name: Unused3
+\       Name: HEXPRNT
 \       Type: Subroutine
 \   Category: Text
-\    Summary: ???
+\    Summary: Print a number in hexadecimal (unused)
+\
+\ ------------------------------------------------------------------------------
+\
+\ Arguments:
+\
+\   A                   The number to print
 \
 \ ******************************************************************************
 
- PHA                    \ This code appears to be unused
- LSR A
- LSR A
- LSR A
- LSR A
- JSR P%+6
+.HEXPRNT
 
- PLA
- AND #&0F
+ PHA                    \ Store A on the stack so we can grab the lower nibble
+                        \ from it later
+ 
+ LSR A                  \ Shift A right so that it contains the upper nibble
+ LSR A                  \ of the original argument
+ LSR A
+ LSR A
 
- CMP #&0A
+ JSR HEXP               \ Call HEXP below to print 0-F for the upper nibble
+
+ PLA                    \ Restore A from the stack
+
+ AND #%00001111         \ Extract the lower nibble and fall through into HEXP
+                        \ to print 0-F for the lower nibble
+
+.HEXP
+
+ CMP #10                \ If A >= 10, skip the next three instructions
  BCS P%+7
 
- ADC #&30
- JMP CHPR
+ ADC #'0'               \ A < 10, so print the number in A as a digit 0-9 and
+ JMP CHPR               \ return from the subroutine using a tail call
 
- ADC #&36
- JMP CHPR
+ ADC #'6'               \ A >= 10, so print the number in A as a digit A-F and
+ JMP CHPR               \ return from the subroutine using a tail call
 
 \ ******************************************************************************
 \
@@ -35188,7 +35265,7 @@ LOAD_F% = LOAD% + P% - CODE%
 
 .DFAULT
 
- LDX #NT%+9             \ The size of the last saved commander data block is NT%
+ LDX #NT%+8             \ The size of the last saved commander data block is NT%
                         \ bytes, and it is preceded by the 8 bytes of the
                         \ commander name (seven characters plus a carriage
                         \ return). The commander data block at NAME is followed
@@ -35196,10 +35273,7 @@ LOAD_F% = LOAD% + P% - CODE%
                         \ name and data from the "last saved" buffer at NA% to
                         \ the current commander workspace at NAME. So we set up
                         \ a counter in X for the NT% + 8 bytes that we want to
-                        \ copy, plus we also copy an extra byte from the end of
-                        \ the commander data block which isn't used (perhaps
-                        \ this byte was going to be used for something, but
-                        \ wasn't in the end)
+                        \ copy
 
 .QUL1
 
@@ -35468,8 +35542,8 @@ ENDIF
 
 .CHECK
 
- LDX #NT%-2             \ Set X to the size of the commander data block, less
-                        \ 2 (as there are two checksum bytes)
+ LDX #NT%-3             \ Set X to the size of the commander data block, less
+                        \ 3 (as there are two checksum bytes and the save count)
 
  CLC                    \ Clear the C flag so we can do addition without the
                         \ C flag affecting the result
@@ -36064,8 +36138,8 @@ ENDIF
  JMP SVE                \ Jump to SVE to display the disc access menu again and
                         \ return from the subroutine using a tail call
 
- CMP #'5'               \ If option 5 wasn't chosen, skip to exit to exit the menu
- BNE exit
+ CMP #'5'               \ If option 5 wasn't chosen, skip to exit to exit the
+ BNE exit               \ menu
 
  LDA #224               \ Print extended token 224 ("ARE YOU SURE?")
  JSR DETOK
@@ -36139,19 +36213,25 @@ ENDIF
 
  LSR SVC                \ Halve the save count value in SVC
 
- LDA #4                 \ Print extended token 4, which is blank
- JSR DETOK
+ LDA #4                 \ Print extended token 4, which is blank (this was where
+ JSR DETOK              \ the competition number was printed in older versions,
+                        \ but the competition was long gone by the time of the
+                        \ BBC Master version
 
- LDX #NT%+1             \ ???
+ LDX #NT%               \ We now want to copy the current commander data block
+                        \ from location TP to the last saved commander block at
+                        \ NA%+8, so set a counter in X to copy the NT% bytes in
+                        \ the commander data block
 
 .SVL1
 
- LDA TP,X               \ Copy the X-th byte of TP to the X-th byte of &B00
- STA NA%+8,X            \ and NA%+8
+ LDA TP,X               \ Copy the X-th byte of TP to the X-th byte of NA%+8
+ STA NA%+8,X
 
  DEX                    \ Decrement the loop counter
 
- BPL SVL1               \ Loop back until we have copied all NT% bytes
+ BPL SVL1               \ Loop back until we have copied all the bytes in the
+                        \ commander data block
 
  JSR CHECK              \ Call CHECK to calculate the checksum for the last
                         \ saved commander and return it in A
@@ -36185,27 +36265,40 @@ ENDIF
  EOR #&A9               \ Store the checksum EOR &A9 in CHK2, the penultimate
  STA CHK2               \ byte of the last saved commander block
 
- LDY #&4C               \ ???
+ LDY #NT%               \ We now want to copy the current commander data block
+                        \ to location &0791 so we can do a file save operation,
+                        \ so set a counter in X to copy the NT% bytes in the
+                        \ commander data block
 
-.L6A71
+.SVL2
 
- LDA NA%+8,Y
+ LDA NA%+8,Y            \ Copy the X-th byte of NA% to the X-th byte of &0791
  STA &0791,Y
- DEY
- BPL L6A71
 
- JSR GTDRV
+ DEY                    \ Decrement the loop counter
 
- BCS L6A85
+ BPL SVL2               \ Loop back until we have copied all the bytes in the
+                        \ commander data block
 
- STA SVLI+6
- JSR SAVE
+ JSR GTDRV              \ Get an ASCII disc drive drive number from the keyboard
+                        \ in A, setting the C flag if an invalid drive number
+                        \ was entered
 
-.L6A85
+ BCS P%+8               \ If the C flag is set, then an invalid drive number was
+                        \ entered, so skip the next two instructions
 
- JSR DFAULT
- CLC
- RTS
+ STA SVLI+6             \ Store the ASCII drive number in SVLI+6, which is the
+                        \ drive character of the save filename string ":1.E."
+
+ JSR SAVE               \ Call SAVE to save the commander file
+
+ JSR DFAULT             \ Call DFAULT to reset the current commander data
+                        \ block to the last saved commander
+
+ CLC                    \ Clear the C flag to indicate that no new commander
+                        \ file was loaded
+
+ RTS                    \ Return from the subroutine
 
 \ ******************************************************************************
 \
@@ -36300,16 +36393,23 @@ ENDIF
 
 .LOD
 
- JSR LOAD               \ ???
+ JSR LOAD               \ Call LOAD to load the commander file to address &0791
 
- LDA &0791              \ ???
- BMI ELT2F
+ LDA &0791              \ If the first byte of the loaded file has bit 7 set,
+ BMI ELT2F              \ jump to ELT2F, as this is an invalid commander file
+                        \
+                        \ ELT2F contains a BRK instruction, which will force an
+                        \ interrupt to call the address in BRKV, which will
+                        \ print out the system error at ELT2F
 
- LDY #NT%+1             \ ???
+ LDY #NT%               \ We have successfully loaded the commander file at
+                        \ &0791, so now we want to copy it to the last saved
+                        \ commander data block at NA%+8, so we set up a counter
+                        \ in Y to copy NT% bytes
 
 .LOL1
 
- LDA &0791,Y            \ Copy the Y-th byte of ??? to the Y-th byte of NA%+8
+ LDA &0791,Y            \ Copy the Y-th byte of &0791 to the Y-th byte of NA%+8
  STA NA%+8,Y
 
  DEY                    \ Decrement the loop counter
@@ -36405,50 +36505,87 @@ ENDIF
 
 .SAVE
 
- LDY #&4C               \ ???
+ LDY #NT%               \ We first want to copy the current commander data block
+                        \ to location &0E7E so we can do a file save operation,
+                        \ so we set a counter in Y to copy the NT% bytes in the
+                        \ commander data block
 
 .SAVEL1
 
- LDA NA%+8,Y
- STA LSX2,Y
- DEY
- BPL SAVEL1
+ LDA NA%+8,Y            \ Copy the Y-th byte of NA%+8 to the Y-th byte of &0E7E
+ STA &0E7E,Y
 
- LDA #&00
- LDY #&4C
+ DEY                    \ Decrement the loop counter
+
+ BPL SAVEL1             \ Loop back until we have copied all the bytes in the
+                        \ commander data block
+
+ LDA #0                 \ The save file is 256 bytes long but only NT% (76) of
+                        \ those contain data, so before we save we need to zero
+                        \ out the rest of the 256-byte block, so we set A = 0 to
+                        \ do this
+
+ LDY #NT%               \ Set an index in Y to point the byte after the end of
+                        \ the first NT% bytes in the commander data block
 
 .SAVEL2
 
- STA LSX2,Y
- INY
- BNE SAVEL2
+ STA &0E7E,Y            \ Zero the Y-th byte of &0E7E
 
- LDY #&00
+ INY                    \ Increment the loop counter
+
+ BNE SAVEL2             \ Loop back until we have zeroed the rest of the
+                        \ 256-byte block
+
+ LDY #0                 \ Now we need to change the save command at SVLI to
+                        \ contain the commander name as the filename, so set an
+                        \ index in Y so we can copy the commander name from NA%
+                        \ into the SVLI command
 
 .SAVEL3
 
- LDA NA%,Y
- CMP #&0D
- BEQ SAVEL4
+ LDA NA%,Y              \ Fetch the Y-th character of the commander name at NA%
 
- STA SVLI+10,Y
- INY
- CPY #&07
- BCC SAVEL3
+ CMP #13                \ If the character is a carriage return then we have
+ BEQ SAVEL4             \ reached the end of the name, so jump to SAVEL4 as we
+                        \ have now copied the whole name
+
+ STA SVLI+10,Y          \ Store the Y-th character of the commander name in the
+                        \ Y-th character of SVLI+10, where SVLI+10 points to the
+                        \ JAMESON part of the save command in SVLI:
+                        \
+                        \   "SAVE :1.E.JAMESON  E7E +100 0 0"
+
+ INY                    \ Increment the loop counter
+
+ CPY #7                 \ If Y < 7 then there may be more characters in the
+ BCC SAVEL3             \ name, so loop back to SAVEL3 to fetch the next one
 
 .SAVEL4
 
- LDA #&20
- STA SVLI+10,Y
- INY
- CPY #&07
- BCC SAVEL4
+ LDA #' '               \ We have copied the name into the SVLI command string,
+                        \ but the new name might be shorter then the previous
+                        \ one, so we now need to blank out the rest of the name
+                        \ with spaces, so we load the space character into A
 
- JSR SWAPZP             \ Call SWAPZP to restore the top part of zero page
+ STA SVLI+10,Y          \ Store the Y-th character of the commander name in the
+                        \ Y-th character of SVLI+10, which will be directly
+                        \ after the last letter we copied above
 
- LDX #&DF
- LDY #&6A
- JSR OSCLI
+ INY                    \ Increment the loop counter
+
+ CPY #7                 \ If Y < 7 then we haven't yet blanked out the whole
+ BCC SAVEL4             \ name, so loop back to SAVEL4 to blank the next one
+                        \ until the save string is ready for use
+
+ JSR SWAPZP             \ Call SWAPZP to store the top part of zero page, as it
+                        \ gets corrupted by the MOS during the saving process
+
+ LDX #LO(SVLI)          \ Set (Y X) to point to the OS command at SVLI, which
+ LDY #HI(SVLI)          \ contains the DFS command for saving the commander file
+
+ JSR OSCLI              \ Call OSCLI to execute the OS command at (Y X), which
+                        \ saves the commander file
 
  JMP SWAPZP             \ Call SWAPZP to restore the top part of zero page
                         \ and return from the subroutine using a tail call
@@ -36460,47 +36597,82 @@ ENDIF
 \   Category: Save and load
 \    Summary: Load the commander file
 \
+\ ------------------------------------------------------------------------------
+\
+\ Arguments:
+\
+\   INWK+5              The filename, terminated by a carriage return
+\
 \ ******************************************************************************
 
 .LOAD
 
- LDY #0                 \ ???
+ LDY #0                 \ We start by changing the load command at LDLI to
+                        \ contain the filename that was just entered by the
+                        \ user, so we set an index in Y so we can copy the
+                        \ filename from INWK+5 into the LDLI command
 
 .LOADL1
 
- LDA INWK+5,Y
- CMP #&0D
- BEQ LOADL2
+ LDA INWK+5,Y           \ Fetch the Y-th character of the filename
 
- STA LDLI+10,Y
- INY
- CPY #&07
- BCC LOADL1
+ CMP #13                \ If the character is a carriage return then we have
+ BEQ LOADL2             \ reached the end of the filename, so jump to LOADL2 as
+                        \ we have now copied the whole filename
+ 
+ STA LDLI+10,Y          \ Store the Y-th character of the filename in the Y-th
+                        \ character of LDLI+10, where LDLI+10 points to the
+                        \ JAMESON part of the load command in LDLI:
+                        \
+                        \   "LOAD :1.E.JAMESON  E7E"
 
-.LOADL2
+ INY                    \ Increment the loop counter
 
- LDA #&20
- STA LDLI+10,Y
- INY
- CPY #&07
- BCC LOADL2
+ CPY #7                 \ If Y < 7 then there may be more characters in the
+ BCC LOADL1             \ name, so loop back to LOADL1 to fetch the next one
+
+ .LOADL2
+
+ LDA #' '               \ We have copied the name into the LDLI command string,
+                        \ but the new name might be shorter then the previous
+                        \ one, so we now need to blank out the rest of the name
+                        \ with spaces, so we load the space character into A
+
+ STA LDLI+10,Y          \ Store the Y-th character of the filename in the Y-th
+                        \ character of LDLI+10, which will be directly after
+                        \ the last letter we copied above
+
+ INY                    \ Increment the loop counter
+
+ CPY #7                 \ If Y < 7 then we haven't yet blanked out the whole
+ BCC LOADL2             \ name, so loop back to LOADL2 to blank the next one
+                        \ until the load string is ready for use
+
+ JSR SWAPZP             \ Call SWAPZP to store the top part of zero page, as it
+                        \ gets corrupted by the MOS during the loading process
+
+ LDX #LO(LDLI)          \ Set (Y X) to point to the OS command at LDLI, which
+ LDY #HI(LDLI)          \ contains the DFS command for loading the commander
+                        \ file
+
+ JSR OSCLI              \ Call OSCLI to execute the OS command at (Y X), which
+                        \ loads the commander file
 
  JSR SWAPZP             \ Call SWAPZP to restore the top part of zero page
 
- LDX #&FF
- LDY #&6A
- JSR OSCLI
-
- JSR SWAPZP             \ Call SWAPZP to restore the top part of zero page
-
- LDY #&4C
+ LDY #NT%               \ We now want to copy the newly loaded commander data
+                        \ block to location &0791, so we set a counter in Y to
+                        \ copy the NT% bytes in the commander data block
 
 .LOADL3
 
- LDA LSX2,Y
+ LDA &0E7E,Y            \ Copy the Y-th byte of &0E7E to the Y-th byte of &0791
  STA &0791,Y
- DEY
- BPL LOADL3
+
+ DEY                    \ Decrement the loop counter
+
+ BPL LOADL3             \ Loop back until we have copied all the bytes in the
+                        \ newly loaded commander data block
 
  RTS                    \ Return from the subroutine
 
@@ -38478,7 +38650,7 @@ LOAD_G% = LOAD% + P% - CODE%
  STA X2                 \ Store the x-coordinate of the ship dot in X1, as this
                         \ is where the dash starts
 
- JMP LLX30              \ Draw this edge using smooth animation, by first
+ JMP LLX30              \ Draw this edge using flicker-free animation, by first
                         \ drawing the ship's new line and then erasing the
                         \ corresponding old line from the screen, and return
                         \ from the subroutine using a tail call
@@ -38972,8 +39144,8 @@ LOAD_G% = LOAD% + P% - CODE%
                         \ update this value below with the actual ship's
                         \ distance if it turns out to be visible on-screen
 
-                        \ We now set things up for smooth ship plotting, by
-                        \ setting the following:
+                        \ We now set things up for flicker-free ship plotting,
+                        \ by setting the following:
                         \
                         \   XX14 = offset to the first coordinate in the ship's
                         \          line heap
@@ -40868,8 +41040,8 @@ LOAD_G% = LOAD% + P% - CODE%
                         \ screen, so jump to LL170 so we don't store this line
                         \ in the ship line heap
 
- JSR LLX30              \ Draw the laser line using smooth animation, by first
-                        \ drawing the new laser line and then erasing the
+ JSR LLX30              \ Draw the laser line using flicker-free animation, by
+                        \ first drawing the new laser line and then erasing the
                         \ corresponding old line from the screen
 
 \ ******************************************************************************
@@ -40878,7 +41050,7 @@ LOAD_G% = LOAD% + P% - CODE%
 \       Type: Subroutine
 \   Category: Drawing ships
 \    Summary: Draw ship: Calculate the visibility of each of the ship's edges
-\             and draw the visible ones using smooth animation
+\             and draw the visible ones using flicker-free animation
 \  Deep dive: Drawing ships
 \
 \ ------------------------------------------------------------------------------
@@ -40886,8 +41058,8 @@ LOAD_G% = LOAD% + P% - CODE%
 \ This part calculates which edges are visible - in other words, which lines we
 \ should draw - and clips them to fit on the screen.
 \
-\ Visible edges are drawn using smooth animation, which erases the corresponding
-\ edge from the on-scren ship at the same time.
+\ Visible edges are drawn using flicker-free animation, which erases the
+\ corresponding edge from the on-scren ship at the same time.
 \
 \ When we get here, the heap at XX3 contains all the visible vertex screen
 \ coordinates.
@@ -41017,7 +41189,7 @@ LOAD_G% = LOAD% + P% - CODE%
                         \ screen, so jump to LL78 so we don't store this line
                         \ in the ship line heap
 
- JSR LLX30              \ Draw this edge using smooth animation, by first
+ JSR LLX30              \ Draw this edge using flicker-free animation, by first
                         \ drawing the ship's new line and then erasing the
                         \ corresponding old line from the screen
 
@@ -42149,15 +42321,14 @@ LOAD_G% = LOAD% + P% - CODE%
 \       Name: LLX30
 \       Type: Subroutine
 \   Category: Drawing lines
-\    Summary: Draw a ship line using smooth animation, by drawing the ship's new
-\             line and erasing the corresponding old line from the screen
+\    Summary: Draw a ship line using flicker-free animation
 \
 \ ------------------------------------------------------------------------------
 \
-\ This routine implements smoother ship animation by erasing and redrawing each
-\ individual line in the ship, rather than the approach in the other Acornsoft
-\ versions of the game, which erase the entire existing ship before drawing the
-\ new one.
+\ This routine implements flicker-free ship animation by erasing and redrawing
+\ each individual line in the ship, rather than the approach in the other
+\ Acornsoft versions of the game, which erase the entire existing ship before
+\ drawing the new one.
 \
 \ Here's the new approach in this routine:
 \
@@ -43775,7 +43946,8 @@ LOAD_H% = LOAD% + P% - CODE%
  BPL P%+5               \ negative, so this skips the following instruction if
                         \ our energy bomb is not going off
 
- JSR L31AC              \ Our energy bomb is going off, so ???
+ JSR BOMBLINES          \ Our energy bomb is going off, so call BOMBLINES to
+                        \ draw the zigzag "electricity" lines
 
  JMP NWSTARS            \ Set up a new stardust field and return from the
                         \ subroutine using a tail call
@@ -43808,7 +43980,8 @@ LOAD_H% = LOAD% + P% - CODE%
  BPL P%+5               \ negative, so this skips the following instruction if
                         \ our energy bomb is not going off
 
- JSR L31AC              \ Our energy bomb is going off, so ???
+ JSR BOMBLINES          \ Our energy bomb is going off, so call BOMBLINES to
+                        \ draw the zigzag "electricity" lines
 
  JSR WPSHPS             \ Wipe all the ships from the scanner
 
@@ -44047,7 +44220,7 @@ LOAD_H% = LOAD% + P% - CODE%
 
 .TRANTABLE
 
- EQUB &00
+ EQUB &00               \ ???
 
  EQUB &40,&FE,&A0,&5F,&8C,&43,&FE,&8E
  EQUB &4F,&FE,&EA,&AE,&4F,&FE,&60,&51
@@ -44077,83 +44250,141 @@ LOAD_H% = LOAD% + P% - CODE%
 
 .KYTB
 
- EQUB &22,&23,&35,&37,&41,&42,&45,&51
- EQUB &52,&60,&62,&65,&66,&67,&68,&70
+ EQUB &22,&23,&35,&37,&41,&42,&45,&51  \ ETUPAXJSC TAB Space M<>? ESCAPE
+ EQUB &52,&60,&62,&65,&66,&67,&68,&70  \ Contains key number EOR &FF
  EQUB &F0
-
-\ ******************************************************************************
-\
-\       Name: RDKEY2
-\       Type: Subroutine
-\   Category: Keyboard
-\    Summary: ???
-\
-\ ******************************************************************************
-
-.RDKEY2
-
- JSR U%
-
- LDA #&10
- CLC
-
-.RDK1
-
- LDY #&03
- SEI
- STY VIA+&40
- LDY #&7F
- STY VIA+&43
- STA VIA+&4F
- LDY VIA+&4F
- LDA #&0B
- STA VIA+&40
- CLI
- TYA
- BMI DKS1
-
-.RDK2
-
- ADC #&01
- BPL RDK1
-
- CLD
- LDA KY6
- EOR #&FF
- AND KY19
- STA KY19
- LDA KL
- TAX
- RTS
 
 \ ******************************************************************************
 \
 \       Name: DKS1
 \       Type: Subroutine
 \   Category: Keyboard
-\    Summary: Scan the keyboard for a flight key
+\    Summary: Scan the keyboard for a flight key and update the key logger
+\
+\ ------------------------------------------------------------------------------
+\
+\ Returns:
+\
+\   X                   If a key is being pressed, X contains the internal key
+\                       number, otherwise it contains 0
 \
 \ ******************************************************************************
 
 .DKS1
 
- EOR #&80               \ ???
- STA KL
+ JSR U%                 \ Call U% to clear the key logger, which also sets X to
+                        \ 0 (so we can use X as an index for working our way
+                        \ through the flight keys in RDK3 below)
+
+ LDA #16                \ Start the scan with internal key number 16 (COPY)
+
+ CLC                    \ Clear the C flag so we can do the additions below
+
+.RDK1
+
+ LDY #%00000011         \ Set Y to %00000011, so it's ready to send to SHEILA
+                        \ once interrupts have been disabled
+
+ SEI                    \ Disable interrupts so we can scan the keyboard
+                        \ without being hijacked
+
+ STY VIA+&40            \ Set 6522 System VIA output register ORB (SHEILA &40)
+                        \ to %00000011 to stop auto scan of keyboard
+
+ LDY #%01111111         \ Set 6522 System VIA data direction register DDRA
+ STY VIA+&43            \ (SHEILA &43) to %01111111. This sets the A registers
+                        \ (IRA and ORA) so that:
+                        \
+                        \   * Bits 0-6 of ORA will be sent to the keyboard
+                        \
+                        \   * Bit 7 of IRA will be read from the keyboard
+
+ STA VIA+&4F            \ Set 6522 System VIA output register ORA (SHEILA &4F)
+                        \ to A, the key we want to scan for; bits 0-6 will be
+                        \ sent to the keyboard, of which bits 0-3 determine the
+                        \ keyboard column, and bits 4-6 the keyboard row
+
+ LDY VIA+&4F            \ Read 6522 System VIA output register IRA (SHEILA &4F)
+                        \ into Y; bit 7 is the only bit that will have changed.
+                        \ If the key is pressed, then bit 7 will be set,
+                        \ otherwise it will be clear
+
+ LDA #%00001011         \ Set 6522 System VIA output register ORB (SHEILA &40)
+ STA VIA+&40            \ to %00001011 to restart auto scan of keyboard
+
+ CLI                    \ Allow interrupts again
+
+ TYA                    \ Transfer Y into A
+
+ BMI RDK3               \ If the key was pressed then Y is negative, so jump to
+                        \ RDK3
+
+.RDK2
+
+ ADC #1                 \ Increment A to point to the next key to scan for
+
+ BPL RDK1               \ If A is positive, we still have keys to check, so loop
+                        \ back to scan for the next one
+
+                        \ If we get here then no keys are being pressed
+
+ CLD                    \ Clear the D flag to return to binary mode (for cases
+                        \ where this routine is called in BCD mode)
+
+ LDA KY6                \ If KY6 ("S") is being pressed, then KY6 is &FF, and
+ EOR #&FF               \ KY6 EOR &FF AND KY19 will be zero, so this stops "C"
+ AND KY19               \ from being registered as being pressed if "S" is being
+ STA KY19               \ pressed. This code isn't necessary on a BBC Master, as
+                        \ it's from other versions of Elite where there were
+                        \ issues with "ghost keys", which the Master didn't have
+
+ LDA KL                 \ Fetch the last key pressed from KL
+
+ TAX                    \ Copy the key value into X
+
+ RTS                    \ Return from the subroutine
+
+.RDK3
+
+                        \ If we get here then the key in A is being pressed. We
+                        \ now work our way through the KYTB table, looking for
+                        \ a match against the flight keys, using X as an index
+                        \ into the table (X was initialised to 0 by the call to
+                        \ U% above, and it keeps track of our progress through
+                        \ the table between calls to RDK3)
+
+ EOR #%10000000         \ The key in A is being pressed and the number of the
+                        \ key is in A with bit 7 set, so flip bit 7 back to 0
+
+ STA KL                 \ Store the number of the key pressed in KL
 
 .DKL5
 
- CMP KYTB,X
- BCC RDK2
+ CMP KYTB,X             \ If A is less than the X-th byte in KYTB, jump back to
+ BCC RDK2               \ RDK2 to continue scanning for more keys
 
- BEQ P%+5
+ BEQ P%+5               \ If A is equal to the X-th byte in KYTB, skip the next
+                        \ two instructions
 
- INX
- BNE DKL5
+ INX                    \ Increment X so next time we check KYTB from the next
+                        \ key in the table
 
- DEC KY17,X
- INX
- CLC
- BCC RDK2
+ BNE DKL5               \ Loop back to DKL5 to test against the next flight key
+                        \ in KYTB (this BNE is effectively a JMP as X won't get
+                        \ high enough to wrap around to zero)
+
+ DEC KY17,X             \ We got a match in the KYTB table for our key, at
+                        \ position X, so we decrement the corresponding key
+                        \ logger byte for this key at KY17+X (KY17 is the first
+                        \ key in the key logger)
+
+ INX                    \ Increment X so next time we check KYTB from the next
+                        \ key in the table
+
+ CLC                    \ Clear the C flag so we can do more additions
+
+ BCC RDK2               \ Jump back to RDK2 to continue scanning for more keys
+                        \ (this BCC is effectively a JMP as we just cleared the C flag)
 
 \ ******************************************************************************
 \
@@ -44257,6 +44488,8 @@ LOAD_H% = LOAD% + P% - CODE%
 \
 \   A                   A is set to 0
 \
+\   X                   X is set to 0
+\
 \ ******************************************************************************
 
 .U%
@@ -44292,32 +44525,44 @@ LOAD_H% = LOAD% + P% - CODE%
 \
 \ ------------------------------------------------------------------------------
 \
+\ Returns:
+\
+\   X                   If a key is being pressed, X contains the internal key
+\                       number, otherwise it contains 0
+\
+\   A                   Contains the same as X
+\
+\   Y                   Y is preserved
+\
 \ Other entry points:
 \
 \   RDKEY-1             Only scan the keyboard for valid BCD key numbers
-
+\
 \ ******************************************************************************
 
  SED                    \ Set the D flag to enter decimal mode. Because
                         \ internal key numbers are all valid BCD (Binary Coded
                         \ Decimal) numbers, setting this flag ensures we only
                         \ loop through valid key numbers
+
 .RDKEY
 
- TYA
+ TYA                    \ Store Y on the stack so we can retrieve it later
  PHA
- JSR RDKEY2
 
- PLA
+ JSR DKS1               \ Call DKS1 to scan the keyboard, update the key logger
+                        \ and return any non-logger key presses in X
+
+ PLA                    \ Retrieve the value of Y we stored above
  TAY
- LDA TRANTABLE,X
- STA KL
- TAX
- RTS
 
-.RDKRTS
+ LDA TRANTABLE,X        \ Fetch the internal key number for the key pressed
 
- RTS
+ STA KL                 \ Store the key pressed in KL
+
+ TAX                    \ Copy the key value into X
+
+ RTS                    \ Return from the subroutine
 
 \ ******************************************************************************
 \
@@ -44331,7 +44576,13 @@ LOAD_H% = LOAD% + P% - CODE%
 \ Switch the E.C.M. off, turn off the dashboard bulb and make the sound of the
 \ E.C.M. switching off).
 \
+\ Other entry points:
+\
+\   ECMOF-1             \ Contains an RTS
+\
 \ ******************************************************************************
+
+ RTS                    \ Return from the subroutine
 
 .ECMOF
 
@@ -44362,9 +44613,9 @@ LOAD_H% = LOAD% + P% - CODE%
  JSR SFS1-2             \ to add the missile to our universe with an AI flag
                         \ of %11111110 (AI enabled, hostile, no E.C.M.)
 
- BCC RDKRTS             \ The C flag will be set if the call to SFS1-2 was a
+ BCC ECMOF-1            \ The C flag will be set if the call to SFS1-2 was a
                         \ success, so if it's clear, jump to KYTB to return from
-                        \ the subroutine (as RDKRTS contains an RTS)
+                        \ the subroutine (as ECMOF-1 contains an RTS)
 
  LDA #120               \ Print recursive token 120 ("INCOMING MISSILE") as an
  JSR MESS               \ in-flight message
@@ -44503,6 +44754,19 @@ LOAD_H% = LOAD% + P% - CODE%
  CLI                    \ Enable interrupts
 
  RTI                    \ Return from the interrupt handler
+
+\ ******************************************************************************
+\
+\       Name: F%
+\       Type: Variable
+\   Category: Utility routines
+\    Summary: Denotes the end of the main game code, from Elite A to Elite H
+\
+\ ******************************************************************************
+
+.F%
+
+ SKIP 0
 
 \ ******************************************************************************
 \
