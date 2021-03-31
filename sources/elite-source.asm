@@ -3076,36 +3076,57 @@ NEXT
                         \
                         \ and we can get on with drawing the dot and stick
 
- BEQ RTS                \ ???
+ BEQ RTS                \ If the stick height is zero, then there is no stick to
+                        \ draw, so return from the subroutine (as RTS contains
+                        \ an RTS)
 
- BCC RTS_PLUS_1
+ BCC VL3                \ If the C flag is clear then the stick height in A is
+                        \ negative, so jump down to RTS+1
 
- TAX
- INX
- JMP VL1
+ TAX                    \ Copy the (positive) stick height into X
+
+ INX                    \ Increment the (positive) stick height in X
+
+ JMP VLL1a              \ Jump into the middle of the VLL1 loop, skipping the
+                        \ drawing of first pixel in the stick
 
 .VLL1
 
  LDA R                  \ The call to CPIX2 above saved the dash's right pixel
-                        \ byte in R, so we load this into A
+                        \ byte in R, so we load this into A (so the stick comes
+                        \ out of the right side of the dot)
 
  EOR (SC),Y             \ Draw the bottom row of the double-height dot using the
  STA (SC),Y             \ same byte as the top row, plotted using EOR logic
 
+.VLL1a
+
+                        \ If we get here then the stick length is positive (so
+                        \ the dot is below the ellipse and the stick is above
+                        \ the dot, and we need to draw the stick upwards from
+                        \ the dot)
+
+ DEY                    \ We want to draw the stick upwards, so decrement the
+                        \ pixel row in Y
+
+ BPL VL1                \ If Y is still positive then it correctly points at the
+                        \ line above, so jump to VL1 to skip the following
+
+ LDA SC+1               \ Subtract 2 from the high byte of the screen address to
+ SBC #2                 \ move to the character block above
+ STA SC+1
+
+ LDY #7                 \ We just decremented Y up through the top of the
+                        \ character block, so we need to move it to the last row
+                        \ in the character above, so set Y to 7, the number of
+                        \ the last row
+
 .VL1
 
- DEY
- BPL L16F9
+ DEX                    \ Decrement the (positive) stick height in X
 
- LDA SC+1
- SBC #&02
- STA SC+1
- LDY #&07
-
-.L16F9
-
- DEX
- BNE VLL1
+ BNE VLL1               \ If we still have more stick to draw, jump up to VLL1
+                        \ to draw the next pixel
 
 .RTS
 
@@ -3114,41 +3135,60 @@ NEXT
 
  RTS
 
-.RTS_PLUS_1
+.VL3
 
- LDA Y2
+                        \ If we get here then the stick length is negative (so
+                        \ the dot is above the ellipse and the stick is below
+                        \ the dot, and we need to draw the stick downwards from
+                        \ the dot)
+
+ LDA Y2                 \ Set A = Y2 - Y1 to get the positive stick height
  SEC
  SBC Y1
- TAX
- INX
- JMP VL2
+
+ TAX                    \ Copy the (positive) stick height into X
+
+ INX                    \ Increment the (positive) stick height in X
+
+ JMP VLL2a              \ Jump into the middle of the VLL2 loop, skipping the
+                        \ drawing of first pixel in the stick
 
 .VLL2
 
- LDA R
- EOR (SC),Y
- STA (SC),Y
+ LDA R                  \ The call to CPIX2 above saved the dash's right pixel
+                        \ byte in R, so we load this into A (so the stick comes
+                        \ out of the right side of the dot)
+
+ EOR (SC),Y             \ Draw the bottom row of the double-height dot using the
+ STA (SC),Y             \ same byte as the top row, plotted using EOR logic
+
+.VLL2a
+
+ INY                    \ We want to draw the stick itself, heading downwards,
+                        \ so increment the pixel row in Y
+
+ CPY #8                 \ If the row number in Y is less than 8, then it
+ BNE VL2                \ correctly points at the next line down, so jump to
+                        \ VL2 to skip the following
+
+ LDA SC+1               \ We just incremented Y down through the bottom of the
+ ADC #1                 \ character block, so increment the high byte of the
+ STA SC+1               \ screen address to move to the character block above
+
+ LDY #0                 \ We need to move to the first row in the character
+                        \ below, so set Y to 0, the number of the first row
 
 .VL2
 
- INY
- CPY #&08
- BNE L171F
+ DEX                    \ Decrement the (positive) stick height in X
 
- LDA SC+1
- ADC #&01
- STA SC+1
- LDY #&00
-
-.L171F
-
- DEX
- BNE VLL2
+ BNE VLL2               \ If we still have more stick to draw, jump up to VLL2
+                        \ to draw the next pixel
 
  LDA #%00001001         \ Clear bits 1 and 2 of the Access Control Register at
  STA VIA+&34            \ SHEILA+&34 to switch main memory back into &3000-&7FFF
 
- RTS
+ RTS                    \ Return from the subroutine
 
 \ ******************************************************************************
 \
@@ -7330,14 +7370,14 @@ NEXT
                         \
                         \ We'll refer to this below
 
- LDX #&23               \ ??? Need to change comments above to reflect address
-                        \ of Master character definitions (at &2300 and &2500?)
+ LDX #(FONT%-1)         \ Set X to point to the page before the first font page,
+                        \ which is FONT% - 1
 
  ASL A                  \ If bit 6 of the character is clear (A is 32-63)
  ASL A                  \ then skip the following instruction
  BCC P%+4
 
- LDX #&25               \ ???
+ LDX #(FONT%+1)         \ A is 64-126, so set X to point to page FONT% + 1
 
  ASL A                  \ If bit 5 of the character is clear (A is 64-95)
  BCC P%+3               \ then skip the following instruction
@@ -8700,9 +8740,39 @@ IF _MATCH_EXTRACTED_BINARIES
 
 ELSE
 
- SKIP 845               \ These bytes appear to be unused
+ SKIP 77                 \ These bytes appear to be unused
 
 ENDIF
+
+\ ******************************************************************************
+\
+\       Name: FONT%
+\       Type: Variable
+\   Category: Text
+\    Summary: A copy of the character definition bitmap table from the MOS ROM
+\
+\ ------------------------------------------------------------------------------
+\
+\ This is used by the TT26 routine to save time looking up the character bitmaps
+\ from the ROM. Note that FONT% contains just the high byte (i.e. the page
+\ number) of the address of this table, rather than the full address.
+\
+\ The contents of the P.FONT.bin file included here are taken straight from the
+\ following three pages in the BBC Micro OS 1.20 ROM:
+\
+\   ASCII 32-63  are defined in &C000-&C0FF (page 0)
+\   ASCII 64-95  are defined in &C100-&C1FF (page 1)
+\   ASCII 96-126 are defined in &C200-&C2F0 (page 2)
+\
+\ The code could look these values up each time (as the cassette version does),
+\ but it's quicker to use a lookup table, at the expense of three pages of
+\ memory.
+\
+\ ******************************************************************************
+
+FONT% = P% DIV 256
+
+INCBIN "binaries/P.FONT.bin"
 
 \ ******************************************************************************
 \
@@ -9513,7 +9583,7 @@ ENDIF
 \
 \ The key presses that are processed are as follows:
 \
-\   * SPACE and "?" to speed up and slow down
+\   * Space and "?" to speed up and slow down
 \   * "U", "T" and "M" to disarm, arm and fire missiles
 \   * TAB to fire an energy bomb
 \   * ESCAPE to launch an escape pod
@@ -9629,8 +9699,8 @@ ENDIF
                         \ any more (or it never was), so skip the following
                         \ instruction
 
- JSR BOMBSFX            \ Call BOMBSFX to make the sound of our energy bomb
-                        \ going off
+ JSR BOMBINIT           \ Call BOMBINIT to set up and display a new energy bomb
+                        \ zig-zag lightning bolt
 
 .MA76
 
@@ -10552,8 +10622,10 @@ ENDIF
  BPL MA77               \ MA24 above), then BOMB is now negative, so this skips
                         \ to MA77 if our energy bomb is not going off
 
- JSR BOMBFX             \ Call BOMBFX to make the sound of our energy bomb
-                        \ going off
+ JSR BOMBFX             \ Call BOMBFX to erase the energy bomb zig-zag lightning
+                        \ bolt that we drew in part 3, make the sound of the
+                        \ energy bomb going off, draw a new lightning bolt, and
+                        \ repeat the process four times so the bolt flashes
 
  ASL BOMB               \ We set off our energy bomb, so rotate BOMB to the
                         \ left by one place. BOMB was rotated left once already
@@ -10564,10 +10636,11 @@ ENDIF
                         \ (BOMB > 0) for four iterations of the main loop
 
  BMI MA77               \ If the result has bit 7 set, skip the following
-                        \ instruction
+                        \ instruction as the bomb is still going off
 
- JSR BOMBLINES          \ Our energy bomb is going off, so call BOMBLINES to
-                        \ draw the zigzag "electricity" lines
+ JSR BOMBLINES          \ Our energy bomb has finished going off, so call
+                        \ BOMBLINES to draw the zig-zag lightning bolt, which
+                        \ erases it from the screen
 
 .MA77
 
@@ -11072,8 +11145,8 @@ ENDIF
 \
 \       Name: BOMBLINES
 \       Type: Subroutine
-\   Category: Flight
-\    Summary: Draw the zigzag "electricity" lines for the energy bomb
+\   Category: Drawing lines
+\    Summary: Draw the zig-zag lightning bolt for the energy bomb
 \
 \ ******************************************************************************
 
@@ -11083,34 +11156,43 @@ ENDIF
  STA COL
 
  LDA QQ11               \ If the current view is non-zero (i.e. not a space
- BNE BOMBRTS            \ view), return from the subroutine (as L31DE contains
+ BNE BOMBEX             \ view), return from the subroutine (as BOMBEX contains
                         \ an RTS)
 
- LDY #1
+ LDY #1                 \ We now want to loop through the 10 (BOMBX, BOMBY)
+                        \ coordinates, drawing a total of 9 lines between them
+                        \ to make the lightning effect, so set an index in Y
+                        \ to point to the end-point for each line, starting with
+                        \ the second coordinate pair
 
- LDA L321D
- STA XX12
-
- LDA L3227
+ LDA BOMBX              \ Store the first coordinate pair from (BOMBX, BOMBY) in
+ STA XX12               \ (XX12, XX12+1)
+ LDA BOMBY
  STA XX12+1
 
 .BOMBL1
 
- LDA XX12
- STA X1
-
- LDA XX12+1
+ LDA XX12               \ Set (X1, Y1) = (XX12, XX12+1)
+ STA X1                 \
+ LDA XX12+1             \ so the start point for this line
  STA Y1
 
- LDA L321D,Y
+ LDA BOMBX,Y            \ Set X2 = Y-th x-coordinate from BOMBX
  STA X2
 
- STA XX12
+ STA XX12               \ Set XX12 = X2
 
- LDA L3227,Y
- STA Y2
+ LDA BOMBY,Y            \ Set Y2 = Y-th y-coordinate from BOMBY, so we now have:
+ STA Y2                 \
+                        \   (X2, Y2) = Y-th coordinate from (BOMBX, BOMBY)
 
- STA XX12+1
+ STA XX12+1             \ Set XX12+1 = Y2, so we now have
+                        \
+                        \   (XX12, XX12+1) = (X2, Y2)
+                        \
+                        \ so in the next loop iteration, the start point of the
+                        \ line will be the end point of this line, making the
+                        \ zig-zag lines all join up like a lightning bolt
 
  JSR LL30               \ Draw a line from (X1, Y1) to (X2, Y2)
 
@@ -11119,7 +11201,7 @@ ENDIF
  CPY #10                \ If Y < 10, loop back until we have drawn all the lines
  BCC BOMBL1
 
-.BOMBRTS
+.BOMBEX
 
  RTS                    \ Return from the subroutine
 
@@ -11127,9 +11209,9 @@ ENDIF
 \
 \       Name: BOMBFX
 \       Type: Subroutine
-\   Category: Flight
-\    Summary: Draw the "electricity" lines and make the sound of the energy bomb
-\             going off
+\   Category: Drawing lines
+\    Summary: Erase the energy bomb zig-zag lightning bolt, make the sound of
+\             the energy bomb going off, draw a new bolt and repeat four times
 \
 \ ******************************************************************************
 
@@ -11142,106 +11224,122 @@ ENDIF
  JSR NOISE              \ an energy bomb going off
 
  JSR BOMBLINES          \ Our energy bomb is going off, so call BOMBLINES to
-                        \ draw the zigzag "electricity" lines
+                        \ draw the current zig-zag lightning bolt, which will
+                        \ erase it from the screen
 
-                        \ Fall through into BOMBSFX to make the sound of the
-                        \ energy bomb going off
+                        \ Fall through into BOMBINIT to set up and display a new
+                        \ zig-zag lightning bolt
 
 \ ******************************************************************************
 \
-\       Name: BOMBSFX
+\       Name: BOMBINIT
 \       Type: Subroutine
-\   Category: Flight
-\    Summary: Make the sound of the energy bomb going off, randomise the energy
-\             bomb "electricity" lines and draw them again
+\   Category: Drawing lines
+\    Summary: Randomise and draw the energy bomb's zig-zag lightning bolt lines
 \
 \ ******************************************************************************
 
-.BOMBSFX
+.BOMBINIT
 
- LDY #0
+ LDY #0                 \ We first need to generate 10 random coordinates for a
+                        \ zig-zag lightning bolt, with the x-coordinates in the
+                        \ table at BOMBX and the y-coordinates in the table at
+                        \ BOMBY, so set a counter in Y as an index to point at
+                        \ each coordinate as we create them
+                        \
+                        \ Note that we generate the points from right to left,
+                        \ so that's high x-coordinate to low x-coordinate
 
 .BOMBSL1
 
- JSR DORND
+ JSR DORND              \ Set A and X to random numbers and reduce A to a
+ AND #127               \ random number in the range 0-127
 
- AND #&7F
- ADC #&03
- STA L3227,Y
+ ADC #3                 \ Add 3 so A is now in the range 3-130, so the smallest
+                        \ possible value gives a y-coordinate just below the top
+                        \ border, and the highest possible value gives a
+                        \ y-coordinate that's around two-thirds of the way down
+                        \ the space view
 
- TXA
- AND #&1F
- CLC
- ADC L3213,Y
- STA L321D,Y
+ STA BOMBY,Y            \ Store A in the Y-th byte of BOMBY, as the y-coordinate
+                        \ of the Y-th point in our lightning bolt
 
- INY
- CPY #&0A
- BCC BOMBSL1
+ TXA                    \ Fetch the random number from X into A and reduce it to
+ AND #31                \ the range 0-31
 
- LDX #&00
- STX L321D+9
+ CLC                    \ Add the Y-th value from BOMBSTEP table, which contains
+ ADC BOMBSTEP,Y         \ the smallest possible x-coordinate for the Y-th point
+                        \ (so the coordinates in the bolt will step along the
+                        \ screen from right to left, but with varying step
+                        \ sizes)
 
- DEX
+ STA BOMBX,Y            \ Store A in the Y-th byte of BOMBX, as the x-coordinate
+                        \ of the Y-th point in our lightning bolt
 
- STX L321D
+ INY                    \ Increment the loop index
 
- BCS BOMBLINES          \ Our energy bomb is going off, so call BOMBLINES to
-                        \ draw the zigzag "electricity" lines and return from
-                        \ the subroutine using a tail call (this BCS is
-                        \ effectively a JMP as we passed through the BCC above)
+ CPY #10                \ Loop back to generate the next coordinate until we
+ BCC BOMBSL1            \ have generated all ten
+
+ LDX #0                 \ Set BOMBX+9 = 0, so the lightning bolt starts at the
+ STX BOMBX+9            \ left edge of the screen
+
+ DEX                    \ Set BOMBX = 255, so the lightning bolt ends at the
+ STX BOMBX              \ right edge of the screen
+
+ BCS BOMBLINES          \ Call BOMBLINES to draw the newly generated zig-zag
+                        \ lightning bolt and return from the subroutine using a
+                        \ tail call (this BCS is effectively a JMP as we passed
+                        \ through the BCC above)
 
 \ ******************************************************************************
 \
-\       Name: L3213
+\       Name: BOMBSTEP
 \       Type: Variable
-\   Category: Flight
-\    Summary: ???
+\   Category: Drawing lines
+\    Summary: A set of x-coordinates that are used as the basis for the energy
+\             bomb's zig-zag lightning bolt
 \
 \ ******************************************************************************
 
-.L3213
+.BOMBSTEP
 
- EQUB &E0, &E0
- EQUB &C0, &A0
- EQUB &80, &60
- EQUB &40, &20
- EQUB &00, &00
-
-\ EQUB %11100000
-\ EQUB %11100000
-\ EQUB %11000000
-\ EQUB %10100000
-\ EQUB %10000000
-\ EQUB %01100000
-\ EQUB %01000000
-\ EQUB %00100000
-\ EQUB %00000000
-\ EQUB %00000000
+ EQUB 224
+ EQUB 224
+ EQUB 192
+ EQUB 160
+ EQUB 128
+ EQUB 96
+ EQUB 64
+ EQUB 32
+ EQUB 0
+ EQUB 0
 
 \ ******************************************************************************
 \
-\       Name: L321D
+\       Name: BOMBX
 \       Type: Variable
-\   Category: Flight
-\    Summary: ???
+\   Category: Drawing lines
+\    Summary: This is where we store the x-coordinates for the energy bomb's
+\             zig-zag lightning bolt
 \
 \ ******************************************************************************
 
-.L321D
+.BOMBX
 
  SKIP 10
 
 \ ******************************************************************************
 \
-\       Name: L3227
+\       Name: BOMBY
 \       Type: Variable
-\   Category: Flight
-\    Summary: ???
+\   Category: Drawing lines
+\    Summary: This is where we store the y-coordinates for the energy bomb's
+\             zig-zag lightning bolt
 \
 \ ******************************************************************************
 
-.L3227
+.BOMBY
 
  SKIP 10
 
@@ -19196,11 +19294,19 @@ LOAD_C% = LOAD% +P% - CODE%
  STA SX,Y               \ the new x-coordinate is in (x_hi x_lo) and the high
  STA X1                 \ byte is in X1
 
- AND #%01111111         \ If |x_hi| <= deltX then jump to KILL2 to recycle this
- EOR #%01111111         \ particle, as it's gone off the side of the screen,
- CMP deltX              \ and re-join at STC2 with the new particle ???
- BCC KILL2
- BEQ KILL2
+ AND #%01111111         \ Set A = ~|x_hi|, which is the same as -(x_hi + 1)
+ EOR #%01111111         \ using two's complement
+
+ CMP deltX              \ If deltX <= -(x_hi + 1), then the particle has been
+ BCC KILL2              \ moved off the side of the screen and has wrapped
+ BEQ KILL2              \ round to the other side, jump to KILL2 to recycle this
+                        \ particle and re-join at STC2 with the new particle
+                        \
+                        \ In the other BBC versions, this test simply checks
+                        \ whether |x_hi| >= 116, but this version using deltX
+                        \ doesn't hard-code the screen width, so this is
+                        \ presumably a change that was introduced to support
+                        \ the different screen sizes of the other platforms
 
  LDA YY+1               \ Set Y1 and y_hi to the high byte of YY in YY+1, so
  STA SY,Y               \ the new x-coordinate is in (y_hi y_lo) and the high
@@ -43947,7 +44053,7 @@ LOAD_H% = LOAD% + P% - CODE%
                         \ our energy bomb is not going off
 
  JSR BOMBLINES          \ Our energy bomb is going off, so call BOMBLINES to
-                        \ draw the zigzag "electricity" lines
+                        \ draw the zig-zag lightning bolt
 
  JMP NWSTARS            \ Set up a new stardust field and return from the
                         \ subroutine using a tail call
@@ -43981,7 +44087,7 @@ LOAD_H% = LOAD% + P% - CODE%
                         \ our energy bomb is not going off
 
  JSR BOMBLINES          \ Our energy bomb is going off, so call BOMBLINES to
-                        \ draw the zigzag "electricity" lines
+                        \ draw the zig-zag lightning bolt
 
  JSR WPSHPS             \ Wipe all the ships from the scanner
 
@@ -44196,10 +44302,10 @@ LOAD_H% = LOAD% + P% - CODE%
 \
 \ ------------------------------------------------------------------------------
 \
-\ This is a copy of the keyboard translation table from the BBC Micro's MOS 1.20
-\ ROM. The value at offset n is the lower-case ASCII value of the key with
-\ internal key number n, so for example the value at offset &10 is &71, which is
-\ 113, or ASCII "q", so internal key number &10 is the key number of the "Q"
+\ This is a copy of the keyboard translation table from the BBC Master's MOS
+\ 3.20 ROM. The value at offset n is the upper-case ASCII value of the key with
+\ internal key number n, so for example the value at offset &10 is &51, which is
+\ 81, or ASCII "Q", so internal key number &10 is the key number of the "Q"
 \ key.
 \
 \ Valid internal key numbers are Binary Coded Decimal (BCD) numbers in the range
@@ -44220,43 +44326,137 @@ LOAD_H% = LOAD% + P% - CODE%
 
 .TRANTABLE
 
- EQUB &00               \ ???
+ EQUB &00, &40, &FE     \ MOS code
+ EQUB &A0, &5F, &8C
+ EQUB &43, &FE, &8E
+ EQUB &4F, &FE, &EA
+ EQUB &AE, &4F, &FE
+ EQUB &60
 
- EQUB &40,&FE,&A0,&5F,&8C,&43,&FE,&8E
- EQUB &4F,&FE,&EA,&AE,&4F,&FE,&60,&51
- EQUB &33,&34,&35,&84,&38,&87,&2D,&5E
- EQUB &8C,&36,&37,&BC,&00,&FC,&60,&80
- EQUB &57,&45,&54,&37,&49,&39,&30,&5F
- EQUB &8E,&38,&39,&BC,&00,&FD,&60,&31
- EQUB &32,&44,&52,&36,&55,&4F,&50,&5B
- EQUB &8F,&81,&82,&0D,&4C,&20,&02,&01
- EQUB &41,&58,&46,&59,&4A,&4B,&40,&3A
- EQUB &0D,&83,&7F,&AE,&4C,&FE,&FD,&02
- EQUB &53,&43,&47,&48,&4E,&4C,&3B,&5D
- EQUB &7F,&85,&84,&86,&4C,&FA,&00,&00
- EQUB &5A,&20,&56,&42,&4D,&2C,&2E,&2F
- EQUB &8B,&30,&31,&33,&00,&00,&00,&1B
- EQUB &81,&82,&83,&85,&86,&88,&89,&5C
- EQUB &8D,&34,&35,&32,&2C,&4E,&E3
+                        \ Internal key numbers &10 to &19:
+                        \
+ EQUB &51, &33          \ Q             3
+ EQUB &34, &35          \ 4             5
+ EQUB &84, &38          \ f4            8
+ EQUB &87, &2D          \ f7            -
+ EQUB &5E, &8C          \ ^             Left arrow
+
+ EQUB &36, &37, &BC     \ MOS code
+ EQUB &00, &FC, &60
+
+                        \ Internal key numbers &20 to &29:
+                        \
+ EQUB &80, &57          \ f0            W
+ EQUB &45, &54          \ E             T
+ EQUB &37, &49          \ 7             I
+ EQUB &39, &30          \ 9             0
+ EQUB &5F, &8E          \ _             Down arrow
+
+ EQUB &38, &39, &BC     \ MOS code
+ EQUB &00, &FD, &60
+
+                        \ Internal key numbers &30 to &39:
+                        \
+ EQUB &31, &32          \ 1             2
+ EQUB &44, &52          \ D             R
+ EQUB &36, &55          \ 6             U
+ EQUB &4F, &50          \ O             P
+ EQUB &5B, &8F          \ [             Up arrow
+
+ EQUB &81, &82, &0D     \ MOS code
+ EQUB &4C, &20, &02
+
+                        \ Internal key numbers &40 to &49:
+                        \
+ EQUB &01, &41          \ CAPS LOCK     A
+ EQUB &58, &46          \ X             F
+ EQUB &59, &4A          \ Y             J
+ EQUB &4B, &40          \ K             @
+ EQUB &3A, &0D          \ :             RETURN
+
+ EQUB &83, &7F, &AE     \ MOS code
+ EQUB &4C, &FE, &FD
+
+                        \ Internal key numbers &50 to &59:
+                        \
+ EQUB &02, &53          \ SHIFT LOCK    S
+ EQUB &43, &47          \ C             G
+ EQUB &48, &4E          \ H             N
+ EQUB &4C, &3B          \ L             ;
+ EQUB &5D, &7F          \ ]             DELETE
+
+ EQUB &85, &84, &86     \ MOS code
+ EQUB &4C, &FA, &00
+
+                        \ Internal key numbers &60 to &69:
+                        \
+ EQUB &00, &5A          \ TAB           Z
+ EQUB &20, &56          \ Space         V
+ EQUB &42, &4D          \ B             M
+ EQUB &2C, &2E          \ ,             .
+ EQUB &2F, &8B          \ /             COPY
+
+ EQUB &30, &31, &33     \ MOS code
+ EQUB &00, &00, &00
+
+                        \ Internal key numbers &70 to &79:
+                        \
+ EQUB &1B, &81          \ ESCAPE        f1
+ EQUB &82, &83          \ f2            f3
+ EQUB &85, &86          \ f5            f6
+ EQUB &88, &89          \ f8            f9
+ EQUB &5C, &8D          \ \             Right arrow
+
+ EQUB &34, &35, &32     \ MOS code
+ EQUB &2C, &4E, &E3
 
 \ ******************************************************************************
 \
 \       Name: KYTB
 \       Type: Variable
 \   Category: Keyboard
-\    Summary: ???
+\    Summary: Lookup table for in-flight keyboard controls
+\  Deep dive: The key logger
+\
+\ ------------------------------------------------------------------------------
+\
+\ Keyboard table for in-flight controls. This table contains the internal key
+\ codes for the flight keys, EOR'd with &FF to invert each bit.
+\
+\ The pitch, roll, speed and laser keys (i.e. the seven primary flight
+\ control keys) have bit 7 set, so they have 128 added to their internal
+\ values. This doesn't appear to be used anywhere.
+\
+\ Note that KYTB actually points to the byte before the start of the table, so
+\ the offset of the first key value is 1 (i.e. KYTB+1), not 0.
 \
 \ ******************************************************************************
 
 .KYTB
 
- EQUB &22,&23,&35,&37,&41,&42,&45,&51  \ ETUPAXJSC TAB Space M<>? ESCAPE
- EQUB &52,&60,&62,&65,&66,&67,&68,&70  \ Contains key number EOR &FF
- EQUB &F0
+ EQUB &DD EOR &FF       \ E         KYTB+0    KY13     E.C.M.
+ EQUB &DC EOR &FF       \ T         KYTB+1    KY10     Arm missile
+ EQUB &CA EOR &FF       \ U         KYTB+2    KY11     Unarm missile
+ EQUB &C8 EOR &FF       \ P         KYTB+3    KY16     Cancel docking computer
+ EQUB &BE EOR &FF       \ A         KYTB+4    KY7      Fire lasers
+ EQUB &BD EOR &FF       \ X         KYTB+5    KY5      Pitch up
+ EQUB &BA EOR &FF       \ J         KYTB+6    KY14     In-system jump
+ EQUB &AE EOR &FF       \ S         KYTB+7    KY6      Pitch down
+ EQUB &AD EOR &FF       \ C         KYTB+8    KY15     Docking computer
+ EQUB &9F EOR &FF       \ TAB       KYTB+9    KY8      Energy bomb
+ EQUB &9D EOR &FF       \ Space     KYTB+10   KY2      Speed up
+ EQUB &9A EOR &FF       \ M         KYTB+11   KY12     Fire missile
+ EQUB &99 EOR &FF       \ <         KYTB+12   KY3      Roll left
+ EQUB &98 EOR &FF       \ >         KYTB+13   KY4      Roll right
+ EQUB &97 EOR &FF       \ ?         KYTB+14   KY1      Slow down
+ EQUB &8F EOR &FF       \ ESCAPE    KYTB+15   KY9      Launch escape pod
+
+ EQUB &F0               \ This value just has to be higher than &80 to act as a
+                        \ terminator for the KYTB matching process in DKS1
 
 \ ******************************************************************************
 \
-\       Name: DKS1
+\       Name: RDKEY2
 \       Type: Subroutine
 \   Category: Keyboard
 \    Summary: Scan the keyboard for a flight key and update the key logger
@@ -44270,13 +44470,13 @@ LOAD_H% = LOAD% + P% - CODE%
 \
 \ ******************************************************************************
 
-.DKS1
+.RDKEY2
 
  JSR U%                 \ Call U% to clear the key logger, which also sets X to
                         \ 0 (so we can use X as an index for working our way
                         \ through the flight keys in RDK3 below)
 
- LDA #16                \ Start the scan with internal key number 16 (COPY)
+ LDA #16                \ Start the scan with internal key number 16 ("Q")
 
  CLC                    \ Clear the C flag so we can do the additions below
 
@@ -44358,22 +44558,38 @@ LOAD_H% = LOAD% + P% - CODE%
 
  STA KL                 \ Store the number of the key pressed in KL
 
+                        \ Now to scan the KYTB table for a possible match for
+                        \ the pressed key (if we get a match we update the key
+                        \ logger, as KYTB contains the flight keys that have
+                        \ key logger entries. Because we are scanning the
+                        \ keyboard by incrementing the key to check in A, and
+                        \ the KYTB table is sorted in increasing order, we don't
+                        \ need to scan the whole KYTB table each time for a
+                        \ match, we can just check against the next key in the
+                        \ table, as pointed to by X
+
 .DKL5
 
  CMP KYTB,X             \ If A is less than the X-th byte in KYTB, jump back to
- BCC RDK2               \ RDK2 to continue scanning for more keys
+ BCC RDK2               \ RDK2 to continue scanning for more keys, as this key
+                        \ isn't in the KYTB table and doesn't have an entry in
+                        \ the key logger
 
- BEQ P%+5               \ If A is equal to the X-th byte in KYTB, skip the next
-                        \ two instructions
+ BEQ P%+5               \ If A is equal to the X-th byte in KYTB, we have a
+                        \ match, so skip the next two instructions to go to the
+                        \ part where we update the key logger
 
- INX                    \ Increment X so next time we check KYTB from the next
-                        \ key in the table
+ INX                    \ The pressed key is higher than the KYTB entry at X, so
+                        \ increment X to point to the next key in the table
 
- BNE DKL5               \ Loop back to DKL5 to test against the next flight key
-                        \ in KYTB (this BNE is effectively a JMP as X won't get
-                        \ high enough to wrap around to zero)
+ BNE DKL5               \ And loop back to DKL5 to test against this next flight
+                        \ key in KYTB (this BNE is effectively a JMP as X won't
+                        \ get high enough to wrap around to zero)
 
- DEC KY17,X             \ We got a match in the KYTB table for our key, at
+                        \ If we get here, the pressed key has an entry in the
+                        \ key logger, so now to update the logger
+
+ DEC KY17,X             \ We got a match in the KYTB table for our key at
                         \ position X, so we decrement the corresponding key
                         \ logger byte for this key at KY17+X (KY17 is the first
                         \ key in the key logger)
@@ -44384,7 +44600,8 @@ LOAD_H% = LOAD% + P% - CODE%
  CLC                    \ Clear the C flag so we can do more additions
 
  BCC RDK2               \ Jump back to RDK2 to continue scanning for more keys
-                        \ (this BCC is effectively a JMP as we just cleared the C flag)
+                        \ (this BCC is effectively a JMP as we just cleared the
+                        \ C flag)
 
 \ ******************************************************************************
 \
@@ -44525,6 +44742,12 @@ LOAD_H% = LOAD% + P% - CODE%
 \
 \ ------------------------------------------------------------------------------
 \
+\ Scan the keyboard, starting with internal key number 16 ("Q") and working
+\ through the set of internal key numbers.
+\
+\ This routine is effectively the same as OSBYTE 122, though the OSBYTE call
+\ preserves A, unlike this routine.
+\
 \ Returns:
 \
 \   X                   If a key is being pressed, X contains the internal key
@@ -44550,7 +44773,7 @@ LOAD_H% = LOAD% + P% - CODE%
  TYA                    \ Store Y on the stack so we can retrieve it later
  PHA
 
- JSR DKS1               \ Call DKS1 to scan the keyboard, update the key logger
+ JSR RDKEY2             \ Call RDKEY2 to scan the keyboard, update the key logger
                         \ and return any non-logger key presses in X
 
  PLA                    \ Retrieve the value of Y we stored above
