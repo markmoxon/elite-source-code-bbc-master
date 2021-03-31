@@ -2236,18 +2236,22 @@ LOAD_A% = LOAD%
 
 .NOISE
 
- LDA DNOIZ              \ ???
- BNE SRTS
+ LDA DNOIZ              \ If DNOIZ is non-zero, then sound is disabled, so
+ BNE SRTS               \ return from the subroutine (as SRTS contains an RTS)
 
- LDA SFX2,Y
+ LDA SFX2,Y             \ ???
  LSR A
+
  CLV
+
  LDX #0
  BCS NS1
 
  INX
+
  LDA SBUF+13
  CMP SBUF+14
+
  BCC NS1
 
  INX
@@ -2258,31 +2262,39 @@ LOAD_A% = LOAD%
  CMP SBUF+12,X
  BCC SRTS
 
- SEI
+ SEI                    \ Disable interrupts while we update the sound buffer
+
  STA SBUF+12,X
+
  LSR A
  AND #&07
  STA SBUF+6,X
+
  LDA SFX4,Y
  STA SBUF+9,X
+
  LDA SFX2,Y
  STA SBUF+3,X
+
  AND #&0F
  LSR A
  STA SBUF+15,X
+
  LDA SFX3,Y
  BVC P%+3
 
  ASL A
 
  STA SBUF+18,X
+
  LDA #&80
  STA SBUF,X
- CLI
 
- SEC
+ CLI                    \ Enable interrupts again
 
- RTS
+ SEC                    \ Set the C flag
+
+ RTS                    \ Return from the subroutine
 
 \ ******************************************************************************
 \
@@ -5963,7 +5975,7 @@ NEXT
  LDY #%00001111         \ Set bits 1 and 2 of the Access Control Register at
  STY VIA+&34            \ SHEILA+&34 to switch screen memory into &3000-&7FFF
 
- TAY
+ TAY                    \ Copy the screen y-coordinate from A into Y
 
  LDA ylookup,Y          \ Look up the page number of the character row that
  STA SC+1               \ contains the pixel with the y-coordinate in Y, and
@@ -6018,7 +6030,7 @@ NEXT
  LDY #%00001001         \ Clear bits 1 and 2 of the Access Control Register at
  STY VIA+&34            \ SHEILA+&34 to switch main memory back into &3000-&7FFF
 
- LDY T1
+ LDY T1                 \ Restore Y from T1, so Y is preserved by the routine
 
 .PX4
 
@@ -6060,7 +6072,7 @@ NEXT
  LDY #%00001001         \ Clear bits 1 and 2 of the Access Control Register at
  STY VIA+&34            \ SHEILA+&34 to switch main memory back into &3000-&7FFF
 
- LDY T1
+ LDY T1                 \ Restore Y from T1, so Y is preserved by the routine
 
  RTS                    \ Return from the subroutine
 
@@ -20866,20 +20878,18 @@ LOAD_C% = LOAD% +P% - CODE%
                         \ returns X = 0
 
 {
- STA widget
- TAX
- BEQ LLfix
-
- LDA logL,X
- LDX Q
- SEC
- SBC logL,X
- LDX widget
- LDA log,X
+ STA widget             \ This contains the code from the LL28+4 routine, so
+ TAX                    \ this section is exactly equivalent to a JMP LL28+4
+ BEQ LLfix              \ call, but is slightly faster as it's been inlined
+ LDA logL,X             \ (so it converts the remainder in A into an integer
+ LDX Q                  \ representation of the fractional value A / Q, in R,
+ SEC                    \ where 1.0 = 255, and it also clears the C flag
+ SBC logL,X             \
+ LDX widget             \ The routine is surrounded by braces as BeebAsm
+ LDA log,X              \ doesn't allow us to redefine labels, unlike BBC BASIC
  LDX Q
  SBC log,X
  BCS LL2
-
  TAX
  LDA antilog,X
 
@@ -20890,7 +20900,7 @@ LOAD_C% = LOAD% +P% - CODE%
 
 .LL2
 
- LDA #&FF
+ LDA #255
  STA R
  RTS
 }
@@ -21041,31 +21051,28 @@ LOAD_C% = LOAD% +P% - CODE%
 {
 .LL31
 
- ASL A
- BCS LL29
-
- CMP Q
- BCC P%+4
-
- SBC Q
-
- ROL R
-
- BCS LL31
-
- JMP RTS
-
-.LL29
+ ASL A                  \ This contains the code from the LL31 routine, so
+ BCS LL29               \ this section is exactly equivalent to a JSR LL31
+ CMP Q                  \ call, but is slightly faster as it's been inlined
+ BCC P%+4               \ (so it calculates:
+ SBC Q                  \
+ ROL R                  \   R = 256 * A / Q
+ BCS LL31               \     = 256 * numerator / denominator
+ JMP RTS                \
+                        \ The routine is surrounded by braces as BeebAsm
+.LL29                   \ doesn't allow us to redefine labels, unlike BBC BASIC
 
  SBC Q
  SEC
  ROL R
  BCS LL31
-
  LDA R
 
 .RTS
 }
+
+                        \ The result of our division is now in R, so we just
+                        \ need to shift it back by the scale factor in Y
 
  LDA #0                 \ Set K(3 2 1) = 0 to hold the result (we populate K
  STA K+1                \ next)
@@ -23873,13 +23880,15 @@ LOAD_D% = LOAD% + P% - CODE%
  JSR tnpr               \ Call tnpr to work out whether there is room in the
                         \ cargo hold for this item
 
- LDY #&CE
- LDA R
- BEQ L4DD8
+ LDY #206               \ Set Y to recursive token 46 (" CARGO{sentence case}")
+                        \ to pass to the Tc routine if we call it
 
- BCS Tc
+ LDA R                  \ If R = 0, then we didn't enter a number above, so skip
+ BEQ P%+4               \ the following instruction
 
-.L4DD8
+ BCS Tc                 \ If the C flag is set, then there is no room in the
+                        \ cargo hold, jump up to Tc to print a "Cargo?" error, 
+                        \ beep, clear the number and try again
 
  LDA QQ24               \ There is room in the cargo hold, so now to check
  STA Q                  \ whether we have enough cash, so fetch the item's
@@ -24965,27 +24974,34 @@ LOAD_D% = LOAD% + P% - CODE%
  CPY #3                 \ If Y < 3, then the label would clash with the chart
  BCC TT187              \ title, so jump to TT187 to skip printing the label
 
- CPY #&15
- BCS TT187
+ CPY #21                \ If Y > 21, then the label will spill out of the
+ BCS TT187              \ right edge of the screen, so jump to TT187 to skip
+                        \ printing the label
 
- TYA
- PHA
- LDA QQ15+3
+ TYA                    \ Store Y on the stack so it can be preserved across the
+ PHA                    \ call to DIST
 
- JSR DIST               \ Calculate the distance between the selected system and
-                        \ the current system
+ LDA QQ15+3             \ Set A = s1_hi, so A contains the galactic x-coordinate
+                        \ of the system we are displaying on the chart
 
- PLA
+ JSR DIST               \ Call DIST to calculate the distance between the system
+                        \ with galactic coordinates (A, QQ15+1) - i.e. the
+                        \ system we are displaying - and the current system at
+                        \ (QQ0, QQ1), returning the result in QQ8(1 0)
+
+ PLA                    \ Restore Y from the stack
  TAY
- LDA QQ8+1
- BNE TT187
 
- LDA QQ8
- CMP #&46
+ LDA QQ8+1              \ If the horizontal distance in QQ18+1 is non-zero,
+ BNE TT187              \ jump to TT187 to skip printing the label
+
+ LDA QQ8                \ If the vertical distance is >= 70, jump to TT187 to
+ CMP #70                \ skip printing the label
 
 .TT187S
 
- BCS TT187
+ BCS TT187              \ If we jump here with a BCS TT187S, it jumps on to
+                        \ TT187
 
  LDA #&FF               \ Store &FF in INWK+Y, to denote that this row is now
  STA INWK,Y             \ occupied so we don't try to print another system's
@@ -25121,8 +25137,9 @@ LOAD_D% = LOAD% + P% - CODE%
 \
 \   TT111-1             Contains an RTS
 \
-\   DIST                Calculate the distance between the selected system and
-\                       the current system
+\   DIST                Calculate the distance between the system with galactic
+\                       coordinates (A, QQ15+1) and the system at (QQ0, QQ1),
+\                       returning the result in QQ8(1 0)
 \
 \ ******************************************************************************
 
@@ -38930,9 +38947,11 @@ LOAD_G% = LOAD% + P% - CODE%
 
  RTS                    \ Return from the subroutine
 
- BCS LL2
+ BCS LL2                \ If the subtraction fitted into one byte and didn't
+                        \ underflow, then log(A) - log(Q) < 256, so we jump to
+                        \ LL2 to return a result of 255
 
- LDX #&FE
+ LDX #254               \ Otherwise set the result in R to 254
  STX R
 
 .LL31
