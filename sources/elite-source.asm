@@ -2066,35 +2066,45 @@ LOAD_A% = LOAD%
 
 \ ******************************************************************************
 \
-\       Name: L1358
+\       Name: CHANNEL
 \       Type: Variable
 \   Category: Sound
-\    Summary: ??? Sound data mask applied to top nibble of sound data in NS2
+\    Summary: Sound chip data mask for choosing a tone channel in the range 0-2
 \
 \ ******************************************************************************
 
-.L1358
+.CHANNEL
 
- EQUB %11000000
- EQUB %10100000
- EQUB %10000000
+ EQUB %11000000         \ Mask for a latch byte for channel 2
+ EQUB %10100000         \ Mask for a latch byte for channel 1
+ EQUB %10000000         \ Mask for a latch byte for channel 0
 
 \ ******************************************************************************
 \
-\       Name: L135B
+\       Name: QUIET
 \       Type: Variable
 \   Category: Sound
-\    Summary: ??? Sound data passed to the sound chip, and a mask applied in NS7
+\    Summary: Sound chip data to turn the volume down on all channels and to act
+\             as a mask for choosing a tone channel in the range 0-2
 \
 \ ******************************************************************************
 
-.L135B
+.QUIET
 
- EQUB %11111111
- EQUB %10111111
- EQUB %10011111
- EQUB %11011111
- EQUB %11101111
+ EQUB %11111111         \            %1         %11               %1     %1111
+                        \ Latch byte (1), channel 3, volume latch (1), data 15
+
+ EQUB %10111111         \            %1         %01               %1     %1111
+                        \ Latch byte (1), channel 1, volume latch (1), data 15
+
+ EQUB %10011111         \            %1         %00               %1     %1111
+                        \ Latch byte (1), channel 0, volume latch (1), data 15
+
+ EQUB %11011111         \            %1         %10               %1     %1111
+                        \ Latch byte (1), channel 2, volume latch (1), data 15
+
+ EQUB %11101111         \            %1         %11             %0       %1111
+                        \ Latch byte (1), channel 3,   tone latch (0), data 15
 
 \ ******************************************************************************
 \
@@ -2104,6 +2114,10 @@ LOAD_A% = LOAD%
 \    Summary: Write sound data directly to the 76489 sound chip
 \
 \ ------------------------------------------------------------------------------
+\
+\ Arguments:
+\
+\   A                   The sound byte to send to the 76489 sound chip
 \
 \ Other entry points:
 \
@@ -2141,35 +2155,48 @@ LOAD_A% = LOAD%
 \       Name: SRESET
 \       Type: Subroutine
 \   Category: Sound
-\    Summary: Reset the sound buffers
+\    Summary: Reset the sound buffer and turn off all sound channels
 \
 \ ******************************************************************************
 
 .SRESET
 
- LDY #3                 \ ???
- LDA #0
+ LDY #3                 \ We need to zero the first 3 bytes of the sound buffer
+                        \ at SBUF, so set a counter in Y
 
-.L137B
+ LDA #0                 \ Set A to 0 so we can zero the sound buffer
 
- STA SBUF-1,Y
- DEY
- BNE L137B
+.SRL1
 
- SEI
+ STA SBUF-1,Y           \ Zero the Y-1th byte of SBUF
 
-.L1382
+ DEY                    \ Decrement the loop counter
 
- LDA L135B,Y
- JSR SOUND
+ BNE SRL1               \ Loop back to zero the next byte until we have done all
+                        \ three from SBUF+2 down to SBUF
 
- INY
- CPY #5
- BNE L1382
+ SEI                    \ Disable interrupts while we update the sound chip
 
- CLI
+                        \ At this point Y = 0, which we can now use as a loop
+                        \ counter to loop throug the 5 bytes in QUIET and send
+                        \ them directly to the 76489 sound chip to set the
+                        \ volume levels on all 4 sound channels to 15 (silent)
+                        \ and the noise register on channel 3 to %111
 
- RTS
+.SRL2
+
+ LDA QUIET,Y            \ Fetch the Y-th byte of QUIET
+
+ JSR SOUND              \ Write the value in A directly to the 76489 sound chip
+
+ INY                    \ Increment the loop counter
+
+ CPY #5                 \ Loop back until we have sent all 5 bytes to the sound
+ BNE SRL2               \ chip
+
+ CLI                    \ Enable interrupts again
+
+ RTS                    \ Return from the subroutine
 
 \ ******************************************************************************
 \
@@ -2211,12 +2238,18 @@ LOAD_A% = LOAD%
 \       Name: NOISE
 \       Type: Subroutine
 \   Category: Sound
-\    Summary: Make the sound whose number is in Y
+\    Summary: Make the sound whose number is in Y by populating the sound buffer
 \
 \ ------------------------------------------------------------------------------
 \
 \ The following sounds can be made by this routine. Two-part noises are made by
-\ consecutive calls to this routine woth different values of Y.
+\ consecutive calls to this routine with different values of Y. The routine
+\ doesn't make any sounds itself; instead, it populates the sound buffer at
+\ SBUF with the relevant sound data, and the interrupt handler at IRQ1 calls
+\ the NOISE2 routine to process the data in the sound buffer and send it to the
+\ 76489 sound chip.
+\
+\ This routine can make the following sounds depending on the value of Y:
 \
 \   0       Long, low beep
 \   1       Short, high beep
@@ -2236,58 +2269,72 @@ LOAD_A% = LOAD%
 
 .NOISE
 
+                        \ This routine appears to set up the contents of the
+                        \ SBUF sound buffer, so the NOISE2 routine can then send
+                        \ the results to the 76489 sound chip. How this all
+                        \ works is a bit of a mystery, so this part needs more
+                        \ investigation
+
  LDA DNOIZ              \ If DNOIZ is non-zero, then sound is disabled, so
  BNE SRTS               \ return from the subroutine (as SRTS contains an RTS)
 
- LDA SFX2,Y             \ ???
+ LDA SFX2,Y             \ Fetch SFX2+Y and shift bit 0 into the C flag
  LSR A
 
- CLV
+ CLV                    \ Clear the V flag
 
- LDX #0
+ LDX #0                 \ If bit 0 of SFX2+Y is set, set X = 0 and jump to NS1
  BCS NS1
 
- INX
+ INX                    \ Increment X to 1
 
- LDA SBUF+13
+ LDA SBUF+13            \ If SBUF+13 < SBUF+14, set X = 1 and jump to NS1
  CMP SBUF+14
-
  BCC NS1
 
- INX
+ INX                    \ SBUF+13 >= SBUF+14, so increment X to 2
 
 .NS1
 
- LDA SFX1,Y
- CMP SBUF+12,X
+                        \ By the time we get here, X is set as follows:
+                        \
+                        \   * X = 0 if bit 0 of SFX2+Y is set
+                        \   * X = 1 if SBUF+13 < SBUF+14
+                        \   * X = 2 if SBUF+13 >= SBUF+14
+
+ LDA SFX1,Y             \ Set A = SFX1+Y
+
+ CMP SBUF+12,X          \ If SFX1+Y < SBUF+12+X, return from the subroutine
  BCC SRTS
 
  SEI                    \ Disable interrupts while we update the sound buffer
 
- STA SBUF+12,X
+                        \ If we get here then SFX1+Y >= SBUF+12+X
 
- LSR A
- AND #&07
+ STA SBUF+12,X          \ SBUF+12+X = A = SFX1+Y
+
+ LSR A                  \ Store bits 1-3 of SFX1+Y in bits 0-2 of SBUF+6+X
+ AND #%00000111
  STA SBUF+6,X
 
- LDA SFX4,Y
+ LDA SFX4,Y             \ Store SFX4+Y in SBUF+9+X
  STA SBUF+9,X
 
- LDA SFX2,Y
+ LDA SFX2,Y             \ Store SFX2+Y in SBUF+3+X
  STA SBUF+3,X
 
- AND #&0F
+ AND #%00001111         \ Store bits 1-3 of SFX2+Y in bits 0-2 of SBUF+15+X
  LSR A
  STA SBUF+15,X
 
- LDA SFX3,Y
- BVC P%+3
+ LDA SFX3,Y             \ Set A = SFX3+Y
 
+ BVC P%+3               \ If the V flag is set, double the value in A
  ASL A
 
- STA SBUF+18,X
+ STA SBUF+18,X          \ Store A in SBUF+18+X
 
- LDA #&80
+ LDA #%10000000         \ Set bit 7 of SBUF+X
  STA SBUF,X
 
  CLI                    \ Enable interrupts again
@@ -2301,99 +2348,128 @@ LOAD_A% = LOAD%
 \       Name: NOISE2
 \       Type: Subroutine
 \   Category: Sound
-\    Summary: ???
+\    Summary: Process the contents of the sound buffer and send it to the sound
+\             chip
 \
 \ ******************************************************************************
 
 .NOISE2
 
- LDY #2
+                        \ This routine is called from the IRQ1 interrupt handler
+                        \ and appears to process the contents of the SBUF sound
+                        \ buffer, sending the results to the 76489 sound chip.
+                        \ What it's actually doing, though, is a bit of a
+                        \ mystery, so this part needs more investigation
+
+ LDY #2                 \ We want to loop through the three tone channels, so
+                        \ set a counter in Y to iterate through the channels
 
 .NSL1
 
- LDA SBUF,Y
- BEQ NS8
+ LDA SBUF,Y             \ If the Y-th byte of SBUF is zero, there is no data
+ BEQ NS8                \ buffered for this channel, so jump to NS8 to move onto
+                        \ the next one
 
- BMI NS2
+ BMI NS2                \ If bit 7 of the Y-th byte of SBUF is set, jump to NS2
 
- LDA SBUF+15,Y
+ LDA SBUF+15,Y          \ If SBUF+15+Y = 0, jump to NS3
  BEQ NS3
 
- EQUB &2C
+ EQUB &2C               \ Skip the next instruction by turning it into
+                        \ &2C &A9 &00, or BIT &00A9, which does nothing apart
+                        \ from affect the flags
 
 .NS2
 
- LDA #0
- CLC
- CLD
- ADC SBUF+18,Y
- STA SBUF+18,Y
- PHA
- ASL A
- ASL A
- AND #&0F
- ORA L1358,Y
- JSR SOUND
+ LDA #0                 \ Set A = 0
 
- PLA
+ CLC                    \ Clear the C flag for the additions below
+
+ CLD                    \ Clear the D flag to ensure we are in binary mode
+
+ ADC SBUF+18,Y          \ Set SBUF+18+Y = SBUF+18+Y + A
+ STA SBUF+18,Y
+
+ PHA                    \ Store A on the stack
+
+ ASL A                  \ Set A = (A * 4) mod 16
+ ASL A
+ AND #%00001111
+
+ ORA CHANNEL,Y          \ Set the channel to 0, 1, 2 for Y = 2, 1, 0
+
+ JSR SOUND              \ Write the value in A directly to the 76489 sound chip
+
+ PLA                    \ Retrieve A from the stack
+
+ LSR A                  \ Set A = A / 4
  LSR A
- LSR A
- JSR SOUND
+
+ JSR SOUND              \ Write the value in A directly to the 76489 sound chip
 
 .NS3
 
- TYA
+ TYA                    \ Copy Y into X
  TAX
- LDA SBUF,Y
+
+ LDA SBUF,Y             \ If bit 7 of the Y-th byte of SBUF is set, jump to NS5
  BMI NS5
 
- DEC SBUF+3,X
- BEQ NS4
+ DEC SBUF+3,X           \ Decrement SBUF+3+X
 
- LDA SBUF+3,X
+ BEQ NS4                \ If the value is zero, skip to NS4
+
+ LDA SBUF+3,X           \ If SBUF+3+X AND SBUF+9+X is non-zero, skip to NS8
  AND SBUF+9,X
  BNE NS8
 
- DEC SBUF+6,X
- BNE NS6
+ DEC SBUF+6,X           \ Decrement SBUF+6+X
+
+ BNE NS6                \ If the value is non-zero, skip to NS6
 
 .NS4
 
- LDA #0
+ LDA #0                 \ Set SBUF+Y = 0
  STA SBUF,Y
- STA SBUF+12,Y
- BEQ NS7
+
+ STA SBUF+12,Y          \ Set SBUF+12+Y = 0
+
+ BEQ NS7                \ Jump to NS7 (this BEQ is effectively a JMP as A is
+                        \ always zero)
 
 .NS5
 
- LSR SBUF,X
+ LSR SBUF,X             \ Halve the value in SBUF+X
 
 .NS6
 
- LDA SBUF+6,Y
- CLC
- ADC VOLUME
+ LDA SBUF+6,Y           \ Set A = SBUF+6+Y + VOLUME
+ CLC                    \
+ ADC VOLUME             \ where VOLUME is the the current volume setting (0-7)
 
 .NS7
 
- EOR L135B,Y
- JSR SOUND
+ EOR QUIET,Y            \ EOR A with the Y-th byte of QUIET
+
+ JSR SOUND              \ Write the value in A directly to the 76489 sound chip
 
 .NS8
 
- DEY
- BPL NSL1
+ DEY                    \ Decrement the loop counter
+
+ BPL NSL1               \ Loop back to NSL1 until we have done all three channels
 
 .NS9
 
- RTS
+ RTS                    \ Return from the subroutine
 
 \ ******************************************************************************
 \
 \       Name: SBUF
 \       Type: Variable
 \   Category: Sound
-\    Summary: ???
+\    Summary: The sound buffer where the data to be sent to the sound chip is
+\             processed
 \
 \ ******************************************************************************
 
@@ -2406,7 +2482,7 @@ LOAD_A% = LOAD%
 \       Name: SFX1
 \       Type: Variable
 \   Category: Sound
-\    Summary: ???
+\    Summary: Sound data block 1
 \
 \ ******************************************************************************
 
@@ -2422,7 +2498,7 @@ LOAD_A% = LOAD%
 \       Name: SFX2
 \       Type: Variable
 \   Category: Sound
-\    Summary: ???
+\    Summary: Sound data block 2
 \
 \ ******************************************************************************
 
@@ -2438,7 +2514,7 @@ LOAD_A% = LOAD%
 \       Name: SFX3
 \       Type: Variable
 \   Category: Sound
-\    Summary: ???
+\    Summary: Sound data block 3
 \
 \ ******************************************************************************
 
@@ -2454,7 +2530,7 @@ LOAD_A% = LOAD%
 \       Name: SFX4
 \       Type: Variable
 \   Category: Sound
-\    Summary: ???
+\    Summary: Sound data block 4
 \
 \ ******************************************************************************
 
