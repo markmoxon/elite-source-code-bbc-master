@@ -2457,7 +2457,8 @@ LOAD_A% = LOAD%
 
  DEY                    \ Decrement the loop counter
 
- BPL NSL1               \ Loop back to NSL1 until we have done all three channels
+ BPL NSL1               \ Loop back to NSL1 until we have done all three
+                        \ channels
 
 .NS9
 
@@ -37473,8 +37474,8 @@ ENDIF
  BMI P%+4               \ If the updated acceleration is negative, skip the
                         \ following instruction
 
- LDX #11                \ Set X = 11, so we "press" KY+11, i.e. KY2, with the next
-                        \ instruction (Space, speed up)
+ LDX #11                \ Set X = 11, so we "press" KY+11, i.e. KY2, with the
+                        \ next instruction (Space, speed up)
 
  STA KL,X               \ Store &FF in either KY1 or KY2 to "press" the relevant
                         \ key, depending on whether the updated acceleration is
@@ -44297,8 +44298,8 @@ LOAD_H% = LOAD% + P% - CODE%
 
  STA QQ11               \ Set the current view type in QQ11 to A
 
-                        \ Fall through into TTX662 to clear the screen and draw a
-                        \ white border
+                        \ Fall through into TTX662 to clear the screen and draw
+                        \ a white border
 
 \ ******************************************************************************
 \
@@ -44868,8 +44869,8 @@ LOAD_H% = LOAD% + P% - CODE%
  TYA                    \ Store Y on the stack so we can retrieve it later
  PHA
 
- JSR RDKEY2             \ Call RDKEY2 to scan the keyboard, update the key logger
-                        \ and return any non-logger key presses in X
+ JSR RDKEY2             \ Call RDKEY2 to scan the keyboard, update the key
+                        \ logger and return any non-logger key presses in X
 
  PLA                    \ Retrieve the value of Y we stored above
  TAY
