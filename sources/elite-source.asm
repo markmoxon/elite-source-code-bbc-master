@@ -598,6 +598,7 @@ ORG &0000
                         \   32  = Equip Ship screen (red key f3)
                         \   64  = Long-range Chart (red key f4)
                         \   128 = Short-range Chart (red key f5)
+                        \   255 = Launch view
                         \
                         \ This value is typically set by calling routine TT66
 
@@ -12376,8 +12377,8 @@ ENDIF
  EQUW MT27              \ Token 27: Print mission captain's name (217-219)
  EQUW MT28              \ Token 28: Print mission 1 location hint (220-221)
  EQUW MT29              \ Token 29: Column 6, white text, lower case in words
- EQUW MT30              \ Token 30: Display disc or tape (unused)
- EQUW MT31              \ Token 31: Display tape or disc (unused)
+ EQUW MT30              \ Token 30: Display currently selected media (disc/tape)
+ EQUW MT31              \ Token 31: Display the non-selected media (disc/tape)
  EQUW DASC              \ Token 32: Unused
 
 \ ******************************************************************************
@@ -22064,7 +22065,7 @@ LOAD_C% = LOAD% +P% - CODE%
 
  JSR PAS1               \ Call PAS1 to display the rotating ship at space
                         \ coordinates (0, 112, 256) and scan the keyboard,
-                        \ returning the internal key number in X (or 0 for no
+                        \ returning the ASCII code of the key in X (or 0 for no
                         \ key press)
 
  LDA #10                \ Set A = 10 so the call to BRP prints extended token 10
@@ -22203,8 +22204,8 @@ LOAD_C% = LOAD% +P% - CODE%
 \
 \ Returns:
 \
-\   X                   If a key is being pressed, X contains the internal key
-\                       number, otherwise it contains 0
+\   X                   If a key is being pressed, X contains the ASCII code of
+\                       the key being pressed, otherwise it contains 0
 \
 \   A                   Contains the same as X
 \
@@ -22228,8 +22229,9 @@ LOAD_C% = LOAD% +P% - CODE%
  JSR MVEIT              \ Call MVEIT to move and rotate the ship in space
 
  JMP RDKEY              \ Scan the keyboard for a key press and return the
-                        \ internal key number in X (or 0 for no key press),
-                        \ returning from the subroutine using a tail call
+                        \ ASCII code of the key pressed in X (or 0 for no key 
+                        \ press), returning from the subroutine using a tail
+                        \ call
 
 \ ******************************************************************************
 \
@@ -22238,12 +22240,19 @@ LOAD_C% = LOAD% +P% - CODE%
 \   Category: Keyboard
 \    Summary: Wait until a key is pressed, ignoring any existing key press
 \
+\ ------------------------------------------------------------------------------
+\
+\ Returns:
+\
+\   X                   The ASCII code of the key that was pressed
+\
 \ ******************************************************************************
 
 .PAUSE2
 
  JSR RDKEY              \ Scan the keyboard for a key press and return the
-                        \ internal key number in X (or 0 for no key press)
+                        \ ASCII code of the key pressed in X (or 0 for no key 
+                        \ press)
 
  BNE PAUSE2             \ If a key was already being held down when we entered
                         \ this routine, keep looping back up to PAUSE2, until
@@ -22251,7 +22260,8 @@ LOAD_C% = LOAD% +P% - CODE%
 
  JSR RDKEY              \ Any pre-existing key press is now gone, so we can
                         \ start scanning the keyboard again, returning the
-                        \ internal key number in X (or 0 for no key press)
+                        \ ASCII code of the key pressed in X (or 0 for no key 
+                        \ press)
 
  BEQ PAUSE2             \ Keep looping up to PAUSE2 until a key is pressed
 
@@ -23800,7 +23810,7 @@ LOAD_D% = LOAD% + P% - CODE%
 
                         \ Fall through into TT128 to draw a circle with the
                         \ centre at the same coordinates as the crosshairs,
-                        \ (QQ19, QQ19+1),  and radius K that reflects the
+                        \ (QQ19, QQ19+1), and radius K that reflects the
                         \ current fuel levels
 
 \ ******************************************************************************
@@ -25051,9 +25061,8 @@ LOAD_D% = LOAD% + P% - CODE%
  CPY #3                 \ If Y < 3, then the label would clash with the chart
  BCC TT187              \ title, so jump to TT187 to skip printing the label
 
- CPY #21                \ If Y > 21, then the label will spill out of the
- BCS TT187              \ right edge of the screen, so jump to TT187 to skip
-                        \ printing the label
+ CPY #21                \ If Y > 21, then the label will be off the bottom of
+ BCS TT187              \ the chart, so jump to TT187 to skip printing the label
 
  TYA                    \ Store Y on the stack so it can be preserved across the
  PHA                    \ call to DIST
@@ -25069,16 +25078,25 @@ LOAD_D% = LOAD% + P% - CODE%
  PLA                    \ Restore Y from the stack
  TAY
 
- LDA QQ8+1              \ If the horizontal distance in QQ18+1 is non-zero,
- BNE TT187              \ jump to TT187 to skip printing the label
+ LDA QQ8+1              \ If the high byte of the distance in QQ8(1 0) is
+ BNE TT187              \ non-zero, jump to TT187 to skip printing the label as
+                        \ the system is too far away from the current system to
+                        \ get a label
 
- LDA QQ8                \ If the vertical distance is >= 70, jump to TT187 to
- CMP #70                \ skip printing the label
+ LDA QQ8                \ If the low byte of the distance in QQ8(1 0) is >= 70,
+ CMP #70                \ jump to TT187 to skip printing the label as the system
+                        \ is too far away from the current system to
+                        \ get a label
 
 .TT187S
 
- BCS TT187              \ If we jump here with a BCS TT187S, it jumps on to
-                        \ TT187
+ BCS TT187              \ If we get here from the instruction above, we jump to
+                        \ TT187 if QQ8(1 0) >= 70, so we only show labels for
+                        \ systems that are within distance 70 (i.e. 7 light
+                        \ years) of the current system
+                        \
+                        \ If we jump here from elsewhere with a BCS TT187S, we
+                        \ jump straight on to TT187
 
  LDA #&FF               \ Store &FF in INWK+Y, to denote that this row is now
  STA INWK,Y             \ occupied so we don't try to print another system's
@@ -25451,7 +25469,7 @@ LOAD_D% = LOAD% + P% - CODE%
 
                         \ We now store the distance to the selected system * 4
                         \ in the two-byte location QQ8, by taking (0 Q) and
-                        \ shifting it left twice, storing it in (QQ8+1 QQ8)
+                        \ shifting it left twice, storing it in QQ8(1 0)
 
  LDA Q                  \ First we shift the low byte left by setting
  ASL A                  \ A = Q * 2, with bit 7 of A going into the C flag
@@ -32730,7 +32748,7 @@ LOAD_E% = LOAD% + P% - CODE%
 .TT17
 
  LDA QQ11               \ If this not the space view, skip the following three
- BNE P%+7               \ instructions
+ BNE P%+7               \ instructions to move onto the SHIFT key logic
 
  JSR DOKEY              \ This is the space view, so scan the keyboard for
                         \ flight controls and pause keys, (or the equivalent on
@@ -33532,10 +33550,8 @@ LOAD_F% = LOAD% + P% - CODE%
 
 .RESET
 
- JSR ZERO               \ Zero-fill pages &9, &A, &B, &C and &D, which clears
-                        \ the ship data blocks, the ship line heap, the ship
-                        \ slots for the local bubble of universe, and various
-                        \ flight and ship status variables
+ JSR ZERO               \ Reset the ship slots for the local bubble of universe,
+                        \ and various flight and ship status variables
 
  LDX #6                 \ Set up a counter for zeroing BETA through BETA+6
 
@@ -33646,10 +33662,8 @@ LOAD_F% = LOAD% + P% - CODE%
 
  JSR WPSHPS             \ Wipe all ships from the scanner
 
- JSR ZERO               \ Zero-fill pages &9, &A, &B, &C and &D, which clears
-                        \ the ship data blocks, the ship line heap, the ship
-                        \ slots for the local bubble of universe, and various
-                        \ flight and ship status variables
+ JSR ZERO               \ Reset the ship slots for the local bubble of universe,
+                        \ and various flight and ship status variables
 
  LDA #LO(LS%)           \ We have reset the ship line heap, so we now point
  STA SLSP               \ SLSP to LS% (the byte below the ship blueprints at D%)
@@ -35145,7 +35159,7 @@ LOAD_F% = LOAD% + P% - CODE%
 
  ROR A                  \ This sets A to a number between 0 and +7, which we
  AND #%10000111         \ we store in byte #30 (the pitch counter) to give our
- STA INWK+30            \ ship a very gentle clockwise pitch with damping
+ STA INWK+30            \ ship a very gentle downwards pitch with damping
 
  LDX #OIL               \ Set X to #OIL, the ship type for a cargo canister
 
@@ -35349,7 +35363,7 @@ LOAD_F% = LOAD% + P% - CODE%
  JSR TITLE              \ distance of 200, returning with the internal number
                         \ of the key pressed in A
 
- CPX #&59               \ Did we press "Y"? If not, jump to QU5, otherwise
+ CPX #'Y'               \ Did we press "Y"? If not, jump to QU5, otherwise
  BNE QU5                \ continue on to load a new commander
 
  JSR DFAULT             \ Call DFAULT to reset the current commander data block
@@ -35564,6 +35578,11 @@ ENDIF
 \
 \   Y                   The distance to show the ship rotating, once it has
 \                       finished moving towards us
+\ Returns:
+\
+\   X                   If a key is being pressed, X contains the ASCII code
+\                       of the key pressed
+\
 \ ******************************************************************************
 
 .TITLE
@@ -35957,7 +35976,7 @@ ENDIF
  PHA
 
  LDA #RED               \ Switch to colour 2, which is magenta in the trade view
- STA COL                \ or red in the chart view
+ STA COL
 
  LDY #8                 \ Wait for 8/50 of a second (0.16 seconds)
  JSR DELAY
@@ -37423,7 +37442,7 @@ ENDIF
 .DOKEY
 
  JSR RDKEY-1            \ Scan the keyboard for a key press and return the
-                        \ internal key number in X (or 0 for no key press)
+                        \ ASCII code of the key pressed in X
 
  LDA auto               \ If auto is 0, then the docking computer is not
  BEQ DK16               \ currently activated, so jump to DK16 to skip the
@@ -37710,7 +37729,8 @@ ENDIF
                         \ screen gets drawn
 
  JSR RDKEY              \ Scan the keyboard for a key press and return the
-                        \ internal key number in X (or 0 for no key press)
+                        \ ASCII code of the key pressed in X (or 0 for no key 
+                        \ press)
 
  CPX #'Q'               \ If "Q" is not being pressed, skip to DK6
  BNE DK6
@@ -37736,7 +37756,8 @@ ENDIF
 
  INY                    \ Increment Y to point to the next toggle key
 
- CPY #9                 \ Have we reached the last toggle key?
+ CPY #9                 \ Check to see whether we have reached the last toggle
+                        \ key
 
  BNE DKL4               \ If not, loop back to check for the next toggle key
 
@@ -37871,7 +37892,8 @@ ENDIF
  JSR DELAY              \ don't take up too much CPU time while looping round
 
  JSR RDKEY              \ Scan the keyboard for a key press and return the
-                        \ internal key number in X (or 0 for no key press)
+                        \ ASCII code of the key pressed in X (or 0 for no key 
+                        \ press)
 
  BNE t                  \ If a key was already being held down when we entered
                         \ this routine, keep looping back up to t, until the
@@ -37881,7 +37903,8 @@ ENDIF
 
  JSR RDKEY              \ Any pre-existing key press is now gone, so we can
                         \ start scanning the keyboard again, returning the
-                        \ internal key number in X (or 0 for no key press)
+                        \ ASCII code of the key pressed in X (or 0 for no key 
+                        \ press)
 
  BEQ t2                 \ Keep looping up to t2 until a key is pressed
 
@@ -42654,8 +42677,6 @@ PRINT "S.ELTG ", ~CODE_G%, " ", ~P%, " ", ~LOAD%, " ", ~LOAD_G%
 \
 \ ELITE H FILE
 \
-\ Produces the binary file ELTH.bin that gets loaded by elite-bcfs.asm.
-\
 \ ******************************************************************************
 
 CODE_H% = P%
@@ -44839,15 +44860,16 @@ LOAD_H% = LOAD% + P% - CODE%
 \ ------------------------------------------------------------------------------
 \
 \ Scan the keyboard, starting with internal key number 16 ("Q") and working
-\ through the set of internal key numbers.
+\ through the set of internal key numbers, returning the resulting key press in
+\ ASCII.
 \
 \ This routine is effectively the same as OSBYTE 122, though the OSBYTE call
 \ preserves A, unlike this routine.
 \
 \ Returns:
 \
-\   X                   If a key is being pressed, X contains the internal key
-\                       number, otherwise it contains 0
+\   X                   If a key is being pressed, X contains the ASCII code
+\                       of the key pressed, otherwise it contains 0
 \
 \   A                   Contains the same as X
 \
