@@ -42,6 +42,29 @@ elite_file = open("output/BCODE.unprot.bin", "rb")
 data_block.extend(elite_file.read())
 elite_file.close()
 
+# Commander data checksum
+
+default_per_cent = 0x34CD
+commander_start = default_per_cent - load_address
+commander_offset = 0x52
+CH = 0x4B - 2
+CY = 0
+for i in range(CH, 0, -1):
+    CH = CH + CY + data_block[commander_start + i + 7]
+    CY = (CH > 255) & 1
+    CH = CH % 256
+    CH = CH ^ data_block[commander_start + i + 8]
+
+print("Commander checksum = ", CH)
+
+# Must have Commander checksum otherwise game will lock
+
+if Encrypt:
+    data_block[commander_start + commander_offset] = CH ^ 0xA9
+    data_block[commander_start + commander_offset + 1] = CH
+
+# Encrypt game code
+
 for n in range(scramble_from, scramble_to):
     data_block[n - load_address] = (data_block[n - load_address] + data_block[n + 1 - load_address]) % 256
 
