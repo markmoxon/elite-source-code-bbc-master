@@ -25059,10 +25059,10 @@ LOAD_D% = LOAD% + P% - CODE%
                         \ system's label)
 
  CPY #3                 \ If Y < 3, then the label would clash with the chart
- BCC TT187              \ title, so jump to TT187 to skip printing the label
+ BCC TT187              \ title, so jump to TT187 to skip showing the system
 
  CPY #21                \ If Y > 21, then the label will be off the bottom of
- BCS TT187              \ the chart, so jump to TT187 to skip printing the label
+ BCS TT187              \ the chart, so jump to TT187 to skip showing the system
 
  TYA                    \ Store Y on the stack so it can be preserved across the
  PHA                    \ call to DIST
@@ -25079,21 +25079,19 @@ LOAD_D% = LOAD% + P% - CODE%
  TAY
 
  LDA QQ8+1              \ If the high byte of the distance in QQ8(1 0) is
- BNE TT187              \ non-zero, jump to TT187 to skip printing the label as
-                        \ the system is too far away from the current system to
-                        \ get a label
+ BNE TT187              \ non-zero, jump to TT187 to skip showing the system as
+                        \ it is too far away from the current system
 
  LDA QQ8                \ If the low byte of the distance in QQ8(1 0) is >= 70,
- CMP #70                \ jump to TT187 to skip printing the label as the system
-                        \ is too far away from the current system to
-                        \ get a label
+ CMP #70                \ jump to TT187 to skip showing the system as it is too
+                        \ far away from the current system
 
 .TT187S
 
  BCS TT187              \ If we get here from the instruction above, we jump to
-                        \ TT187 if QQ8(1 0) >= 70, so we only show labels for
-                        \ systems that are within distance 70 (i.e. 7 light
-                        \ years) of the current system
+                        \ TT187 if QQ8(1 0) >= 70, so we only show systems that
+                        \ are within distance 70 (i.e. 7 light years) of the
+                        \ current system
                         \
                         \ If we jump here from elsewhere with a BCS TT187S, we
                         \ jump straight on to TT187
