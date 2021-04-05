@@ -25058,7 +25058,7 @@ LOAD_D% = LOAD% + P% - CODE%
                         \ Y (which contains the row where we can print this
                         \ system's label)
 
- CPY #3                 \ If Y < 3, then the label would clash with the chart
+ CPY #3                 \ If Y < 3, then the system would clash with the chart
  BCC TT187              \ title, so jump to TT187 to skip showing the system
 
  CPY #21                \ If Y > 21, then the label will be off the bottom of
