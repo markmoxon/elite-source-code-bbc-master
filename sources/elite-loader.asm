@@ -323,8 +323,8 @@ ORG CODE%
 
  LDA VIA+&30            \ Set bits 0-3 of the ROM Select latch at SHEILA+&30 to
  AND #%11110000         \ 6, to switch sideways RAM bank 6 into into &8000-&BFFF
- ORA #6                 \ in main memory (LYNNE), and the filing system RAM
- STA VIA+&30            \ space into &C000-&DFFF (HAZEL)
+ ORA #6                 \ in main memory, and the filing system RAM space into
+ STA VIA+&30            \ &C000-&DFFF (HAZEL)
 
  LDA #%10101010         \ Set A and location &8000 to %10101010
  STA &8000

@@ -1106,7 +1106,6 @@ ORG &0100
 \
 \ ------------------------------------------------------------------------------
 \
-\ Contains ship data for all the ships, planets, suns and space stations in our
 \
 \ The blocks are pointed to by the lookup table at location UNIV. The first 444
 \ bytes of the K% workspace hold ship data on up to 12 ships, with 37 (NI%)
@@ -1436,7 +1435,7 @@ ORG &0E41
                         \
                         \     where our ship is at the origin, the centre of the
                         \     planet/sun is at (x_hi, y_hi, z_hi), and the
-                        \     radius of the planet is 6
+                        \     radius of the planet/sun is 6
                         \
                         \   * 0 = we have crashed into the surface
 
@@ -1566,6 +1565,8 @@ ORG &0E41
                         \     * Bits 0-6 contain the laser's power
                         \
                         \     * Bit 7 determines whether or not the laser pulses
+                        \       (0 = pulse or mining laser) or is always on
+                        \       (1 = beam or military laser)
 
  SKIP 2                 \ These bytes appear to be unused (they were originally
                         \ used for up/down lasers, but they were dropped)
@@ -7434,7 +7435,7 @@ NEXT
                         \ definition for the character we want to draw on the
                         \ screen (i.e. we need the pixel shape of this
                         \ character). The MOS ROM contains bitmap definitions
-                        \ of the BBC's ASCII characters, starting from &C000
+                        \ of the system's ASCII characters, starting from &C000
                         \ for space (ASCII 32) and ending with the £ symbol
                         \ (ASCII 126)
                         \
@@ -10898,7 +10899,8 @@ ENDIF
 \       Name: Main flight loop (Part 15 of 16)
 \       Type: Subroutine
 \   Category: Main loop
-\    Summary: Perform altitude checks with planet and sun, process fuel scooping
+\    Summary: Perform altitude checks with the planet and sun and process fuel
+\             scooping if appropriate
 \  Deep dive: Program flow of the main game loop
 \             Scheduling tasks with the main loop counter
 \
@@ -10989,8 +10991,9 @@ ENDIF
 .MA28
 
  JMP DEATH              \ If we get here then we just crashed into the planet
-                        \ or got too close to the sun, so call DEATH to start
-                        \ the funeral preparations
+                        \ or got too close to the sun, so jump to DEATH to start
+                        \ the funeral preparations and return from the main
+                        \ flight loop using a tail call
 
 .MA29
 
@@ -29353,7 +29356,7 @@ LOAD_E% = LOAD% + P% - CODE%
  STA INWK+29
  STA INWK+30
 
- LDA #129               \ Set A = 129, the "ship" type for the sun
+ LDA #129               \ Set A = 129, the ship type for the sun
 
  JSR NWSHP              \ Call NWSHP to set up the sun's data block and add it
                         \ to FRIN, where it will get put in the second slot as
@@ -30454,6 +30457,11 @@ LOAD_E% = LOAD% + P% - CODE%
 \
 \                         * &00 = black (no missile)
 \
+\                         * #RED2 = red (armed and locked)
+\
+\                         * #YELLOW2 = yellow/white (armed)
+\
+\                         * #GREEN2 = green (disarmed)
 \
 \ ******************************************************************************
 
@@ -32779,7 +32787,7 @@ LOAD_E% = LOAD% + P% - CODE%
                         \ (or the equivalent on joystick) and update the key
                         \ logger, setting KL to the key pressed
 
- LDA JSTK               \ If the joystick was not used, jump down to TJ1,
+ LDA JSTK               \ If the joystick is not configured, jump down to TJ1,
  BEQ TJ1                \ otherwise we move the cursor with the joystick
 
  LDA JSTY               \ Fetch the joystick pitch, ranging from 1 to 255 with
@@ -32997,11 +33005,6 @@ LOAD_F% = LOAD% + P% - CODE%
 \   Category: Universe
 \    Summary: Remove the space station and replace it with the sun
 \
-\ ------------------------------------------------------------------------------
-\
-\ Remove the space station from our local bubble of universe, and replace it
-\ with the sun.
-\
 \ ******************************************************************************
 
 .KS4
@@ -33023,7 +33026,7 @@ LOAD_F% = LOAD% + P% - CODE%
  LDA #6                 \ Set the sun's y_sign to 6
  STA INWK+5
 
- LDA #129               \ Set A = 129, the "ship" type for the sun
+ LDA #129               \ Set A = 129, the ship type for the sun
 
  JMP NWSHP              \ Call NWSHP to set up the sun's data block and add it
                         \ to FRIN, where it will get put in the second slot as
@@ -34257,7 +34260,8 @@ LOAD_F% = LOAD% + P% - CODE%
 \       Name: Main game loop (Part 4 of 6)
 \       Type: Subroutine
 \   Category: Main loop
-\    Summary: Potentially spawn lone bounty hunter, Thargoid, or up to 4 pirates
+\    Summary: Potentially spawn a lone bounty hunter, a Thargoid, or up to four
+\             pirates
 \  Deep dive: Program flow of the main game loop
 \             Ship data blocks
 \
@@ -37227,17 +37231,6 @@ ENDIF
                         \ planet in any of the three axes (we could also call
                         \ routine m to do the same thing, as A = 0)
 
-                        \ The following two instructions appear in the BASIC
-                        \ source file (ELITEC), but in the text source file
-                        \ (ELITEC.TXT) they are replaced by:
-                        \
-                        \   LSR A
-                        \   BEQ WA1
-                        \
-                        \ which does the same thing, but saves one byte of
-                        \ memory (as LSR A is a one-byte opcode, while CMP #2
-                        \ takes up two bytes)
-
  CMP #2                 \ If A < 2 then jump to WA1 to abort the in-system jump
  BCC WA1                \ with a low beep, as we are facing the planet and are
                         \ too close to jump in that direction
@@ -37259,17 +37252,6 @@ ENDIF
 
  JSR m                  \ Call m to set A to the largest distance to the sun
                         \ in any of the three axes
-
-                        \ The following two instructions appear in the BASIC
-                        \ source file (ELITEC), but in the text source file
-                        \ (ELITEC.TXT) they are replaced by:
-                        \
-                        \   LSR A
-                        \   BEQ WA1
-                        \
-                        \ which does the same thing, but saves one byte of
-                        \ memory (as LSR A is a one-byte opcode, while CMP #2
-                        \ takes up two bytes)
 
  CMP #2                 \ If A < 2 then jump to WA1 to abort the in-system jump
  BCC WA1                \ with a low beep, as we are facing the sun and are too
