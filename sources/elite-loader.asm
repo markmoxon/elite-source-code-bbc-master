@@ -75,7 +75,7 @@ ORG &00F4
 .LATCH
 
  SKIP 2                 \ The RAM copy of the currently selected paged ROM/RAM
-                        \ in SHEILA+&30
+                        \ in SHEILA &30
 
 \ ******************************************************************************
 \
@@ -272,7 +272,7 @@ ORG CODE%
  CPY #N%                \ Loop back for the next byte until we have done them
  BNE LOOP               \ all (the number of bytes was set in N% above)
 
- LDA #%00001111         \ Set the Access Control latch at SHEILA+&34, as
+ LDA #%00001111         \ Set the Access Control latch at SHEILA &34, as
  STA VIA+&34            \ follows:
                         \
                         \   * Bit 7 = IRR = 0: Do not IRQ the CPU with this
@@ -291,7 +291,7 @@ ORG CODE%
  JSR PLL1               \ Call PLL1 to draw Saturn
 
  LDA #%00001001         \ Clear bits 1 and 2 of the the Access Control latch
- STA VIA+&34            \ at SHEILA+&34, which changes the following:
+ STA VIA+&34            \ at SHEILA &34, which changes the following:
                         \
                         \   * Bit 2 = X = 1: &3000-&7FFF set to main RAM
                         \   * Bit 1 = E = 1: VDU shadow RAM locations accessible
@@ -319,9 +319,9 @@ ORG CODE%
 
  LDA #6                 \ Set the RAM copy of the currently selected paged ROM
  STA LATCH              \ to 6, so it matches the paged ROM selection latch at
-                        \ SHEILA+&30 that we are about to set
+                        \ SHEILA &30 that we are about to set
 
- LDA VIA+&30            \ Set bits 0-3 of the ROM Select latch at SHEILA+&30 to
+ LDA VIA+&30            \ Set bits 0-3 of the ROM Select latch at SHEILA &30 to
  AND #%11110000         \ 6, to switch sideways RAM bank 6 into into &8000-&BFFF
  ORA #6                 \ in main memory, and the filing system RAM space into
  STA VIA+&30            \ &C000-&DFFF (HAZEL)
@@ -351,7 +351,7 @@ ORG CODE%
 .OK
 
  LDA #%00001111         \ Set bits 1 and 2 of the Access Control Register at
- STA VIA+&34            \ SHEILA+&34 to switch screen memory into &3000-&7FFF
+ STA VIA+&34            \ SHEILA &34 to switch screen memory into &3000-&7FFF
 
                         \ We now want to copy &F pages of memory (&F00 bytes)
                         \ from &1300-&21FF to &7000-&7EFF in screen memory
@@ -387,7 +387,7 @@ ORG CODE%
                         \ &F of them
 
  LDA #%00001001         \ Clear bits 1 and 2 of the Access Control Register at
- STA VIA+&34            \ SHEILA+&34 to switch main memory back into &3000-&7FFF
+ STA VIA+&34            \ SHEILA &34 to switch main memory back into &3000-&7FFF
 
                         \ We now want to copy &33 pages of memory (&3300 bytes)
                         \ from &2200-&54FF to &7F00-&B1FF in main memory
@@ -431,10 +431,10 @@ ORG CODE%
 
  LDA #6                 \ Set the RAM copy of the currently selected paged ROM
  STA LATCH              \ to 6, so it matches the paged ROM selection latch at
-                        \ SHEILA+&30 that we are about to set
+                        \ SHEILA &30 that we are about to set
 
  LDA VIA+&30            \ Switch ROM bank 6 into memory by setting bits 0-3 of
- AND #%11110000         \ the ROM selection latch at SHEILA+&30 to 6
+ AND #%11110000         \ the ROM selection latch at SHEILA &30 to 6
  ORA #6
  STA VIA+&30
 
@@ -447,45 +447,7 @@ ORG CODE%
 \       Type: Subroutine
 \   Category: Drawing planets
 \    Summary: Draw Saturn on the loading screen
-\
-\ ------------------------------------------------------------------------------
-\
-\ Part 1 (PLL1) x 1280 - planet
-\
-\   * Draw pixels at (x, y) where:
-\
-\     r1 = random number from 0 to 255
-\     r2 = random number from 0 to 255
-\     (r1^2 + r1^2) < 128^2
-\
-\     y = r2, squished into 64 to 191 by negation
-\
-\     x = SQRT(128^2 - (r1^2 + r1^2)) / 2
-\
-\ Part 2 (PLL2) x 477 - stars
-\
-\   * Draw pixels at (x, y) where:
-\
-\     y = random number from 0 to 255
-\     y = random number from 0 to 255
-\     (x^2 + y^2) div 256 > 17
-\
-\ Part 3 (PLL3) x 1280 - rings
-\
-\   * Draw pixels at (x, y) where:
-\
-\     r5 = random number from 0 to 255
-\     r6 = random number from 0 to 255
-\     r7 = r5, squashed into -32 to 31
-\
-\     32 <= (r5^2 + r6^2 + r7^2) / 256 <= 79
-\     Draw 50% fewer pixels when (r6^2 + r7^2) / 256 <= 16
-\
-\     x = r5 + r7
-\     y = r5
-\
-\ Draws pixels within the diagonal band of horizontal width 64, from top-left to
-\ bottom-right of the screen.
+\  Deep dive: Drawing Saturn on the loading screen
 \
 \ ******************************************************************************
 

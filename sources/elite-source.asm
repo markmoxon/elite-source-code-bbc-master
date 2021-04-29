@@ -39,9 +39,6 @@ Q% = _REMOVE_CHECKSUMS  \ Set Q% to TRUE to max out the default commander, FALSE
 
 LS% = &0800             \ The start of the descending ship line heap
 
-BRKV = &202             \ The break vector that we intercept to enable us to
-                        \ handle and display system errors
-
 NOST = 20               \ The number of stardust particles in normal space (this
                         \ goes down to 3 in witchspace)
 
@@ -102,10 +99,13 @@ VIA = &FE00             \ Memory-mapped space for accessing internal hardware,
                         \ such as the video ULA, 6845 CRTC and 6522 VIAs (also
                         \ known as SHEILA)
 
-IRQ1V = &204            \ The IRQ1V vector that we intercept to implement the
+BRKV = &0202            \ The break vector that we intercept to enable us to
+                        \ handle and display system errors
+
+IRQ1V = &0204           \ The IRQ1V vector that we intercept to implement the
                         \ split-sceen mode
 
-WRCHV = &20E            \ The WRCHV vector that we intercept to implement our
+WRCHV = &020E           \ The WRCHV vector that we intercept to implement our
                         \ own custom OSWRCH commands for communicating over the
                         \ Tube
 
@@ -787,8 +787,9 @@ ORG &0000
                         \ hunter, a pirate, currently hostile, in the process of
                         \ docking, inside the hold having been scooped, and so
                         \ on. The default values for each ship type are taken
-                        \ from the table at E%, where the NEWB flags are
-                        \ described in more detail
+                        \ from the table at E%, and you can find out more detail
+                        \ in the deep dive on "Advanced tactics with the NEWB
+                        \ flags"
 
 .JSTX
 
@@ -2863,7 +2864,7 @@ LOAD_A% = LOAD%
 .SAVEZP
 
  LDA #%00001111         \ Set bits 1 and 2 of the Access Control Register at
- STA VIA+&34            \ SHEILA+&34 to switch screen memory into &3000-&7FFF
+ STA VIA+&34            \ SHEILA &34 to switch screen memory into &3000-&7FFF
 
  LDX #&90               \ We want to save zero page from &0900 and up, so set an
                         \ index in X, starting from &90
@@ -2879,7 +2880,7 @@ LOAD_A% = LOAD%
                         \ page
 
  LDA #%00001001         \ Clear bits 1 and 2 of the Access Control Register at
- STA VIA+&34            \ SHEILA+&34 to switch main memory back into &3000-&7FFF
+ STA VIA+&34            \ SHEILA &34 to switch main memory back into &3000-&7FFF
 
  RTS                    \ Return from the subroutine
 
@@ -2895,7 +2896,7 @@ LOAD_A% = LOAD%
 .SWAPZP
 
  LDA #%00001111         \ Set bits 1 and 2 of the Access Control Register at
- STA VIA+&34            \ SHEILA+&34 to switch screen memory into &3000-&7FFF
+ STA VIA+&34            \ SHEILA &34 to switch screen memory into &3000-&7FFF
 
  LDX #&90               \ We want to swap zero page from &0090 and up, so set an
                         \ index in X, starting from &90
@@ -2913,9 +2914,9 @@ LOAD_A% = LOAD%
  BNE SWPL1
 
  LDA #%00001001         \ Clear bits 1 and 2 of the Access Control Register at
- STA VIA+&34            \ SHEILA+&34 to switch main memory back into &3000-&7FFF
+ STA VIA+&34            \ SHEILA &34 to switch main memory back into &3000-&7FFF
 
- LDA #6                 \ Set bits 0-3 of the ROM Select latch at SHEILA+&30 to
+ LDA #6                 \ Set bits 0-3 of the ROM Select latch at SHEILA &30 to
  STA VIA+&30            \ 6, to switch sideways ROM bank 6 into into &8000-&BFFF
                         \ in main memory (we already confirmed that this bank
                         \ contains RAM rather than ROM in the loader)
@@ -3144,7 +3145,7 @@ NEXT
                         \ for the y-coordinate of our ship's dot
 
  LDY #%00001111         \ Set bits 1 and 2 of the Access Control Register at
- STY VIA+&34            \ SHEILA+&34 to switch screen memory into &3000-&7FFF
+ STY VIA+&34            \ SHEILA &34 to switch screen memory into &3000-&7FFF
 
  JSR CPIX2              \ Call CPIX2 to draw a single-height dash at the
                         \ y-coordinate in A, and return the dash's right pixel
@@ -3233,7 +3234,7 @@ NEXT
 .RTS
 
  LDA #%00001001         \ Clear bits 1 and 2 of the Access Control Register at
- STA VIA+&34            \ SHEILA+&34 to switch main memory back into &3000-&7FFF
+ STA VIA+&34            \ SHEILA &34 to switch main memory back into &3000-&7FFF
 
  RTS
 
@@ -3288,7 +3289,7 @@ NEXT
                         \ to draw the next pixel
 
  LDA #%00001001         \ Clear bits 1 and 2 of the Access Control Register at
- STA VIA+&34            \ SHEILA+&34 to switch main memory back into &3000-&7FFF
+ STA VIA+&34            \ SHEILA &34 to switch main memory back into &3000-&7FFF
 
  RTS                    \ Return from the subroutine
 
@@ -3318,12 +3319,12 @@ NEXT
  STY YSAV               \ Store Y in YSAV so we can retrieve it below
 
  LDA #%00001111         \ Set bits 1 and 2 of the Access Control Register at
- STA VIA+&34            \ SHEILA+&34 to switch screen memory into &3000-&7FFF
+ STA VIA+&34            \ SHEILA &34 to switch screen memory into &3000-&7FFF
 
  JSR LOIN               \ Draw a line from (X1, Y1) to (X2, Y2)
 
  LDA #%00001001         \ Clear bits 1 and 2 of the Access Control Register at
- STA VIA+&34            \ SHEILA+&34 to switch main memory back into &3000-&7FFF
+ STA VIA+&34            \ SHEILA &34 to switch main memory back into &3000-&7FFF
 
  LDY YSAV               \ Retrieve the value of Y we stored above
 
@@ -5583,7 +5584,7 @@ NEXT
                         \ call to this subroutine
 
  LDY #%00001111         \ Set bits 1 and 2 of the Access Control Register at
- STY VIA+&34            \ SHEILA+&34 to switch screen memory into &3000-&7FFF
+ STY VIA+&34            \ SHEILA &34 to switch screen memory into &3000-&7FFF
 
  LDX X1                 \ Set X = X1
 
@@ -5747,7 +5748,7 @@ NEXT
 .HL6
 
  LDY #%00001001         \ Clear bits 1 and 2 of the Access Control Register at
- STY VIA+&34            \ SHEILA+&34 to switch main memory back into &3000-&7FFF
+ STY VIA+&34            \ SHEILA &34 to switch main memory back into &3000-&7FFF
 
  LDY YSAV               \ Restore Y from YSAV, so that it's preserved
 
@@ -5798,7 +5799,7 @@ NEXT
                         \ already on-screen
 
  LDY #%00001001         \ Clear bits 1 and 2 of the Access Control Register at
- STY VIA+&34            \ SHEILA+&34 to switch main memory back into &3000-&7FFF
+ STY VIA+&34            \ SHEILA &34 to switch main memory back into &3000-&7FFF
 
  LDY YSAV               \ Restore Y from YSAV, so that it's preserved
 
@@ -6063,7 +6064,7 @@ NEXT
  STY T1                 \ Store Y, the index of this pixel's y-coordinate, in T1
 
  LDY #%00001111         \ Set bits 1 and 2 of the Access Control Register at
- STY VIA+&34            \ SHEILA+&34 to switch screen memory into &3000-&7FFF
+ STY VIA+&34            \ SHEILA &34 to switch screen memory into &3000-&7FFF
 
  TAY                    \ Copy the screen y-coordinate from A into Y
 
@@ -6118,7 +6119,7 @@ NEXT
                         \ already on-screen
 
  LDY #%00001001         \ Clear bits 1 and 2 of the Access Control Register at
- STY VIA+&34            \ SHEILA+&34 to switch main memory back into &3000-&7FFF
+ STY VIA+&34            \ SHEILA &34 to switch main memory back into &3000-&7FFF
 
  LDY T1                 \ Restore Y from T1, so Y is preserved by the routine
 
@@ -6160,7 +6161,7 @@ NEXT
                         \ already on-screen
 
  LDY #%00001001         \ Clear bits 1 and 2 of the Access Control Register at
- STY VIA+&34            \ SHEILA+&34 to switch main memory back into &3000-&7FFF
+ STY VIA+&34            \ SHEILA &34 to switch main memory back into &3000-&7FFF
 
  LDY T1                 \ Restore Y from T1, so Y is preserved by the routine
 
@@ -6225,7 +6226,7 @@ NEXT
 .DOT
 
  LDA #%00001111         \ Set bits 1 and 2 of the Access Control Register at
- STA VIA+&34            \ SHEILA+&34 to switch screen memory into &3000-&7FFF
+ STA VIA+&34            \ SHEILA &34 to switch screen memory into &3000-&7FFF
 
  LDA COMX               \ Set X1 = COMX, the x-coordinate of the dot
  STA X1
@@ -6248,7 +6249,7 @@ NEXT
  JSR CPIX2              \ Call CPIX2 to draw a single-height dash
 
  LDA #%00001001         \ Clear bits 1 and 2 of the Access Control Register at
- STA VIA+&34            \ SHEILA+&34 to switch main memory back into &3000-&7FFF
+ STA VIA+&34            \ SHEILA &34 to switch main memory back into &3000-&7FFF
 
  RTS                    \ Return from the subroutine
 
@@ -6406,7 +6407,7 @@ NEXT
 .ECBLB
 
  LDA #%00001111         \ Set bits 1 and 2 of the Access Control Register at
- STA VIA+&34            \ SHEILA+&34 to switch screen memory into &3000-&7FFF
+ STA VIA+&34            \ SHEILA &34 to switch screen memory into &3000-&7FFF
 
  LDA #8*14              \ The E.C.M. bulb is in character block number 14 with
  STA SC                 \ each character taking 8 bytes, so this sets the low
@@ -6462,7 +6463,7 @@ NEXT
 .SPBLB
 
  LDA #%00001111         \ Set bits 1 and 2 of the Access Control Register at
- STA VIA+&34            \ SHEILA+&34 to switch screen memory into &3000-&7FFF
+ STA VIA+&34            \ SHEILA &34 to switch screen memory into &3000-&7FFF
 
  LDA #16*8              \ The space station bulb is in character block number 48
  STA SC                 \ (counting from the left edge of the screen), with the
@@ -6503,7 +6504,7 @@ NEXT
 .BULB2
 
  LDA #%00001001         \ Clear bits 1 and 2 of the Access Control Register at
- STA VIA+&34            \ SHEILA+&34 to switch main memory back into &3000-&7FFF
+ STA VIA+&34            \ SHEILA &34 to switch main memory back into &3000-&7FFF
 
  RTS                    \ Return from the subroutine
 
@@ -6654,7 +6655,7 @@ NEXT
 .MSBAR
 
  LDA #%00001111         \ Set bits 1 and 2 of the Access Control Register at
- STA VIA+&34            \ SHEILA+&34 to switch screen memory into &3000-&7FFF
+ STA VIA+&34            \ SHEILA &34 to switch screen memory into &3000-&7FFF
 
  TXA                    \ Store the value of X on the stack so we can preserve
  PHA                    \ it across the call to this subroutine
@@ -6736,7 +6737,7 @@ NEXT
  PLX                    \ Restore X from the stack, so that it's preserved
 
  LDA #%00001001         \ Clear bits 1 and 2 of the Access Control Register at
- STA VIA+&34            \ SHEILA+&34 to switch main memory back into &3000-&7FFF
+ STA VIA+&34            \ SHEILA &34 to switch main memory back into &3000-&7FFF
 
  RTS                    \ Return from the subroutine
 
@@ -6798,7 +6799,7 @@ NEXT
                         \ in the floor, so set the initial value in X
 
  LDA #%00001111         \ Set bits 1 and 2 of the Access Control Register at
- STA VIA+&34            \ SHEILA+&34 to switch screen memory into &3000-&7FFF
+ STA VIA+&34            \ SHEILA &34 to switch screen memory into &3000-&7FFF
 
 .HAL1
 
@@ -7010,7 +7011,7 @@ NEXT
                         \ 60 times, by which point we are most definitely done
 
  LDA #%00001001         \ Clear bits 1 and 2 of the Access Control Register at
- STA VIA+&34            \ SHEILA+&34 to switch main memory back into &3000-&7FFF
+ STA VIA+&34            \ SHEILA &34 to switch main memory back into &3000-&7FFF
 
  RTS                    \ Return from the subroutine (this instruction is not
                         \ needed as we could just fall through into the RTS at
@@ -7370,7 +7371,7 @@ NEXT
                         \ and return from the subroutine using a tail call
 
  LDY #%00001111         \ Set bits 1 and 2 of the Access Control Register at
- STY VIA+&34            \ SHEILA+&34 to switch screen memory into &3000-&7FFF
+ STY VIA+&34            \ SHEILA &34 to switch screen memory into &3000-&7FFF
 
  TAY                    \ Set Y = the character to be printed
 
@@ -7619,7 +7620,7 @@ NEXT
                         \ clear the screen and draw a white border
 
  LDA #%00001111         \ Set bits 1 and 2 of the Access Control Register at
- STA VIA+&34            \ SHEILA+&34 to switch screen memory into &3000-&7FFF
+ STA VIA+&34            \ SHEILA &34 to switch screen memory into &3000-&7FFF
 
  LDA #1                 \ Move the text cursor to column 1, row 1
  STA XC
@@ -7756,7 +7757,7 @@ NEXT
 .RR4
 
  LDA #%00001001         \ Clear bits 1 and 2 of the Access Control Register at
- STA VIA+&34            \ SHEILA+&34 to switch main memory back into &3000-&7FFF
+ STA VIA+&34            \ SHEILA &34 to switch main memory back into &3000-&7FFF
 
  PLX                    \ We're done printing, so restore the values of the
  PLY                    \ A, X and Y registers that we saved above and clear the
@@ -7789,7 +7790,7 @@ NEXT
 .TTX66
 
  LDX #%00001111         \ Set bits 1 and 2 of the Access Control Register at
- STX VIA+&34            \ SHEILA+&34 to switch screen memory into &3000-&7FFF
+ STX VIA+&34            \ SHEILA &34 to switch screen memory into &3000-&7FFF
 
  LDX #&40               \ Set X to point to page &40, which is the start of the
                         \ screen memory at &4000
@@ -7809,7 +7810,7 @@ NEXT
 .BOX
 
  LDX #%00001111         \ Set bits 1 and 2 of the Access Control Register at
- STX VIA+&34            \ SHEILA+&34 to switch screen memory into &3000-&7FFF
+ STX VIA+&34            \ SHEILA &34 to switch screen memory into &3000-&7FFF
 
  LDA COL                \ Store the current colour on the stack, so we can
  PHA                    \ restore it once we have drawn the border
@@ -7863,7 +7864,7 @@ NEXT
  STA COL
 
  LDA #%00001001         \ Clear bits 1 and 2 of the Access Control Register at
- STA VIA+&34            \ SHEILA+&34 to switch main memory back into &3000-&7FFF
+ STA VIA+&34            \ SHEILA &34 to switch main memory back into &3000-&7FFF
 
  RTS                    \ Return from the subroutine
 
@@ -7989,7 +7990,7 @@ NEXT
  JSR TT67_DUPLICATE     \ Print a newline
 
  LDA #%00001111         \ Set bits 1 and 2 of the Access Control Register at
- STA VIA+&34            \ SHEILA+&34 to switch screen memory into &3000-&7FFF
+ STA VIA+&34            \ SHEILA &34 to switch screen memory into &3000-&7FFF
 
  LDA #&6A               \ Set SC+1 = &6A, for the high byte of SC(1 0)
  STA SC+1
@@ -8063,7 +8064,7 @@ NEXT
 \STX SC                 \ source
 
  LDA #%00001001         \ Clear bits 1 and 2 of the Access Control Register at
- STA VIA+&34            \ SHEILA+&34 to switch main memory back into &3000-&7FFF
+ STA VIA+&34            \ SHEILA &34 to switch main memory back into &3000-&7FFF
 
  LDA #0                 \ Set A = 0 as this is a return value for this routine
 
@@ -8091,7 +8092,7 @@ NEXT
 .DIALS
 
  LDA #%00001111         \ Set bits 1 and 2 of the Access Control Register at
- STA VIA+&34            \ SHEILA+&34 to switch screen memory into &3000-&7FFF
+ STA VIA+&34            \ SHEILA &34 to switch screen memory into &3000-&7FFF
 
  LDA #1                 \ Set location &DDEB to 1. This location is in HAZEL,
  STA &DDEB              \ which contains the filing system RAM space, though
@@ -8380,7 +8381,7 @@ NEXT
  JSR DILX
 
  LDA #%00001001         \ Clear bits 1 and 2 of the Access Control Register at
- STA VIA+&34            \ SHEILA+&34 to switch main memory back into &3000-&7FFF
+ STA VIA+&34            \ SHEILA &34 to switch main memory back into &3000-&7FFF
  
 
  JMP COMPAS             \ We have now drawn all the indicators, so jump to
@@ -20109,6 +20110,7 @@ LOAD_C% = LOAD% +P% - CODE%
 \       Type: Subroutine
 \   Category: Maths (Arithmetic)
 \    Summary: Calculate A = A * Q / 256
+\  Deep dive: Multiplication and division using logarithms
 \
 \ ------------------------------------------------------------------------------
 \
@@ -20120,6 +20122,10 @@ LOAD_C% = LOAD% +P% - CODE%
 \ or, to put it another way:
 \
 \   A = A * Q / 256
+\
+\ The Master and 6502 Second Processor versions use logarithms to speed up the
+\ multiplication process. See the deep dive on "Multiplication using logarithms"
+\ for more details.
 \
 \ ******************************************************************************
 
@@ -38967,7 +38973,7 @@ LOAD_G% = LOAD% + P% - CODE%
 \       Type: Subroutine
 \   Category: Maths (Arithmetic)
 \    Summary: Calculate R = 256 * A / Q
-\  Deep dive: Shift-and-subtract division
+\  Deep dive: Multiplication and division using logarithms
 \
 \ ------------------------------------------------------------------------------
 \
