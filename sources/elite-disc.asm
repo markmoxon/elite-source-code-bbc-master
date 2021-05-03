@@ -21,7 +21,7 @@
 \
 \ This source file produces the following SSD disc image:
 \
-\   * elite-master.ssd
+\   * elite-master-sng47.ssd
 \
 \ This can be loaded into an emulator or a real BBC Master.
 \

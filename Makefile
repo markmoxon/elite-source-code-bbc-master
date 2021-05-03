@@ -3,6 +3,7 @@ PYTHON?=python
 
 rel-master=1
 folder-master='/sng47'
+suffix-master='-sng47'
 
 .PHONY:build
 build:
@@ -14,7 +15,7 @@ build:
 	$(BEEBASM) -i sources/elite-data.asm -v >> output/compile.txt
 	$(BEEBASM) -i sources/elite-source.asm -v >> output/compile.txt
 	$(PYTHON) sources/elite-checksum.py -u -rel$(rel-master)
-	$(BEEBASM) -i sources/elite-disc.asm -do elite-master.ssd -boot M128Elt
+	$(BEEBASM) -i sources/elite-disc.asm -do elite-master$(suffix-master).ssd -boot M128Elt
 
 .PHONY:encrypt
 encrypt:
@@ -26,7 +27,7 @@ encrypt:
 	$(BEEBASM) -i sources/elite-data.asm -v >> output/compile.txt
 	$(BEEBASM) -i sources/elite-source.asm -v >> output/compile.txt
 	$(PYTHON) sources/elite-checksum.py -rel$(rel-master)
-	$(BEEBASM) -i sources/elite-disc.asm -do elite-master.ssd -boot M128Elt
+	$(BEEBASM) -i sources/elite-disc.asm -do elite-master$(suffix-master).ssd -boot M128Elt
 
 .PHONY:verify
 verify:
