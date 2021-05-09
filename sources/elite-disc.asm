@@ -19,9 +19,11 @@
 \
 \ ------------------------------------------------------------------------------
 \
-\ This source file produces the following SSD disc image:
+\ This source file produces one of the following SSD disc images, depending on
+\ which release is being built:
 \
 \   * elite-master-sng47.ssd
+\   * elite-master-compact.ssd
 \
 \ This can be loaded into an emulator or a real BBC Master.
 \
@@ -29,6 +31,15 @@
 
 INCLUDE "sources/elite-header.h.asm"
 
-PUTFILE "output/M128Elt.bin", "M128Elt", &FF0E00, &FF0E43
-PUTFILE "output/BDATA.bin", "BDATA", &000000, &000000
-PUTFILE "output/BCODE.bin", "BCODE", &000000, &000000
+_SNG47                  = (_RELEASE = 1)
+_COMPACT                = (_RELEASE = 2)
+
+IF _SNG47
+ PUTFILE "output/M128Elt.bin", "M128Elt", &FF0E00, &FF0E43
+ PUTFILE "output/BDATA.bin", "BDATA", &000000, &000000
+ PUTFILE "output/BCODE.bin", "BCODE", &000000, &000000
+ELIF _COMPACT
+ PUTFILE "output/M128Elt.bin", "!BOOT", &000E00, &000E43
+ PUTFILE "output/BDATA.bin", "BDATA", &001300, &001300
+ PUTFILE "output/BCODE.bin", "ELITE", &001300, &002C6C
+ENDIF

@@ -19,10 +19,15 @@ import sys
 
 argv = sys.argv
 Encrypt = True
+release = 1
 
 for arg in argv[1:]:
     if arg == "-u":
         Encrypt = False
+    if arg == "-rel1":
+        release = 1
+    if arg == "-rel2":
+        release = 2
 
 print("Elite Big Code File")
 print("Encryption = ", Encrypt)
@@ -32,7 +37,13 @@ print("Encryption = ", Encrypt)
 load_address = 0x1300
 seed = 0x19
 scramble_from = 0x2cc1
-scramble_to = 0x7f47
+
+if release == 1:
+    # SNG47
+    scramble_to = 0x7F47
+elif release == 2:
+    # Compact
+    scramble_to = 0x7FEC
 
 data_block = bytearray()
 

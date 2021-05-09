@@ -30,6 +30,9 @@ INCLUDE "sources/elite-header.h.asm"
 CPU 1                   \ Switch to 65SC12 assembly, as this code runs on the
                         \ BBC Master
 
+_SNG47                  = (_RELEASE = 1)
+_COMPACT                = (_RELEASE = 2)
+
 N% = 67                 \ N% is set to the number of bytes in the VDU table, so
                         \ we can loop through them below
 
@@ -50,6 +53,20 @@ VIA = &FE00             \ Memory-mapped space for accessing internal hardware,
 \    Summary: Important variables used by the loader
 \
 \ ******************************************************************************
+
+ORG &0002
+
+IF _COMPACT
+
+.MOS
+
+ SKIP 1                 \ Determines whether we are running on a Master Compact
+                        \
+                        \   * 0 = This is a Master Compact
+                        \
+                        \   * &FF = This is not a Master Compact
+
+ENDIF
 
 ORG &0070
 
@@ -208,8 +225,8 @@ ORG CODE%
 \ The loader loads and moves the following files. There is no decryption at this
 \ stage - that is all done by the main game code.
 \
-\   * BDATA is loaded into main memory at &1300-&54FF, and is then moved as
-\     follows:
+\   * The BDATA game data file is loaded into main memory at &1300-&54FF, and is
+\     then moved as follows:
 \
 \       * &1300-&21FF is moved to &7000-&7EFF in screen memory (i.e. shadow RAM)
 \         for the dashboard
@@ -217,11 +234,16 @@ ORG CODE%
 \       * &2200-&54FF is moved to &7F00-&B1FF in main memory, where the main
 \         game code will decrypt it
 \
-\   * BCODE is loaded into main memory at &1300-&7F47 and the game is started by
-\     jumping to &2C6C
+\   * The main game code file is loaded into main memory at &1300 and the game
+\     isstarted by jumping to &2C6C
+\
+\ The main game code file is called BCODE in the Master release and ELITE in the
+\ Master Compact release. BCODE loads into &1300-&7F47, while ELITE loads into
+\ &1300-&7FEC.
 \
 \ The main game code is then responsible for decrypting BDATA (from &8000 to
-\ &B1FF) and BCODE (from the end of the scramble routine to &7F47).
+\ &B1FF) and BCODE/ELITE (from the end of the scramble routine to the end of the
+\ file).
 \
 \ ******************************************************************************
 
@@ -230,6 +252,29 @@ ORG CODE%
  LDA #16                \ Call OSBYTE with A = 16 and X = 0 to set the ADC to
  LDX #0                 \ sample no channels from the joystick/Bitstik
  JSR OSBYTE
+
+IF _COMPACT
+
+ LDA #129               \ Call OSBYTE with A = 129, X = 0 and Y = &FF to detect
+ LDX #0                 \ the machine type. This call is undocumented and is not
+ LDY #&FF               \ the recommended way to determine the machine type
+ JSR OSBYTE             \ (OSBYTE 0 is the correct way), but this call returns
+                        \ the following:
+                        \
+                        \   * X = Y = &F5 if this is a Master Compact with MOS 5
+
+ LDA #&FF               \ Set A = &FF, the value we want to store in the MOS
+                        \ flag if this is not a Master Compact
+
+ CPX #&F5               \ If X <> &F5, skip the following instruction as this is
+ BNE P%+4               \ a Master Compact
+
+ LDA #0                 \ This is a Master Compact, so set A = 0
+
+ STA MOS                \ Store the value of A in MOS, which will be 0 if this
+                        \ is a Master Compact, or &FF if it isn't
+
+ENDIF
 
  LDA #200               \ Call OSBYTE with A = 200, X = 1 and Y = 0 to disable
  LDX #1                 \ the ESCAPE key and disable memory clearing if the
@@ -417,11 +462,12 @@ ORG CODE%
 
  CLI                    \ Enable interrupts
 
- LDX #LO(MESS2)         \ Set (Y X) to point to MESS2 ("L.BCODE FFFF1300")
- LDY #HI(MESS2)
+ LDX #LO(MESS2)         \ Set (Y X) to point to MESS2 ("L.BCODE FFFF1300" in the
+ LDY #HI(MESS2)         \ Master release, or "L.ELITE FFFF1300" in the Master
+                        \ Compact release)
 
- JSR OSCLI              \ Call OSCLI to run the OS command in MESS2, which
-                        \ loads the BCODE file to address &1300-&7F48, appending
+ JSR OSCLI              \ Call OSCLI to run the OS command in MESS2, which loads
+                        \ the BCODE/ELITE file to address &1300-&7F48, appending
                         \ &FFFF to the address to make sure it loads in the main
                         \ BBC Master rather than getting passed across the Tube
                         \ to the second processor, if one is fitted
@@ -442,7 +488,7 @@ ORG CODE%
  STA VIA+&30
 
  JMP &2C6C              \ Jump to the start of the main game code at &2C6C,
-                        \ which we just loaded in the BCODE file
+                        \ which we just loaded in the BCODE/ELITE file
 
 \ ******************************************************************************
 \
@@ -1127,14 +1173,23 @@ ORG CODE%
 \       Name: MESS2
 \       Type: Variable
 \   Category: Loader
-\    Summary: The OS command string for loading the BCODE binary
+\    Summary: The OS command string for loading the main game code binary
 \
 \ ******************************************************************************
 
 .MESS2
 
+IF _SNG47
+
  EQUS "L.BCODE FFFF1300"
  EQUB 13
+
+ELIF _COMPACT
+
+ EQUS "L.ELITE FFFF1300"
+ EQUB 13
+
+ENDIF
 
 \ ******************************************************************************
 \

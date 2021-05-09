@@ -30,6 +30,9 @@ INCLUDE "sources/elite-header.h.asm"
 CPU 1                   \ Switch to 65SC12 assembly, as this code runs on a
                         \ BBC Master
 
+_SNG47                  = (_RELEASE = 1)
+_COMPACT                = (_RELEASE = 2)
+
 \ ******************************************************************************
 \
 \ Configuration variables
@@ -95,6 +98,8 @@ Armlas = INT(128.5+1.5*POW) \ Military laser power
 
 NI% = 37                \ The number of bytes in each ship's data block (as
                         \ stored in INWK and K%)
+
+OSBYTE = &FFF4          \ The address for the OSBYTE routine
 
 OSCLI = &FFF7           \ The address for the OSCLI routine
 
@@ -178,14 +183,29 @@ ACT = &A3E0             \ The address of the arctan lookup table, as set in
 TKN1 = &A400            \ The address of the extended token table, as set in
                         \ elite-data.asm
 
-RUPLA = &AF48           \ The address of the extended system description system
+IF _SNG47
+
+ RUPLA = &AF48          \ The address of the extended system description system
                         \ number table, as set in elite-data.asm
 
-RUGAL = &AF62           \ The address of the extended system description galaxy
+ RUGAL = &AF62          \ The address of the extended system description galaxy
                         \ number table, as set in elite-data.asm
 
-RUTOK = &AF7C           \ The address of the extended system description token
+ RUTOK = &AF7C          \ The address of the extended system description token
                         \ table, as set in elite-data.asm
+
+ELIF _COMPACT
+
+ RUPLA = &AF43          \ The address of the extended system description system
+                        \ number table, as set in elite-data.asm
+
+ RUGAL = &AF5D          \ The address of the extended system description galaxy
+                        \ number table, as set in elite-data.asm
+
+ RUTOK = &AF77          \ The address of the extended system description token
+                        \ table, as set in elite-data.asm
+
+ENDIF
 
 \ ******************************************************************************
 \
@@ -205,6 +225,18 @@ ORG &0000
  SKIP 0                 \ The start of the zero page workspace
 
  SKIP 2                 \ These bytes appear to be unused
+
+IF _COMPACT
+
+.MOS
+
+ SKIP 1                 \ Determines whether we are running on a Master Compact
+                        \
+                        \   * 0 = This is a Master Compact
+                        \
+                        \   * &FF = This is not a Master Compact
+
+ENDIF
 
 .RAND
 
@@ -1460,6 +1492,17 @@ ORG &0E41
 
  SKIP 2                 \ These bytes appear to be unused
 
+IF _COMPACT
+
+.NMI
+
+ SKIP 1                 \ Used to store the ID of the current owner of the NMI
+                        \ workspace in the NMICLAIM routine, so we can hand it
+                        \ back to them in the NMIRELEASE routine once we are
+                        \ done using it
+
+ENDIF
+
 .NAME
 
  SKIP 8                 \ The current commander name
@@ -2691,6 +2734,14 @@ LOAD_A% = LOAD%
  BNE VNT2               \ Loop back to VNT2 until we have copied all the palette
                         \ bytes bar the first one
 
+IF _COMPACT
+
+ LDA MOS                \ If MOS = 0 then this is a Master Compact, so jump to
+ BEQ NOADC              \ NOADC to skip reading the ADC channels (as the Compact
+                        \ has a digital joystick rather than an analogue one)
+
+ENDIF
+
  LDA VIA+&18            \ Fetch the ADC channel number into Y from bits 1-2 in
  AND #3                 \ the ADC status byte at SHEILA &18
  TAY
@@ -2708,6 +2759,8 @@ LOAD_A% = LOAD%
 
  LDA #0                 \ Set the ADC status byte at SHEILA &18 to 0
  STA VIA+&18
+
+.NOADC
 
  PLY                    \ Restore Y from the stack
 
@@ -2866,6 +2919,12 @@ LOAD_A% = LOAD%
 
 .SAVEZP
 
+IF _COMPACT
+
+ JSR NMICLAIM           \ Claim the NMI workspace (&00A0 to &00A7)
+
+ENDIF
+
  LDA #%00001111         \ Set bits 1 and 2 of the Access Control Register at
  STA VIA+&34            \ SHEILA &34 to switch screen memory into &3000-&7FFF
 
@@ -2889,6 +2948,33 @@ LOAD_A% = LOAD%
 
 \ ******************************************************************************
 \
+\       Name: NMIRELEASE
+\       Type: Subroutine
+\   Category: Utility routines
+\    Summary: Release the NMI workspace (&00A0 to &00A7)
+
+\
+\ ******************************************************************************
+
+IF _COMPACT
+
+.NMIRELEASE
+
+ JSR SWAPZP+3           \ Call SWAPZP+3 to restore the top part of zero page,
+                        \ but without first claiming the NMI sprkspace (as it's
+                        \ already been claimed by this point)
+
+ LDA #143               \ Call OSBYTE 143 to issue a paged ROM service call of
+ LDX #&B                \ type &B with Y set to the previous NMI owner's ID.
+ LDY NMI                \ This releases the NMI workspace back to the original
+ JMP OSBYTE             \ owner, from whom we claimed the workspace in the
+                        \ NMICLAIM routine, and returns from the subroutine
+                        \ using a tail call
+
+ENDIF
+
+\ ******************************************************************************
+\
 \       Name: SWAPZP
 \       Type: Subroutine
 \   Category: Utility routines
@@ -2897,6 +2983,12 @@ LOAD_A% = LOAD%
 \ ******************************************************************************
 
 .SWAPZP
+
+IF _COMPACT
+
+ JSR NMICLAIM           \ Claim the NMI workspace (&00A0 to &00A7)
+
+ENDIF
 
  LDA #%00001111         \ Set bits 1 and 2 of the Access Control Register at
  STA VIA+&34            \ SHEILA &34 to switch screen memory into &3000-&7FFF
@@ -2928,6 +3020,33 @@ LOAD_A% = LOAD%
 
 \ ******************************************************************************
 \
+\       Name: NMICLAIM
+\       Type: Subroutine
+\   Category: Utility routines
+\    Summary: Claim the NMI workspace (&00A0 to &00A7)
+\
+\ ******************************************************************************
+
+IF _COMPACT
+
+.NMICLAIM
+
+ LDA #143               \ Call OSBYTE 143 to issue a paged ROM service call of
+ LDX #&C                \ type &C with argument &FF, which is the "NMI claim"
+ LDY #&FF               \ service call that asks the current user of the NMI
+ JSR OSBYTE             \ space to clear it out
+
+ STY NMI                \ Save the returned value of Y in NMI, as it contains
+                        \ the filing system ID of the previous claimant of the
+                        \ NMI, which we need to restore once we have finished
+                        \ using the NMI workspace
+
+ RTS                    \ Return from the subroutine
+
+ENDIF
+
+\ ******************************************************************************
+\
 \       Name: ylookup
 \       Type: Variable
 \   Category: Drawing pixels
@@ -2942,7 +3061,7 @@ LOAD_A% = LOAD%
 \ page number for the start of the character row containing that coordinate.
 \
 \ Screen memory is from &4000 to &7DFF, so the lookup works like this:
-
+\
 \   Y =   0 to  7,  lookup value = &40 (so row 1 is from &4000 to &41FF)
 \   Y =   8 to 15,  lookup value = &42 (so row 2 is from &4200 to &43FF)
 \   Y =  16 to 23,  lookup value = &44 (so row 3 is from &4400 to &45FF)
@@ -2964,6 +3083,169 @@ LOAD_A% = LOAD%
 FOR I%, 0, 255
   EQUB &40 + ((I% DIV 8) * 2)
 NEXT
+
+\ ******************************************************************************
+\
+\       Name: SHIFT
+\       Type: Subroutine
+\   Category: Keyboard
+\    Summary: Scan the keyboard to see if SHIFT is currently pressed
+\
+\ ------------------------------------------------------------------------------
+\
+\ Returns:
+\
+\   X                   X = %10000000 if SHIFT is being pressed
+\
+\                       X = 0 if SHIFT is not being pressed
+\
+\   A                   Contains the same as X
+\
+\ ******************************************************************************
+
+IF _COMPACT
+
+.SHIFT
+
+ LDA #0                 \ Set A to the internal key number for SHIFT and fall
+                        \ through to DKS4mc to scan the keyboard
+
+ EQUB &2C               \ Skip the next instruction by turning it into
+                        \ &2C &A9 &49, or BIT &49A9, which does nothing apart
+                        \ from affect the flags
+
+ENDIF
+
+\ ******************************************************************************
+\
+\       Name: RETURN
+\       Type: Subroutine
+\   Category: Keyboard
+\    Summary: Scan the keyboard to see if RETURN is currently pressed
+\
+\ ------------------------------------------------------------------------------
+\
+\ Returns:
+\
+\   X                   X = %11001001 if RETURN is being pressed
+\
+\                       X = %01001001 if RETURN is not being pressed
+\
+\   A                   Contains the same as X
+\
+
+\ ******************************************************************************
+
+IF _COMPACT
+
+.RETURN
+
+ LDA #&49               \ Set A to the internal key number for RETURN and fall
+                        \ through to DKS4mc to scan the keyboard
+
+ EQUB &2C               \ Skip the next instruction by turning it into
+                        \ &2C &A9 &01, or BIT &01A9, which does nothing apart
+                        \ from affect the flags
+
+ENDIF
+
+\ ******************************************************************************
+\
+\       Name: CTRLmc
+\       Type: Subroutine
+\   Category: Keyboard
+\    Summary: Scan the Master Compact keyboard to see if CTRL is currently
+\             pressed
+\
+\ ------------------------------------------------------------------------------
+\
+\ Returns:
+\
+\   X                   X = %10000001 (i.e. 129 or -127) if CTRL is being
+\                       pressed
+\
+\                       X = 1 if CTRL is not being pressed
+\
+\   A                   Contains the same as X
+\
+\ ******************************************************************************
+
+IF _COMPACT
+
+.CTRLmc
+
+ LDA #1                 \ Set A to the internal key number for CTRL and fall
+                        \ through to DKS4mc to scan the keyboard
+
+ENDIF
+
+\ ******************************************************************************
+\
+\       Name: DKS4mc
+\       Type: Subroutine
+\   Category: Keyboard
+\    Summary: Scan the Master Compact keyboard to see if a specific key is being
+\             pressed
+\  Deep dive: The key logger
+\
+\ ------------------------------------------------------------------------------
+\
+\ Arguments:
+\
+\   A                   The internal number of the key to check (see p.142 of
+\                       the Advanced User Guide for a list of internal key
+\                       numbers)
+\
+\ Returns:
+\
+\   A                   If the key in A is being pressed, A contains the
+\                       original argument A, but with bit 7 set (i.e. A + 128).
+\                       If the key in A is not being pressed, the value in A is
+\                       unchanged
+\
+\   X                   Contains the same as A
+\
+\ ******************************************************************************
+
+IF _COMPACT
+
+.DKS4mc
+
+ LDX #3                 \ Set X to 3, so it's ready to send to SHEILA once
+                        \ interrupts have been disabled
+
+ SEI                    \ Disable interrupts so we can scan the keyboard
+                        \ without being hijacked
+
+ STX VIA+&40            \ Set 6522 System VIA output register ORB (SHEILA &40)
+                        \ to %00000011 to stop auto scan of keyboard
+
+ LDX #%01111111         \ Set 6522 System VIA data direction register DDRA
+ STX VIA+&43            \ (SHEILA &43) to %01111111. This sets the A registers
+                        \ (IRA and ORA) so that:
+                        \
+                        \   * Bits 0-6 of ORA will be sent to the keyboard
+                        \
+                        \   * Bit 7 of IRA will be read from the keyboard
+
+ STA VIA+&4F            \ Set 6522 System VIA output register ORA (SHEILA &4F)
+                        \ to X, the key we want to scan for; bits 0-6 will be
+                        \ sent to the keyboard, of which bits 0-3 determine the
+                        \ keyboard column, and bits 4-6 the keyboard row
+
+ LDX VIA+&4F            \ Read 6522 System VIA output register IRA (SHEILA &4F)
+                        \ into X; bit 7 is the only bit that will have changed.
+                        \ If the key is pressed, then bit 7 will be set,
+                        \ otherwise it will be clear
+
+ LDA #%00001011         \ Set 6522 System VIA output register ORB (SHEILA &40)
+ STA VIA+&40            \ to %00001011 to restart auto scan of keyboard
+
+ CLI                    \ Allow interrupts again
+
+ TXA                    \ Transfer X into A
+
+ENDIF
 
 \ ******************************************************************************
 \
@@ -6739,10 +7021,19 @@ NEXT
 
  PLX                    \ Restore X from the stack, so that it's preserved
 
+IF _SNG47
+
  LDA #%00001001         \ Clear bits 1 and 2 of the Access Control Register at
  STA VIA+&34            \ SHEILA &34 to switch main memory back into &3000-&7FFF
 
  RTS                    \ Return from the subroutine
+
+ELIF _COMPACT
+
+ JMP BULB2              \ Jump to BULB2 to switch main memory back into
+                        \ &3000-&7FFF and return from the subroutine
+
+ENDIF
 
 \ ******************************************************************************
 \
@@ -7013,12 +7304,21 @@ NEXT
  BNE HAL6               \ Loop back to HAL6 until we have run through the loop
                         \ 60 times, by which point we are most definitely done
 
+IF _SNG47
+
  LDA #%00001001         \ Clear bits 1 and 2 of the Access Control Register at
  STA VIA+&34            \ SHEILA &34 to switch main memory back into &3000-&7FFF
 
  RTS                    \ Return from the subroutine (this instruction is not
                         \ needed as we could just fall through into the RTS at
                         \ HA3 below)
+
+ELIF _COMPACT
+
+ JMP BULB2              \ Jump to BULB2 to switch main memory back into
+                        \ &3000-&7FFF and return from the subroutine
+
+ENDIF
 
 .HA3
 
@@ -7373,10 +7673,24 @@ NEXT
  BEQ RR4S               \ RR4S (via the JMP in RR4S) to restore the registers
                         \ and return from the subroutine using a tail call
 
+IF _COMPACT
+
+ TAY                    \ Copy the character to be printed from A into Y
+
+ BEQ RR4S               \ If the character to be printed is 0 or >= 128, jump to
+ BMI RR4S               \ RR4S (via the JMP in RR4S) to restore the registers
+                        \ and return from the subroutine using a tail call
+
+.RRNEW
+
+ENDIF
+
  LDY #%00001111         \ Set bits 1 and 2 of the Access Control Register at
  STY VIA+&34            \ SHEILA &34 to switch screen memory into &3000-&7FFF
 
  TAY                    \ Set Y = the character to be printed
+
+IF _SNG47
 
  BEQ RR4S               \ If the character is zero, which is typically a string
                         \ terminator character, jump down to RR4 (via the JMP in
@@ -7386,6 +7700,15 @@ NEXT
  BMI RR4S               \ If A > 127 then there is nothing to print, so jump to
                         \ RR4 (via the JMP in RR4S) to restore the registers and
                         \ return from the subroutine
+
+ELIF _COMPACT
+
+ LDX CATF               \ If CATF <> 0, skip the following two instructions, as
+ BNE P%+6               \ we are printing a disc catalogue and we don't want any
+                        \ control characters lurking in the catalogue to trigger
+                        \ the screen clearing routine
+
+ENDIF
 
  CMP #11                \ If this is control code 11 (clear screen), jump to cls
  BEQ cls                \ to clear the top part of the screen, draw a white
@@ -7517,6 +7840,8 @@ NEXT
  LDX CATF               \ If CATF = 0, jump to RR5, otherwise we are printing a
  BEQ RR5                \ disc catalogue
 
+IF _SNG47
+
  CPY #' '               \ If the character we want to print in Y is a space,
  BNE RR5                \ jump to RR5
 
@@ -7534,6 +7859,24 @@ NEXT
  CMP #17                \ If A = 17, i.e. the text cursor is in column 17, jump
  BEQ RR4                \ to RR4 to restore the registers and return from the
                         \ subroutine, thus omitting this column
+
+ELIF _COMPACT
+
+ CMP #21                \ If A < 21, i.e. the text cursor is in column 0-20,
+ BCC RR5                \ jump to RR5 to skip the following
+
+                        \ If we get here, then CATF is non-zero, so we are
+                        \ printing a disc catalogue and we have reached column
+                        \ 21, so we move to the start of the next line so the
+                        \ catalogue line-wraps to fit within the bounds of the
+                        \ screen
+
+ INC YC                 \ More the text cursor down a line
+
+ LDA #1                 \ Move the text cursor to column 1
+ STA XC
+
+ENDIF
 
 .RR5
 
@@ -7619,11 +7962,26 @@ NEXT
  BCC RR3                \ we are on rows 1-23), then jump to RR3 to print the
                         \ character
 
+IF _SNG47
+
  JSR TTX66              \ Otherwise we are off the bottom of the screen, so
                         \ clear the screen and draw a white border
 
  LDA #%00001111         \ Set bits 1 and 2 of the Access Control Register at
  STA VIA+&34            \ SHEILA &34 to switch screen memory into &3000-&7FFF
+
+ELIF _COMPACT
+
+ LDA CATF               \ If CATF = 0, skip the next two instructions, as we are
+ BEQ P%+7               \ not printing a disc catalogue
+
+ JSR RETURN             \ We have just printed the disc catalogus, so wait until
+ BPL P%-3               \ RETURN is pressed, looping indefinitely until it gets
+                        \ tapped
+
+ JSR TTX66              \ Call TTX66 to clear the screen
+
+ENDIF
 
  LDA #1                 \ Move the text cursor to column 1, row 1
  STA XC
@@ -7633,8 +7991,16 @@ NEXT
                         \ this has no effect, as the following call to RR4 does
                         \ the exact same thing
 
+IF _SNG47
+
  JMP RR4                \ And restore the registers and return from the
                         \ subroutine
+
+ELIF _COMPACT
+
+ JMP RRNEW              \ Jump back to RRNEW to print the character
+
+ENDIF
 
 .RR3
 
@@ -7826,16 +8192,26 @@ NEXT
 
  STY XC                 \ Move the text cursor to column 1
 
+IF _SNG47
+
  LDX #0                 \ Set X1 = Y1 = Y2 = 0
  STX Y1
  STX Y2
  STX X1
 
-\STX QQ17               \ This instruction is commented out in the original
-                        \ source
-
  DEX                    \ Set X2 = 255
  STX X2
+
+ELIF _COMPACT
+
+ STZ Y1                 \ Set X1 = Y1 = Y2 = 0
+ STZ Y2
+ STZ X1
+
+ LDX #255                \ Set X2 = 255
+ STX X2
+
+ENDIF
 
  JSR LOIN               \ Draw a line from (X1, Y1) to (X2, Y2), so that's from
                         \ (0, 0) to (255, 0), along the very top of the screen
@@ -8842,11 +9218,19 @@ NEXT
 
 IF _MATCH_EXTRACTED_BINARIES
 
- INCBIN "extracted/sng47/workspaces/ELTA-align1.bin"
+ IF _SNG47
+  INCBIN "extracted/sng47/workspaces/ELTA-align1.bin"
+ ELIF _COMPACT
+  INCBIN "extracted/compact/workspaces/ELTA-align1.bin"
+ ENDIF
 
 ELSE
 
+IF _SNG47
  SKIP 77                 \ These bytes appear to be unused
+ELIF _COMPACT
+ SKIP 3                  \ These bytes appear to be unused
+ENDIF
 
 ENDIF
 
@@ -8907,7 +9291,11 @@ INCBIN "binaries/P.FONT.bin"
 
 IF _MATCH_EXTRACTED_BINARIES
 
- INCBIN "extracted/sng47/workspaces/ELTA-log.bin"
+ IF _SNG47
+  INCBIN "extracted/sng47/workspaces/ELTA-log.bin"
+ ELIF _COMPACT
+  INCBIN "extracted/compact/workspaces/ELTA-log.bin"
+ ENDIF
 
 ELSE
 
@@ -8939,7 +9327,11 @@ ENDIF
 
 IF _MATCH_EXTRACTED_BINARIES
 
+ IF _SNG47
   INCBIN "extracted/sng47/workspaces/ELTA-logL.bin"
+ ELIF _COMPACT
+  INCBIN "extracted/compact/workspaces/ELTA-logL.bin"
+ ENDIF
 
 ELSE
 
@@ -8975,7 +9367,11 @@ ENDIF
 
 IF _MATCH_EXTRACTED_BINARIES
 
+ IF _SNG47
   INCBIN "extracted/sng47/workspaces/ELTA-antilog.bin"
+ ELIF _COMPACT
+  INCBIN "extracted/compact/workspaces/ELTA-antilog.bin"
+ ENDIF
 
 ELSE
 
@@ -8992,7 +9388,11 @@ ENDIF
 
 IF _MATCH_EXTRACTED_BINARIES
 
- INCBIN "extracted/sng47/workspaces/ELTA-align2.bin"
+ IF _SNG47
+  INCBIN "extracted/sng47/workspaces/ELTA-align2.bin"
+ ELIF _COMPACT
+  INCBIN "extracted/compact/workspaces/ELTA-align2.bin"
+ ENDIF
 
 ELSE
 
@@ -25589,7 +25989,15 @@ LOAD_D% = LOAD% + P% - CODE%
  LDA #CYAN              \ The count is zero, so switch to colour 3, which is
  STA COL                \ cyan in the space view
 
+IF _SNG47
+
  JSR CTRL               \ Scan the keyboard to see if CTRL is currently pressed
+
+ELIF _COMPACT
+
+ JSR CTRLmc             \ Scan the keyboard to see if CTRL is currently pressed
+
+ENDIF
 
  BMI Ghy                \ If it is, then the galactic hyperdrive has been
                         \ activated, so jump to Ghy to process it
@@ -26726,8 +27134,17 @@ LOAD_D% = LOAD% + P% - CODE%
 
 .ee5
 
+IF _SNG47
+
  JSR CTRL               \ Scan the keyboard to see if CTRL is currently pressed,
                         \ returning a negative value in A if it is
+
+ELIF _COMPACT
+
+ JSR CTRLmc             \ Scan the keyboard to see if CTRL is currently pressed,
+                        \ returning a negative value in A if it is
+
+ENDIF
 
  AND PATG               \ If the game is configured to show the author's names
                         \ on the start-up screen, then PATG will contain &FF,
@@ -28778,8 +29195,17 @@ LOAD_E% = LOAD% + P% - CODE%
 
 .SWAPZP2
 
+IF _SNG47
+
  LDX #&15               \ This routine starts copying zero page from &0015 and
                         \ up, using X as an index
+
+ELIF _COMPACT
+
+ LDX #&16               \ This routine starts copying zero page from &0016 and
+                        \ up, using X as an index
+
+ENDIF
 
 .SWPL2
 
@@ -29044,9 +29470,19 @@ LOAD_E% = LOAD% + P% - CODE%
  EOR CNT                \ EOR with the vertex index, so the seeds are different
                         \ for each vertex
 
+IF _SNG47
+
  STA &FFFF,Y            \ Y is going from 3 to 6, so this stores the four bytes
                         \ in memory locations &02, &03, &04 and &05, which are
                         \ the memory locations of RAND through RAND+3
+
+ELIF _COMPACT
+
+ STA &0000,Y            \ Y is going from 3 to 6, so this stores the four bytes
+                        \ in memory locations &03, &04, &05 and &06, which are
+                        \ the memory locations of RAND through RAND+3
+
+ENDIF
 
  CPY #6                 \ Loop back to EXL2 until Y = 6, which means we have
  BNE EXL2               \ copied four bytes
@@ -32796,8 +33232,23 @@ LOAD_E% = LOAD% + P% - CODE%
                         \ (or the equivalent on joystick) and update the key
                         \ logger, setting KL to the key pressed
 
+IF _COMPACT
+
+ LDX #0                 \ Set the initial values for the results, X = Y = 0,
+ LDY #0                 \ which we now increase or decrease appropriately
+
+ENDIF
+
  LDA JSTK               \ If the joystick is not configured, jump down to TJ1,
  BEQ TJ1                \ otherwise we move the cursor with the joystick
+
+IF _COMPACT
+
+ LDA MOS                \ If MOS = 0 then this is a Master Compact, so jump to
+ BEQ DJOY               \ DJOY to read the digital joystick before rejoining the
+                        \ routine below at TJ1
+
+ENDIF
 
  LDA JSTY               \ Fetch the joystick pitch, ranging from 1 to 255 with
                         \ 128 as the centre point
@@ -32821,16 +33272,24 @@ LOAD_E% = LOAD% + P% - CODE%
 
  TAX                    \ Copy the value of A into X
 
+IF _SNG47
+
  LDA KL                 \ Set A to the value of KL (the key pressed)
 
  RTS                    \ Return from the subroutine
+
+ENDIF
 
 .TJ1
 
  LDA KL                 \ Set A to the value of KL (the key pressed)
 
+IF _SNG47
+
  LDX #0                 \ Set the results, X = Y = 0
  LDY #0
+
+ENDIF
 
  CMP #&8C               \ If left arrow was pressed, set X = X - 1
  BNE P%+3
@@ -32851,8 +33310,17 @@ LOAD_E% = LOAD% + P% - CODE%
  PHX                    \ Store X (which contains the change in the
                         \ x-coordinate) on the stack so we can retrieve it later
 
+IF _SNG47
+
  LDA #0                 \ Call DKS4 to check whether the SHIFT key is being
  JSR DKS4               \ pressed
+
+ELIF _COMPACT
+
+ LDA #0                 \ Call DKS4mc to check whether the SHIFT key is being
+ JSR DKS4mc             \ pressed
+
+ENDIF
 
  BMI P%+6               \ If SHIFT is being pressed, skip the next three
                         \ instructions
@@ -32881,6 +33349,13 @@ LOAD_E% = LOAD% + P% - CODE%
                         \ when using the joystick)
 
  TAY                    \ Put the amended value of A back into Y
+
+IF _COMPACT
+
+ STZ KY7                \ Clear the key logger at KY7 to reset the "A" (fire)
+                        \ button to "not pressed"
+
+ENDIF
 
  LDA KL                 \ Set A to the value of KL (the key pressed)
 
@@ -32940,6 +33415,29 @@ PRINT "S.ELTE ", ~CODE_E%, " ", ~P%, " ", ~LOAD%, " ", ~LOAD_E%
 
 CODE_F% = P%
 LOAD_F% = LOAD% + P% - CODE%
+
+\ ******************************************************************************
+\
+\       Name: DJOY
+\       Type: Subroutine
+\   Category: Keyboard
+\    Summary: Scan the keyboard for cursor key or digital joystick movement
+\
+\ ******************************************************************************
+
+IF _COMPACT
+
+.DJOY
+
+ JSR TT17X              \ Call TT17X to read the digital joystick and return
+                        \ deltas as appropriate
+
+ JMP TJ1                \ Jump to TJ1 in the TT17 routine to check for cursor
+                        \ key presses and return the combined deltas for the
+                        \ digital joystick and cursor keys, returning from the
+                        \ subroutine using a tail call
+
+ENDIF
 
 \ ******************************************************************************
 \
@@ -35748,13 +36246,29 @@ ENDIF
 
  DEC MCNT               \ Decrement the main loop counter
 
+IF _SNG47
+
  LDA VIA+&40            \ Read 6522 System VIA input register IRB (SHEILA &40)
 
  AND #%00010000         \ Bit 4 of IRB (PB4) is clear if joystick 1's fire
                         \ button is pressed, otherwise it is set, so AND'ing
                         \ the value of IRB with %10000 extracts this bit
 
+ELIF _COMPACT
+
+ JSR RDFIRE             \ Call RDFIRE to check whether the joystick's fire
+                        \ button is being pressed
+
+ BCS TL2                \ If the C flag is set then the joystick fire button
+                        \ is being pressed, so jump to TL2
+
+ENDIF
+
+IF _SNG47
+
  BEQ TL2                \ If the joystick fire button is pressed, jump to TL2
+
+ENDIF
 
  JSR RDKEY              \ Scan the keyboard for a key press
 
@@ -36033,6 +36547,38 @@ ENDIF
  CMP #127               \ If DELETE was pressed, jump to MT26ret
  BEQ MT26del
 
+IF _COMPACT
+
+ PHX                    \ Store X on the stack so we can retrieve it after the
+                        \ call to SHIFT
+
+ PHA                    \ Store the number of the key being pressed on the stack
+
+ JSR SHIFT              \ If SHIFT is not being pressed, jump to noshift to skip
+ BPL noshift            \ the following
+
+ PLA                    \ SHIFT is being pressed, so fetch the number of the key
+                        \ being pressed from the stack
+
+ CMP #'@'               \ If A >= ASCII "@", then we are pressing a letter key,
+ BCS P%+4               \ so skip the following instruction
+
+ EOR #%00010000         \ We are pressing SHIFT and a number key, so flip bit 4
+                        \ of the key number, which flips the letter betweeen the
+                        \ ASCII code of the number being pressed and the ASCII
+                        \ code of the number being pressed when SHIFT is being
+                        \ held down (so SHIFT-1 will enter !, SHIFT-2 will enter
+                        \ ", and so on)
+
+ PHA                    \ Push the updated key number onto the stack
+
+.noshift
+
+ PLA                    \ Retrieve the values of X and A we stored on the stack
+ PLX                    \ above
+
+ENDIF
+
  CPY RLINE+2            \ If Y >= RLINE+2 (the maximum line length from the
  BCS MT26err            \ OSWORD configuration block at RLINE), then jump to
                         \ MT26err to give an error beep as we have reached the
@@ -36201,6 +36747,75 @@ ENDIF
 
 \ ******************************************************************************
 \
+\       Name: GTDIR
+\       Type: Subroutine
+\   Category: Save and load
+\    Summary: Fetch the name of an ADFS directory on the Master Compact and
+\             change to that directory
+\
+\ ******************************************************************************
+
+IF _COMPACT
+
+.GTDIR
+
+ LDA #2                 \ Print extended token 2 ("{cr}WHICH DRIVE?")
+ JSR DETOK
+
+ LDA #19                \ The call to MT26 below uses the OSWORD block at RLINE
+ STA RLINE+2            \ to fetch the line, and RLINE+2 defines the maximum
+                        \ line length allowed, so this changes the maximum
+                        \ length to 19 (as that's the longest directory name
+                        \ allowed)
+
+ JSR MT26               \ Call MT26 to fetch a line of text from the keyboard
+                        \ to INWK+5, with the text length in Y, so INWK now
+                        \ contains the full directory name
+
+ LDA #9                 \ Reset the maximum length in RLINE+2 to the original
+ STA RLINE+2            \ value of 9
+
+ TYA                    \ The OSWORD call returns the length of the commander's
+                        \ name in Y, so transfer this to A
+
+ BEQ GTDIR-1            \ If A = 0, no name was entered, so jump to DIR-1 to
+                        \ return from the subroutine (as GTDIR-1 contains an
+                        \ RTS)
+
+                        \ We now copy the entered filename from INWK to DIRI, so
+                        \ that it overwrites the filename part of the string,
+                        \ i.e. the "12345678901234567890" part of
+                        \ "DIR 12345678901234567890"
+
+ LDX #18                \ Set up a counter in X to count from 18 to 0, so that
+                        \ we copy the string starting at INWK+5 to DIRI+4
+                        \ onwards (i.e. "12345678901234567890")
+
+.DIRL
+
+ LDA INWK+5,X           \ Copy the X-th byte of INWK+5 to the X-th byte of
+ STA DIRI+4,X           \ DIRI+4
+
+ DEX                    \ Decrement the loop counter
+
+ BPL DIRL               \ Loop back to DIRL to copy the next character until we
+                        \ have copied the whole filename
+
+ JSR NMIRELEASE         \ Release the NMI workspace (&00A0 to &00A7)
+
+ LDX #LO(DIRI)          \ Set (Y X) to point to DIRI ("DIR <name entered>")
+ LDY #HI(DIRI)
+
+ JSR OSCLI              \ Call OSCLI to run the OS command in DIRI, which
+                        \ changes the disc directory to the name entered
+
+ JMP SWAPZP             \ Call SWAPZP to restore the top part of zero page
+                        \ and return from the subroutine using a tail call
+
+ENDIF
+
+\ ******************************************************************************
+\
 \       Name: CATS
 \       Type: Subroutine
 \   Category: Save and load
@@ -36222,6 +36837,8 @@ ENDIF
 
 .CATS
 
+IF _SNG47
+
  JSR GTDRV              \ Get an ASCII disc drive drive number from the keyboard
                         \ in A, setting the C flag if an invalid drive number
                         \ was entered
@@ -36239,6 +36856,13 @@ ENDIF
                         \ contains the {drive number} jump code, which calls
                         \ MT16 to print the character in DTW7)
 
+ELIF _COMPACT
+
+ JSR GTDIR              \ Get a directory name from the keyboard and change to
+                        \ that directory
+
+ENDIF
+
  LDA #3                 \ Print extended token 3, which clears the screen and
  JSR DETOK              \ prints the boxed-out title "DRIVE {drive number}
                         \ CATALOGUE"
@@ -36248,7 +36872,15 @@ ENDIF
 
  STA XC                 \ Move the text cursor to column 1
 
+IF _SNG47
+
  JSR SWAPZP             \ Call SWAPZP to restore the top part of zero page
+
+ELIF _COMPACT
+
+ JSR NMIRELEASE         \ Release the NMI workspace (&00A0 to &00A7)
+
+ENDIF
 
  LDX #LO(CTLI)          \ Set (Y X) to point to the OS command at CTLI, which
  LDY #HI(CTLI)          \ contains a dot and the drive number, which is the
@@ -36290,17 +36922,22 @@ ENDIF
 
 .DELT
 
- JSR CATS               \ Call CATS to ask for a drive number, catalogue that
-                        \ disc and update the catalogue command at CTLI
+ JSR CATS               \ Call CATS to ask for a drive number (or a directory
+                        \ name on the Master Compact) and catalogue that disc
+                        \ or directory
 
  BCS SVE                \ If the C flag is set then an invalid drive number was
                         \ entered as part of the catalogue process, so jump to
                         \ SVE to display the disc access menu
 
+IF _SNG47
+
  LDA CTLI+4             \ The call to CATS above put the drive number into
  STA DELI+8             \ CTLI+4, so copy the drive number into DELI+8 so that
                         \ the drive number in the "DELETE :1.1234567" string
                         \ gets updated (i.e. the number after the colon)
+
+ENDIF
 
  LDA #8                 \ Print extended token 8 ("{single cap}COMMANDER'S
  JSR DETOK              \ NAME? ")
@@ -36315,11 +36952,23 @@ ENDIF
                         \ that it overwrites the filename part of the string,
                         \ i.e. the "E.1234567" part of "DELETE:0.E.1234567"
 
+IF _SNG47
+
  LDX #9                 \ Set up a counter in X to count from 9 to 1, so that we
                         \ copy the string starting at INWK+4+1 (i.e. INWK+5) to
                         \ DELI+9+1 (i.e. DELI+10 onwards, or "1.1234567")
 
+ELIF _COMPACT
+
+ LDX #8                 \ Set up a counter in X to count from 8 to 0, so that we
+                        \ copy the string starting at INWK+5+0 (i.e. INWK+5) to
+                        \ DELI+7+0 (i.e. DELI+7 onwards, or "1234567890")
+
+ENDIF
+
 .DELL1
+
+IF _SNG47
 
  LDA INWK+4,X           \ Copy the X-th byte of INWK+4 to the X-th byte of
  STA DELI+9,X           \ DELI+9
@@ -36330,6 +36979,20 @@ ENDIF
                         \ have copied the whole filename
 
  JSR SWAPZP             \ Call SWAPZP to restore the top part of zero page
+
+ELIF _COMPACT
+
+ LDA INWK+5,X           \ Copy the X-th byte of INWK+5 to the X-th byte of
+ STA DELI+7,X           \ DELI+7
+
+ DEX                    \ Decrement the loop counter
+
+ BPL DELL1              \ Loop back to DELL1 to copy the next character until we
+                        \ have copied the whole filename
+
+ JSR NMIRELEASE         \ Release the NMI workspace (&00A0 to &00A7)
+
+ENDIF
 
  LDX #LO(DELI)          \ Set (Y X) to point to the OS command at DELI, which
  LDY #HI(DELI)          \ contains the DFS command for deleting this file
@@ -36418,8 +37081,9 @@ ENDIF
 
 .CAT
 
- JSR CATS               \ Call CATS to ask for a drive number, catalogue that
-                        \ disc and update the catalogue command at CTLI
+ JSR CATS               \ Call CATS to ask for a drive number (or a directory
+                        \ name on the Master Compact) and catalogue that disc
+                        \ or directory
 
  JSR t                  \ Scan the keyboard until a key is pressed, returning
                         \ the ASCII code in A and X
@@ -36434,6 +37098,8 @@ ENDIF
                         \ to load (including drive number and directory) into
                         \ INWK
 
+IF _SNG47
+
  JSR GTDRV              \ Get an ASCII disc drive drive number from the keyboard
                         \ in A, setting the C flag if an invalid drive number
                         \ was entered
@@ -36444,6 +37110,8 @@ ENDIF
 
  STA LDLI+6             \ Store the ASCII drive number in LDLI+6, which is the
                         \ drive character of the load filename string ":1.E."
+
+ENDIF
 
  JSR LOD                \ Call LOD to load the commander file
 
@@ -36533,6 +37201,8 @@ ENDIF
  BPL SVL2               \ Loop back until we have copied all the bytes in the
                         \ commander data block
 
+IF _SNG47
+
  JSR GTDRV              \ Get an ASCII disc drive drive number from the keyboard
                         \ in A, setting the C flag if an invalid drive number
                         \ was entered
@@ -36542,6 +37212,8 @@ ENDIF
 
  STA SVLI+6             \ Store the ASCII drive number in SVLI+6, which is the
                         \ drive character of the save filename string ":1.E."
+
+ENDIF
 
  JSR SAVE               \ Call SAVE to save the commander file
 
@@ -36702,8 +37374,17 @@ ENDIF
 
 .CTLI
 
+IF _SNG47
+
  EQUS "CAT 1"           \ The "1" part of the string is overwritten with the
  EQUB 13                \ actual drive number by the CATS routine
+
+ELIF _COMPACT
+
+ EQUS "CAT"             \ The Master Compact only had one drive, so the CAT
+ EQUB 13                \ command always catalogues that drive
+
+ENDIF
 
 \ ******************************************************************************
 \
@@ -36716,8 +37397,35 @@ ENDIF
 
 .DELI
 
+IF _SNG47
+
  EQUS "DELETE :1.1234567"
  EQUB 13
+
+ELIF _COMPACT
+
+ EQUS "DELETE 1234567890"
+ EQUB 13
+
+ENDIF
+
+\ ******************************************************************************
+\
+\       Name: DIRI
+\       Type: Subroutine
+\   Category: Save and load
+\    Summary: The OS command string for changing directory on the Master Compact
+\
+\ ******************************************************************************
+
+IF _COMPACT
+
+.DIRI
+
+ EQUS "DIR 12345678901234567890"
+ EQUB 13
+
+ENDIF
 
 \ ******************************************************************************
 \
@@ -36730,8 +37438,17 @@ ENDIF
 
 .SVLI
 
+IF _SNG47
+
  EQUS "SAVE :1.E.JAMESON  E7E +100 0 0"
  EQUB 13
+
+ELIF _COMPACT
+
+ EQUS "SAVE JAMESON  E7E +100 0 0"
+ EQUB 13
+
+ENDIF
 
 \ ******************************************************************************
 \
@@ -36744,8 +37461,17 @@ ENDIF
 
 .LDLI
 
+IF _SNG47
+
  EQUS "LOAD :1.E.JAMESON  E7E"
  EQUB 13
+
+ELIF _COMPACT
+
+ EQUS "LOAD JAMESON  E7E"
+ EQUB 13
+
+ENDIF
 
 \ ******************************************************************************
 \
@@ -36803,11 +37529,23 @@ ENDIF
  BEQ SAVEL4             \ reached the end of the name, so jump to SAVEL4 as we
                         \ have now copied the whole name
 
+IF _SNG47
+
  STA SVLI+10,Y          \ Store the Y-th character of the commander name in the
                         \ Y-th character of SVLI+10, where SVLI+10 points to the
                         \ JAMESON part of the save command in SVLI:
                         \
                         \   "SAVE :1.E.JAMESON  E7E +100 0 0"
+
+ELIF _COMPACT
+
+ STA SVLI+5,Y           \ Store the Y-th character of the commander name in the
+                        \ Y-th character of SVLI+5, where SVLI+5 points to the
+                        \ JAMESON part of the save command in SVLI:
+                        \
+                        \   "SAVE JAMESON  E7E +100 0 0"
+
+ENDIF
 
  INY                    \ Increment the loop counter
 
@@ -36821,9 +37559,19 @@ ENDIF
                         \ one, so we now need to blank out the rest of the name
                         \ with spaces, so we load the space character into A
 
+IF _SNG47
+
  STA SVLI+10,Y          \ Store the Y-th character of the commander name in the
                         \ Y-th character of SVLI+10, which will be directly
                         \ after the last letter we copied above
+
+ELIF _COMPACT
+
+ STA SVLI+5,Y           \ Store the Y-th character of the commander name in the
+                        \ Y-th character of SVLI+5, which will be directly
+                        \ after the last letter we copied above
+
+ENDIF
 
  INY                    \ Increment the loop counter
 
@@ -36831,8 +37579,16 @@ ENDIF
  BCC SAVEL4             \ name, so loop back to SAVEL4 to blank the next one
                         \ until the save string is ready for use
 
+IF _SNG47
+
  JSR SWAPZP             \ Call SWAPZP to store the top part of zero page, as it
                         \ gets corrupted by the MOS during the saving process
+
+ELIF _COMPACT
+
+ JSR NMIRELEASE         \ Release the NMI workspace (&00A0 to &00A7)
+
+ENDIF
 
  LDX #LO(SVLI)          \ Set (Y X) to point to the OS command at SVLI, which
  LDY #HI(SVLI)          \ contains the DFS command for saving the commander file
@@ -36872,12 +37628,24 @@ ENDIF
  CMP #13                \ If the character is a carriage return then we have
  BEQ LOADL2             \ reached the end of the filename, so jump to LOADL2 as
                         \ we have now copied the whole filename
- 
+
+IF _SNG47
+
  STA LDLI+10,Y          \ Store the Y-th character of the filename in the Y-th
                         \ character of LDLI+10, where LDLI+10 points to the
                         \ JAMESON part of the load command in LDLI:
                         \
                         \   "LOAD :1.E.JAMESON  E7E"
+
+ELIF _COMPACT
+
+ STA LDLI+5,Y           \ Store the Y-th character of the filename in the Y-th
+                        \ character of LDLI+5, where LDLI+5 points to the
+                        \ JAMESON part of the load command in LDLI:
+                        \
+                        \   "LOAD JAMESON  E7E"
+
+ENDIF
 
  INY                    \ Increment the loop counter
 
@@ -36891,9 +37659,19 @@ ENDIF
                         \ one, so we now need to blank out the rest of the name
                         \ with spaces, so we load the space character into A
 
+IF _SNG47
+
  STA LDLI+10,Y          \ Store the Y-th character of the filename in the Y-th
                         \ character of LDLI+10, which will be directly after
                         \ the last letter we copied above
+
+ELIF _COMPACT
+
+ STA LDLI+5,Y           \ Store the Y-th character of the filename in the Y-th
+                        \ character of LDLI+5, which will be directly after
+                        \ the last letter we copied above
+
+ENDIF
 
  INY                    \ Increment the loop counter
 
@@ -36901,8 +37679,16 @@ ENDIF
  BCC LOADL2             \ name, so loop back to LOADL2 to blank the next one
                         \ until the load string is ready for use
 
+IF _SNG47
+
  JSR SWAPZP             \ Call SWAPZP to store the top part of zero page, as it
                         \ gets corrupted by the MOS during the loading process
+
+ELIF _COMPACT
+
+ JSR NMIRELEASE         \ Release the NMI workspace (&00A0 to &00A7)
+
+ENDIF
 
  LDX #LO(LDLI)          \ Set (Y X) to point to the OS command at LDLI, which
  LDY #HI(LDLI)          \ contains the DFS command for loading the commander
@@ -37602,11 +38388,22 @@ ENDIF
 
  STA JSTY               \ Store A in JSTY to update the current pitch rate
 
+IF _COMPACT
+
+ JMP DK15               \ Jump to DK15 to skip reading the joystick, as this is
+                        \ a Master Compact that doesn't support an analogue
+                        \ joystick (instead it supports a digital joystick,
+                        \ which is read elsewhere)
+
+ENDIF
+
 .DK16
 
  LDA JSTK               \ If JSTK is zero, then we are configured to use the
  BEQ DK15               \ keyboard rather than the joystick, so jump to DK15 to
                         \ skip reading the joystick
+
+IF _SNG47
 
  LDA ADCH1              \ Fetch the high byte of the joystick X value
 
@@ -37653,6 +38450,19 @@ ENDIF
 
  BNE DK4                \ Jump to DK4 to scan for other keys (this BNE is
                         \ effectively a JMP as A is never 0)
+
+ELIF _COMPACT
+
+ JSR RDJOY              \ Call RDJOY to read from either the analogue or digital
+                        \ joystick
+
+ BCC DK4                \ If we just read from the analogue joystick, the C flag
+                        \ will be clear, so jump to DK4 to scan for other keys
+
+                        \ Otherwise we just read the digital joystick, so we now
+                        \ update the pitch and roll
+
+ENDIF
 
 .DK15
 
@@ -44750,14 +45560,19 @@ LOAD_H% = LOAD% + P% - CODE%
 \
 \ ******************************************************************************
 
+IF _SNG47
+
 .CTRL
 
  LDA #1                 \ Set A to the internal key number for CTRL and fall
-                        \ through to DSK4 to scan the keyboard
+                        \ through to DKS4 to scan the keyboard
+
+ENDIF
 
 \ ******************************************************************************
 \
 \       Name: DKS4
+\       Type: Subroutine
 \   Category: Keyboard
 \    Summary: Scan the keyboard to see if a specific key is being pressed
 \  Deep dive: The key logger
@@ -44780,6 +45595,8 @@ LOAD_H% = LOAD% + P% - CODE%
 \   X                   Contains the same as A
 \
 \ ******************************************************************************
+
+IF _SNG47
 
 .DKS4
 
@@ -44818,6 +45635,8 @@ LOAD_H% = LOAD% + P% - CODE%
  TXA                    \ Transfer X into A
 
  RTS                    \ Return from the subroutine
+
+ENDIF
 
 \ ******************************************************************************
 \
@@ -44917,6 +45736,360 @@ LOAD_H% = LOAD% + P% - CODE%
 
 \ ******************************************************************************
 \
+\       Name: RDFIRE
+\       Type: Subroutine
+\   Category: Keyboard
+\    Summary: Read the fire button on either the analogue or digital joystick
+\
+\ ------------------------------------------------------------------------------
+\
+\ Returns:
+\
+\   C flag              Set if the joystick fire button is being pressed, clear
+\                       if it isn't
+\
+\ ******************************************************************************
+
+IF _COMPACT
+
+.RDFIRE
+
+ LDA MOS                \ If MOS = 0 then this is a Master Compact, so jump to
+ BEQ DFIRE              \ DFIRE to read the digital joystick rather then the
+                        \ analogue joystick, as the Compact doesn't have the
+                        \ latter
+
+ CLC                    \ Clear the C flag
+
+ LDA VIA+&40            \ Read 6522 System VIA input register IRB (SHEILA &40)
+
+ AND #%00010000         \ Bit 4 of IRB (PB4) is clear if joystick 1's fire
+                        \ button is pressed, otherwise it is set, so AND'ing
+                        \ the value of IRB with %10000 extracts this bit
+
+ BNE P%+3               \ If the joystick fire button is not being pressed,
+                        \ jump skip the following to leave the C flag clear
+
+ SEC                    \ Set the C flag to indicate the joystick fire button
+                        \ is being pressed
+
+ RTS                    \ Return from the subroutine
+
+.DFIRE
+
+ LDA VIA+&60            \ Read the User 6522 VIA, which is where the Master
+                        \ Compact's digital joystick is mapped to. The pins go
+                        \ low when the joystick connection is made, and PB0 is
+                        \ connected to the joystick fire button, so when PB0
+                        \ is low, fire is being pressed
+
+ EOR #%00000001         \ Flip PB0 so that it's 1 if fire is being pressed and
+                        \ 0 if it isn't
+
+ LSR A                  \ Shift PB0 into the C flag, so it's set if the fire
+                        \ button is being pressed
+
+ RTS                    \ Return from the subroutine
+
+ENDIF
+
+\ ******************************************************************************
+\
+\       Name: RDJOY
+\       Type: Subroutine
+\   Category: Keyboard
+\    Summary: Read from either the analogue or digital joystick
+\
+\ ------------------------------------------------------------------------------
+\
+\ Returns:
+\
+\   C flag              Clear if we just read from the analogue joystick, set if
+\                       we just read from the digital joystick
+\
+\ ******************************************************************************
+
+IF _COMPACT
+
+.RDJOY
+
+ LDA MOS                \ If MOS = 0 then this is a Master Compact, so jump to
+ BEQ DIGITAL            \ DIGITAL to read the digital joystick rather then the
+                        \ analogue joystick, as the Compact doesn't have the
+                        \ latter
+
+ CLC                    \ Clear the C flag to indicate that we are reading from
+                        \ the analogue joystick
+
+ LDA ADCH1              \ Fetch the high byte of the joystick X value
+
+ EOR JSTE               \ The high byte A is now EOR'd with the value in
+                        \ location JSTE, which contains &FF if both joystick
+                        \ channels are reversed and 0 otherwise (so A now
+                        \ contains the high byte but inverted, if that's what
+                        \ the current settings say)
+
+ ORA #1                 \ Ensure the value is at least 1
+
+ STA JSTX               \ Store the resulting joystick X value in JSTX
+
+ LDA ADCH2              \ Fetch the high byte of the joystick Y value
+
+ EOR #&FF               \ This EOR is used in conjunction with the EOR JSTGY
+                        \ below, as having a value of 0 in JSTGY means we have
+                        \ to invert the joystick Y value, and this EOR does
+                        \ that part
+
+ EOR JSTE               \ The high byte A is now EOR'd with the value in
+                        \ location JSTE, which contains &FF if both joystick
+                        \ channels are reversed and 0 otherwise (so A now
+                        \ contains the high byte but inverted, if that's what
+                        \ the current settings say)
+
+ EOR JSTGY              \ JSTGY will be 0 if the game is configured to reverse
+                        \ the joystick Y channel, so this EOR along with the
+                        \ EOR #&FF above does exactly that
+
+ STA JSTY               \ Store the resulting joystick Y value in JSTY
+
+ LDA VIA+&40            \ Read 6522 System VIA input register IRB (SHEILA &40)
+
+ AND #%00010000         \ Bit 4 of IRB (PB4) is clear if joystick 1's fire
+                        \ button is pressed, otherwise it is set, so AND'ing
+                        \ the value of IRB with %10000 extracts this bit
+
+ BNE P%+6               \ If the joystick fire button is not being pressed,
+                        \ jump to DK4 to scan for other keys
+
+ LDA #&FF               \ Update the key logger at KY7 to "press" the "A" (fire)
+ STA KY7                \ button
+
+ RTS                    \ Return from the subroutine
+
+.DIGITAL
+
+ LDX #&FF               \ Set X = &FF so we can use it to "press" keys in the
+                        \ key logger
+
+ LDA VIA+&60            \ Read the User 6522 VIA, which is where the Master
+                        \ Compact's digital joystick is mapped to. The pins go
+                        \ low when the joystick connection is made, so we need
+                        \ to check whether any of the following are zero:
+                        \
+                        \   PB0 = fire
+                        \   PB1 = left
+                        \   PB2 = down
+                        \   PB3 = up
+                        \   PB4 = right
+
+ LSR A                  \ If PB0 from the User VIA is set (fire button), skip
+ BCS P%+4               \ the following
+
+ STX KY7                \ Update the key logger at KY7 to "press" the "A" (fire)
+                        \ button
+
+ LSR A                  \ If PB1 from the User VIA is set (left), skip the
+ BCS P%+4               \ following
+
+ STX KY3                \ Update the key logger at KY3 to "press" the "<" (roll
+                        \ left) button
+
+ LSR A                  \ If PB2 from the User VIA is set (down), skip the
+ BCS P%+4               \ following
+
+ STX KY6                \ Update the key logger at KY6 to "press" the "S" (pitch
+                        \ forward) button
+                        \
+                        \ Note that this is the opposite key presss to the stick
+                        \ direction, as in the default configuration, we want to
+                        \ pitch up when we pull the joystick back (i.e. when the
+                        \ stick is down). To fix this, we flip this result below
+
+ LSR A                  \ If PB3 from the User VIA is set (up), skip the
+ BCS P%+4               \ following
+
+ STX KY5                \ Update the key logger at KY5 to "press" the "X" (pitch
+                        \ back) button
+                        \
+                        \ Note that this is the opposite key presss to the stick
+                        \ direction, as in the default configuration, we want to
+                        \ pitch down when we push the joystick forward (i.e.
+                        \ when the stick is up). To fix this, we flip this
+                        \ result below
+
+ LSR A                  \ If PB4 from the User VIA is set (right), skip the
+ BCS P%+4               \ following
+
+ STX KY4                \ Update the key logger at KY4 to "press" the ">" (roll
+                        \ right) button
+
+ LDA JSTE               \ JSTE contains &FF if both joystick channels are
+ BEQ DIG1               \ reversed and 0 otherwise, so skip to DIG1 if the
+                        \ joystick channels are not reversed
+
+ LDA KY3                \ Both the joystick channels are reversed, so swap the
+ LDX KY4                \ values of KY3 and KY4 (to swap the roll)
+ STX KY3
+ STA KY4
+
+.DIG1
+
+ LDA JSTE               \ Set A to &FF if both joystick channels are reversed
+                        \ and 0 otherwise
+
+ EOR JSTGY              \ JSTGY will be 0 if the game is configured to reverse
+                        \ the joystick Y channel, &FF otherwise, so A will be
+                        \ 0 if one of these is true:
+                        \
+                        \  * Both channels are normal and Y is reversed
+                        \  * Both channels are reversed and Y is not
+                        \
+                        \ i.e. it will be 0 if the Y channel is configured to be
+                        \ reversed
+
+ BEQ DIG2               \ If the result in A is 0, skip the following to leave
+                        \ the Y channel alone, as we already set the pitch keys
+                        \ above to the opposite direction to the stick
+
+                        \ If we get here, then the configuration settings are
+                        \ not set to reverse the Y channel, so we now swap KY5
+                        \ and KY6 around, as we set the pitch keys above to the
+                        \ opposite direction to the stick
+
+ LDA KY5                \ The Y channel should be reversed, so swap the values
+ LDX KY6                \ of KY5 and KY6 (to swap the pitch)
+ STX KY5
+ STA KY6
+
+.DIG2
+
+ SEC                    \ Set the C flag to indicate that we just read the
+                        \ digital joystick
+
+ RTS                    \ Return from the subroutine
+
+ENDIF
+
+\ ******************************************************************************
+\
+\       Name: TT17X
+\       Type: Subroutine
+\   Category: Keyboard
+\    Summary: Scan the digital joystick for movement
+\
+\ ------------------------------------------------------------------------------
+\
+\ Scan the digital joystick for stick movement, and return the result as deltas
+\ (changes) in x- and y-coordinates as follows:
+\
+\   * For joystick, X and Y are integers between -2 and +2 depending on how far
+\     the stick has moved
+\
+\ Returns:
+\
+\   X                   Change in the x-coordinate according to the joystick
+\                       movement, as an integer (see above)
+\
+\   Y                   Change in the y-coordinate according to the joystick
+\                       movement, as an integer (see above)
+\
+\ ******************************************************************************
+
+IF _COMPACT
+
+.TT17X
+
+ LDA VIA+&60            \ Read the User 6522 VIA, which is where the Master
+                        \ Compact's digital joystick is mapped to. The pins go
+                        \ low when the joystick connection is made, so we need
+                        \ to check whether any of the following are zero:
+                        \
+                        \   PB0 = fire
+                        \   PB1 = left
+                        \   PB2 = down
+                        \   PB3 = up
+                        \   PB4 = right
+
+ LSR A                  \ Shift the PB0 bit out, as we aren't interested in the
+                        \ fire button in this routine
+
+ LDX #0                 \ Set the initial values for the results, X = Y = 0,
+ LDY #0                 \ which we now increase or decrease appropriately
+
+ LSR A                  \ If PB1 from the User VIA is set (left), skip the
+ BCS P%+3               \ following
+
+ DEX                    \ Set X = X - 1
+
+ LSR A                  \ If PB2 from the User VIA is set (down), skip the
+ BCS P%+3               \ following
+
+ INY                    \ Set Y = Y + 1
+                        \
+                        \ Note that this is the opposite direction to the stick
+                        \ direction, as moving the stick down should decrease Y.
+                        \ To fix this, we flip this result below
+
+ LSR A                  \ If PB3 from the User VIA is set (up), skip the
+ BCS P%+3               \ following
+
+ DEY                    \ Set Y = Y - 1
+                        \
+                        \ Note that this is the opposite direction to the stick
+                        \ direction, as moving the stick up should increase Y.
+                        \ To fix this, we flip this result below
+
+ LSR A                  \ If PB4 from the User VIA is set (right), skip the
+ BCS P%+3               \ following
+
+ INX                    \ Set X = X + 1
+
+ LDA JSTE               \ JSTE contains &FF if both joystick channels are
+ BEQ TT171              \ reversed and 0 otherwise, so skip to L7F80 if the
+                        \ joystick channels are not reversed
+
+ TXA                    \ The X channel needs to be reversed, so negate the
+ EOR #&FF               \ value in X, using two's complement
+ CLC
+ ADC #1
+ TAX
+
+.TT171
+
+ LDA JSTE               \ Set A to &FF if both joystick channels are reversed
+                        \ and 0 otherwise
+
+ EOR JSTGY              \ JSTGY will be 0 if the game is configured to reverse
+                        \ the joystick Y channel, &FF otherwise, so A will be
+                        \ 0 if one of these is true:
+                        \
+                        \  * Both channels are normal and Y is reversed
+                        \  * Both channels are reversed and Y is not
+                        \
+                        \ i.e. it will be 0 if the Y channel is configured to be
+                        \ reversed
+
+ BEQ TT17X-1            \ If the result in A is 0, return from the subroutine
+                        \ (as TT17X-1 contain an RTS), as we already set the Y
+                        \ value above to the opposite direction to the stick
+
+                        \ If we get here, then the configuration settings are
+                        \ not set to reverse the Y channel, so we now negate the
+                        \ Y value, as we set Y above to the opposite direction
+                        \ to the stick
+
+ TYA                    \ The Y channel should be reversed, so negate the value
+ EOR #&FF               \ in Y, using two's complement
+ CLC
+ ADC #1
+ TAY
+
+                        \ Fall through into ECMOF to return from the subroutine
+
+ENDIF
+
+\ ******************************************************************************
+\
 \       Name: ECMOF
 \       Type: Subroutine
 \   Category: Sound
@@ -44937,9 +46110,18 @@ LOAD_H% = LOAD% + P% - CODE%
 
 .ECMOF
 
+IF _SNG47
+
  LDA #0                 \ Set ECMA and ECMB to 0 to indicate that no E.C.M. is
  STA ECMA               \ currently running
  STA ECMP
+
+ELIF _COMPACT
+
+ STZ ECMA               \ Set ECMA and ECMB to 0 to indicate that no E.C.M. is
+ STZ ECMP               \ currently running
+
+ENDIF
 
  JMP ECBLB              \ Update the E.C.M. indicator bulb on the dashboard and
                         \ return from the subroutine using a tail call
@@ -44964,9 +46146,19 @@ LOAD_H% = LOAD% + P% - CODE%
  JSR SFS1-2             \ to add the missile to our universe with an AI flag
                         \ of %11111110 (AI enabled, hostile, no E.C.M.)
 
+IF _SNG47
+
  BCC ECMOF-1            \ The C flag will be set if the call to SFS1-2 was a
                         \ success, so if it's clear, jump to KYTB to return from
                         \ the subroutine (as ECMOF-1 contains an RTS)
+
+ELIF _COMPACT
+
+ BCC TT17X-1            \ The C flag will be set if the call to SFS1-2 was a
+                        \ success, so if it's clear, jump to KYTB to return from
+                        \ the subroutine (as TT17X-1 contains an RTS)
+
+ENDIF
 
  LDA #120               \ Print recursive token 120 ("INCOMING MISSILE") as an
  JSR MESS               \ in-flight message
@@ -45100,11 +46292,15 @@ LOAD_H% = LOAD% + P% - CODE%
  JSR STARTUP            \ Call STARTUP to set various vectors, interrupts and
                         \ timers
 
- JMP SRESET             \ Call SRESET to reset the sound buffers
+ JMP SRESET             \ Call SRESET to reset the sound buffers and return from
+                        \ the subroutine using a tail call
 
- CLI                    \ Enable interrupts
+IF _SNG47
 
- RTI                    \ Return from the interrupt handler
+ CLI                    \ These instructions are never reached and have no
+ RTI                    \ effect
+
+ENDIF
 
 \ ******************************************************************************
 \
@@ -45118,6 +46314,17 @@ LOAD_H% = LOAD% + P% - CODE%
 .F%
 
  SKIP 0
+
+IF _COMPACT
+
+ EQUD &F8F8F8F8         \ These bytes appear to be unused
+ EQUD &F8F8F8F8
+ EQUD &F8F8F8F8
+ EQUD &F8F8F8F8
+ EQUW &F8F8
+ EQUB &F8
+
+ENDIF
 
 \ ******************************************************************************
 \

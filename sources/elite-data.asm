@@ -30,6 +30,9 @@ INCLUDE "sources/elite-header.h.asm"
 CPU 1                   \ Switch to 65SC12 assembly, as this code runs on a
                         \ BBC Master
 
+_SNG47                  = (_RELEASE = 1)
+_COMPACT                = (_RELEASE = 2)
+
 VE = &57                \ The obfuscation byte used to hide the extended tokens
                         \ table from crackers viewing the binary code
 
@@ -3209,7 +3212,11 @@ ENDMACRO
 
 IF _MATCH_EXTRACTED_BINARIES
 
+IF _SNG47
  INCBIN "extracted/sng47/workspaces/DATA-align.bin"
+ELIF _COMPACT
+ INCBIN "extracted/compact/workspaces/DATA-align.bin"
+ENDIF
 
 ELSE
 
@@ -4875,11 +4882,11 @@ ENDMACRO
  EJMP 10                \                <215>4. DEL<221>E FI<229><215>5.
  EJMP 2                 \                 DEFAULT {1}JAMESON{2}<215>6. EX<219>
  ECHR '1'               \                <215>"
- ECHR '.'
- ECHR ' '
- ETOK 149
- ETWO '-', '-'
- ECHR '2'
+ ECHR '.'               \
+ ECHR ' '               \ The Master Compact release encodes the third line in a
+ ETOK 149               \ more efficient manner, like this:
+ ETWO '-', '-'          \
+ ECHR '2'               \                <250> [154] {4}<215>3.[152]] DISK
  ECHR '.'
  ECHR ' '
  ECHR 'S'
@@ -4892,6 +4899,9 @@ ENDMACRO
  ETWO '-', '-'
  ECHR '3'
  ECHR '.'
+
+IF _SNG47
+
  ECHR ' '
  ECHR 'C'
  ECHR 'A'
@@ -4902,6 +4912,13 @@ ENDMACRO
  ECHR 'G'
  ECHR 'U'
  ECHR 'E'
+
+ELIF _COMPACT
+
+ ETOK 152
+
+ENDIF
+
  ECHR ' '
  ECHR 'D'
  ECHR 'I'
@@ -4962,6 +4979,8 @@ ENDMACRO
  ECHR '?'
  EQUB VE
 
+IF _SNG47
+
  ETOK 150               \ Token 3:      "{clear screen}
  ETOK 151               \                {draw box around title}
  ECHR ' '               \                {all caps}
@@ -4970,6 +4989,18 @@ ENDMACRO
  ETWO '-', '-'          \               "
  EQUB VE                \
                         \ Encoded as:   "[150][151] {16}[152]<215>"
+
+ELIF _COMPACT
+
+ ETOK 150               \ Token 3:      "{clear screen}
+ ECHR ' '               \                    CATALOGUE
+ ECHR ' '               \                {crlf}
+ ECHR ' '               \               "
+ ETOK 152               \
+ ETWO '-', '-'          \ Encoded as:   "[150]   [152]<215>"
+ EQUB VE
+
+ENDIF
 
  EQUB VE                \ Token 4:      ""
 
@@ -6654,11 +6685,27 @@ ENDMACRO
  EQUB VE                \
                         \ Encoded as:   "{9}{11}{1}{8}"
 
+IF _SNG47
+
  ECHR 'D'               \ Token 151:    "DRIVE"
  ECHR 'R'               \
  ECHR 'I'               \ Encoded as:   "DRI<250>"
  ETWO 'V', 'E'
  EQUB VE
+
+ELIF _COMPACT
+
+ ECHR 'D'               \ Token 151:    "DIRECTORY"
+ ECHR 'I'               \
+ ETWO 'R', 'E'          \ Encoded as:   "DI<242>CTORY"
+ ECHR 'C'
+ ECHR 'T'
+ ECHR 'O'
+ ECHR 'R'
+ ECHR 'Y'
+ EQUB VE
+
+ENDIF
 
  ECHR ' '               \ Token 152:    " CATALOGUE"
  ECHR 'C'               \
@@ -8841,11 +8888,27 @@ ENDMACRO
 
 IF _MATCH_EXTRACTED_BINARIES
 
+ IF _SNG47
+
  EQUS " \mutilate"      \ These bytes appear to be unused and are presumably
  EQUS " from here"      \ workspace noise from the build process (this snippet
  EQUS " to F%"          \ looks like an assembly language comment from the
  EQUB 13                \ encryption process, which the authors presumably
  EQUB &0B, &B8          \ liked to call "mutilation")
+
+ ELIF _COMPACT
+
+ EQUS "\red herring"    \ These bytes appear to be unused and are presumably
+ EQUB 13                \ workspace noise from the build process (this snippet
+ EQUB &0B               \ looks like an assembly language comment from the
+ EQUS ","               \ encryption process, which the authors presumably
+ EQUB &05               \ liked to call "mutilation", though this could also
+ EQUS "\"               \ be a "red herring")
+ EQUB 13
+ EQUB &0B
+ EQUS "T!.G% \mutilate"
+
+ ENDIF
 
 ELSE
 

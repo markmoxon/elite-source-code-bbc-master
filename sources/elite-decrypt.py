@@ -17,22 +17,46 @@
 # Run this script by changing directory to the repository's root folder and
 # running the script with "python sources/elite-decrypt.py"
 #
+# You can decrypt specific releases by adding the following arguments, as in
+# "python sources/elite-decrypt.py -rel2" for example:
+#
+#   -rel1   Decrypt the SNG47 release
+#   -rel2   Decrypt the Master Compact release
+#
+# If unspecified, the default is rel1
+#
 # ******************************************************************************
 
 from __future__ import print_function
+import sys
 
 print()
 print("BBC Master Elite decryption")
 
+argv = sys.argv
 release = 1
 folder = "sng47"
+
+for arg in argv[1:]:
+    if arg == "-rel1":
+        release = 1
+        folder = "sng47"
+    if arg == "-rel2":
+        release = 2
+        folder = "compact"
 
 # Configuration variables for BCODE
 
 load_address = 0x1300
 seed = 0x19
 scramble_from = 0x2CC1
-scramble_to = 0x7F47
+
+if release == 1:
+    # SNG47
+    scramble_to = 0x7F47
+elif release == 2:
+    # Compact
+    scramble_to = 0x7FEC
 
 data_block = bytearray()
 

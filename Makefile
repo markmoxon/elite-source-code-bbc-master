@@ -1,9 +1,30 @@
 BEEBASM?=beebasm
 PYTHON?=python
 
-rel-master=1
-folder-master='/sng47'
-suffix-master='-sng47'
+# You can set the release that gets built by adding 'release-master=<rel>' to
+# the make command, where <rel> is one of:
+#
+#   sng47
+#   compact
+#
+# So, for example:
+#
+#   make encrypt verify release-master=compact
+#
+# will build the Master Compact version. If you omit the release-master
+# parameter, it will build the SNG47 version.
+
+ifeq ($(release-master), compact)
+  rel-master=2
+  folder-master=/compact
+  suffix-master=-compact
+  boot-master=-opt 2
+else
+  rel-master=1
+  folder-master=/sng47
+  suffix-master=-sng47
+  boot-master=-boot M128Elt
+endif
 
 .PHONY:build
 build:
@@ -15,7 +36,7 @@ build:
 	$(BEEBASM) -i sources/elite-data.asm -v >> output/compile.txt
 	$(BEEBASM) -i sources/elite-source.asm -v >> output/compile.txt
 	$(PYTHON) sources/elite-checksum.py -u -rel$(rel-master)
-	$(BEEBASM) -i sources/elite-disc.asm -do elite-master$(suffix-master).ssd -boot M128Elt
+	$(BEEBASM) -i sources/elite-disc.asm $(boot-master) -do elite-master$(suffix-master).ssd
 
 .PHONY:encrypt
 encrypt:
@@ -27,7 +48,7 @@ encrypt:
 	$(BEEBASM) -i sources/elite-data.asm -v >> output/compile.txt
 	$(BEEBASM) -i sources/elite-source.asm -v >> output/compile.txt
 	$(PYTHON) sources/elite-checksum.py -rel$(rel-master)
-	$(BEEBASM) -i sources/elite-disc.asm -do elite-master$(suffix-master).ssd -boot M128Elt
+	$(BEEBASM) -i sources/elite-disc.asm $(boot-master) -do elite-master$(suffix-master).ssd
 
 .PHONY:verify
 verify:

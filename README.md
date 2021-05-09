@@ -31,6 +31,18 @@ My hope is that this repository and the [accompanying website](https://www.bbcel
   * [Verifying the output](#verifying-the-output)
   * [Log files](#log-files)
 
+* [Building different releases of Elite](#building-different-releases-of-elite)
+
+  * [Building the Master Compact release](#building-the-master-compact-release)
+
+  * [Building the SNG47 release](#building-the-sng47-release)
+
+  * [Differences between the releases](#differences-between-the-releases)
+
+* [Notes on the original source files](#notes-on-the-original-source-files)
+
+  * [Producing byte-accurate binaries](#producing-byte-accurate-binaries)
+
 ## Acknowledgements
 
 BBC Master Elite was written by Ian Bell and David Braben and is copyright &copy; Acornsoft 1986.
@@ -192,6 +204,77 @@ All the compiled binaries match the extracts, so we know we are producing the sa
 ### Log files
 
 During compilation, details of every step are output in a file called `compile.txt` in the `output` folder. If you have problems, it might come in handy, and it's a great reference if you need to know the addresses of labels and variables for debugging (or just snooping around).
+
+## Building different releases of Elite
+
+This repository contains the source code for two different releases of BBC Master Elite:
+
+* The release from the SNG47 Acornsoft release (the first official release of BBC Master Elite)
+
+* The release for the Master Compact
+
+By default the build process builds the SNG47 release, but you can build the other release as follows.
+
+### Building the Master Compact release
+
+You can build the Master Compact release by appending `release-master=compact` to the `make` command, like this on Windows:
+
+```
+make.bat encrypt verify release-master=compact
+```
+
+or this on a Mac or Linux:
+
+```
+make encrypt verify release-master=compact
+```
+
+This will produce a file called `elite-master-compact.ssd` that contains the Master Compact release.
+
+### Building the SNG47 release
+
+You can add `release-master=sng47` to produce the `elite-master-sng47.ssd` file that contains the SNG47 release, though that's the default value so it isn't necessary.
+
+### Differences between the releases
+
+You can see the differences between the releases by searching the source code for `_SNG47` (for features in the SNG47 release) or `_COMPACT` (for features in the Master Compact release). There are only a few differences in the Master Compact release (if you ignore [workspace noise](#producing-byte-accurate-binaries)), but quite a few in the Executive version.
+
+The differences in the Master Compact release compared to the SNG47 release are:
+
+* Support for the Compact's digital joystick. The analogue stick is still supported, but if this release is run on a Compact, then the digital stick is read instead.
+
+* Support for ADFS and the single disc drive on the Compact. This essentially replaces the "Which Drive?" prompt in the disc access menu with "Which Directory?", and changes the formatting of the disc catalogue to fit it on-screen. There is also additional code to claim and release the NMI workspace when disc access is required, as ADFS uses zero page differently to DFS.
+
+## Notes on the original source files
+
+### Producing byte-accurate binaries
+
+The `extracted/<release>/workspaces` folders (where `<release>` is the release version) contain binary files that match the workspaces in the original game binaries (a workspace being a block of memory, such as `LBUF` or `LSX2`). Instead of initialising workspaces with null values like BeebAsm, the original BBC Micro source code creates its workspaces by simply incrementing the `P%` and `O%` program counters, which means that the workspaces end up containing whatever contents the allocated memory had at the time. As the source files are broken into multiple BBC BASIC programs that run each other sequentially, this means the workspaces in the source code tend to contain either fragments of these BBC BASIC source programs, or assembled code from an earlier stage. This doesn't make any difference to the game code, which either intialises the workspaces at runtime or just ignores their initial contents, but if we want to be able to produce byte-accurate binaries from the modern BeebAsm assembly process, we need to include this "workspace noise" when building the project, and that's what the binaries in the `extracted/<release>/workspaces` folder are for. These binaries are only loaded by the `encrypt` target; for the `build` target, workspaces are initialised with zeroes.
+
+Here's an example of how these binaries are included, in this case for the `log` workspace in the `ELTA` section:
+
+```
+.log
+
+IF _MATCH_EXTRACTED_BINARIES
+
+ IF _SNG47
+  INCBIN "versions/master/extracted/sng47/workspaces/ELTA-log.bin"
+ ELIF _COMPACT
+  INCBIN "versions/master/extracted/compact/workspaces/ELTA-log.bin"
+ ENDIF
+
+ELSE
+
+ SKIP 1
+
+ FOR I%, 1, 255
+   B% = INT(&2000 * LOG(I%) / LOG(2) + 0.5)
+   EQUB B% DIV 256
+ NEXT
+
+ENDIF
+```
 
 ---
 
