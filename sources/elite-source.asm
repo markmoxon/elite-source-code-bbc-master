@@ -2952,7 +2952,6 @@ ENDIF
 \       Type: Subroutine
 \   Category: Utility routines
 \    Summary: Release the NMI workspace (&00A0 to &00A7)
-
 \
 \ ******************************************************************************
 
