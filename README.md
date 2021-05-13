@@ -227,23 +227,23 @@ By default the build process builds the SNG47 release, but you can build the oth
 
 ### Building the Master Compact release
 
-You can build the Master Compact release by appending `release-master=compact` to the `make` command, like this on Windows:
+You can build the Master Compact release by appending `release=compact` to the `make` command, like this on Windows:
 
 ```
-make.bat encrypt verify release-master=compact
+make.bat encrypt verify release=compact
 ```
 
 or this on a Mac or Linux:
 
 ```
-make encrypt verify release-master=compact
+make encrypt verify release=compact
 ```
 
 This will produce a file called `elite-master-compact.ssd` that contains the Master Compact release.
 
 ### Building the SNG47 release
 
-You can add `release-master=sng47` to produce the `elite-master-sng47.ssd` file that contains the SNG47 release, though that's the default value so it isn't necessary.
+You can add `release=sng47` to produce the `elite-master-sng47.ssd` file that contains the SNG47 release, though that's the default value so it isn't necessary.
 
 ### Differences between the releases
 

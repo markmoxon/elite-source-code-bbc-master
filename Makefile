@@ -1,7 +1,7 @@
 BEEBASM?=beebasm
 PYTHON?=python
 
-# You can set the release that gets built by adding 'release-master=<rel>' to
+# You can set the release that gets built by adding 'release=<rel>' to
 # the make command, where <rel> is one of:
 #
 #   sng47
@@ -9,12 +9,12 @@ PYTHON?=python
 #
 # So, for example:
 #
-#   make encrypt verify release-master=compact
+#   make encrypt verify release=compact
 #
-# will build the Master Compact version. If you omit the release-master
+# will build the Master Compact version. If you omit the release
 # parameter, it will build the SNG47 version.
 
-ifeq ($(release-master), compact)
+ifeq ($(release), compact)
   rel-master=2
   folder-master=/compact
   suffix-master=-compact
