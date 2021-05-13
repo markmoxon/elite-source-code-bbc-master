@@ -269,9 +269,9 @@ Here's an example of how these binaries are included, in this case for the `log`
 IF _MATCH_EXTRACTED_BINARIES
 
  IF _SNG47
-  INCBIN "versions/master/extracted/sng47/workspaces/ELTA-log.bin"
+  INCBIN "extracted/sng47/workspaces/ELTA-log.bin"
  ELIF _COMPACT
-  INCBIN "versions/master/extracted/compact/workspaces/ELTA-log.bin"
+  INCBIN "extracted/compact/workspaces/ELTA-log.bin"
  ENDIF
 
 ELSE
