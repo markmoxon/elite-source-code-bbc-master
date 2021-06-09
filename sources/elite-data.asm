@@ -3238,7 +3238,7 @@ ENDIF
 \
 \   CHAR 'x'            Insert ASCII character "x"
 \
-\ To include an apostrophe, use a backtick character, as in i.e. CHAR '`'.
+\ To include an apostrophe, use a backtick character, as in CHAR '`'.
 \
 \ See the deep dive on "Printing text tokens" for details on how characters are
 \ stored in the recursive token table.
@@ -4641,7 +4641,7 @@ ENDMACRO
 \
 \   ECHR 'x'            Insert ASCII character "x"
 \
-\ To include an apostrophe, use a backtick character, as in i.e. CHAR '`'.
+\ To include an apostrophe, use a backtick character, as in ECHR '`'.
 \
 \ See the deep dive on "Printing extended text tokens" for details on how
 \ characters are stored in the extended token table.
@@ -5003,6 +5003,8 @@ ELIF _COMPACT
 ENDIF
 
  EQUB VE                \ Token 4:      ""
+                        \
+                        \ Encoded as:   ""
 
  ETOK 176               \ Token 5:      "{lower case}
  ERND 18                \                {justify}

@@ -6566,10 +6566,6 @@ ENDIF
 
  STA Y1                 \ Store the y-coordinate in Y1
 
-\.CPIX                  \ This label is commented out in the original source. It
-                        \ would provide a new entry point with A specifying the
-                        \ y-coordinate instead of Y1, but it isn't used anywhere
-
  TAY                    \ Store the y-coordinate in Y
 
  LDA ylookup,Y          \ Look up the page number of the character row that
@@ -25032,7 +25028,7 @@ LOAD_D% = LOAD% + P% - CODE%
 
  DEY                    \ Negate the change in Y and push it onto the stack
  TYA                    \ (let's call this the y-delta)
- EOR #255
+ EOR #&FF
  PHA
 
  JSR WSCAN              \ Call WSCAN to wait for the vertical sync, so the whole
@@ -29834,10 +29830,7 @@ ENDIF
 .NWSTARS
 
  LDA QQ11               \ If this is not a space view, jump to WPSHPS to skip
-\ORA MJ                 \ the initialisation of the SX, SY and SZ tables. The OR
- BNE WPSHPS             \ instruction is commented out in the original source,
-                        \ but it would have the effect of also skipping the
-                        \ initialisation if we had mis-jumped into witchspace
+ BNE WPSHPS             \ the initialisation of the SX, SY and SZ tables
 
 \ ******************************************************************************
 \
@@ -30450,7 +30443,7 @@ ENDIF
 \ copied into the first two K3 bytes, and the sign of the sign byte is copied
 \ into the highest K3 byte.
 \
-\ The comments below are written for the x-coordinate.
+\ The comments below are written for the x-coordinate into K3(2 1 0).
 \
 \ Arguments:
 \
@@ -32465,7 +32458,7 @@ ENDIF
  JSR BLINE              \ Call BLINE to draw this segment, which also increases
                         \ CNT by STP, the step size
 
- CMP #65                \ If CNT >=65 then skip the next instruction
+ CMP #65                \ If CNT >= 65 then skip the next instruction
  BCS P%+5
 
  JMP PLL3               \ Jump back for the next segment
@@ -32486,10 +32479,6 @@ ENDIF
 \
 \ We do this by redrawing it using the lines stored in the ball line heap when
 \ the planet was originally drawn by the BLINE routine.
-\
-\ Other entry points:
-\
-\   WPLS-1              Contains an RTS
 \
 \ ******************************************************************************
 
@@ -32585,6 +32574,10 @@ ENDIF
 \ Arguments:
 \
 \   SUNX(1 0)           The x-coordinate of the vertical centre axis of the sun
+\
+\ Other entry points:
+\
+\   WPLS-1              Contains an RTS
 \
 \ ******************************************************************************
 
@@ -36159,10 +36152,6 @@ ENDIF
  STA INWK+14            \ rotation vector)
 
  LDA #96                \ Set A = 96 as the distance that the ship starts at
-
-\LSR A                  \ This instruction is commented out in the original
-                        \ source. It would halve the value of z_hi to 48, so the
-                        \ ship would start off closer to the viewer
 
  STA INWK+7             \ Set z_hi, the high byte of the ship's z-coordinate,
                         \ to 96, which is the distance at which the rotating
@@ -45377,9 +45366,6 @@ LOAD_H% = LOAD% + P% - CODE%
 \ The pitch, roll, speed and laser keys (i.e. the seven primary flight
 \ control keys) have bit 7 set, so they have 128 added to their internal
 \ values. This doesn't appear to be used anywhere.
-\
-\ Note that KYTB actually points to the byte before the start of the table, so
-\ the offset of the first key value is 1 (i.e. KYTB+1), not 0.
 \
 \ ******************************************************************************
 
