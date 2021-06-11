@@ -33,6 +33,12 @@ CPU 1                   \ Switch to 65SC12 assembly, as this code runs on the
 _SNG47                  = (_RELEASE = 1)
 _COMPACT                = (_RELEASE = 2)
 
+\ ******************************************************************************
+\
+\ Configuration variables
+\
+\ ******************************************************************************
+
 N% = 67                 \ N% is set to the number of bytes in the VDU table, so
                         \ we can loop through them below
 

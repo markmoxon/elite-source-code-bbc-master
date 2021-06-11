@@ -33,6 +33,12 @@ CPU 1                   \ Switch to 65SC12 assembly, as this code runs on a
 _SNG47                  = (_RELEASE = 1)
 _COMPACT                = (_RELEASE = 2)
 
+\ ******************************************************************************
+\
+\ Configuration variables
+\
+\ ******************************************************************************
+
 VE = &57                \ The obfuscation byte used to hide the extended tokens
                         \ table from crackers viewing the binary code
 
