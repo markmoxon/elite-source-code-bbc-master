@@ -8756,7 +8756,6 @@ ENDIF
 
  LDA #%00001001         \ Clear bits 1 and 2 of the Access Control Register at
  STA VIA+&34            \ SHEILA &34 to switch main memory back into &3000-&7FFF
- 
 
  JMP COMPAS             \ We have now drawn all the indicators, so jump to
                         \ COMPAS to draw the compass, returning from the
@@ -9429,7 +9428,6 @@ ENDIF
                         \ of the catalogue, between the two lists of filenames,
                         \ so it can be dropped without affecting the layout)
 
- 
  SKIP 1                 \ This byte appears to be unused
 
 .DNOIZ
@@ -22429,7 +22427,6 @@ LOAD_C% = LOAD% +P% - CODE%
 
  LDA #64                \ Set the main loop counter to 64, so the ship rotates
  STA MCNT               \ for 64 iterations through MVEIT
- 
 
 .BRL1
 
@@ -29966,7 +29963,7 @@ ENDIF
 
  LDX #0                 \ Reset the ball line heap by setting the ball line heap
  STX LSP                \ pointer to 0
- 
+
  DEX                    \ Set X = &FF
 
  STX LSX2               \ Set LSX2 = LSY2 = &FF to clear the ball line heap
@@ -34022,7 +34019,7 @@ ENDIF
 
  PHA                    \ Store A on the stack so we can grab the lower nibble
                         \ from it later
- 
+
  LSR A                  \ Shift A right so that it contains the upper nibble
  LSR A                  \ of the original argument
  LSR A
@@ -40213,7 +40210,7 @@ LOAD_G% = LOAD% + P% - CODE%
                         \ so that XX14+1 gets set to 0 below (as there are no
                         \ existing coordinates on the ship line heap for this
                         \ ship)
- 
+
  EQUB &2C               \ Skip the next instruction by turning it into
                         \ &2C &B1 &BD, or BIT &BDB1 which does nothing apart
                         \ from affect the flags
