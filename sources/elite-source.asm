@@ -8434,9 +8434,6 @@ ENDIF
  BNE CLYL               \ Loop back to blank another row, until we have done the
                         \ number of rows in X
 
-\INX                    \ These instructions are commented out in the original
-\STX SC                 \ source
-
  LDA #%00001001         \ Clear bits 1 and 2 of the Access Control Register at
  STA VIA+&34            \ SHEILA &34 to switch main memory back into &3000-&7FFF
 
@@ -8495,11 +8492,9 @@ ENDIF
 
  LDA DELTA              \ Fetch our ship's speed into A, in the range 0-40
 
-\LSR A                  \ Draw the speed indicator using a range of 0-31, and
- JSR DIL-1              \ increment SC to point to the next indicator (the roll
-                        \ indicator). The LSR is commented out as it isn't
-                        \ required with a call to DIL-1, so perhaps this was
-                        \ originally a call to DIL that got optimised
+ JSR DIL-1              \ Draw the speed indicator using a range of 0-31, and
+                        \ increment SC to point to the next indicator (the roll
+                        \ indicator)
 
 \ ******************************************************************************
 \
@@ -9028,7 +9023,7 @@ ENDIF
                         \ to the next indicator, i.e. the one below the one we
                         \ just drew
 
-.DL9                    \ This label is not used but is in the original source
+.DL9
 
  RTS                    \ Return from the subroutine
 
@@ -10796,7 +10791,7 @@ ENDIF
  SEC                    \ that it has been killed and should be removed from
  ROR INWK+31            \ the local bubble
 
-.MA61                   \ This label is not used but is in the original source
+.MA61
 
  BNE MA26               \ Jump to MA26 to skip over the collision routines and
                         \ to move on to missile targeting (this BNE is
@@ -13686,10 +13681,6 @@ NEXT
 
 .FLIP
 
-\LDA MJ                 \ These instructions are commented out in the original
-\BNE FLIP-1             \ source. They would have the effect of not swapping the
-                        \ stardust if we had mis-jumped into witchspace
-
  LDA #WHITE             \ Switch to white (i.e. cyan/red)
  STA COL
 
@@ -14001,9 +13992,6 @@ NEXT
  LDA YY                 \ Set (S R) = YY(1 0) = y
  STA R
  LDA YY+1
-\JSR MAD                \ These instructions are commented out in the original
-\STA S                  \ source
-\STX R
  STA S
 
  LDA #0                 \ Set P = 0
@@ -14346,11 +14334,6 @@ NEXT
  STA R
  LDA YY+1
  STA S
-
-\EOR #128               \ These instructions are commented out in the original
-\JSR MAD                \ source
-\STA S
-\STX R
 
  LDA #0                 \ Set P = 0
  STA P
@@ -16229,25 +16212,6 @@ DTW7 = MT16 + 1         \ Point DTW7 to the second byte of the instruction above
 
  INC DTW5               \ Increment the buffer size in DTW5
 
-\LDA #' '               \ This instruction is commented out in the original
-                        \ source, as it has no effect because A already contains
-                        \ ASCII " ". This is because the last character that is
-                        \ tested in the above loop is at position SC, which we
-                        \ know contains a space, so we know A contains a space
-                        \ character when the loop finishes
-
-                        \ We've now shifted the line to the right by 1 from
-                        \ position SC onwards, so SC and SC+1 both contain
-                        \ spaces, and Y is now SC-1 as we did a DEY just before
-                        \ the end of the loop - in other words, we have inserted
-                        \ a space at position SC, and Y points to the character
-                        \ before the newly inserted space
-
-                        \ We now want to move the pointer Y left to find the
-                        \ next space in the line buffer, before looping back to
-                        \ check whether we are done, and if not, insert another
-                        \ space
-
 .DAL3
 
  CMP BUF,Y              \ If the character at position Y is not a space, jump to
@@ -16275,9 +16239,8 @@ DTW7 = MT16 + 1         \ Point DTW7 to the second byte of the instruction above
  JSR CHPR
 
  LDA DTW5               \ Subtract #LL from the end-of-buffer pointer in DTW5
-\CLC                    \
- SBC #LL                \ The CLC instruction is commented out in the original
- STA DTW5               \ source. It isn't needed as CHPR clears the C flag
+ SBC #LL                \
+ STA DTW5               \ The subtraction works as CHPR clears the C flag
 
  TAX                    \ Copy the new value of DTW5 into X
 
@@ -18189,9 +18152,6 @@ LOAD_C% = LOAD% +P% - CODE%
                         \ the station, so check how close we are
 
  LDA K                  \ Fetch the distance to the station into A
-
-\BEQ PH10               \ This instruction is commented out in the original
-                        \ source
 
  CMP #157               \ If A < 157, jump to PH2 to turn away from the station,
  BCC PH2                \ as we are too close
@@ -20809,21 +20769,6 @@ LOAD_C% = LOAD% +P% - CODE%
                         \ the same results as the loop versions, just in case
                         \ something out there relies on MULT1 returning X = 0
 
-\MUL4                   \ These instructions are commented out in the original
-\BCC P%+4               \ source. They contain the original loop version of the
-\ADC T1                 \ code that's used in the disc and cassette versions
-\ROR A
-\ROR P
-\DEX
-\BNE MUL4
-\LSR A
-\ROR P
-\ORA T
-\RTS
-\.mu10
-\STA P
-\RTS
-
                         \ We now repeat the following four instruction block
                         \ seven times, one for each remaining bit in P. In the
                         \ cassette and disc versions of Elite the following is
@@ -21954,8 +21899,7 @@ LOAD_C% = LOAD% +P% - CODE%
 
  STA T                  \ Set A = 128 - A
  LDA #128               \
-\SEC                    \ The SEC instruction is commented out in the original
- SBC T                  \ source, and isn't required as we did a SEC before
+ SBC T                  \ The subtraction will work because we did a SEC before
                         \ calling AR3
 
  RTS                    \ Return from the subroutine
@@ -24785,9 +24729,6 @@ LOAD_D% = LOAD% + P% - CODE%
  CMP #4                 \ screen), jump to TT212 to skip the option to sell
  BNE TT212              \ items
 
-\JSRTT162               \ This instruction is commented out in the original
-                        \ source
-
  LDA #205               \ Print recursive token 45 ("SELL")
  JSR TT27
 
@@ -26223,11 +26164,6 @@ ENDIF
  BPL G1                 \ Loop back for the next seed byte, until we have
                         \ rotated them all
 
-\JSR DORND              \ This instruction is commented out in the original
-                        \ source, and would set A and X to random numbers, so
-                        \ perhaps the original plan was to arrive in each new
-                        \ galaxy in a random place?
-
 .zZ
 
  LDA #&60               \ Set (QQ9, QQ10) to (96, 96), which is where we always
@@ -27165,11 +27101,6 @@ ENDIF
 
  CMP #253               \ If A >= 253 (1% chance) then jump to MJP to trigger a
  BCS MJP                \ mis-jump into witchspace
-
-\JSR TT111              \ This instruction is commented out in the original
-                        \ source. It finds the closest system to coordinates
-                        \ (QQ9, QQ10), but we don't need to do this as the
-                        \ crosshairs will already be on a system by this point
 
  JSR hyp1+3             \ Jump straight to the system at (QQ9, QQ10) without
                         \ first calculating which system is closest
@@ -28138,25 +28069,12 @@ ENDIF
 \
 \ ******************************************************************************
 
-\.ref2                  \ These instructions are commented out in the original
-\LDY #187               \ source, but they would jump to pres in the EQSHP
-\JMP pres               \ routine with Y = 187, which would show the error:
-                        \ "LASER PRESENT" (this code was part of the refund
-                        \ bug in the disc version of Elite, which is why it is
-                        \ commented out)
-
 .refund
 
  STA T1                 \ Store A in T1 so we can retrieve it later
 
  LDA LASER,X            \ If there is no laser in view X (i.e. the laser power
  BEQ ref3               \ is zero), jump to ref3 to skip the refund code
-
-\CMP T1                 \ These instructions are commented out in the original
-\BEQ ref2               \ source, but they would jump to ref2 above if we were
-                        \ trying to replace a laser with one of the same type
-                        \ (this code was part of the refund bug in the disc
-                        \ version of Elite, which is why it is commented out)
 
  LDY #4                 \ If the current laser has power #POW (pulse laser),
  CMP #POW               \ jump to ref1 with Y = 4 (the item number of a pulse
@@ -28497,7 +28415,7 @@ LOAD_E% = LOAD% + P% - CODE%
  LDA #195               \ Print recursive token 35 ("LIGHT YEARS") followed by
  JSR plf                \ a newline
 
-.PCASH                  \ This label is not used but is in the original source
+.PCASH
 
  LDA #119               \ Print recursive token 119 ("CASH:" then control code
  BNE TT27               \ 0, which prints cash levels, then " CR" and newline)
@@ -30493,10 +30411,6 @@ ENDIF
  STX NEWB               \ Set NEWB to %00000000, though this gets overridden by
                         \ the default flags from E% in NWSHP below
 
-\STX INWK+31            \ This instruction is commented out in the original
-                        \ source. It would set the exploding state and missile
-                        \ count to 0
-
  STX FRIN+1             \ Set the sun/space station slot at FRIN+1 to 0, to
                         \ indicate we should show the space station rather than
                         \ the sun
@@ -30723,11 +30637,10 @@ ENDIF
                         \ because INWK is in zero page, so INWK+34 = 0
 
  LDA INWK+33            \ Calculate INWK+33 - INF, again using 16-bit
-\SEC                    \ arithmetic, and put the result in (A Y), so the high
- SBC INF                \ byte is in A and the low byte in Y. The SEC
- TAY                    \ instruction is commented out in the original source;
- LDA INWK+34            \ as the previous subtraction will never underflow, it
- SBC INF+1              \ is superfluous
+ SBC INF                \ arithmetic, and put the result in (A Y), so the high
+ TAY                    \ byte is in A and the low byte in Y. The subtraction
+ LDA INWK+34            \ works because the previous subtraction will never
+ SBC INF+1              \ underflow, so we know the C flag is set
 
  BCC NW3+1              \ If we have an underflow from the subtraction, then
                         \ INF > INWK+33 and we definitely don't have enough
@@ -31089,10 +31002,6 @@ ENDIF
 
  LDA INWK+8             \ Set A = z_sign (the highest byte in the planet/sun's
                         \ coordinates)
-
-\BMI PL2                \ This instruction is commented out in the original
-                        \ source. It would remove the planet from the screen
-                        \ when it's behind us
 
  CMP #48                \ If A >= 48 then the planet/sun is too far away to be
  BCS PL2                \ seen, so jump to PL2 to remove it from the screen,
@@ -33124,10 +33033,6 @@ ENDIF
  LDA K+3                \ Fetch the sign of the result from K+3 (which we know
                         \ has zeroes in bits 0-6, so this just fetches the sign)
 
-\CLC                    \ This instruction is commented out in the original
-                        \ source. It would have no effect as we know the C flag
-                        \ is already clear, as we skipped past the BCS above
-
  BPL PL6                \ If the sign bit is clear and the result is positive,
                         \ then the result is already correct, so return from
                         \ the subroutine with the C flag clear to indicate
@@ -34406,7 +34311,10 @@ ENDIF
 \
 \ ------------------------------------------------------------------------------
 \
-\ Set A and X to random numbers. The C and V flags are also set randomly.
+\ Set A and X to random numbers (though note that X is set to the random number
+\ that was returned in A the last time DORND was called).
+\
+\ The C and V flags are also set randomly.
 \
 \ Other entry points:
 \
@@ -39990,7 +39898,7 @@ LOAD_G% = LOAD% + P% - CODE%
 \
 \ ------------------------------------------------------------------------------
 \
-\ Calculate following dot products:
+\ Calculate the following dot products:
 \
 \   XX12(1 0) = XX15(5 0) . XX16(5 0)
 \   XX12(3 2) = XX15(5 0) . XX16(11 6)
@@ -40264,9 +40172,6 @@ LOAD_G% = LOAD% + P% - CODE%
  LDY #2                 \ vertices used as origins for explosion clouds), and
  STA (XX19),Y           \ store it in byte #2 of the ship line heap
 
-\LDA XX1+32             \ These instructions are commented out in the original
-\AND #&7F               \ source
-
                         \ The following loop sets bytes 3-6 of the of the ship
                         \ line heap to random numbers
 
@@ -40323,10 +40228,6 @@ LOAD_G% = LOAD% + P% - CODE%
  JMP LL155              \ Jump to LL155 to draw the ship, which removes it from
                         \ the screen, returning from the subroutine using a
                         \ tail call
-
-\LL24                   \ This label is commented out in the original source,
-                        \ and was presumably used to label the RTS which is
-                        \ actually called by LL10-1 above, not LL24
 
  RTS                    \ Return from the subroutine
 
@@ -42441,9 +42342,6 @@ LOAD_G% = LOAD% + P% - CODE%
 
 .LL135
 
-\BNE LL139              \ This instruction is commented out in the original
-                        \ source
-
  LDA XX15+2             \ Set (S R) = (y1_hi y1_lo) - 192
  SEC                    \
  SBC #Y*2               \ starting with the low bytes
@@ -42519,8 +42417,6 @@ LOAD_G% = LOAD% + P% - CODE%
 
  LDA XX15               \ Set R = x1_lo
  STA R
-
-\.LL120                 \ This label is commented out in the original source
 
  JSR LL129              \ Call LL129 to do the following:
                         \
@@ -42729,10 +42625,9 @@ LOAD_G% = LOAD% + P% - CODE%
 
  TXA                    \ Otherwise negate (Y X) using two's complement by first
  EOR #%11111111         \ setting the low byte to ~X + 1
-\CLC                    \
- ADC #1                 \ The CLC instruction is commented out in the original
- TAX                    \ source. It would have no effect as we know the C flag
-                        \ is clear from when we passed through the BCS above
+ ADC #1                 \
+ TAX                    \ The addition works as we know the C flag is clear from
+                        \ when we passed through the BCS above
 
  TYA                    \ Then set the high byte to ~Y + C
  EOR #%11111111
