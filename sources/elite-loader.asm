@@ -42,13 +42,13 @@ _COMPACT                = (_RELEASE = 2)
 N% = 67                 \ N% is set to the number of bytes in the VDU table, so
                         \ we can loop through them below
 
-OSWRCH = &FFEE          \ The address for the OSWRCH routine
-OSBYTE = &FFF4          \ The address for the OSBYTE routine
-OSCLI = &FFF7           \ The address for the OSCLI routine
-
 VIA = &FE00             \ Memory-mapped space for accessing internal hardware,
                         \ such as the video ULA, 6845 CRTC and 6522 VIAs (also
                         \ known as SHEILA)
+
+OSWRCH = &FFEE          \ The address for the OSWRCH routine
+OSBYTE = &FFF4          \ The address for the OSBYTE routine
+OSCLI = &FFF7           \ The address for the OSCLI routine
 
 \ ******************************************************************************
 \
