@@ -340,15 +340,17 @@ ENDIF
                         \
                         \ In short, this switches the screen memory, which is in
                         \ shadow RAM, into the memory map at &3000-&7FFF, so now
-                        \ we can poke directly to the screen memory
+                        \ we can poke directly to the screen memory, and it also
+                        \ maps the filing system RAM space into &C000-&DFFF
+                        \ (HAZEL), in place of the MOS VDU workspace
 
  JSR PLL1               \ Call PLL1 to draw Saturn
 
  LDA #%00001001         \ Clear bits 1 and 2 of the the Access Control latch
  STA VIA+&34            \ at SHEILA &34, which changes the following:
                         \
-                        \   * Bit 2 = X = 1: &3000-&7FFF set to main RAM
-                        \   * Bit 1 = E = 1: VDU shadow RAM locations accessible
+                        \   * Bit 2 = X = 0: &3000-&7FFF set to main RAM
+                        \   * Bit 1 = E = 0: VDU shadow RAM locations accessible
                         \
                         \ In short, this switches the screen memory, which is in
                         \ shadow RAM, out of the memory map, so &3000-&7FFF is
@@ -369,7 +371,7 @@ ENDIF
                         \ loads the BDATA file to address &1300-&54FF, appending
                         \ &FFFF to the address to make sure it loads in the main
                         \ BBC Master rather than getting passed across the Tube
-                        \ to the second processor, if one is fitted
+                        \ to the Second Processor, if one is fitted
 
  LDA #6                 \ Set the RAM copy of the currently selected paged ROM
  STA LATCH              \ to 6, so it matches the paged ROM selection latch at
@@ -377,8 +379,8 @@ ENDIF
 
  LDA VIA+&30            \ Set bits 0-3 of the ROM Select latch at SHEILA &30 to
  AND #%11110000         \ 6, to switch sideways RAM bank 6 into into &8000-&BFFF
- ORA #6                 \ in main memory, and the filing system RAM space into
- STA VIA+&30            \ &C000-&DFFF (HAZEL)
+ ORA #6                 \ in main memory
+ STA VIA+&30
 
  LDA #%10101010         \ Set A and location &8000 to %10101010
  STA &8000
@@ -476,7 +478,7 @@ ENDIF
                         \ the BCODE/ELITE file to address &1300-&7F48, appending
                         \ &FFFF to the address to make sure it loads in the main
                         \ BBC Master rather than getting passed across the Tube
-                        \ to the second processor, if one is fitted
+                        \ to the Second Processor, if one is fitted
 
  LDX #LO(MESS3)         \ Set (Y X) to point to MESS3 ("DIR E")
  LDY #HI(MESS3)
@@ -1174,7 +1176,7 @@ ENDIF
 
 .MESS1
 
- EQUS "L.BDATA FFFF1300"
+ EQUS "L.BDATA FFFF1300"    \ This is short for "*LOAD BDATA FFFF1300"
  EQUB 13
 
 \ ******************************************************************************
@@ -1190,12 +1192,12 @@ ENDIF
 
 IF _SNG47
 
- EQUS "L.BCODE FFFF1300"
+ EQUS "L.BCODE FFFF1300"    \ This is short for "*LOAD BDATA FFFF1300"
  EQUB 13
 
 ELIF _COMPACT
 
- EQUS "L.ELITE FFFF1300"
+ EQUS "L.ELITE FFFF1300"    \ This is short for "*LOAD ELITE FFFF1300"
  EQUB 13
 
 ENDIF

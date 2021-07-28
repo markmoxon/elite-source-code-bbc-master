@@ -3540,7 +3540,7 @@ ENDIF
  LDA #%00001001         \ Clear bits 1 and 2 of the Access Control Register at
  STA VIA+&34            \ SHEILA &34 to switch main memory back into &3000-&7FFF
 
- RTS
+ RTS                    \ Return from the subroutine
 
 .VL3
 
@@ -6507,22 +6507,22 @@ ENDIF
 \       Name: DOT
 \       Type: Subroutine
 \   Category: Dashboard
-\    Summary: Draw a dot on the compass
+\    Summary: Draw a dash on the compass
 \
 \ ------------------------------------------------------------------------------
 \
 \ Arguments:
 \
-\   COMX                The screen pixel x-coordinate of the dot
+\   COMX                The screen pixel x-coordinate of the dash
 \
-\   COMY                The screen pixel y-coordinate of the dot
+\   COMY                The screen pixel y-coordinate of the dash
 \
-\   COMC                The colour and thickness of the dot:
+\   COMC                The colour and thickness of the dash:
 \
-\                         * &F0 = a double-height dot in yellow/white, for when
+\                         * &F0 = a double-height dash in yellow/white, for when
 \                           the object in the compass is in front of us
 \
-\                         * &FF = a single-height dot in green/cyan, for when
+\                         * &FF = a single-height dash in green/cyan, for when
 \                           the object in the compass is behind us
 \
 \ ******************************************************************************
@@ -6532,20 +6532,20 @@ ENDIF
  LDA #%00001111         \ Set bits 1 and 2 of the Access Control Register at
  STA VIA+&34            \ SHEILA &34 to switch screen memory into &3000-&7FFF
 
- LDA COMX               \ Set X1 = COMX, the x-coordinate of the dot
+ LDA COMX               \ Set X1 = COMX, the x-coordinate of the dash
  STA X1
 
- LDX COMC               \ Set COL = COMC, the mode 2 colour byte for the dot
+ LDX COMC               \ Set COL = COMC, the mode 2 colour byte for the dash
  STX COL
 
- LDA COMY               \ Set Y1 = COMY, the y-coordinate of the dot
+ LDA COMY               \ Set Y1 = COMY, the y-coordinate of the dash
 
- CPX #YELLOW2           \ If the colour in X is yellow, then the dot is behind
- BNE P%+8               \ us, so skip the following three instructions so we
-                        \ only draw a single-height dot
+ CPX #YELLOW2           \ If the colour in X is yellow, then the planet/station
+ BNE P%+8               \ is behind us, so skip the following three instructions
+                        \ so we only draw a single-height dash
 
  JSR CPIX2              \ Call CPIX2 to draw a single-height dash, i.e. the top
-                        \ row of a double-height dot
+                        \ row of a double-height dash
 
  LDA Y1                 \ Fetch the y-coordinate of the row we just drew and
  DEC A                  \ decrement it, ready to draw the bottom row
@@ -6562,7 +6562,7 @@ ENDIF
 \       Name: CPIX2
 \       Type: Subroutine
 \   Category: Drawing pixels
-\    Summary: Draw a single-height dot on the dashboard
+\    Summary: Draw a single-height dash on the dashboard
 \
 \ ------------------------------------------------------------------------------
 \
@@ -6749,7 +6749,7 @@ ENDIF
 \       Name: SPBLB
 \       Type: Subroutine
 \   Category: Dashboard
-\    Summary: Draw (or erase) the space station indicator ("S") on the dashboard
+\    Summary: Light up the space station indicator ("S") on the dashboard
 \
 \ ------------------------------------------------------------------------------
 \
@@ -9554,7 +9554,7 @@ ENDIF
  SKIP 1                 \ The configuration setting for toggle key "T", which
                         \ isn't actually used but is still updated by pressing
                         \ "T" while the game is paused. This is a configuration
-                        \ option from some non-BBC versions of Elite that lets 
+                        \ option from some non-BBC versions of Elite that lets
                         \ you switch between tape and disc
 
 .BSTK
@@ -9858,8 +9858,8 @@ ENDIF
 
  LDA QQ1                \ Set A = the current system's galactic y-coordinate
 
- CMP #72
- BNE EN4                \ If A <> 72 then jump to EN4
+ CMP #72                \ If A <> 72 then jump to EN4
+ BNE EN4
 
  JMP DEBRIEF2           \ If we get here, mission 1 is complete and no longer in
                         \ progress, mission 2 has started and we have picked up
@@ -9939,8 +9939,9 @@ ENDIF
 \
 \ ******************************************************************************
 
- LDX JSTX               \ Set X to the current rate of roll in JSTX, and
- JSR cntr               \ apply keyboard damping twice (if enabled) so the roll
+ LDX JSTX               \ Set X to the current rate of roll in JSTX
+
+ JSR cntr               \ Apply keyboard damping twice (if enabled) so the roll
  JSR cntr               \ rate in X creeps towards the centre by 2
 
                         \ The roll rate in JSTX increases if we press ">" (and
@@ -9998,8 +9999,9 @@ ENDIF
  ORA ALP2               \ Store A in ALPHA, but with the sign set to ALP2 (so
  STA ALPHA              \ ALPHA has a different sign to the actual roll rate)
 
- LDX JSTY               \ Set X to the current rate of pitch in JSTY, and
- JSR cntr               \ apply keyboard damping so the pitch rate in X creeps
+ LDX JSTY               \ Set X to the current rate of pitch in JSTY
+
+ JSR cntr               \ Apply keyboard damping so the pitch rate in X creeps
                         \ towards the centre by 1
 
  TXA                    \ Set A and Y to the pitch rate but with the sign bit
@@ -14943,8 +14945,9 @@ NEXT
 
  LDA #103               \ Set A to token 103 ("PULSE LASER")
 
- LDX CNT                \ Set Y = the laser power for view X
- LDY LASER,X
+ LDX CNT                \ Retrieve the view number from CNT that we stored above
+
+ LDY LASER,X            \ Set Y = the laser power for view X
 
  CPY #128+POW           \ If the laser power for view X is not #POW+128 (beam
  BNE P%+4               \ laser), skip the next LDA instruction
@@ -16714,10 +16717,6 @@ LOAD_C% = LOAD% +P% - CODE%
 \ Adder on a random position. In all cases, the ships will be randomly spun
 \ around on the ground so they can face in any dirction, and larger ships are
 \ drawn higher up off the ground than smaller ships.
-\
-\ The ships are drawn by the HAS1 routine, which uses the normal ship-drawing
-\ routine in LL9, and then the hanger background is drawn by sending an OSWORD
-\ 248 command to the I/O processor.
 \
 \ ******************************************************************************
 
@@ -19494,7 +19493,7 @@ LOAD_C% = LOAD% +P% - CODE%
  LDX #0                 \ Set X = 0
 
  STX XX4                \ Set XX4 = 0, which we will use as a counter for
-                        \ drawing 8 concentric rings
+                        \ drawing eight concentric rings
 
  STX K3+1               \ Set the high bytes of K3(1 0) and K4(1 0) to 0
  STX K4+1
@@ -22620,7 +22619,7 @@ LOAD_C% = LOAD% +P% - CODE%
  JSR MVEIT              \ Call MVEIT to move and rotate the ship in space
 
  JMP RDKEY              \ Scan the keyboard for a key press and return the
-                        \ ASCII code of the key pressed in X (or 0 for no key 
+                        \ ASCII code of the key pressed in X (or 0 for no key
                         \ press), returning from the subroutine using a tail
                         \ call
 
@@ -22642,7 +22641,7 @@ LOAD_C% = LOAD% +P% - CODE%
 .PAUSE2
 
  JSR RDKEY              \ Scan the keyboard for a key press and return the
-                        \ ASCII code of the key pressed in X (or 0 for no key 
+                        \ ASCII code of the key pressed in X (or 0 for no key
                         \ press)
 
  BNE PAUSE2             \ If a key was already being held down when we entered
@@ -22651,7 +22650,7 @@ LOAD_C% = LOAD% +P% - CODE%
 
  JSR RDKEY              \ Any pre-existing key press is now gone, so we can
                         \ start scanning the keyboard again, returning the
-                        \ ASCII code of the key pressed in X (or 0 for no key 
+                        \ ASCII code of the key pressed in X (or 0 for no key
                         \ press)
 
  BEQ PAUSE2             \ Keep looping up to PAUSE2 until a key is pressed
@@ -24365,7 +24364,7 @@ LOAD_D% = LOAD% + P% - CODE%
  BEQ P%+4               \ the following instruction
 
  BCS Tc                 \ If the C flag is set, then there is no room in the
-                        \ cargo hold, jump up to Tc to print a "Cargo?" error, 
+                        \ cargo hold, jump up to Tc to print a "Cargo?" error,
                         \ beep, clear the number and try again
 
  LDA QQ24               \ There is room in the cargo hold, so now to check
@@ -27419,7 +27418,7 @@ ENDIF
 \                       present, refund the cost of the item, and then beep and
 \                       exit to the docking bay (i.e. show the Status Mode
 \                       screen)
-\                        
+\
 \ ******************************************************************************
 
 .bay
@@ -28004,7 +28003,8 @@ ENDIF
  ADC #80                \ "RIGHT"
  JSR TT27
 
- INC YC                 \ Move the text cursor down a row
+ INC YC                 \ Move the text cursor down a row, and increment the
+                        \ counter in YC at the same time
 
  LDY YC                 \ Update Y with the incremented counter in YC
 
@@ -28259,7 +28259,7 @@ LOAD_E% = LOAD% + P% - CODE%
  AND #%00011111         \ extract bits 0-4 by AND'ing with %11111
 
  BEQ P%+7               \ If all those bits are zero, then skip the following
-                        \ 2 instructions to go to step 3
+                        \ two instructions to go to step 3
 
  ORA #%10000000         \ We now have a number in the range 1-31, which we can
                         \ easily convert into a two-letter token, but first we
@@ -28388,7 +28388,7 @@ LOAD_E% = LOAD% + P% - CODE%
 \       Name: tal
 \       Type: Subroutine
 \   Category: Text
-\    Summary: Print the current galaxy numbe
+\    Summary: Print the current galaxy number
 \
 \ ------------------------------------------------------------------------------
 \
@@ -28602,14 +28602,14 @@ LOAD_E% = LOAD% + P% - CODE%
  DEX                    \ If token = 5, this is control code 5 (fuel, newline,
  BEQ fwl                \ cash, newline), so jump to fwl
 
- DEX                    \ If token > 6, skip the following 3 instructions
+ DEX                    \ If token > 6, skip the following three instructions
  BNE P%+7
 
  LDA #%10000000         \ This token is control code 6 (switch to Sentence
  STA QQ17               \ Case), so set bit 7 of QQ17 to switch to Sentence Case
  RTS                    \ and return from the subroutine as we are done
 
- DEX                    \ If token > 8, skip the following 2 instructions
+ DEX                    \ If token > 8, skip the following two instructions
  DEX
  BNE P%+5
 
@@ -28627,7 +28627,7 @@ LOAD_E% = LOAD% + P% - CODE%
                         \ range (i.e. where the recursive token number is
                         \ correct and doesn't need correcting)
 
- CMP #14                \ If token < 14, skip the following 2 instructions
+ CMP #14                \ If token < 14, skip the following two instructions
  BCC P%+6
 
  CMP #32                \ If token < 32, then this means token is in 14-31, so
@@ -29030,7 +29030,7 @@ LOAD_E% = LOAD% + P% - CODE%
 
  TAX                    \ Copy the token number into X
 
- LDA #LO(QQ18)          \ Set V, V+1 to point to the recursive token table at
+ LDA #LO(QQ18)          \ Set V(1 0) to point to the recursive token table at
  STA V                  \ location QQ18
  LDA #HI(QQ18)
  STA V+1
@@ -29668,7 +29668,7 @@ ENDIF
 
 .SOLARX
 
- LDA TRUMBLE            \ If we have no Trumbles in the hold, skip to SOLAR 
+ LDA TRUMBLE            \ If we have no Trumbles in the hold, skip to SOLAR
  BEQ SOLAR
 
                         \ If we get here then we have Trumbles in the hold, so
@@ -32058,7 +32058,7 @@ ENDIF
                         \
                         \   XX____X1____X2____XX+1      ->      +  +__+  +
                         \
-                        \ They all end up with a line between X1 and Y1, which
+                        \ They all end up with a line between X1 and X2, which
                         \ is what we want. There's probably a mathematical proof
                         \ of why this works somewhere, but the above is probably
                         \ easier to follow.
@@ -34262,7 +34262,7 @@ ENDIF
  LDA #0                 \ Set the delay in DLY to 0, so any new in-flight
  STA DLY                \ messages will be shown instantly
 
- JMP me3                \ Jump back into the main spawning loop at TT100
+ JMP me3                \ Jump back into the main spawning loop at me3
 
 .nomess
 
@@ -34270,7 +34270,7 @@ ENDIF
                         \ and move the text cursor to column 1 on row 21, i.e.
                         \ the start of the top row of the three bottom rows
 
- JMP me3                \ Jump back into the main spawning loop at TT100
+ JMP me3                \ Jump back into the main spawning loop at me3
 
 \ ******************************************************************************
 \
@@ -34843,7 +34843,7 @@ ENDIF
 
  STA INWK+32            \ Store A in the AI flag of this ship
 
- TYA
+ TYA                    \ Set A to the new ship type in Y
 
  EQUB &2C               \ Skip the next instruction by turning it into
                         \ &2C &A9 &1F, or BIT &1FA9, which does nothing apart
@@ -35485,18 +35485,6 @@ ENDIF
 \ pointed to by (&FD &FE), which is where the MOS will put any system errors. It
 \ then waits for a key press and restarts the game.
 \
-\ BRKV is set to this routine in the decryption routine at DEEOR just before the
-\ game is run for the first time, and at the end of the SVE routine after the
-\ disc access menu has been processed. In other words, this is the standard
-\ BRKV handler for the game, and it's swapped out to MEBRK for disc access
-\ operations only.
-\
-\ When it is the BRKV handler, the routine can be triggered using a BRK
-\ instruction. The main differences between this routine and the MEBRK handler
-\ that is used during disc access operations are that this routine restarts the
-\ game rather than returning to the disc access menu, and this handler
-\ decrements the brkd counter.
-\
 \ ******************************************************************************
 
 .BRBR
@@ -35507,8 +35495,10 @@ ENDIF
 
  JSR SWAPZP             \ Call SWAPZP to restore the top part of zero page
 
- STZ CATF
- LDY #&00
+ STZ CATF               \ Set the CATF flag to 0, so the TT26 routine reverts to
+                        \ standard formatting
+
+ LDY #0                 \ Set Y to 0, which we use as a loop counter below
 
  LDA #7                 \ Set A = 7 to generate a beep before we print the error
                         \ message
@@ -36094,8 +36084,9 @@ ENDIF
                         \ to 96, which is the distance at which the rotating
                         \ ship starts out before coming towards us
 
- LDX #127
- STX INWK+29            \ Set roll counter = 127, so don't dampen the roll
+ LDX #127               \ Set roll counter = 127, so don't dampen the roll
+ STX INWK+29
+
  STX INWK+30            \ Set pitch counter = 127, so don't dampen the pitch
 
  INX                    \ Set QQ17 to 128 (so bit 7 is set) to switch to
@@ -36292,7 +36283,7 @@ ENDIF
 
 .JAMESL
 
- LDA DEFAULT%,Y         \ Copy the Y-th byte of DEFAULT% to the Y-th byte of 
+ LDA DEFAULT%,Y         \ Copy the Y-th byte of DEFAULT% to the Y-th byte of
  STA NA%,Y              \ NA%
 
  DEY                    \ Decrement the loop counter
@@ -38491,7 +38482,7 @@ ENDIF
                         \ screen gets drawn
 
  JSR RDKEY              \ Scan the keyboard for a key press and return the
-                        \ ASCII code of the key pressed in X (or 0 for no key 
+                        \ ASCII code of the key pressed in X (or 0 for no key
                         \ press)
 
  CPX #'Q'               \ If "Q" is not being pressed, skip to DK6
@@ -38654,7 +38645,7 @@ ENDIF
  JSR DELAY              \ don't take up too much CPU time while looping round
 
  JSR RDKEY              \ Scan the keyboard for a key press and return the
-                        \ ASCII code of the key pressed in X (or 0 for no key 
+                        \ ASCII code of the key pressed in X (or 0 for no key
                         \ press)
 
  BNE t                  \ If a key was already being held down when we entered
@@ -38665,7 +38656,7 @@ ENDIF
 
  JSR RDKEY              \ Any pre-existing key press is now gone, so we can
                         \ start scanning the keyboard again, returning the
-                        \ ASCII code of the key pressed in X (or 0 for no key 
+                        \ ASCII code of the key pressed in X (or 0 for no key
                         \ press)
 
  BEQ t2                 \ Keep looping up to t2 until a key is pressed
@@ -39043,38 +39034,22 @@ ENDMACRO
 
 .QQ23
 
- ITEM 19,  -2, 't',   6, %00000001   \ 0  = Food
-
- ITEM 20,  -1, 't',  10, %00000011   \ 1  = Textiles
-
- ITEM 65,  -3, 't',   2, %00000111   \ 2  = Radioactives
-
- ITEM 40,  -5, 't', 226, %00011111   \ 3  = Slaves
-
- ITEM 83,  -5, 't', 251, %00001111   \ 4  = Liquor/Wines
-
- ITEM 196,  8, 't',  54, %00000011   \ 5  = Luxuries
-
- ITEM 235, 29, 't',   8, %01111000   \ 6  = Narcotics
-
- ITEM 154, 14, 't',  56, %00000011   \ 7  = Computers
-
- ITEM 117,  6, 't',  40, %00000111   \ 8  = Machinery
-
- ITEM 78,   1, 't',  17, %00011111   \ 9  = Alloys
-
+ ITEM 19,  -2, 't',   6, %00000001   \  0 = Food
+ ITEM 20,  -1, 't',  10, %00000011   \  1 = Textiles
+ ITEM 65,  -3, 't',   2, %00000111   \  2 = Radioactives
+ ITEM 40,  -5, 't', 226, %00011111   \  3 = Slaves
+ ITEM 83,  -5, 't', 251, %00001111   \  4 = Liquor/Wines
+ ITEM 196,  8, 't',  54, %00000011   \  5 = Luxuries
+ ITEM 235, 29, 't',   8, %01111000   \  6 = Narcotics
+ ITEM 154, 14, 't',  56, %00000011   \  7 = Computers
+ ITEM 117,  6, 't',  40, %00000111   \  8 = Machinery
+ ITEM 78,   1, 't',  17, %00011111   \  9 = Alloys
  ITEM 124, 13, 't',  29, %00000111   \ 10 = Firearms
-
  ITEM 176, -9, 't', 220, %00111111   \ 11 = Furs
-
  ITEM 32,  -1, 't',  53, %00000011   \ 12 = Minerals
-
  ITEM 97,  -1, 'k',  66, %00000111   \ 13 = Gold
-
  ITEM 171, -2, 'k',  55, %00011111   \ 14 = Platinum
-
  ITEM 45,  -1, 'g', 250, %00001111   \ 15 = Gem-Stones
-
  ITEM 53,  15, 't', 192, %00000111   \ 16 = Alien items
 
 \ ******************************************************************************
@@ -39585,14 +39560,14 @@ LOAD_G% = LOAD% + P% - CODE%
  BCS nono               \ the bottom of the screen, jump to nono as the ship's
                         \ dot is off the bottom of the space view
 
- JSR Shpt               \ Call Shpt to draws a horizontal 4-pixel dash for the 
+ JSR Shpt               \ Call Shpt to draws a horizontal 4-pixel dash for the
                         \ first row of the dot (i.e. a four-pixel dash)
 
  LDA K4                 \ Set A = y-coordinate of dot + 1 (so this is the second
  CLC                    \ row of the two-pixel-high dot)
  ADC #1
 
- JSR Shpt               \ Call Shpt to draws a horizontal 4-pixel dash for the 
+ JSR Shpt               \ Call Shpt to draws a horizontal 4-pixel dash for the
                         \ first row of the dot (i.e. a four-pixel dash)
 
  LDA #%00001000         \ Set bit 3 of the ship's byte #31 to record that we
