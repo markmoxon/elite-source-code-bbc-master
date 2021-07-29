@@ -22825,7 +22825,7 @@ LOAD_D% = LOAD% + P% - CODE%
 
 .SCALEY
 
- LSR A
+ LSR A                  \ Halve the value in A
 
 \ ******************************************************************************
 \
@@ -22846,7 +22846,7 @@ LOAD_D% = LOAD% + P% - CODE%
 
 .SCALEY2
 
- RTS
+ RTS                    \ Return from the subroutine
 
 \ ******************************************************************************
 \
@@ -22867,7 +22867,7 @@ LOAD_D% = LOAD% + P% - CODE%
 
 .SCALEX
 
- RTS
+ RTS                    \ Return from the subroutine
 
 \ ******************************************************************************
 \
@@ -24958,7 +24958,7 @@ LOAD_D% = LOAD% + P% - CODE%
 
  SEC                    \ Set the C flag to indicate a "yes" response
 
- RTS
+ RTS                    \ Return from the subroutine
 
 \ ******************************************************************************
 \
