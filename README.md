@@ -221,7 +221,7 @@ During compilation, details of every step are output in a file called `compile.t
 
 This repository contains the source code for two different releases of BBC Master Elite:
 
-* The release from the SNG47 Acornsoft release (the first official release of BBC Master Elite)
+* The official SNG47 Acornsoft release, which was the first appearance of BBC Master Elite, and the one included on all subsequent discs
 
 * The release for the Master Compact
 
@@ -249,13 +249,13 @@ You can add `release=sng47` to produce the `elite-master-sng47.ssd` file that co
 
 ### Differences between the releases
 
-You can see the differences between the releases by searching the source code for `_SNG47` (for features in the SNG47 release) or `_COMPACT` (for features in the Master Compact release). There are only a few differences in the Master Compact release (if you ignore [workspace noise](#producing-byte-accurate-binaries)), but quite a few in the Executive version.
-
-The differences in the Master Compact release compared to the SNG47 release are:
+You can see the differences between the releases by searching the source code for `_SNG47` (for features in the SNG47 release) or `_COMPACT` (for features in the Master Compact release). The main differences in the Master Compact release compared to the SNG47 release are:
 
 * Support for the Compact's digital joystick. The analogue stick is still supported, but if this release is run on a Compact, then the digital stick is read instead.
 
 * Support for ADFS and the single disc drive on the Compact. This essentially replaces the "Which Drive?" prompt in the disc access menu with "Which Directory?", and changes the formatting of the disc catalogue to fit it on-screen. There is also additional code to claim and release the NMI workspace when disc access is required, as ADFS uses zero page differently to DFS.
+
+See the [accompanying website](https://www.bbcelite.com/master/releases.html) for a comprehensive list of differences between the releases.
 
 ## Notes on the original source files
 

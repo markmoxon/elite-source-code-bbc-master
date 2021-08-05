@@ -1413,12 +1413,8 @@ ORG &0E41
 
 .LSO
 
- SKIP 200               \ This space has two uses:
-                        \
-                        \   * The ship line heap for the space station (see
-                        \     NWSPS for details)
-                        \
-                        \   * The sun line heap (see SUN for details)
+ SKIP 200               \ The ship line heap for the space station (see NWSPS)
+                        \ and the sun line heap (see SUN)
                         \
                         \ The spaces can be shared as our local bubble of
                         \ universe can support either the sun or a space
@@ -1517,7 +1513,7 @@ ENDIF
  SKIP 8                 \ The current commander name
                         \
                         \ The commander name can be up to 7 characters (the DFS
-                        \ limit for file names), and is terminated by a carriage
+                        \ limit for filenames), and is terminated by a carriage
                         \ return
 
 .TP
@@ -12894,7 +12890,7 @@ ENDIF
 \   Category: Save and load
 \    Summary: The drive and directory number used when saving or loading a
 \             commander file
-\  Deep dive: Commander save files.
+\  Deep dive: Commander save files
 \
 \ ------------------------------------------------------------------------------
 \
@@ -13033,7 +13029,7 @@ ENDIF
  EQUS "JAMESON"         \ The current commander name, which defaults to JAMESON
  EQUB 13                \
                         \ The commander name can be up to 7 characters (the DFS
-                        \ limit for file names), and is terminated by a carriage
+                        \ limit for filenames), and is terminated by a carriage
                         \ return
 
                         \ NA%+8 is the start of the commander data block
@@ -19120,11 +19116,6 @@ LOAD_C% = LOAD% +P% - CODE%
 \ This is called when an enemy ship has run out of both energy and luck, so it's
 \ time to bail.
 \
-\ Other entry points:
-\
-\   SFS1-2              Add a missile to the local bubble that has AI enabled,
-\                       is hostile, but has no E.C.M.
-\
 \ ******************************************************************************
 
 .SESCP
@@ -19173,6 +19164,11 @@ LOAD_C% = LOAD% +P% - CODE%
 \   INWK                The whole INWK workspace is preserved
 \
 \   X                   X is preserved
+\
+\ Other entry points:
+\
+\   SFS1-2              Add a missile to the local bubble that has AI enabled,
+\                       is hostile, but has no E.C.M.
 \
 \ ******************************************************************************
 
@@ -28218,10 +28214,6 @@ LOAD_E% = LOAD% + P% - CODE%
 \ Print control code 3 (the selected system name, i.e. the one in the crosshairs
 \ in the Short-range Chart).
 \
-\ Other entry points:
-\
-\   cmn-1               Contains an RTS
-\
 \ ******************************************************************************
 
 .cpl
@@ -28304,7 +28296,7 @@ LOAD_E% = LOAD% + P% - CODE%
 \
 \ Other entry points:
 \
-\   ypl-1               Contains an RTS
+\   cmn-1               Contains an RTS
 \
 \ ******************************************************************************
 
@@ -28338,6 +28330,10 @@ LOAD_E% = LOAD% + P% - CODE%
 \ ------------------------------------------------------------------------------
 \
 \ Print control code 2 (the current system name).
+\
+\ Other entry points:
+\
+\   ypl-1               Contains an RTS
 \
 \ ******************************************************************************
 
@@ -31682,10 +31678,6 @@ ENDIF
 \   SUNX(1 0)           The x-coordinate of the vertical centre axis of the old
 \                       sun (the one currently on-screen)
 \
-\ Other entry points:
-\
-\   RTS2                Contains an RTS
-\
 \ ******************************************************************************
 
  JMP WPLS               \ Jump to WPLS to remove the old sun from the screen. We
@@ -32162,6 +32154,10 @@ ENDIF
 \
 \ This part erases any remaining traces of the old sun, now that we have drawn
 \ all the way to the top of the new sun.
+\
+\ Other entry points:
+\
+\   RTS2                Contains an RTS
 \
 \ ******************************************************************************
 
@@ -37343,7 +37339,7 @@ ENDIF
 \ ******************************************************************************
 \
 \       Name: DIRI
-\       Type: Subroutine
+\       Type: Variable
 \   Category: Save and load
 \    Summary: The OS command string for changing directory on the Master Compact
 \
@@ -37583,7 +37579,7 @@ ENDIF
  CPY #7                 \ If Y < 7 then there may be more characters in the
  BCC LOADL1             \ name, so loop back to LOADL1 to fetch the next one
 
- .LOADL2
+.LOADL2
 
  LDA #' '               \ We have copied the name into the LDLI command string,
                         \ but the new name might be shorter then the previous
@@ -44715,10 +44711,6 @@ LOAD_H% = LOAD% + P% - CODE%
 \ This routine flips the relevant geometric axes in INWK depending on which
 \ view we are looking through (front, rear, left, right).
 \
-\ Other entry points:
-\
-\   LO2                 Contains an RTS
-\
 \ ******************************************************************************
 
 .PLUT
@@ -46087,10 +46079,6 @@ ENDIF
 \ Arguments:
 \
 \   X                   The type of the ship that was killed
-\ Other entry points:
-\
-\   EXNO-2              Set X = 7 and fall through into EXNO to make the sound
-\                       of a ship exploding
 \
 \ ******************************************************************************
 
@@ -46160,6 +46148,11 @@ ENDIF
 \
 \ Make the two-part explosion sound of us making a laser strike, or of another
 \ ship exploding.
+\
+\ Other entry points:
+\
+\   EXNO-2              Set X = 7 and fall through into EXNO to make the sound
+\                       of a ship exploding
 \
 \ ******************************************************************************
 
