@@ -33,6 +33,8 @@ CPU 1                   \ Switch to 65SC12 assembly, as this code runs on the
 _SNG47                  = (_RELEASE = 1)
 _COMPACT                = (_RELEASE = 2)
 
+GUARD &C000             \ Guard against assembling over MOS memory
+
 \ ******************************************************************************
 \
 \ Configuration variables
