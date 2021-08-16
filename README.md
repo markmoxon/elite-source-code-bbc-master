@@ -31,8 +31,8 @@ See the [introduction](#introduction) for more information.
 
 * [Building different releases of BBC Master Elite](#building-different-releases-of-bbc-master-elite)
 
-  * [Building the Master Compact release](#building-the-master-compact-release)
   * [Building the SNG47 release](#building-the-sng47-release)
+  * [Building the Master Compact release](#building-the-master-compact-release)
   * [Differences between the releases](#differences-between-the-releases)
 
 * [Notes on the original source files](#notes-on-the-original-source-files)
@@ -225,7 +225,11 @@ This repository contains the source code for two different releases of BBC Maste
 
 * The release for the Master Compact
 
-By default the build process builds the SNG47 release, but you can build the other release as follows.
+By default the build process builds the SNG47 release, but you can build a specified release using the `release=` build parameter.
+
+### Building the SNG47 release
+
+You can add `release=sng47` to produce the `elite-master-sng47.ssd` file that contains the SNG47 release, though that's the default value so it isn't necessary.
 
 ### Building the Master Compact release
 
@@ -242,10 +246,6 @@ make encrypt verify release=compact
 ```
 
 This will produce a file called `elite-master-compact.ssd` that contains the Master Compact release.
-
-### Building the SNG47 release
-
-You can add `release=sng47` to produce the `elite-master-sng47.ssd` file that contains the SNG47 release, though that's the default value so it isn't necessary.
 
 ### Differences between the releases
 
