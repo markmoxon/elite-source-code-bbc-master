@@ -43,12 +43,12 @@ _COMPACT                = (_RELEASE = 2)
 IF _SNG47
  EQUS "Release: Official Acornsoft release"
  EQUB 10, 13
- EQUS "Code no: Acornsoft SNG47 v1.0"
+ EQUS "         Acornsoft SNG47 v1.0"
  EQUB 10, 13
 ELIF _COMPACT
  EQUS "Release: Master Compact version"
  EQUB 10, 13
- EQUS "Code no: Superior Software"
+ EQUS "         Superior Software"
  EQUB 10, 13
 ENDIF
  EQUB 10, 13
