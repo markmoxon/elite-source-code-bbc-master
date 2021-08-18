@@ -35,8 +35,9 @@ build:
 	$(BEEBASM) -i sources/elite-loader.asm -v > output/compile.txt
 	$(BEEBASM) -i sources/elite-data.asm -v >> output/compile.txt
 	$(BEEBASM) -i sources/elite-source.asm -v >> output/compile.txt
+	$(BEEBASM) -i sources/elite-readme.asm -v >> output/compile.txt
 	$(PYTHON) sources/elite-checksum.py -u -rel$(rel-master)
-	$(BEEBASM) -i sources/elite-disc.asm $(boot-master) -do elite-master$(suffix-master).ssd
+	$(BEEBASM) -i sources/elite-disc.asm $(boot-master) -do elite-master$(suffix-master).ssd -title "E L I T E"
 
 .PHONY:encrypt
 encrypt:
@@ -47,8 +48,9 @@ encrypt:
 	$(BEEBASM) -i sources/elite-loader.asm -v > output/compile.txt
 	$(BEEBASM) -i sources/elite-data.asm -v >> output/compile.txt
 	$(BEEBASM) -i sources/elite-source.asm -v >> output/compile.txt
+	$(BEEBASM) -i sources/elite-readme.asm -v >> output/compile.txt
 	$(PYTHON) sources/elite-checksum.py -rel$(rel-master)
-	$(BEEBASM) -i sources/elite-disc.asm $(boot-master) -do elite-master$(suffix-master).ssd
+	$(BEEBASM) -i sources/elite-disc.asm $(boot-master) -do elite-master$(suffix-master).ssd -title "E L I T E"
 
 .PHONY:verify
 verify:
