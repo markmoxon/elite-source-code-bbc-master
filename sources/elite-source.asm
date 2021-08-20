@@ -39559,14 +39559,14 @@ LOAD_G% = LOAD% + P% - CODE%
  BCS nono               \ the bottom of the screen, jump to nono as the ship's
                         \ dot is off the bottom of the space view
 
- JSR Shpt               \ Call Shpt to draws a horizontal 4-pixel dash for the
+ JSR Shpt               \ Call Shpt to draw a horizontal 4-pixel dash for the
                         \ first row of the dot (i.e. a four-pixel dash)
 
  LDA K4                 \ Set A = y-coordinate of dot + 1 (so this is the second
  CLC                    \ row of the two-pixel-high dot)
  ADC #1
 
- JSR Shpt               \ Call Shpt to draws a horizontal 4-pixel dash for the
+ JSR Shpt               \ Call Shpt to draw a horizontal 4-pixel dash for the
                         \ first row of the dot (i.e. a four-pixel dash)
 
  LDA #%00001000         \ Set bit 3 of the ship's byte #31 to record that we
