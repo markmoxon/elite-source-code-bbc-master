@@ -49,7 +49,7 @@ data_block = bytearray()
 
 # Load assembled code file
 
-elite_file = open("output/BCODE.unprot.bin", "rb")
+elite_file = open("3-assembled-output/BCODE.unprot.bin", "rb")
 data_block.extend(elite_file.read())
 elite_file.close()
 
@@ -83,11 +83,11 @@ data_block[scramble_to - load_address] = (data_block[scramble_to - load_address]
 
 # Write output file for BCODE
 
-output_file = open("output/BCODE.bin", "wb")
+output_file = open("3-assembled-output/BCODE.bin", "wb")
 output_file.write(data_block)
 output_file.close()
 
-print("output/BCODE.bin file saved")
+print("3-assembled-output/BCODE.bin file saved")
 
 # Configuration variables for BDATA
 
@@ -100,7 +100,7 @@ data_block = bytearray()
 
 # Load assembled code file
 
-elite_file = open("output/BDATA.unprot.bin", "rb")
+elite_file = open("3-assembled-output/BDATA.unprot.bin", "rb")
 data_block.extend(elite_file.read())
 elite_file.close()
 
@@ -111,8 +111,8 @@ data_block[scramble_to - load_address] = (data_block[scramble_to - load_address]
 
 # Write output file for BDATA
 
-output_file = open("output/BDATA.bin", "wb")
+output_file = open("3-assembled-output/BDATA.bin", "wb")
 output_file.write(data_block)
 output_file.close()
 
-print("output/BDATA.bin file saved")
+print("3-assembled-output/BDATA.bin file saved")

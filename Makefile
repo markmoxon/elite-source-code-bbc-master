@@ -28,30 +28,30 @@ endif
 
 .PHONY:build
 build:
-	echo _VERSION=4 > sources/elite-header.h.asm
-	echo _RELEASE=$(rel-master) >> sources/elite-header.h.asm
-	echo _REMOVE_CHECKSUMS=TRUE >> sources/elite-header.h.asm
-	echo _MATCH_EXTRACTED_BINARIES=FALSE >> sources/elite-header.h.asm
-	$(BEEBASM) -i sources/elite-loader.asm -v > output/compile.txt
-	$(BEEBASM) -i sources/elite-data.asm -v >> output/compile.txt
-	$(BEEBASM) -i sources/elite-source.asm -v >> output/compile.txt
-	$(BEEBASM) -i sources/elite-readme.asm -v >> output/compile.txt
-	$(PYTHON) sources/elite-checksum.py -u -rel$(rel-master)
-	$(BEEBASM) -i sources/elite-disc.asm $(boot-master) -do elite-master$(suffix-master).ssd -title "E L I T E"
+	echo _VERSION=4 > 1-source-files/main-sources/elite-header.h.asm
+	echo _RELEASE=$(rel-master) >> 1-source-files/main-sources/elite-header.h.asm
+	echo _REMOVE_CHECKSUMS=TRUE >> 1-source-files/main-sources/elite-header.h.asm
+	echo _MATCH_EXTRACTED_BINARIES=FALSE >> 1-source-files/main-sources/elite-header.h.asm
+	$(BEEBASM) -i 1-source-files/main-sources/elite-loader.asm -v > 3-assembled-output/compile.txt
+	$(BEEBASM) -i 1-source-files/main-sources/elite-data.asm -v >> 3-assembled-output/compile.txt
+	$(BEEBASM) -i 1-source-files/main-sources/elite-source.asm -v >> 3-assembled-output/compile.txt
+	$(BEEBASM) -i 1-source-files/main-sources/elite-readme.asm -v >> 3-assembled-output/compile.txt
+	$(PYTHON) 2-build-files/elite-checksum.py -u -rel$(rel-master)
+	$(BEEBASM) -i 1-source-files/main-sources/elite-disc.asm $(boot-master) -do 5-compiled-game-discs/elite-master$(suffix-master).ssd -title "E L I T E"
 
 .PHONY:encrypt
 encrypt:
-	echo _VERSION=4 > sources/elite-header.h.asm
-	echo _RELEASE=$(rel-master) >> sources/elite-header.h.asm
-	echo _REMOVE_CHECKSUMS=FALSE >> sources/elite-header.h.asm
-	echo _MATCH_EXTRACTED_BINARIES=TRUE >> sources/elite-header.h.asm
-	$(BEEBASM) -i sources/elite-loader.asm -v > output/compile.txt
-	$(BEEBASM) -i sources/elite-data.asm -v >> output/compile.txt
-	$(BEEBASM) -i sources/elite-source.asm -v >> output/compile.txt
-	$(BEEBASM) -i sources/elite-readme.asm -v >> output/compile.txt
-	$(PYTHON) sources/elite-checksum.py -rel$(rel-master)
-	$(BEEBASM) -i sources/elite-disc.asm $(boot-master) -do elite-master$(suffix-master).ssd -title "E L I T E"
+	echo _VERSION=4 > 1-source-files/main-sources/elite-header.h.asm
+	echo _RELEASE=$(rel-master) >> 1-source-files/main-sources/elite-header.h.asm
+	echo _REMOVE_CHECKSUMS=FALSE >> 1-source-files/main-sources/elite-header.h.asm
+	echo _MATCH_EXTRACTED_BINARIES=TRUE >> 1-source-files/main-sources/elite-header.h.asm
+	$(BEEBASM) -i 1-source-files/main-sources/elite-loader.asm -v > 3-assembled-output/compile.txt
+	$(BEEBASM) -i 1-source-files/main-sources/elite-data.asm -v >> 3-assembled-output/compile.txt
+	$(BEEBASM) -i 1-source-files/main-sources/elite-source.asm -v >> 3-assembled-output/compile.txt
+	$(BEEBASM) -i 1-source-files/main-sources/elite-readme.asm -v >> 3-assembled-output/compile.txt
+	$(PYTHON) 2-build-files/elite-checksum.py -rel$(rel-master)
+	$(BEEBASM) -i 1-source-files/main-sources/elite-disc.asm $(boot-master) -do 5-compiled-game-discs/elite-master$(suffix-master).ssd -title "E L I T E"
 
 .PHONY:verify
 verify:
-	@$(PYTHON) sources/crc32.py extracted$(folder-master) output
+	@$(PYTHON) 2-build-files/crc32.py 4-reference-binaries$(folder-master) 3-assembled-output

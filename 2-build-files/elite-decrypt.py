@@ -15,10 +15,10 @@
 # existing unprot.bin files, so they can be compared if required
 #
 # Run this script by changing directory to the repository's root folder and
-# running the script with "python sources/elite-decrypt.py"
+# running the script with "python 2-build-files/elite-decrypt.py"
 #
 # You can decrypt specific releases by adding the following arguments, as in
-# "python sources/elite-decrypt.py -rel2" for example:
+# "python 2-build-files/elite-decrypt.py -rel2" for example:
 #
 #   -rel1   Decrypt the SNG47 release
 #   -rel2   Decrypt the Master Compact release
@@ -62,12 +62,12 @@ data_block = bytearray()
 
 # Load assembled code file
 
-elite_file = open("extracted/" + folder + "/BCODE.bin", "rb")
+elite_file = open("4-reference-binaries/" + folder + "/BCODE.bin", "rb")
 data_block.extend(elite_file.read())
 elite_file.close()
 
 print()
-print("[ Read    ] extracted/" + folder + "/BCODE.bin")
+print("[ Read    ] 4-reference-binaries/" + folder + "/BCODE.bin")
 
 # Do decryption
 
@@ -76,15 +76,15 @@ for n in range(scramble_to, scramble_from - 1, -1):
     data_block[n - load_address] = new
     seed = new
 
-print("[ Decrypt ] extracted/" + folder + "/BCODE.bin")
+print("[ Decrypt ] 4-reference-binaries/" + folder + "/BCODE.bin")
 
 # Write output file for BCODE.decrypt
 
-output_file = open("extracted/" + folder + "/BCODE.decrypt.bin", "wb")
+output_file = open("4-reference-binaries/" + folder + "/BCODE.decrypt.bin", "wb")
 output_file.write(data_block)
 output_file.close()
 
-print("[ Save    ] extracted/" + folder + "/BCODE.decrypt.bin")
+print("[ Save    ] 4-reference-binaries/" + folder + "/BCODE.decrypt.bin")
 
 # Configuration variables for BDATA
 
@@ -97,12 +97,12 @@ data_block = bytearray()
 
 # Load assembled code file
 
-elite_file = open("extracted/" + folder + "/BDATA.bin", "rb")
+elite_file = open("4-reference-binaries/" + folder + "/BDATA.bin", "rb")
 data_block.extend(elite_file.read())
 elite_file.close()
 
 print()
-print("[ Read    ] extracted/" + folder + "/BDATA.bin")
+print("[ Read    ] 4-reference-binaries/" + folder + "/BDATA.bin")
 
 # Do decryption
 
@@ -111,13 +111,13 @@ for n in range(scramble_to, scramble_from - 1, -1):
     data_block[n - load_address] = new
     seed = new
 
-print("[ Decrypt ] extracted/" + folder + "/BDATA.bin")
+print("[ Decrypt ] 4-reference-binaries/" + folder + "/BDATA.bin")
 
 # Write output file for BDATA.decrypt
 
-output_file = open("extracted/" + folder + "/BDATA.decrypt.bin", "wb")
+output_file = open("4-reference-binaries/" + folder + "/BDATA.decrypt.bin", "wb")
 output_file.write(data_block)
 output_file.close()
 
-print("[ Save    ] extracted/" + folder + "/BDATA.decrypt.bin")
+print("[ Save    ] 4-reference-binaries/" + folder + "/BDATA.decrypt.bin")
 print()

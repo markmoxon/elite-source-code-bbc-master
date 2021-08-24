@@ -21,11 +21,11 @@
 \
 \ This source file produces the following binary file:
 \
-\   * output/BCODE.bin
+\   * BCODE.bin
 \
 \ ******************************************************************************
 
-INCLUDE "sources/elite-header.h.asm"
+INCLUDE "1-source-files/main-sources/elite-header.h.asm"
 
 CPU 1                   \ Switch to 65SC12 assembly, as this code runs on a
                         \ BBC Master
@@ -9236,9 +9236,9 @@ ENDIF
 IF _MATCH_EXTRACTED_BINARIES
 
  IF _SNG47
-  INCBIN "extracted/sng47/workspaces/ELTA-align1.bin"
+  INCBIN "4-reference-binaries/sng47/workspaces/ELTA-align1.bin"
  ELIF _COMPACT
-  INCBIN "extracted/compact/workspaces/ELTA-align1.bin"
+  INCBIN "4-reference-binaries/compact/workspaces/ELTA-align1.bin"
  ENDIF
 
 ELSE
@@ -9279,7 +9279,7 @@ ENDIF
 
 FONT% = P% DIV 256
 
-INCBIN "binaries/P.FONT.bin"
+INCBIN "1-source-files/fonts/P.FONT.bin"
 
 \ ******************************************************************************
 \
@@ -9309,9 +9309,9 @@ INCBIN "binaries/P.FONT.bin"
 IF _MATCH_EXTRACTED_BINARIES
 
  IF _SNG47
-  INCBIN "extracted/sng47/workspaces/ELTA-log.bin"
+  INCBIN "4-reference-binaries/sng47/workspaces/ELTA-log.bin"
  ELIF _COMPACT
-  INCBIN "extracted/compact/workspaces/ELTA-log.bin"
+  INCBIN "4-reference-binaries/compact/workspaces/ELTA-log.bin"
  ENDIF
 
 ELSE
@@ -9345,9 +9345,9 @@ ENDIF
 IF _MATCH_EXTRACTED_BINARIES
 
  IF _SNG47
-  INCBIN "extracted/sng47/workspaces/ELTA-logL.bin"
+  INCBIN "4-reference-binaries/sng47/workspaces/ELTA-logL.bin"
  ELIF _COMPACT
-  INCBIN "extracted/compact/workspaces/ELTA-logL.bin"
+  INCBIN "4-reference-binaries/compact/workspaces/ELTA-logL.bin"
  ENDIF
 
 ELSE
@@ -9385,9 +9385,9 @@ ENDIF
 IF _MATCH_EXTRACTED_BINARIES
 
  IF _SNG47
-  INCBIN "extracted/sng47/workspaces/ELTA-antilog.bin"
+  INCBIN "4-reference-binaries/sng47/workspaces/ELTA-antilog.bin"
  ELIF _COMPACT
-  INCBIN "extracted/compact/workspaces/ELTA-antilog.bin"
+  INCBIN "4-reference-binaries/compact/workspaces/ELTA-antilog.bin"
  ENDIF
 
 ELSE
@@ -9406,9 +9406,9 @@ ENDIF
 IF _MATCH_EXTRACTED_BINARIES
 
  IF _SNG47
-  INCBIN "extracted/sng47/workspaces/ELTA-align2.bin"
+  INCBIN "4-reference-binaries/sng47/workspaces/ELTA-align2.bin"
  ELIF _COMPACT
-  INCBIN "extracted/compact/workspaces/ELTA-align2.bin"
+  INCBIN "4-reference-binaries/compact/workspaces/ELTA-align2.bin"
  ENDIF
 
 ELSE
@@ -13262,7 +13262,7 @@ ENDIF
 
 \ ******************************************************************************
 \
-\ Save output/ELTA.bin
+\ Save ELTA.bin
 \
 \ ******************************************************************************
 
@@ -13274,7 +13274,7 @@ PRINT "Execute at ", ~LOAD%
 PRINT "Reload at ", ~LOAD_A%
 
 PRINT "S.ELTA ", ~S1%, " ", ~P%, " ", ~LOAD%, " ", ~LOAD_A%
-\SAVE "output/ELTA.bin", S1%, P%, LOAD%
+\SAVE "3-assembled-output/ELTA.bin", S1%, P%, LOAD%
 
 \ ******************************************************************************
 \
@@ -16592,7 +16592,7 @@ DTW7 = MT16 + 1         \ Point DTW7 to the second byte of the instruction above
 
 \ ******************************************************************************
 \
-\ Save output/ELTB.bin
+\ Save ELTB.bin
 \
 \ ******************************************************************************
 
@@ -16604,7 +16604,7 @@ PRINT "Execute at ", ~LOAD%
 PRINT "Reload at ", ~LOAD_B%
 
 PRINT "S.ELTB ", ~CODE_B%, " ", ~P%, " ", ~LOAD%, " ", ~LOAD_B%
-\SAVE "output/ELTB.bin", CODE_B%, P%, LOAD%
+\SAVE "3-assembled-output/ELTB.bin", CODE_B%, P%, LOAD%
 
 \ ******************************************************************************
 \
@@ -22667,7 +22667,7 @@ LOAD_C% = LOAD% +P% - CODE%
 
 \ ******************************************************************************
 \
-\ Save output/ELTC.bin
+\ Save ELTC.bin
 \
 \ ******************************************************************************
 
@@ -22679,7 +22679,7 @@ PRINT "Execute at ", ~LOAD%
 PRINT "Reload at ", ~LOAD_C%
 
 PRINT "S.ELTC ", ~CODE_C%, " ", ~P%, " ", ~LOAD%, " ", ~LOAD_C%
-\SAVE "output/ELTC.bin", CODE_C%, P%, LOAD%
+\SAVE "3-assembled-output/ELTC.bin", CODE_C%, P%, LOAD%
 
 \ ******************************************************************************
 \
@@ -28189,7 +28189,7 @@ ENDIF
 
 \ ******************************************************************************
 \
-\ Save output/ELTD.bin
+\ Save ELTD.bin
 \
 \ ******************************************************************************
 
@@ -28201,7 +28201,7 @@ PRINT "Execute at ", ~LOAD%
 PRINT "Reload at ", ~LOAD_D%
 
 PRINT "S.ELTD ", ~CODE_D%, " ", ~P%, " ", ~LOAD%, " ", ~LOAD_D%
-\SAVE "output/ELTD.bin", CODE_D%, P%, LOAD%
+\SAVE "3-assembled-output/ELTD.bin", CODE_D%, P%, LOAD%
 
 \ ******************************************************************************
 \
@@ -33336,7 +33336,7 @@ ENDIF
 
 \ ******************************************************************************
 \
-\ Save output/ELTE.bin
+\ Save ELTE.bin
 \
 \ ******************************************************************************
 
@@ -33348,7 +33348,7 @@ PRINT "Execute at ", ~LOAD%
 PRINT "Reload at ", ~LOAD_E%
 
 PRINT "S.ELTE ", ~CODE_E%, " ", ~P%, " ", ~LOAD%, " ", ~LOAD_E%
-\SAVE "output/ELTE.bin", CODE_E%, P%, LOAD%
+\SAVE "3-assembled-output/ELTE.bin", CODE_E%, P%, LOAD%
 
 \ ******************************************************************************
 \
@@ -39510,7 +39510,7 @@ ENDMACRO
 
 \ ******************************************************************************
 \
-\ Save output/ELTF.bin
+\ Save ELTF.bin
 \
 \ ******************************************************************************
 
@@ -39522,7 +39522,7 @@ PRINT "Execute at ", ~LOAD%
 PRINT "Reload at ", ~LOAD_F%
 
 PRINT "S.ELTF ", ~CODE_F%, " ", ~P%, " ", ~LOAD%, " ", ~LOAD_F%
-\SAVE "output/ELTF.bin", CODE_F%, P%, LOAD%
+\SAVE "3-assembled-output/ELTF.bin", CODE_F%, P%, LOAD%
 
 \ ******************************************************************************
 \
@@ -43382,7 +43382,7 @@ LOAD_G% = LOAD% + P% - CODE%
 
 \ ******************************************************************************
 \
-\ Save output/ELTG.bin
+\ Save ELTG.bin
 \
 \ ******************************************************************************
 
@@ -43394,7 +43394,7 @@ PRINT "Execute at ", ~LOAD%
 PRINT "Reload at ", ~LOAD_G%
 
 PRINT "S.ELTG ", ~CODE_G%, " ", ~P%, " ", ~LOAD%, " ", ~LOAD_G%
-\SAVE "output/ELTG.bin", CODE_G%, P%, LOAD%
+\SAVE "3-assembled-output/ELTG.bin", CODE_G%, P%, LOAD%
 
 \ ******************************************************************************
 \
@@ -46227,7 +46227,7 @@ ENDIF
 
 \ ******************************************************************************
 \
-\ Save output/ELTH.bin
+\ Save ELTH.bin
 \
 \ ******************************************************************************
 
@@ -46239,13 +46239,13 @@ PRINT "Execute at ", ~LOAD%
 PRINT "Reload at ", ~LOAD_H%
 
 PRINT "S.ELTH ", ~CODE_H%, " ", ~P%, " ", ~LOAD%, " ", ~LOAD_H%
-\SAVE "output/ELTH.bin", CODE_G%, P%, LOAD%
+\SAVE "3-assembled-output/ELTH.bin", CODE_G%, P%, LOAD%
 
 \ ******************************************************************************
 \
-\ Save output/BCODE.unprot.bin
+\ Save BCODE.unprot.bin
 \
 \ ******************************************************************************
 
 PRINT "S.BCODE ", ~CODE%, " ", ~P%, " ", ~LOAD%, " ", ~LOAD%
-SAVE "output/BCODE.unprot.bin", CODE%, P%, LOAD%
+SAVE "3-assembled-output/BCODE.unprot.bin", CODE%, P%, LOAD%

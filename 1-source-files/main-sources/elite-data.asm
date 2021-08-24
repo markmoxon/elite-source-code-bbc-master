@@ -21,11 +21,11 @@
 \
 \ This source file produces the following binary file:
 \
-\   * output/BDATA.bin
+\   * BDATA.bin
 \
 \ ******************************************************************************
 
-INCLUDE "sources/elite-header.h.asm"
+INCLUDE "1-source-files/main-sources/elite-header.h.asm"
 
 CPU 1                   \ Switch to 65SC12 assembly, as this code runs on a
                         \ BBC Master
@@ -75,7 +75,7 @@ ORG CODE%
 
 .DIALS
 
-INCBIN "binaries/P.DIALS2P.bin"
+INCBIN "1-source-files/images/P.DIALS2P.bin"
 
  SKIP 256               \ These bytes appear to be unused, but they get moved to
                         \ &7E00-&7EFF along with the dashboard
@@ -3221,9 +3221,9 @@ ENDMACRO
 IF _MATCH_EXTRACTED_BINARIES
 
 IF _SNG47
- INCBIN "extracted/sng47/workspaces/DATA-align.bin"
+ INCBIN "4-reference-binaries/sng47/workspaces/DATA-align.bin"
 ELIF _COMPACT
- INCBIN "extracted/compact/workspaces/DATA-align.bin"
+ INCBIN "4-reference-binaries/compact/workspaces/DATA-align.bin"
 ENDIF
 
 ELSE
@@ -8928,9 +8928,9 @@ ENDIF
 
 \ ******************************************************************************
 \
-\ Save output/BDATA.unprot.bin
+\ Save BDATA.unprot.bin
 \
 \ ******************************************************************************
 
 PRINT "S.BDATA ", ~CODE%, " ", ~P%, " ", ~LOAD%, " ", ~LOAD%
-SAVE "output/BDATA.unprot.bin", CODE%, P%, LOAD%
+SAVE "3-assembled-output/BDATA.unprot.bin", CODE%, P%, LOAD%

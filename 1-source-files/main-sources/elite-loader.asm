@@ -21,11 +21,11 @@
 \
 \ This source file produces the following binary file:
 \
-\   * output/M128Elt.bin
+\   * M128Elt.bin
 \
 \ ******************************************************************************
 
-INCLUDE "sources/elite-header.h.asm"
+INCLUDE "1-source-files/main-sources/elite-header.h.asm"
 
 CPU 1                   \ Switch to 65SC12 assembly, as this code runs on the
                         \ BBC Master
@@ -1220,10 +1220,10 @@ ENDIF
 
 \ ******************************************************************************
 \
-\ Save output/M128Elt.bin
+\ Save M128Elt.bin
 \
 \ ******************************************************************************
 
 PRINT "S.M128Elt ", ~CODE%, " ", ~P%, " ", ~LOAD%, " ", ~LOAD%
-SAVE "output/M128Elt.bin", CODE%, P%, LOAD%
+SAVE "3-assembled-output/M128Elt.bin", CODE%, P%, LOAD%
 
