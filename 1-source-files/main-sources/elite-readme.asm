@@ -40,17 +40,23 @@ _COMPACT                = (_RELEASE = 2)
  EQUB 10, 13
  EQUS "Version: BBC Master"
  EQUB 10, 13
+
 IF _SNG47
+
  EQUS "Release: Official Acornsoft release"
  EQUB 10, 13
  EQUS "         Acornsoft SNG47 v1.0"
  EQUB 10, 13
+
 ELIF _COMPACT
+
  EQUS "Release: Master Compact version"
  EQUB 10, 13
  EQUS "         Superior Software"
  EQUB 10, 13
+
 ENDIF
+
  EQUB 10, 13
  EQUS "See www.bbcelite.com for details"
  EQUB 10, 13

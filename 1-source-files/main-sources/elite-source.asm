@@ -3108,7 +3108,9 @@ ENDIF
 .ylookup
 
 FOR I%, 0, 255
-  EQUB &40 + ((I% DIV 8) * 2)
+
+ EQUB &40 + ((I% DIV 8) * 2)
+
 NEXT
 
 \ ******************************************************************************
@@ -9243,11 +9245,11 @@ IF _MATCH_EXTRACTED_BINARIES
 
 ELSE
 
-IF _SNG47
- SKIP 77                 \ These bytes appear to be unused
-ELIF _COMPACT
- SKIP 3                  \ These bytes appear to be unused
-ENDIF
+ IF _SNG47
+  SKIP 77               \ These bytes appear to be unused
+ ELIF _COMPACT
+  SKIP 3                \ These bytes appear to be unused
+ ENDIF
 
 ENDIF
 
@@ -9316,11 +9318,14 @@ IF _MATCH_EXTRACTED_BINARIES
 
 ELSE
 
- SKIP 1
+  SKIP 1
 
  FOR I%, 1, 255
-   B% = INT(&2000 * LOG(I%) / LOG(2) + 0.5)
-   EQUB B% DIV 256
+
+  B% = INT(&2000 * LOG(I%) / LOG(2) + 0.5)
+
+  EQUB B% DIV 256
+
  NEXT
 
 ENDIF
@@ -9352,11 +9357,14 @@ IF _MATCH_EXTRACTED_BINARIES
 
 ELSE
 
- SKIP 1
+  SKIP 1
 
  FOR I%, 1, 255
-   B% = INT(&2000 * LOG(I%) / LOG(2) + 0.5)
-   EQUB B% MOD 256
+
+  B% = INT(&2000 * LOG(I%) / LOG(2) + 0.5)
+
+  EQUB B% MOD 256
+
  NEXT
 
 ENDIF
@@ -9393,12 +9401,15 @@ IF _MATCH_EXTRACTED_BINARIES
 ELSE
 
  FOR I%, 0, 255
-   B% = INT(2^((I% / 2 + 128) / 16) + 0.5) DIV 256
-   IF B% = 256
-     EQUB B%+1
-   ELSE
-     EQUB B%
-   ENDIF
+
+  B% = INT(2^((I% / 2 + 128) / 16) + 0.5) DIV 256
+
+  IF B% = 256
+   EQUB B%+1
+  ELSE
+   EQUB B%
+  ENDIF
+
  NEXT
 
 ENDIF
@@ -9413,7 +9424,7 @@ IF _MATCH_EXTRACTED_BINARIES
 
 ELSE
 
- SKIP 576               \ These bytes appear to be unused
+  SKIP 576              \ These bytes appear to be unused
 
 ENDIF
 
@@ -13304,7 +13315,9 @@ LOAD_B% = LOAD% + P% - CODE%
 .UNIV
 
 FOR I%, 0, NOSH
-  EQUW K% + I% * NI%    \ Address of block no. I%, of size NI%, in workspace K%
+
+ EQUW K% + I% * NI%     \ Address of block no. I%, of size NI%, in workspace K%
+
 NEXT
 
 \ ******************************************************************************
