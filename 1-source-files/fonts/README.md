@@ -2,7 +2,7 @@
 
 This folder contains the font binaries from the original game disc for the BBC Master version of Elite on Ian Bell's personal website.
 
-* P.FONT.bin is the standard BBC Micro font, extracted from the MOS ROM
+* [P.FONT.bin](P.FONT.bin) is the standard BBC Micro font, extracted from the MOS ROM
 
 ---
 
