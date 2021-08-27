@@ -206,7 +206,6 @@ VIA = &FE00             \ Memory-mapped space for accessing internal hardware,
                         \ known as SHEILA)
 
 OSBYTE = &FFF4          \ The address for the OSBYTE routine
-
 OSCLI = &FFF7           \ The address for the OSCLI routine
 
 \ ******************************************************************************
@@ -13722,8 +13721,8 @@ NEXT
 
 .FLIP
 
- LDA #WHITE             \ Switch to white (i.e. cyan/red)
- STA COL
+ LDA #DUST              \ Switch to stripe 3-2-3-2, which is cyan/red in the
+ STA COL                \ space view
 
  LDY NOSTM              \ Set Y to the current number of stardust particles, so
                         \ we can use it as a counter through all the stardust
@@ -13769,8 +13768,8 @@ NEXT
 
 .STARS
 
- LDA #WHITE             \ Switch to white (i.e. cyan/red)
- STA COL
+ LDA #DUST              \ Switch to stripe 3-2-3-2, which is cyan/red in the
+ STA COL                \ space view
 
  LDX VIEW               \ Load the current view into X:
                         \
@@ -29815,8 +29814,8 @@ ENDIF
 
 .nWq
 
- LDA #WHITE             \ Switch to white (i.e. cyan/red)
- STA COL
+ LDA #DUST              \ Switch to stripe 3-2-3-2, which is cyan/red in the
+ STA COL                \ space view
 
  LDY NOSTM              \ Set Y to the current number of stardust particles, so
                         \ we can use it as a counter through all the stardust
