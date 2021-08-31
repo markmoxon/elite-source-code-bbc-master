@@ -217,6 +217,7 @@ The Python script `crc32.py` in the `2-build-files` folder does the actual verif
 The binaries in the `4-reference-binaries` folder are those extracted from the released version of the game, while those in the `3-assembled-output` folder are produced by the build process. For example, if you don't make any changes to the code and build the project with `make encrypt verify`, then this is the output of the verification process:
 
 ```
+Results for release: sng47
 [--originals--]  [---output----]
 Checksum   Size  Checksum   Size  Match  Filename
 -----------------------------------------------------------
@@ -247,6 +248,8 @@ By default the build process builds the SNG47 release, but you can build a speci
 
 You can add `release=sng47` to produce the `elite-master-sng47.ssd` file that contains the SNG47 release, though that's the default value so it isn't necessary.
 
+The verification checksums for this version are shown above.
+
 ### Building the Master Compact release
 
 You can build the Master Compact release by appending `release=compact` to the `make` command, like this on Windows:
@@ -262,6 +265,20 @@ make encrypt verify release=compact
 ```
 
 This will produce a file called `elite-master-compact.ssd` in the `5-compiled-game-discs` folder that contains the Master Compact release.
+
+The verification checksums for this version are as follows:
+
+```
+Results for release: compact
+[--originals--]  [---output----]
+Checksum   Size  Checksum   Size  Match  Filename
+-----------------------------------------------------------
+d5cbbba9  27904  d5cbbba9  27904   Yes   BCODE.bin
+bd689545  27904  bd689545  27904   Yes   BCODE.unprot.bin
+8c9d6d1f  16896  8c9d6d1f  16896   Yes   BDATA.bin
+5993627f  16896  5993627f  16896   Yes   BDATA.unprot.bin
+107b98cc    740  107b98cc    740   Yes   M128Elt.bin
+```
 
 ### Differences between the releases
 
