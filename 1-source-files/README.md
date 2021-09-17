@@ -1,4 +1,4 @@
-# Source file for the BBC Master version of Elite
+# Source files for the BBC Master version of Elite
 
 This folder contains the source files for the BBC Master version of Elite.
 
