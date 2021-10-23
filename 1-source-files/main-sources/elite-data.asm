@@ -3318,7 +3318,7 @@ ENDMACRO
 \
 \ ******************************************************************************
 
-IF _MATCH_EXTRACTED_BINARIES
+IF _MATCH_ORIGINAL_BINARIES
 
  IF _SNG47
   INCBIN "4-reference-binaries/sng47/workspaces/DATA-align.bin"
@@ -9001,7 +9001,7 @@ ENDIF
  ECHR '!'
  EQUB VE
 
-IF _MATCH_EXTRACTED_BINARIES
+IF _MATCH_ORIGINAL_BINARIES
 
  IF _SNG47
 

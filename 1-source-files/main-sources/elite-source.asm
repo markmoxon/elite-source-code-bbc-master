@@ -9233,7 +9233,7 @@ ENDIF
  RTS
 }
 
-IF _MATCH_EXTRACTED_BINARIES
+IF _MATCH_ORIGINAL_BINARIES
 
  IF _SNG47
   INCBIN "4-reference-binaries/sng47/workspaces/ELTA-align1.bin"
@@ -9306,7 +9306,7 @@ INCBIN "1-source-files/fonts/P.FONT.bin"
 
 .log
 
-IF _MATCH_EXTRACTED_BINARIES
+IF _MATCH_ORIGINAL_BINARIES
 
  IF _SNG47
   INCBIN "4-reference-binaries/sng47/workspaces/ELTA-log.bin"
@@ -9345,7 +9345,7 @@ ENDIF
 
 .logL
 
-IF _MATCH_EXTRACTED_BINARIES
+IF _MATCH_ORIGINAL_BINARIES
 
  IF _SNG47
   INCBIN "4-reference-binaries/sng47/workspaces/ELTA-logL.bin"
@@ -9388,7 +9388,7 @@ ENDIF
 
 .antilog
 
-IF _MATCH_EXTRACTED_BINARIES
+IF _MATCH_ORIGINAL_BINARIES
 
  IF _SNG47
   INCBIN "4-reference-binaries/sng47/workspaces/ELTA-antilog.bin"
@@ -9412,7 +9412,7 @@ ELSE
 
 ENDIF
 
-IF _MATCH_EXTRACTED_BINARIES
+IF _MATCH_ORIGINAL_BINARIES
 
  IF _SNG47
   INCBIN "4-reference-binaries/sng47/workspaces/ELTA-align2.bin"
