@@ -8231,7 +8231,7 @@ ELIF _COMPACT
  STZ Y2
  STZ X1
 
- LDX #255                \ Set X2 = 255
+ LDX #255               \ Set X2 = 255
  STX X2
 
 ENDIF
