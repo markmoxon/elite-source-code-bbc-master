@@ -8090,7 +8090,7 @@ ENDIF
                         \ above - so load the Y-th byte from P(1 0), which will
                         \ contain the bitmap for the Y-th row of the character
 
- AND #%11110000         \ Extract the top nibble of the character definition
+ AND #%11110000         \ Extract the high nibble of the character definition
                         \ byte, so the first four pixels on this row of the
                         \ character are in the first nibble, i.e. xxxx 0000
                         \ where xxxx is the pattern of those four pixels in the
@@ -8098,7 +8098,7 @@ ENDIF
 
  STA W                  \ Set A = (A >> 4) OR A
  LSR A                  \
- LSR A                  \ which duplicates the top nibble into the bottom nibble
+ LSR A                  \ which duplicates the high nibble into the low nibble
  LSR A                  \ to give xxxx xxxx
  LSR A
  ORA W
@@ -8124,12 +8124,12 @@ ENDIF
  LDA (P),Y              \ Fetch the the bitmap for the Y-th row of the character
                         \ again
 
- AND #%00001111         \ This time we extract the bottom nibble of the
-                        \ character definition, to get 0000 xxxx
+ AND #%00001111         \ This time we extract the low nibble of the character
+                        \ definition, to get 0000 xxxx
 
  STA W                  \ Set A = (A << 4) OR A
  ASL A                  \
- ASL A                  \ which duplicates the bottom nibble into the top nibble
+ ASL A                  \ which duplicates the low nibble into the high nibble
  ASL A                  \ to give xxxx xxxx
  ASL A
  ORA W
@@ -26185,8 +26185,8 @@ ENDIF
  LDA GCNT               \ Clear bit 3 of GCNT, so we jump from galaxy 7 back
  AND #%11110111         \ to galaxy 0 (shown in-game as going from galaxy 8 back
  STA GCNT               \ to the starting point in galaxy 1). We also retain any
-                        \ set bits in the top nibble, so if the galaxy number is
-                        \ manually set to 16 or higher, it will stay high
+                        \ set bits in the high nibble, so if the galaxy number
+                        \ is manually set to 16 or higher, it will stay high
                         \ (though the upper nibble doesn't seem to get set by
                         \ the game at any point, so it isn't clear what this is
                         \ for, though Lave in galaxy 16 does show a unique
