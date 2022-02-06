@@ -3,8 +3,8 @@
 Acornsoft Elite
 
 Version: BBC Master
-Release: Official Acornsoft release
-         Acornsoft SNG47 v1.0
+Variant: Acornsoft SNG47 release
+Release: Acornsoft SNG47
 
 See www.bbcelite.com for details
 ---------------------------------------

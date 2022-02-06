@@ -31,11 +31,11 @@ See the [introduction](#introduction) for more information.
   * [Verifying the output](#verifying-the-output)
   * [Log files](#log-files)
 
-* [Building different releases of BBC Master Elite](#building-different-releases-of-bbc-master-elite)
+* [Building different variants of BBC Master Elite](#building-different-variants-of-bbc-master-elite)
 
   * [Building the SNG47 release](#building-the-sng47-release)
   * [Building the Master Compact release](#building-the-master-compact-release)
-  * [Differences between the releases](#differences-between-the-releases)
+  * [Differences between the variants](#differences-between-the-variants)
 
 * [Notes on the original source files](#notes-on-the-original-source-files)
 
@@ -45,7 +45,7 @@ See the [introduction](#introduction) for more information.
 
 This repository contains source code for Elite on the BBC Master, with every single line documented and (for the most part) explained.
 
-You can build the fully functioning game from this source. [Two releases](#building-different-releases-of-bbc-master-elite) are currently supported: the official SNG47 release, and the Master Compact release.
+You can build the fully functioning game from this source. [Two variants](#building-different-variants-of-bbc-master-elite) are currently supported: the Acornsoft SNG47 release, and the Superior Software release for the Master Compact.
 
 It is a companion to the [bbcelite.com website](https://www.bbcelite.com), which contains all the code from this repository, but laid out in a much more human-friendly fashion. The links at the top of this page will take you to repositories for the other versions of Elite that are covered by this project.
 
@@ -117,7 +117,7 @@ There are five main folders in this repository, which reflect the order of the b
 
 * [3-assembled-output](3-assembled-output) contains the output from the assembly process, when the source files are assembled and the results processed by the build files.
 
-* [4-reference-binaries](4-reference-binaries) contains the correct binaries for each release, so we can verify that our assembled output matches the reference.
+* [4-reference-binaries](4-reference-binaries) contains the correct binaries for each variant, so we can verify that our assembled output matches the reference.
 
 * [5-compiled-game-discs](5-compiled-game-discs) contains the final output of the build process: an SSD disc image that contains the compiled game and which can be run on real hardware or in an emulator.
 
@@ -142,11 +142,11 @@ Let's look at how to build Elite from the source.
 There are two main build targets available. They are:
 
 * `build` - An unencrypted version
-* `encrypt` - An encrypted version that exactly matches the released version of the game
+* `encrypt` - An encrypted version that includes the same obfuscation as the released version of the game
 
 The unencrypted version should be more useful for anyone who wants to make modifications to the game code. It includes a default commander with lots of cash and equipment, which makes it easier to test the game. As this target produces unencrypted files, the binaries produced will be quite different to the binaries on the original source disc, which are encrypted.
 
-The encrypted version produces the released version of Elite, along with the standard default commander.
+The encrypted version contains an obfuscated version of the game binary, along with the standard default commander.
 
 Builds are supported for both Windows and Mac/Linux systems. In all cases the build process is defined in the `Makefile` provided.
 
@@ -217,7 +217,7 @@ The Python script `crc32.py` in the `2-build-files` folder does the actual verif
 The binaries in the `4-reference-binaries` folder are those extracted from the released version of the game, while those in the `3-assembled-output` folder are produced by the build process. For example, if you don't make any changes to the code and build the project with `make encrypt verify`, then this is the output of the verification process:
 
 ```
-Results for release: sng47
+Results for variant: sng47
 [--originals--]  [---output----]
 Checksum   Size  Checksum   Size  Match  Filename
 -----------------------------------------------------------
@@ -234,34 +234,34 @@ All the compiled binaries match the originals, so we know we are producing the s
 
 During compilation, details of every step are output in a file called `compile.txt` in the `3-assembled-output` folder. If you have problems, it might come in handy, and it's a great reference if you need to know the addresses of labels and variables for debugging (or just snooping around).
 
-## Building different releases of BBC Master Elite
+## Building different variants of BBC Master Elite
 
-This repository contains the source code for two different releases of BBC Master Elite:
+This repository contains the source code for two different variants of BBC Master Elite:
 
-* The official SNG47 Acornsoft release, which was the first appearance of BBC Master Elite, and the one included on all subsequent discs
+* The Acornsoft SNG47 release, which was the first appearance of BBC Master Elite, and the one included on all subsequent discs
 
-* The release for the Master Compact
+* The Superior Software release for the Master Compact
 
-By default the build process builds the SNG47 release, but you can build a specified release using the `release=` build parameter.
+By default the build process builds the SNG47 release, but you can build a specified variant using the `variant=` build parameter.
 
 ### Building the SNG47 release
 
-You can add `release=sng47` to produce the `elite-master-sng47.ssd` file that contains the SNG47 release, though that's the default value so it isn't necessary.
+You can add `variant=sng47` to produce the `elite-master-sng47.ssd` file that contains the SNG47 release, though that's the default value so it isn't necessary.
 
 The verification checksums for this version are shown above.
 
 ### Building the Master Compact release
 
-You can build the Master Compact release by appending `release=compact` to the `make` command, like this on Windows:
+You can build the Master Compact release by appending `variant=compact` to the `make` command, like this on Windows:
 
 ```
-make.bat encrypt verify release=compact
+make.bat encrypt verify variant=compact
 ```
 
 or this on a Mac or Linux:
 
 ```
-make encrypt verify release=compact
+make encrypt verify variant=compact
 ```
 
 This will produce a file called `elite-master-compact.ssd` in the `5-compiled-game-discs` folder that contains the Master Compact release.
@@ -269,7 +269,7 @@ This will produce a file called `elite-master-compact.ssd` in the `5-compiled-ga
 The verification checksums for this version are as follows:
 
 ```
-Results for release: compact
+Results for variant: compact
 [--originals--]  [---output----]
 Checksum   Size  Checksum   Size  Match  Filename
 -----------------------------------------------------------
@@ -280,21 +280,21 @@ bd689545  27904  bd689545  27904   Yes   BCODE.unprot.bin
 107b98cc    740  107b98cc    740   Yes   M128Elt.bin
 ```
 
-### Differences between the releases
+### Differences between the variants
 
-You can see the differences between the releases by searching the source code for `_SNG47` (for features in the SNG47 release) or `_COMPACT` (for features in the Master Compact release). The main differences in the Master Compact release compared to the SNG47 release are:
+You can see the differences between the variants by searching the source code for `_SNG47` (for features in the SNG47 release) or `_COMPACT` (for features in the Master Compact release). The main differences in the Master Compact release compared to the SNG47 release are:
 
 * Support for the Compact's digital joystick. The analogue stick is still supported, but if this release is run on a Compact, then the digital stick is read instead.
 
 * Support for ADFS and the single disc drive on the Compact. This essentially replaces the "Which Drive?" prompt in the disc access menu with "Which Directory?", and changes the formatting of the disc catalogue to fit it on-screen. There is also additional code to claim and release the NMI workspace when disc access is required, as ADFS uses zero page differently to DFS.
 
-See the [accompanying website](https://www.bbcelite.com/master/releases.html) for a comprehensive list of differences between the releases.
+See the [accompanying website](https://www.bbcelite.com/master/releases.html) for a comprehensive list of differences between the variants.
 
 ## Notes on the original source files
 
 ### Producing byte-accurate binaries
 
-The `4-reference-binaries/<release>/workspaces` folders (where `<release>` is the release version) contain binary files that match the workspaces in the original game binaries (a workspace being a block of memory, such as `LBUF` or `LSX2`). Instead of initialising workspaces with null values like BeebAsm, the original BBC Micro source code creates its workspaces by simply incrementing the `P%` and `O%` program counters, which means that the workspaces end up containing whatever contents the allocated memory had at the time. As the source files are broken into multiple BBC BASIC programs that run each other sequentially, this means the workspaces in the source code tend to contain either fragments of these BBC BASIC source programs, or assembled code from an earlier stage. This doesn't make any difference to the game code, which either intialises the workspaces at runtime or just ignores their initial contents, but if we want to be able to produce byte-accurate binaries from the modern BeebAsm assembly process, we need to include this "workspace noise" when building the project, and that's what the binaries in the `4-reference-binaries/<release>/workspaces` folder are for. These binaries are only loaded by the `encrypt` target; for the `build` target, workspaces are initialised with zeroes.
+The `4-reference-binaries/<variant>/workspaces` folders (where `<variant>` is the variant) contain binary files that match the workspaces in the original game binaries (a workspace being a block of memory, such as `LBUF` or `LSX2`). Instead of initialising workspaces with null values like BeebAsm, the original BBC Micro source code creates its workspaces by simply incrementing the `P%` and `O%` program counters, which means that the workspaces end up containing whatever contents the allocated memory had at the time. As the source files are broken into multiple BBC BASIC programs that run each other sequentially, this means the workspaces in the source code tend to contain either fragments of these BBC BASIC source programs, or assembled code from an earlier stage. This doesn't make any difference to the game code, which either intialises the workspaces at runtime or just ignores their initial contents, but if we want to be able to produce byte-accurate binaries from the modern BeebAsm assembly process, we need to include this "workspace noise" when building the project, and that's what the binaries in the `4-reference-binaries/<variant>/workspaces` folder are for. These binaries are only loaded by the `encrypt` target; for the `build` target, workspaces are initialised with zeroes.
 
 Here's an example of how these binaries are included, in this case for the `log` workspace in the `ELTA` section:
 

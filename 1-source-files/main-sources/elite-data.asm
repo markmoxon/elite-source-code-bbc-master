@@ -30,8 +30,8 @@ INCLUDE "1-source-files/main-sources/elite-header.h.asm"
 CPU 1                   \ Switch to 65SC12 assembly, as this code runs on a
                         \ BBC Master
 
-_SNG47                  = (_RELEASE = 1)
-_COMPACT                = (_RELEASE = 2)
+_SNG47                  = (_VARIANT = 1)
+_COMPACT                = (_VARIANT = 2)
 
 GUARD &C000             \ Guard against assembling over MOS memory
 

@@ -27,8 +27,8 @@
 
 INCLUDE "1-source-files/main-sources/elite-header.h.asm"
 
-_SNG47                  = (_RELEASE = 1)
-_COMPACT                = (_RELEASE = 2)
+_SNG47                  = (_VARIANT = 1)
+_COMPACT                = (_VARIANT = 2)
 
 .readme
 
@@ -43,16 +43,16 @@ _COMPACT                = (_RELEASE = 2)
 
 IF _SNG47
 
- EQUS "Release: Official Acornsoft release"
+ EQUS "Variant: Acornsoft SNG47 release"
  EQUB 10, 13
- EQUS "         Acornsoft SNG47 v1.0"
+ EQUS "Release: Acornsoft SNG47"
  EQUB 10, 13
 
 ELIF _COMPACT
 
- EQUS "Release: Master Compact version"
+ EQUS "Variant: Master Compact release"
  EQUB 10, 13
- EQUS "         Superior Software"
+ EQUS "Release: Superior Software"
  EQUB 10, 13
 
 ENDIF

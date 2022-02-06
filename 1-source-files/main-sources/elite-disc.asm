@@ -31,8 +31,8 @@
 
 INCLUDE "1-source-files/main-sources/elite-header.h.asm"
 
-_SNG47                  = (_RELEASE = 1)
-_COMPACT                = (_RELEASE = 2)
+_SNG47                  = (_VARIANT = 1)
+_COMPACT                = (_VARIANT = 2)
 
 IF _SNG47
  PUTFILE "3-assembled-output/M128Elt.bin", "M128Elt", &FF0E00, &FF0E43
