@@ -45,14 +45,14 @@ IF _SNG47
 
  EQUS "Variant: Acornsoft SNG47 release"
  EQUB 10, 13
- EQUS "Release: Acornsoft SNG47"
+ EQUS "Product: Acornsoft SNG47"
  EQUB 10, 13
 
 ELIF _COMPACT
 
  EQUS "Variant: Master Compact release"
  EQUB 10, 13
- EQUS "Release: Superior Software"
+ EQUS "Product: Superior Software"
  EQUB 10, 13
 
 ENDIF
