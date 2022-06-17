@@ -61,7 +61,7 @@ My hope is that this repository and the [accompanying website](https://www.bbcel
 
 BBC Master Elite was written by Ian Bell and David Braben and is copyright &copy; Acornsoft 1986.
 
-The code on this site has been disassembled from the version released on [Ian Bell's personal website](http://www.elitehomepage.org/).
+The code on this site has been reconstructed from a disassembly of the version released on [Ian Bell's personal website](http://www.elitehomepage.org/).
 
 The commentary is copyright &copy; Mark Moxon. Any misunderstandings or mistakes in the documentation are entirely my fault.
 
