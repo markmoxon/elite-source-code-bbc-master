@@ -5870,7 +5870,7 @@ ENDIF
 \ We do not draw a pixel at the right end of the line.
 \
 \ To understand how this routine works, you might find it helpful to read the
-\ deep dive on "Drawing monochrome pixels in mode 5".
+\ deep dive on "Drawing colour pixels in mode 5".
 \
 \ Returns:
 \
@@ -6349,7 +6349,7 @@ ENDIF
 \       Type: Subroutine
 \   Category: Drawing pixels
 \    Summary: Draw a 1-pixel dot, 2-pixel dash or 4-pixel square
-\  Deep dive: Drawing monochrome pixels in mode 5
+\  Deep dive: Drawing colour pixels in mode 5
 \
 \ ------------------------------------------------------------------------------
 \
