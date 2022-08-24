@@ -7066,8 +7066,8 @@ ENDIF
 \
 \       Name: HCNT
 \       Type: Variable
-\   Category: Ship hanger
-\    Summary: The number of ships being displayed in the ship hanger
+\   Category: Ship hangar
+\    Summary: The number of ships being displayed in the ship hangar
 \
 \ ******************************************************************************
 
@@ -7079,22 +7079,22 @@ ENDIF
 \
 \       Name: HANGER
 \       Type: Subroutine
-\   Category: Ship hanger
-\    Summary: Display the ship hanger
+\   Category: Ship hangar
+\    Summary: Display the ship hangar
 \
 \ ------------------------------------------------------------------------------
 \
-\ This routine is called after the ships in the hanger have been drawn, so all
-\ it has to do is draw the hanger's background.
+\ This routine is called after the ships in the hangar have been drawn, so all
+\ it has to do is draw the hangar's background.
 \
-\ The hanger background is made up of two parts:
+\ The hangar background is made up of two parts:
 \
-\   * The hanger floor consists of 11 screen-wide horizontal lines, which start
+\   * The hangar floor consists of 11 screen-wide horizontal lines, which start
 \     out quite spaced out near the bottom of the screen, and bunch ever closer
 \     together as the eye moves up towards the horizon, where they merge to give
 \     a sense of perspective
 \
-\   * The back wall of the hanger consists of 15 equally spaced vertical lines
+\   * The back wall of the hangar consists of 15 equally spaced vertical lines
 \     that join the horizon to the top of the screen
 \
 \ The ships in the hangar have already been drawn by this point, so the lines
@@ -7102,7 +7102,7 @@ ENDIF
 \ them look like they are behind and below the ships. This is achieved by
 \ drawing the lines in from the screen edges until they bump into something
 \ already on-screen. For the horizontal lines, when there are multiple ships in
-\ the hanger, this also means drawing lines between the ships, as well as in
+\ the hangar, this also means drawing lines between the ships, as well as in
 \ from each side.
 \
 \ Other entry points:
@@ -7150,7 +7150,7 @@ ENDIF
  CLC                    \
  ADC #Y                 \ where #Y is the y-coordinate of the centre of the
  TAY                    \ screen, so Y is now the horizontal pixel row of the
-                        \ line we want to draw to display the hanger floor
+                        \ line we want to draw to display the hangar floor
 
  LDA ylookup,Y          \ Look up the page number of the character row that
  STA SC+1               \ contains the pixel with the y-coordinate in Y, and
@@ -7194,10 +7194,10 @@ ENDIF
                         \ HALL routine above if there is only one ship
 
  BEQ HA2                \ If HCNT is zero, jump to HA2 to skip the following
-                        \ as there is only one ship in the hanger
+                        \ as there is only one ship in the hangar
 
                         \ If we get here then there are multiple ships in the
-                        \ hanger, so we also need to draw the horizontal line in
+                        \ hangar, so we also need to draw the horizontal line in
                         \ the gap between the ships
 
  LDY #0                 \ First we draw the line from the centre of the screen
@@ -7355,8 +7355,8 @@ ENDIF
 \
 \       Name: HAS2
 \       Type: Subroutine
-\   Category: Ship hanger
-\    Summary: Draw a hanger background line from left to right
+\   Category: Ship hangar
+\    Summary: Draw a hangar background line from left to right
 \
 \ ------------------------------------------------------------------------------
 \
@@ -7477,8 +7477,8 @@ ENDIF
 \
 \       Name: HAS3
 \       Type: Subroutine
-\   Category: Ship hanger
-\    Summary: Draw a hanger background line from right to left
+\   Category: Ship hangar
+\    Summary: Draw a hangar background line from right to left
 \
 \ ------------------------------------------------------------------------------
 \
@@ -9750,7 +9750,7 @@ ENDIF
 \       Name: DOENTRY
 \       Type: Subroutine
 \   Category: Flight
-\    Summary: Dock at the space station, show the ship hanger and work out any
+\    Summary: Dock at the space station, show the ship hangar and work out any
 \             mission progression
 \
 \ ******************************************************************************
@@ -9774,7 +9774,7 @@ ENDIF
 
  STA ENERGY             \ Recharge the energy banks
 
- JSR HALL               \ Show the ship hanger
+ JSR HALL               \ Show the ship hangar
 
  LDY #44                \ Wait for 44/50 of a second (0.88 seconds)
  JSR DELAY
@@ -10783,7 +10783,7 @@ ENDIF
                         \ If we arrive here, either the docking computer has
                         \ been activated, or we just docked successfully
 
- JMP DOENTRY            \ Go to the docking bay (i.e. show the ship hanger)
+ JMP DOENTRY            \ Go to the docking bay (i.e. show the ship hangar)
 
 .MA62
 
@@ -16474,7 +16474,7 @@ DTW7 = MT16 + 1         \ Point DTW7 to the second byte of the instruction above
  STA QQ14               \ fuel, so set the current fuel level in QQ14 to 70, or
                         \ 7.0 light years
 
- JMP GOIN               \ Go to the docking bay (i.e. show the ship hanger
+ JMP GOIN               \ Go to the docking bay (i.e. show the ship hangar
                         \ screen) and return from the subroutine with a tail
                         \ call
 
@@ -16634,12 +16634,12 @@ LOAD_C% = LOAD% +P% - CODE%
 \
 \       Name: HATB
 \       Type: Variable
-\   Category: Ship hanger
-\    Summary: Ship hanger group table
+\   Category: Ship hangar
+\    Summary: Ship hangar group table
 \
 \ ------------------------------------------------------------------------------
 \
-\ This table contains groups of ships to show in the ship hanger. A group of
+\ This table contains groups of ships to show in the ship hangar. A group of
 \ ships is shown half the time (the other half shows a solo ship), and each of
 \ the four groups is equally likely.
 \
@@ -16661,7 +16661,7 @@ LOAD_C% = LOAD% +P% - CODE%
 
 .HATB
 
-                        \ Hanger group for X = 0
+                        \ Hangar group for X = 0
                         \
                         \ Cobra Mk III (left)
 
@@ -16677,7 +16677,7 @@ LOAD_C% = LOAD% +P% - CODE%
  EQUB 0
  EQUB 0
 
-                        \ Hanger group for X = 9
+                        \ Hangar group for X = 9
                         \
                         \ Three cargo canisters (left, far right and forward,
                         \ right)
@@ -16694,7 +16694,7 @@ LOAD_C% = LOAD% +P% - CODE%
  EQUB %01000000         \ x_hi = %01000000 = 64, z_hi   = 1     -> x = +64
  EQUB %00000110         \ z_lo = %00000110 = 6,  x_sign = 0        z = +262
 
-                        \ Hanger group for X = 18
+                        \ Hangar group for X = 18
                         \
                         \ Viper (right) and Krait (left)
 
@@ -16710,7 +16710,7 @@ LOAD_C% = LOAD% +P% - CODE%
  EQUB 0
  EQUB 0
 
-                        \ Hanger group for X = 27
+                        \ Hangar group for X = 27
                         \
                         \ Adder (right and forward) and Viper (left)
 
@@ -16730,12 +16730,12 @@ LOAD_C% = LOAD% +P% - CODE%
 \
 \       Name: HALL
 \       Type: Subroutine
-\   Category: Ship hanger
-\    Summary: Draw the ships in the ship hanger, then draw the hanger
+\   Category: Ship hangar
+\    Summary: Draw the ships in the ship hangar, then draw the hangar
 \
 \ ------------------------------------------------------------------------------
 \
-\ Half the time this will draw one of the four pre-defined ship hanger groups in
+\ Half the time this will draw one of the four pre-defined ship hangar groups in
 \ HATB, and half the time this will draw a solitary Sidewinder, Mamba, Krait or
 \ Adder on a random position. In all cases, the ships will be randomly spun
 \ around on the ground so they can face in any dirction, and larger ships are
@@ -16820,7 +16820,7 @@ LOAD_C% = LOAD% +P% - CODE%
  PHA                    \ call to HAS1 (as it contains the index of the next
                         \ byte in HATB
 
- JSR HAS1               \ Call HAS1 to draw this ship in the hanger
+ JSR HAS1               \ Call HAS1 to draw this ship in the hangar
 
  PLA                    \ Restore the value of X, so X points to the next byte
  TAX                    \ in HATB after the three bytes we copied into XX15
@@ -16832,9 +16832,9 @@ LOAD_C% = LOAD% +P% - CODE%
 
  LDY #128               \ Set Y = 128 to send as byte #2 of the parameter block
                         \ to the OSWORD 248 command below, to tell the I/O
-                        \ processor that there are multiple ships in the hanger
+                        \ processor that there are multiple ships in the hangar
 
- BNE HA9                \ Jump to HA9 to display the ship hanger (this BNE is
+ BNE HA9                \ Jump to HA9 to display the ship hangar (this BNE is
                         \ effectively a JMP as Y is never zero)
 
 .HA7
@@ -16853,7 +16853,7 @@ LOAD_C% = LOAD% +P% - CODE%
  ADC #SH3               \ which is the ship type of a Sidewinder, Mamba, Krait
  STA XX15+2             \ or Adder
 
- JSR HAS1               \ Call HAS1 to draw this ship in the hanger, with the
+ JSR HAS1               \ Call HAS1 to draw this ship in the hangar, with the
                         \ the following properties:
                         \
                         \   * Random x-coordinate from -63 to +63
@@ -16863,28 +16863,28 @@ LOAD_C% = LOAD% +P% - CODE%
                         \   * Random z-coordinate from +256 to +639
 
  LDY #0                 \ Set Y = 0 to use in the following instruction, to tell
-                        \ the hanger-drawing routine that there is just one ship
-                        \ in the hanger, so it knows not to draw between the
+                        \ the hangar-drawing routine that there is just one ship
+                        \ in the hangar, so it knows not to draw between the
                         \ ships
 
 .HA9
 
  STY HCNT               \ Store Y in HCNT to specify whether there are multiple
-                        \ ships in the hanger
+                        \ ships in the hangar
 
- JMP HANGER             \ Call HANGER to draw the hanger background and return
+ JMP HANGER             \ Call HANGER to draw the hangar background and return
                         \ from the subroutine using a tail call
 
 \ ******************************************************************************
 \
 \       Name: HAS1
 \       Type: Subroutine
-\   Category: Ship hanger
-\    Summary: Draw a ship in the ship hanger
+\   Category: Ship hangar
+\    Summary: Draw a ship in the ship hangar
 \
 \ ------------------------------------------------------------------------------
 \
-\ The ship's position within the hanger is determined by the arguments and the
+\ The ship's position within the hangar is determined by the arguments and the
 \ size of the ship's targetable area, as follows:
 \
 \   * The x-coordinate is (x_sign x_hi 0) from the arguments, so the ship can be
