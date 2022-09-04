@@ -1721,7 +1721,7 @@ ENDIF
 
  SKIP 2                 \ The number of Trumbles in the cargo hold
                         \
-                        \ The Master version doesn't actually haveTrumbles, but
+                        \ The Master version doesn't actually have Trumbles, but
                         \ the Trumble code from the other versions was kept when
                         \ the Master version was put together
 
@@ -29721,7 +29721,7 @@ ENDIF
  STA QQ20               \ journey, so zero the amount of food and narcotics in
  STA QQ20+6             \ the hold
 
- JSR DORND              \ Take the lnumber of Trumbles from TRUMBLE(1 0), add a
+ JSR DORND              \ Take the number of Trumbles from TRUMBLE(1 0), add a
  AND #15                \ random number between 4 and 15, and double the result,
  ADC TRUMBLE            \ storing the resulting number in TRUMBLE(1 0)
  ORA #4                 \
