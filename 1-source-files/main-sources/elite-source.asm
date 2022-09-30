@@ -13705,7 +13705,8 @@ NEXT
 \       Name: FLIP
 \       Type: Subroutine
 \   Category: Stardust
-\    Summary: Reflect the stardust particles in the screen diagonal
+\    Summary: Reflect the stardust particles in the screen diagonal and redraw
+\             the stardust field
 \
 \ ------------------------------------------------------------------------------
 \
@@ -22540,7 +22541,7 @@ LOAD_C% = LOAD% +P% - CODE%
  BEQ PAL1               \ Keep looping up to PAL1 until a key is pressed
 
  LDA #0                 \ Set the ship's AI flag to 0 (no AI) so it doesn't get
- STA INWK+31            \ any ideas of its pwn
+ STA INWK+31            \ any ideas of its own
 
  LDA #1                 \ Clear the top part of the screen, draw a white border,
  JSR TT66               \ and set the current view type in QQ11 to 1
@@ -29937,7 +29938,7 @@ ENDIF
  LDY #31                \ Clear bits 3, 4 and 6 in the ship's byte #31, which
  LDA (INF),Y            \ stops drawing the ship on-screen (bit 3), hides it
  AND #%10100111         \ from the scanner (bit 4) and stops any lasers firing
- STA (INF),Y            \ at it (bit 6)
+ STA (INF),Y            \ (bit 6)
 
 .WS1
 
@@ -41958,7 +41959,7 @@ LOAD_G% = LOAD% + P% - CODE%
  BEQ EE31
 
  LDA XX1+31             \ The ship is exploding, so set bit 3 of the ship's byte
- ORA #8                 \ #31 to denote that we are drawing something on-screen
+ ORA #%00001000         \ #31 to denote that we are drawing something on-screen
  STA XX1+31             \ for this ship
 
  JMP DOEXP              \ Jump to DOEXP to display the explosion cloud,
@@ -44987,7 +44988,7 @@ LOAD_H% = LOAD% + P% - CODE%
                         \ view)
 
  JSR FLIP               \ Swap the x- and y-coordinates of all the stardust
-                        \ particles
+                        \ particles and redraw the stardust field
 
  LDA BOMB               \ If our energy bomb has been set off, then BOMB will be
  BPL P%+5               \ negative, so this skips the following instruction if
@@ -44996,7 +44997,8 @@ LOAD_H% = LOAD% + P% - CODE%
  JSR BOMBLINES          \ Our energy bomb is going off, so call BOMBLINES to
                         \ draw the zig-zag lightning bolt
 
- JSR WPSHPS             \ Wipe all the ships from the scanner
+ JSR WPSHPS             \ Wipe all the ships from the scanner and mark them all
+                        \ as not being shown on-screen
 
                         \ And fall through into SIGHT to draw the laser
                         \ crosshairs
