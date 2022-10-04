@@ -1152,11 +1152,12 @@ ORG &0100
 \
 \ ------------------------------------------------------------------------------
 \
+\ Contains ship data for all the ships, planets, suns and space stations in our
+\ local bubble of universe.
 \
-\ The blocks are pointed to by the lookup table at location UNIV. The first 444
-\ bytes of the K% workspace hold ship data on up to 12 ships, with 37 (NI%)
-\ bytes per ship, and the ship line heap grows downwards from WP at the end of
-\ the K% workspace.
+\ The blocks are pointed to by the lookup table at location UNIV. The first 720
+\ bytes of the K% workspace hold ship data on up to 20 ships, with 37 (NI%)
+\ bytes per ship.
 \
 \ See the deep dive on "Ship data blocks" for details on ship data blocks, and
 \ the deep dive on "The local bubble of universe" for details of how Elite
@@ -35924,11 +35925,10 @@ ENDIF
  JSR msblob             \ Reset the dashboard's missile indicators so none of
                         \ them are targeted
 
- LDA #7                 \ Call TITLE to show a rotating Cougar (#COU) and
- LDX #COU               \ token 7 ("LOAD NEW {single cap}COMMANDER {all caps}
- LDY #100               \ (Y/N)?{sentence case}{cr}{cr}""), with the ship at a
- JSR TITLE              \ distance of 100, returning with the internal number
-                        \ of the key pressed in A
+ LDA #7                 \ Call TITLE to show a rotating Cougar (#COU) and token
+ LDX #COU               \ 7 ("PRESS SPACE OR FIRE,{single cap}COMMANDER.{cr}
+ LDY #100               \ {cr}"), with the ship at a distance of 100, returning
+ JSR TITLE              \ with the internal number of the key pressed in A
 
  JSR ping               \ Set the target system coordinates (QQ9, QQ10) to the
                         \ current system coordinates (QQ0, QQ1) we just loaded
@@ -38793,7 +38793,7 @@ ENDIF
 .MESS
 
  PHA                    \ Store A on the stack so we can restore it after the
-                        \ the call to DOCOL
+                        \ the following
 
  LDX QQ11               \ If this is the space view, skip the following
  BEQ P%+5               \ instruction
