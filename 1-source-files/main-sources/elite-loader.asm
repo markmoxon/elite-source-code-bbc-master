@@ -243,7 +243,7 @@ ORG CODE%
 \         game code will decrypt it
 \
 \   * The main game code file is loaded into main memory at &1300 and the game
-\     isstarted by jumping to &2C6C
+\     is started by jumping to &2C6C
 \
 \ The main game code file is called BCODE in the Master release and ELITE in the
 \ Master Compact release. BCODE loads into &1300-&7F47, while ELITE loads into
