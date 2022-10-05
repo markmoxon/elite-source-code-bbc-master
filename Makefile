@@ -33,8 +33,8 @@ build:
 	echo _REMOVE_CHECKSUMS=TRUE >> 1-source-files/main-sources/elite-header.h.asm
 	echo _MATCH_ORIGINAL_BINARIES=FALSE >> 1-source-files/main-sources/elite-header.h.asm
 	$(BEEBASM) -i 1-source-files/main-sources/elite-loader.asm -v > 3-assembled-output/compile.txt
-	$(BEEBASM) -i 1-source-files/main-sources/elite-data.asm -v >> 3-assembled-output/compile.txt
 	$(BEEBASM) -i 1-source-files/main-sources/elite-source.asm -v >> 3-assembled-output/compile.txt
+	$(BEEBASM) -i 1-source-files/main-sources/elite-data.asm -v >> 3-assembled-output/compile.txt
 	$(BEEBASM) -i 1-source-files/main-sources/elite-readme.asm -v >> 3-assembled-output/compile.txt
 	$(PYTHON) 2-build-files/elite-checksum.py -u -rel$(variant-master)
 	$(BEEBASM) -i 1-source-files/main-sources/elite-disc.asm $(boot-master) -do 5-compiled-game-discs/elite-master$(suffix-master).ssd -title "E L I T E"
@@ -46,8 +46,8 @@ encrypt:
 	echo _REMOVE_CHECKSUMS=FALSE >> 1-source-files/main-sources/elite-header.h.asm
 	echo _MATCH_ORIGINAL_BINARIES=TRUE >> 1-source-files/main-sources/elite-header.h.asm
 	$(BEEBASM) -i 1-source-files/main-sources/elite-loader.asm -v > 3-assembled-output/compile.txt
-	$(BEEBASM) -i 1-source-files/main-sources/elite-data.asm -v >> 3-assembled-output/compile.txt
 	$(BEEBASM) -i 1-source-files/main-sources/elite-source.asm -v >> 3-assembled-output/compile.txt
+	$(BEEBASM) -i 1-source-files/main-sources/elite-data.asm -v >> 3-assembled-output/compile.txt
 	$(BEEBASM) -i 1-source-files/main-sources/elite-readme.asm -v >> 3-assembled-output/compile.txt
 	$(PYTHON) 2-build-files/elite-checksum.py -rel$(variant-master)
 	$(BEEBASM) -i 1-source-files/main-sources/elite-disc.asm $(boot-master) -do 5-compiled-game-discs/elite-master$(suffix-master).ssd -title "E L I T E"
