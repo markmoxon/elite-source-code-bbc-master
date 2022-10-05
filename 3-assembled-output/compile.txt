@@ -414,7 +414,7 @@
      10CB   44 49 52 ...
      10D0   0D
 S.M128Elt &E00  &10D1  &E00  &E00 
-Saving file 'versions/master/3-assembled-output/M128Elt.bin'
+Saving file '3-assembled-output/M128Elt.bin'
 .ZP
      0000
      0000
@@ -15287,7 +15287,7 @@ Execute at &1300
 Reload at &7935 
 S.ELTH &7935  &7F48  &1300  &7935 
 S.BCODE &1300  &7F48  &1300  &1300 
-Saving file 'versions/master/3-assembled-output/BCODE.unprot.bin'
+Saving file '3-assembled-output/BCODE.unprot.bin'
 .DIALS
      7E00
      7F00
@@ -38379,7 +38379,7 @@ End macro ECHR
      B1FE   0B
      B1FF   B8
 S.BDATA &7000  &B200  &1300  &1300 
-Saving file 'versions/master/3-assembled-output/BDATA.unprot.bin'
+Saving file '3-assembled-output/BDATA.unprot.bin'
 .readme
      0000   0A
      0001   0D
@@ -38408,4 +38408,4 @@ Saving file 'versions/master/3-assembled-output/BDATA.unprot.bin'
      00B3   2D 2D 2D ...
      00DA   0A
      00DB   0D
-Saving file 'versions/master/3-assembled-output/README.txt'
+Saving file '3-assembled-output/README.txt'
