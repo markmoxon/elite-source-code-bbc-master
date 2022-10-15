@@ -511,7 +511,7 @@ ENDIF
                         \
                         \   * &FF = no target
                         \
-                        \   * 1-13 = the slot number of the ship that our
+                        \   * 1-12 = the slot number of the ship that our
                         \            missile is locked onto
 
 .DL
@@ -1193,6 +1193,7 @@ ORG &0E41
                         \
                         \ There are #NOSH + 1 slots, but the ship-spawning
                         \ routine at NWSHP only populates #NOSH of them, so
+                        \ there are 13 slots but only 12 are used for ships
                         \ (the last slot is effectively used as a null
                         \ terminator when shuffling the slots down in the
                         \ KILLSHP routine)
@@ -3097,7 +3098,7 @@ ENDIF
 \   ...
 \
 \   Y = 232 to 239, lookup value = &7A (so row 31 is from &7A00 to &7BFF)
-\   Y = 240 to 247, lookup value = &7C (so row 31 is from &7C00 to &7DFF)
+\   Y = 240 to 247, lookup value = &7C (so row 32 is from &7C00 to &7DFF)
 \
 \ There is also a lookup value for y-coordinates from 248 to 255, but that's off
 \ the end of the screen, as the special Elite screen mode only has 31 character
@@ -6993,7 +6994,7 @@ ENDIF
                         \   * 1 (so we start drawing on the second row of the
                         \     character block)
                         \
-                        \   * Move right one character (8 bytes) for each count
+                        \   * Move left one character (8 bytes) for each count
                         \     of X, so when X = 0 we are drawing the rightmost
                         \     missile, for X = 1 we hop to the left by one
                         \     character, and so on
@@ -18954,13 +18955,13 @@ LOAD_C% = LOAD% +P% - CODE%
  STA INWK+5             \ launched just below our line of sight
 
  LDA MSTG               \ Set A to the missile lock target, shifted left so the
- ASL A                  \ slot number is in bits 1-4
+ ASL A                  \ slot number is in bits 1-5
 
  ORA #%10000000         \ Set bit 7 and store the result in byte #32, the AI
  STA INWK+32            \ flag launched ship for the launched ship. For missiles
                         \ this enables AI (bit 7), makes it friendly towards us
                         \ (bit 6), sets the target to the value of MSTG (bits
-                        \ 1-4), and sets its lock status as launched (bit 0).
+                        \ 1-5), and sets its lock status as launched (bit 0).
                         \ It doesn't matter what it does for our abandoned
                         \ Cobra, as the AI flag gets overwritten once we return
                         \ from the subroutine back to the ESCAPE routine that
@@ -26085,6 +26086,7 @@ ENDIF
 \
 \   wW2                 Start the hyperspace countdown, starting the countdown
 \                       from the value in A
+\
 \ ******************************************************************************
 
 .wW
@@ -26604,6 +26606,8 @@ ENDIF
 \       Type: Subroutine
 \   Category: Text
 \    Summary: Print a space
+\
+\ ------------------------------------------------------------------------------
 \
 \ Other entry points:
 \
@@ -35875,6 +35879,7 @@ ENDIF
 \ ------------------------------------------------------------------------------
 \
 \ BRKV is set to point to BR1 by the loading process.
+\
 \ Other entry points:
 \
 \   QU5                 Restart the game using the last saved commander without
@@ -36953,6 +36958,14 @@ IF _SNG47
  LDX #9                 \ Set up a counter in X to count from 9 to 1, so that we
                         \ copy the string starting at INWK+4+1 (i.e. INWK+5) to
                         \ DELI+9+1 (i.e. DELI+10 onwards, or "1.1234567")
+                        \
+                        \ Note that this is a bug - X should be set to 8, as a
+                        \ value of 9 overwrites the first character of the
+                        \ "SAVE" command in SVLI
+                        \
+                        \ This means that if you delete a file, it breaks the
+                        \ save command, so you can't save a commander file if
+                        \ you have previously deleted a file
 
 ELIF _COMPACT
 
