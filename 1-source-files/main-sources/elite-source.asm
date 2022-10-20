@@ -25905,6 +25905,7 @@ LOAD_D% = LOAD% + P% - CODE%
 
 \ ******************************************************************************
 \
+\       Name: hy6
 \       Type: Subroutine
 \   Category: Flight
 \    Summary: Print a message to say no hyperspacing inside the station
@@ -35536,8 +35537,8 @@ ENDIF
 \       Name: stack
 \       Type: Variable
 \   Category: Save and load
-\    Summary: Temporary storage for the stack pointer when switching the BRKV
-\             handler between BRBR and MEBRK
+\    Summary: Temporary storage for the stack pointer when jumping to the break
+\             handler at BRBR
 \
 \ ******************************************************************************
 
@@ -37053,7 +37054,7 @@ ENDIF
  CMP #'1'               \ Option 1 was chosen, so jump to LD1 to load a new
  BEQ LD1                \ commander
 
- CMP #'2'               \ Option 2 was chosen, so jump to LD1 to save the
+ CMP #'2'               \ Option 2 was chosen, so jump to SV1 to save the
  BEQ SV1                \ current commander
 
  CMP #'3'               \ Option 3 was chosen, so jump to CAT to catalogue a
@@ -37394,7 +37395,7 @@ IF _SNG47
 
 ELIF _COMPACT
 
- EQUS "CAT"             \ The Master Compact only had one drive, so the CAT
+ EQUS "CAT"             \ The Master Compact only has one drive, so the CAT
  EQUB 13                \ command always catalogues that drive
 
 ENDIF
