@@ -46095,13 +46095,13 @@ ENDIF
 
 IF _SNG47
 
- LDA #0                 \ Set ECMA and ECMB to 0 to indicate that no E.C.M. is
+ LDA #0                 \ Set ECMA and ECMP to 0 to indicate that no E.C.M. is
  STA ECMA               \ currently running
  STA ECMP
 
 ELIF _COMPACT
 
- STZ ECMA               \ Set ECMA and ECMB to 0 to indicate that no E.C.M. is
+ STZ ECMA               \ Set ECMA and ECMP to 0 to indicate that no E.C.M. is
  STZ ECMP               \ currently running
 
 ENDIF
