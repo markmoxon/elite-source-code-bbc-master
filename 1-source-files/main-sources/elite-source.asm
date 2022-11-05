@@ -625,6 +625,8 @@ ENDIF
                         \         Get commander name ("@", save/load commander)
                         \         In-system jump just arrived ("J")
                         \         Data on System screen (red key f6)
+                        \   2   = Buy Cargo screen (red key f1)
+                        \   3   = Mis-jump just arrived (witchspace)
                         \   4   = Sell Cargo screen (red key f2)
                         \   6   = Death screen
                         \   8   = Status Mode screen (red key f8)
