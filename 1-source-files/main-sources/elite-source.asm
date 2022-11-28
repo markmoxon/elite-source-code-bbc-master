@@ -7132,14 +7132,14 @@ ENDIF
 
  LDA #130               \ Set A = 130
 
- STX Q                  \ Set Q = T
+ STX Q                  \ Set Q to the value of the loop counter
 
  JSR DVID4_DUPLICATE    \ Calculate the following:
                         \
                         \   (P R) = 256 * A / Q
-                        \         = 256 * 130 / T
+                        \         = 256 * 130 / Q
                         \
-                        \ so P = 130 / T, and as the counter T goes from 2 to
+                        \ so P = 130 / Q, and as the counter Q goes from 2 to
                         \ 12, P goes 65, 43, 32 ... 13, 11, 10, with the
                         \ difference between two consecutive numbers getting
                         \ smaller as P gets smaller
@@ -7244,7 +7244,7 @@ ENDIF
  LDX T                  \ Fetch the loop counter from T and increment it
  INX
 
- CPX #13                \ If the loop counter is less than 13 (i.e. T = 2 to 12)
+ CPX #13                \ If the loop counter is less than 13 (i.e. 2 to 12)
  BCC HAL1               \ then loop back to HAL1 to draw the next line
 
                         \ The floor is done, so now we move on to the back wall
@@ -22550,7 +22550,7 @@ LOAD_C% = LOAD% +P% - CODE%
  LDA #1                 \ Clear the top part of the screen, draw a white border,
  JSR TT66               \ and set the current view type in QQ11 to 1
 
- JSR LL9                \ Draw the ship on screen to remove it
+ JSR LL9                \ Draw the ship on screen to redisplay it
 
                         \ Fall through into MT23 to move to row 10, switch to
                         \ white text, and switch to lower case when printing
@@ -35877,7 +35877,7 @@ ENDIF
 \       Name: BR1 (Part 1 of 2)
 \       Type: Subroutine
 \   Category: Start and end
-\    Summary: Start or restart the game
+\    Summary: Show the "Load New Commander (Y/N)?" screen and start the game
 \
 \ ------------------------------------------------------------------------------
 \
@@ -35922,7 +35922,8 @@ ENDIF
 \       Name: BR1 (Part 2 of 2)
 \       Type: Subroutine
 \   Category: Start and end
-\    Summary: Show the "Load New Commander (Y/N)?" screen and start the game
+\    Summary: Show the "Press Fire or Space, Commander" screen and start the
+\             game
 \
 \ ------------------------------------------------------------------------------
 \
