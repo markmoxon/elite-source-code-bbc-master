@@ -38645,7 +38645,7 @@ ENDIF
 
 .NOVOL
 
- CPX #'B'               \ If "B" is not being pressed, skip to DK7
+ CPX #'B'               \ If "B" is not being pressed, skip to nobit
  BNE nobit
 
  LDA BSTK               \ Toggle the value of BSTK between 0 and &FF
