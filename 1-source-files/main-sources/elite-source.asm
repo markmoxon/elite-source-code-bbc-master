@@ -22491,7 +22491,7 @@ LOAD_C% = LOAD% +P% - CODE%
                         \ about the stolen Constrictor)
 
  BNE BRPS               \ Jump to BRP via BRPS to print the extended token in A
-                        \ and show the Status Mode screen), returning from the
+                        \ and show the Status Mode screen, returning from the
                         \ subroutine using a tail call (this BNE is effectively
                         \ a JMP as A is never zero)
 
