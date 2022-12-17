@@ -3042,8 +3042,8 @@ ENDIF
  STA VIA+&34            \ SHEILA &34 to switch main memory back into &3000-&7FFF
 
  LDA #6                 \ Set bits 0-3 of the ROM Select latch at SHEILA &30 to
- STA VIA+&30            \ 6, to switch sideways ROM bank 6 into into &8000-&BFFF
-                        \ in main memory (we already confirmed that this bank
+ STA VIA+&30            \ 6, to switch sideways ROM bank 6 into &8000-&BFFF in
+                        \ main memory (we already confirmed that this bank
                         \ contains RAM rather than ROM in the loader)
 
  RTS                    \ Return from the subroutine

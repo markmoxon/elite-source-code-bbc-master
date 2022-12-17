@@ -380,8 +380,8 @@ ENDIF
                         \ SHEILA &30 that we are about to set
 
  LDA VIA+&30            \ Set bits 0-3 of the ROM Select latch at SHEILA &30 to
- AND #%11110000         \ 6, to switch sideways RAM bank 6 into into &8000-&BFFF
- ORA #6                 \ in main memory
+ AND #%11110000         \ 6, to switch sideways RAM bank 6 into &8000-&BFFF in
+ ORA #6                 \ main memory
  STA VIA+&30
 
  LDA #%10101010         \ Set A and location &8000 to %10101010
