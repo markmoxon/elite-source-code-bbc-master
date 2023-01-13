@@ -25,7 +25,7 @@
 \
 \ ******************************************************************************
 
-INCLUDE "1-source-files/main-sources/elite-header.h.asm"
+INCLUDE "1-source-files/main-sources/elite-build-options.asm"
 
 CPU 1                   \ Switch to 65SC12 assembly, as this code runs on the
                         \ BBC Master
