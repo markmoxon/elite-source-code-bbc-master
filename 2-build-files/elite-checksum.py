@@ -40,10 +40,10 @@ scramble_from = 0x2cc1
 
 if release == 1:
     # SNG47
-    scramble_to = 0x7F47
+    scramble_to = 0x7FFE - 1    # F%-1
 elif release == 2:
     # Compact
-    scramble_to = 0x7FEC
+    scramble_to = 0x7FEC        # F%-1
 
 data_block = bytearray()
 

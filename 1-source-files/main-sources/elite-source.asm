@@ -13572,6 +13572,55 @@ NEXT
 
 .BL5
 
+                        \ --- Mod: Code added for flicker-free Elite: --------->
+
+ LDY XX14               \ Set Y to the offset in XX14, which points to the part
+                        \ of the heap that we are overwriting with new points
+
+ CPY XX14+1             \ If XX14 >= XX14+1, then we have already redrawn all of
+ BCS BL2                \ the lines from the old circle's ball line heap, so
+                        \ skip the following
+
+                        \ Otherwise we need to draw the line from the heap, to
+                        \ erase it from the screen
+
+ LDA K3+2               \ Set X1 = K3+2 = screen x-coordinate of previous point
+ STA X1                 \ from the old heap
+
+ LDA K3+3               \ Set Y1 = K3+3 = screen y-coordinate of previous point
+ STA Y1                 \ from the old heap
+
+ LDA LSX2,Y             \ Set X2 to the y-coordinate from the XX14-th point in
+ STA X2                 \ the heap
+
+ STA K3+2               \ Store the x-coordinate of the point we are overwriting
+                        \ in K3+2, so we can use it on the next iteration
+
+ LDA LSY2,Y             \ Set Y2 to the y-coordinate from the XX14-th point in
+ STA Y2                 \ the heap
+
+ STA K3+3               \ Store the y-coordinate of the point we are overwriting
+                        \ in K3+3, so we can use it on the next iteration
+
+ INY                    \ Increment the index to point to the next coordinate
+ STY XX14               \ and store the updated index in XX14
+
+ LDA Y1                 \ If Y1 or Y2 = &FF then this indicates a break in the
+ CMP #&FF               \ circle, so jump to BL2 to skip the following as there
+ BEQ BL2                \ is no line to erase
+ LDA Y2
+ CMP #&FF
+ BEQ BL2
+
+ JSR LL30               \ The coordinates in (X1, Y1) and (X2, Y2) that we just
+                        \ pulled from the ball line heap point to a line that is
+                        \ still on-screen, so call LL30 to draw this line and
+                        \ erase it from the screen
+
+.BL2
+
+                        \ --- End of added code ------------------------------->
+
                         \ The following inserts a &FF marker into the LSY2 line
                         \ heap to indicate that the next call to BLINE should
                         \ store both the (X1, Y1) and (X2, Y2) points. We do
@@ -13581,11 +13630,23 @@ NEXT
                         \ that segment, and we start a new segment with the next
                         \ call to BLINE that does fit on-screen
 
+                        \ --- Mod: Original Acornsoft code removed: ----------->
+
+\LDY LSP                \ If byte LSP-1 of LSY2 = &FF, jump to BL7 to tidy up
+\LDA #&FF               \ and return from the subroutine, as the point that has
+\CMP LSY2-1,Y           \ been passed to BLINE is the start of a segment, so all
+\BEQ BL7                \ we need to do is save the coordinate in K5, without
+\                       \ moving the pointer in LSP
+
+                        \ --- And replaced by: -------------------------------->
+
  LDY LSP                \ If byte LSP-1 of LSY2 = &FF, jump to BL7 to tidy up
  LDA #&FF               \ and return from the subroutine, as the point that has
  CMP LSY2-1,Y           \ been passed to BLINE is the start of a segment, so all
- BEQ BL7                \ we need to do is save the coordinate in K5, without
-                        \ moving the pointer in LSP
+ BNE P%+5               \ we need to do is save the coordinate in K5, without
+ JMP BL7                \ moving the pointer in LSP
+
+                        \ --- End of replacement ------------------------------>
 
  STA LSY2,Y             \ Otherwise we just tried to plot a segment but it
                         \ didn't fit on-screen, so put the &FF marker into the
@@ -13594,9 +13655,19 @@ NEXT
 
  INC LSP                \ Increment LSP to point to the next point in the heap
 
- BNE BL7                \ Jump to BL7 to tidy up and return from the subroutine
-                        \ (this BNE is effectively a JMP, as LSP will never be
+                        \ --- Mod: Original Acornsoft code removed: ----------->
+
+\BNE BL7                \ Jump to BL7 to tidy up and return from the subroutine
+\                       \ (this BNE is effectively a JMP, as LSP will never be
+\                       \ zero)
+
+                        \ --- And replaced by: -------------------------------->
+
+ BEQ BL1                \ Jump to BL7 to tidy up and return from the subroutine
+ JMP BL7                \ (this BNE is effectively a JMP, as LSP will never be
                         \ zero)
+
+                        \ --- End of replacement ------------------------------>
 
 .BL1
 
@@ -13656,6 +13727,75 @@ NEXT
                         \ Byte LSP-1 of LSY2 is &FF, which indicates that we
                         \ need to store (X1, Y1) in the heap
 
+                        \ --- Mod: Code added for flicker-free Elite: --------->
+
+ LDA X1
+ PHA
+ LDA Y1
+ PHA
+ LDA X2
+ PHA
+ LDA Y2
+ PHA
+
+ LDY XX14               \ Set Y to the offset in XX14, which points to the part
+                        \ of the heap that we are overwriting with new points
+
+ CPY XX14+1             \ If XX14 >= XX14+1, then we have already redrawn all of
+ BCS BL3                \ the lines from the old circle's ball line heap, so
+                        \ skip the following
+
+                        \ Otherwise we need to draw the line from the heap, to
+                        \ erase it from the screen
+
+ LDA K3+2               \ Set X1 = K3+2 = screen x-coordinate of previous point
+ STA X1                 \ from the old heap
+
+ LDA K3+3               \ Set Y1 = K3+3 = screen y-coordinate of previous point
+ STA Y1                 \ from the old heap
+
+ LDA LSX2,Y             \ Set X2 to the y-coordinate from the XX14-th point in
+ STA X2                 \ the heap
+
+ STA K3+2               \ Store the x-coordinate of the point we are overwriting
+                        \ in K3+2, so we can use it on the next iteration
+
+ LDA LSY2,Y             \ Set Y2 to the y-coordinate from the XX14-th point in
+ STA Y2                 \ the heap
+
+ STA K3+3               \ Store the y-coordinate of the point we are overwriting
+                        \ in K3+3, so we can use it on the next iteration
+
+ INY                    \ Increment the index to point to the next coordinate
+ STY XX14               \ and store the updated index in XX14
+
+ LDA Y1                 \ If Y1 or Y2 = &FF then this indicates a break in the
+ CMP #&FF               \ circle, so jump to BL3 to skip the following as there
+ BEQ BL3                \ is no line to erase
+ LDA Y2
+ CMP #&FF
+ BEQ BL3
+
+ JSR LL30               \ The coordinates in (X1, Y1) and (X2, Y2) that we just
+                        \ pulled from the ball line heap point to a line that is
+                        \ still on-screen, so call LL30 to draw this line and
+                        \ erase it from the screen
+
+.BL3
+
+ LDY LSP                \ Set Y = LSP
+
+ PLA
+ STA Y2
+ PLA
+ STA X2
+ PLA
+ STA Y1
+ PLA
+ STA X1
+
+                        \ --- End of added code ------------------------------->
+
  LDA X1                 \ Store X1 in the LSP-th byte of LSX2
  STA LSX2,Y
 
@@ -13678,13 +13818,27 @@ NEXT
 
  JSR LL30               \ Draw a line from (X1, Y1) to (X2, Y2)
 
+                        \ --- Mod: Original Acornsoft code removed: ----------->
+
+\LDA XX13               \ If XX13 is non-zero, jump up to BL5 to add a &FF
+\BNE BL5                \ marker to the end of the line heap. XX13 is non-zero
+\                       \ after the call to the clipping routine LL145 above if
+\                       \ the end of the line was clipped, meaning the next line
+\                       \ sent to BLINE can't join onto the end but has to start
+\                       \ a new segment, and that's what inserting the &FF
+\                       \ marker does
+
+                        \ --- And replaced by: -------------------------------->
+
  LDA XX13               \ If XX13 is non-zero, jump up to BL5 to add a &FF
- BNE BL5                \ marker to the end of the line heap. XX13 is non-zero
-                        \ after the call to the clipping routine LL145 above if
+ BEQ BL7                \ marker to the end of the line heap. XX13 is non-zero
+ JMP BL5                \ after the call to the clipping routine LL145 above if
                         \ the end of the line was clipped, meaning the next line
                         \ sent to BLINE can't join onto the end but has to start
                         \ a new segment, and that's what inserting the &FF
                         \ marker does
+
+                        \ --- End of replacement ------------------------------>
 
 .BL7
 
@@ -31192,21 +31346,43 @@ ENDIF
 
 .PL9
 
- JSR WPLS2              \ Call WPLS2 to remove the planet from the screen
+                        \ --- Mod: Original Acornsoft code removed: ----------->
+
+\JSR WPLS2              \ Call WPLS2 to remove the planet from the screen
+\
+\JSR CIRCLE             \ Call CIRCLE to draw the planet's new circle
+\
+\BCS PL20               \ If the call to CIRCLE returned with the C flag set,
+\                       \ then the circle does not fit on-screen, so jump to
+\                       \ PL20 to call return from the subroutine
+
+                        \ --- And replaced by: -------------------------------->
 
  JSR CIRCLE             \ Call CIRCLE to draw the planet's new circle
 
- BCS PL20               \ If the call to CIRCLE returned with the C flag set,
+ BCS PL20A              \ If the call to CIRCLE returned with the C flag set,
                         \ then the circle does not fit on-screen, so jump to
-                        \ PL20 to return from the subroutine
+                        \ PL20A to remove the planet from the screen and return
+                        \ from the subroutine
 
- LDA K+1                \ If K+1 is zero, jump to PL25 as K(1 0) < 256, so the
- BEQ PL25               \ planet fits on the screen
+                        \ --- End of replacement ------------------------------>
+
+\LDA K+1                \ If K+1 is zero, jump to PL25 as K(1 0) < 256, so the
+\BEQ PL25               \ planet fits on the screen
 
 .PL20
 
  RTS                    \ The planet doesn't fit on-screen, so return from the
                         \ subroutine
+
+                        \ --- Mod: Code added for flicker-free Elite: --------->
+
+.PL20A
+
+ JMP WPLS2              \ Call WPLS2 to remove the planet from the screen
+
+                        \ --- End of added code ------------------------------->
+
 
 .PL25
 
@@ -32325,6 +32501,28 @@ ENDIF
                         \ on-screen, so return from the subroutine (as RTS2
                         \ contains an RTS)
 
+                        \ --- Mod: Code added for flicker-free Elite: --------->
+
+                        \ We now set things up for flicker-free circle plotting,
+                        \ by setting the following:
+                        \
+                        \   XX14 = offset to the first coordinate in the ball
+                        \          line heap
+                        \
+                        \   XX14+1 = the number of bytes in the heap for the
+                        \            circle that's currently on-screen (or 0 if
+                        \            there is no ship currently on-screen)
+
+ LDY #1                 \ Set XX14 = 1, the offset of the first set of circle
+ STY XX14               \ coordinates in the ball line heap
+
+ LDA LSP                \ Set XX14+1 to the last byte of the ball line heap
+ STA XX14+1
+
+ STY LSP                \ Set LSP = 1 to reset the ball line heap pointer
+
+                        \ --- End of added code ------------------------------->
+
  LDA #0                 \ Set LSX2 = 0
  STA LSX2
 
@@ -32482,6 +32680,65 @@ ENDIF
  BCS P%+5
 
  JMP PLL3               \ Jump back for the next segment
+
+                        \ --- Mod: Code added for flicker-free Elite: --------->
+
+                        \ We have drawn the new circle, so now we need to erase
+                        \ any lines that are left in the ball line heap
+
+ LDY XX14               \ Set Y to the offset in XX14, which points to the part
+                        \ of the heap that we are overwriting with new points
+
+.PL38A
+
+ CPY XX14+1             \ If Y >= XX14+1, jump to PL38B to return from the
+ BCS PL38B              \ circle drawing routine, because the index in Y is
+                        \ greater than the size of the existing ball line heap,
+                        \ which means we have alrady erased all the old circle's
+                        \ lines when drawing the new circle
+
+                        \ If we get here then Y < XX14+1, which means Y is
+                        \ pointing to an on-screen line from the old circle that
+                        \ we need to erase
+
+ LDA K3+2               \ Set X1 = K3+2 = screen x-coordinate of previous point
+ STA X1                 \ from the old heap
+
+ LDA K3+3               \ Set Y1 = K3+3 = screen y-coordinate of previous point
+ STA Y1                 \ from the old heap
+
+ LDA LSX2,Y             \ Set X2 to the y-coordinate from the XX14-th point in
+ STA X2                 \ the heap
+
+ STA K3+2               \ Store the x-coordinate of the point we are overwriting
+                        \ in K3+2, so we can use it on the next iteration
+
+ LDA LSY2,Y             \ Set Y2 to the y-coordinate from the XX14-th point in
+ STA Y2                 \ the heap
+
+ STA K3+3               \ Store the y-coordinate of the point we are overwriting
+                        \ in K3+3, so we can use it on the next iteration
+
+ INY                    \ Increment the index to point to the next coordinate
+ STY XX14               \ and store the updated index in XX14
+
+ LDA Y1                 \ If Y1 or Y2 = &FF then this indicates a break in the
+ CMP #&FF               \ circle, so jump to PL38A to skip the following as
+ BEQ PL38A              \ there is no line to erase
+ LDA Y2
+ CMP #&FF
+ BEQ PL38A
+
+ JSR LL30               \ Draw a line from (X1, Y1) to (X2, Y2) to erase it from
+                        \ the screen
+
+ JMP PL38A              \ Loop back to LL27 to draw (i.e. erase) the next line
+                        \ from the heap
+
+.PL38B
+
+                        \ --- End of added code ------------------------------->
+
 
  CLC                    \ Clear the C flag to indicate success
 
