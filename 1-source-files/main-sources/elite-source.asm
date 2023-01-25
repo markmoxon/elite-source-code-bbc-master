@@ -13731,6 +13731,8 @@ NEXT
 \
 \ ******************************************************************************
 
+                        \ --- Mod: Code added for flicker-free Elite: --------->
+
 .LLB30X
 
  LDY XX14               \ Set Y to the offset in XX14, which points to the part
@@ -13740,13 +13742,15 @@ NEXT
  BCS LLBLX              \ the lines from the old circle's ball line heap, so
                         \ skip the following
 
- JSR LLB30
+ JSR LLB30              \ Erase the next line from the old ball line heap
 
- JMP LLB30X
+ JMP LLB30X             \ Loop back for the next line in the old ball line heap
 
 .LLBLX
 
- RTS
+ RTS                    \ Return from the subroutine
+
+                        \ --- End of added code ------------------------------->
 
 \ ******************************************************************************
 \
@@ -31379,7 +31383,6 @@ ENDIF
 
                         \ --- End of added code ------------------------------->
 
-
 .PL25
 
  LDA TYPE               \ If the planet type is 128 then it has an equator and
@@ -31910,14 +31913,17 @@ ENDIF
 
 .PL40
 
-                        \ --- Mod: Code added for flicker-free Elite: --------->
+                        \ --- Mod: Original Acornsoft code removed: ----------->
 
- JSR LLB30X             \ We have drawn the new circle, so now we need to erase
-                        \ any lines that are left in the ball line heap
+\RTS                    \ Return from the subroutine
 
-                        \ --- End of added code ------------------------------->
+                        \ --- And replaced by: -------------------------------->
 
- RTS                    \ Return from the subroutine
+ JMP LLB30X             \ We have drawn the new circle, so now we need to erase
+                        \ any lines that are left in the ball line heap,
+                        \ returning from the subroutine using a tail call
+
+                        \ --- End of replacement ------------------------------>
 
 \ ******************************************************************************
 \
@@ -32709,56 +32715,74 @@ ENDIF
  BNE WP1                \ heap is empty), jump to WP1 to reset the line heap
                         \ without redrawing the planet
 
-                        \ Otherwise Y is now 0, so we can use it as a counter to
-                        \ loop through the lines in the line heap, redrawing
-                        \ each one to remove the planet from the screen, before
-                        \ resetting the line heap once we are done
+                        \ --- Mod: Original Acornsoft code removed: ----------->
 
-.WPL1
+\                       \ Otherwise Y is now 0, so we can use it as a counter to
+\                       \ loop through the lines in the line heap, redrawing
+\                       \ each one to remove the planet from the screen, before
+\                       \ resetting the line heap once we are done
+\
+\.WPL1
+\
+\CPY LSP                \ If Y >= LSP then we have reached the end of the line
+\BCS WP1                \ heap and have finished redrawing the planet (as LSP
+\                       \ points to the end of the heap), so jump to WP1 to
+\                       \ reset the line heap, returning from the subroutine
+\                       \ using a tail call
+\
+\LDA LSY2,Y             \ Set A to the y-coordinate of the current heap entry
+\
+\CMP #&FF               \ If the y-coordinate is &FF, this indicates that the
+\BEQ WP2                \ next point in the heap denotes the start of a line
+\                       \ segment, so jump to WP2 to put it into (X1, Y1)
+\
+\STA Y2                 \ Set (X2, Y2) to the x- and y-coordinates from the
+\LDA LSX2,Y             \ heap
+\STA X2
+\
+\JSR LL30               \ Draw a line from (X1, Y1) to (X2, Y2)
+\
+\INY                    \ Increment the loop counter to point to the next point
+\
+\LDA SWAP               \ If SWAP is non-zero then we swapped the coordinates
+\BNE WPL1               \ when filling the heap in BLINE, so loop back WPL1
+\                       \ for the next point in the heap
+\
+\LDA X2                 \ Swap (X1, Y1) and (X2, Y2), so the next segment will
+\STA X1                 \ be drawn from the current (X2, Y2) to the next point
+\LDA Y2                 \ in the heap
+\STA Y1
+\
+\JMP WPL1               \ Loop back to WPL1 for the next point in the heap
+\
+\.WP2
+\
+\INY                    \ Increment the loop counter to point to the next point
+\
+\LDA LSX2,Y             \ Set (X1, Y1) to the x- and y-coordinates from the
+\STA X1                 \ heap
+\LDA LSY2,Y
+\STA Y1
+\
+\INY                    \ Increment the loop counter to point to the next point
+\
+\JMP WPL1               \ Loop back to WPL1 for the next point in the heap
 
- CPY LSP                \ If Y >= LSP then we have reached the end of the line
- BCS WP1                \ heap and have finished redrawing the planet (as LSP
-                        \ points to the end of the heap), so jump to WP1 to
-                        \ reset the line heap, returning from the subroutine
-                        \ using a tail call
+                        \ --- And replaced by: -------------------------------->
 
- LDA LSY2,Y             \ Set A to the y-coordinate of the current heap entry
+ STY XX14               \ Reset XX14 to the start of the ball line heap (we can
+                        \ set this to 0 rather than 1 to take advantage of the
+                        \ fact that Y is 0 - the effect is the same)
 
- CMP #&FF               \ If the y-coordinate is &FF, this indicates that the
- BEQ WP2                \ next point in the heap denotes the start of a line
-                        \ segment, so jump to WP2 to put it into (X1, Y1)
+ LDA LSP                \ Set XX14+1 to the end of the ball line heap
+ STA XX14+1
 
- STA Y2                 \ Set (X2, Y2) to the x- and y-coordinates from the
- LDA LSX2,Y             \ heap
- STA X2
+ JSR LLB30X             \ Draw the contents of the ball line heap
 
- JSR LL30               \ Draw a line from (X1, Y1) to (X2, Y2)
+ JMP WP1                \ Reset the ball line heap and return from the
+                        \ subroutine using a tail call
 
- INY                    \ Increment the loop counter to point to the next point
-
- LDA SWAP               \ If SWAP is non-zero then we swapped the coordinates
- BNE WPL1               \ when filling the heap in BLINE, so loop back WPL1
-                        \ for the next point in the heap
-
- LDA X2                 \ Swap (X1, Y1) and (X2, Y2), so the next segment will
- STA X1                 \ be drawn from the current (X2, Y2) to the next point
- LDA Y2                 \ in the heap
- STA Y1
-
- JMP WPL1               \ Loop back to WPL1 for the next point in the heap
-
-.WP2
-
- INY                    \ Increment the loop counter to point to the next point
-
- LDA LSX2,Y             \ Set (X1, Y1) to the x- and y-coordinates from the
- STA X1                 \ heap
- LDA LSY2,Y
- STA Y1
-
- INY                    \ Increment the loop counter to point to the next point
-
- JMP WPL1               \ Loop back to WPL1 for the next point in the heap
+                        \ --- End of replacement ------------------------------>
 
 \ ******************************************************************************
 \
