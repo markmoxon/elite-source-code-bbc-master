@@ -13541,6 +13541,12 @@ NEXT
 \
 \   K4(1 0)             Pixel y-coordinate of the centre of the circle
 \
+\   K5(1 0)             Screen x-coordinate of the previous point added to the
+\                       ball line heap (if this is not the first point)
+\
+\   K5(3 2)             Screen y-coordinate of the previous point added to the
+\                       ball line heap (if this is not the first point)
+\
 \   SWAP                If non-zero, we swap (X1, Y1) and (X2, Y2)
 \
 \ Returns:
@@ -13548,6 +13554,12 @@ NEXT
 \   CNT                 CNT is updated to CNT + STP
 \
 \   A                   The new value of CNT
+\
+\   K5(1 0)             Screen x-coordinate of the point that we just added to
+\                       the ball line heap
+\
+\   K5(3 2)             Screen y-coordinate of the point that we just added to
+\                       the ball line heap
 \
 \   FLAG                Set to 0
 \
@@ -31201,7 +31213,8 @@ ENDIF
                         \ PL20 to return from the subroutine
 
  LDA K+1                \ If K+1 is zero, jump to PL25 as K(1 0) < 256, so the
- BEQ PL25               \ planet fits on the screen
+ BEQ PL25               \ planet fits on the screen and we can draw meridians or
+                        \ craters
 
 .PL20
 
@@ -31519,20 +31532,20 @@ ENDIF
 \       Name: PLS2
 \       Type: Subroutine
 \   Category: Drawing planets
-\    Summary: Draw a half-circle
+\    Summary: Draw a half-ellipse
 \
 \ ------------------------------------------------------------------------------
 \
-\ Draw a half-circle, used for the planet's equator and meridian.
+\ Draw a half-ellipse, used for the planet's equator and meridian.
 \
 \ ******************************************************************************
 
 .PLS2
 
- LDA #31                \ Set TGT = 31, so we only draw half a circle
+ LDA #31                \ Set TGT = 31, so we only draw half an ellipse
  STA TGT
 
-                        \ Fall through into PLS22 to draw the half circle
+                        \ Fall through into PLS22 to draw the half-ellipse
 
 \ ******************************************************************************
 \
@@ -31557,13 +31570,15 @@ ENDIF
 \
 \   (T X) = - |XX16+1 K2+1| * cos(CNT2) - |XX16+3 K2+3| * sin(CNT2)
 \
-\ before calling BLINE to draw a circle segment to these coordinates.
+\ It then calls BLINE to set the following:
+\
+\   K6(3 2) = K4(1 0) - |XX16+1 K2+1| * cos(CNT2) - |XX16+3 K2+3| * sin(CNT2)
+\
+\ and draw a circle segment to these coordinates.
 \
 \ Arguments:
 \
 \   K(1 0)              The planet's radius
-\
-\   INWK                The planet's ship data block
 \
 \   TGT                 The number of segments to draw:
 \
@@ -31598,7 +31613,7 @@ ENDIF
  JSR FMLTU              \ Set R = A * Q / 256
  STA R                  \       = |roofv_x / z| * sin(CNT2) / 256
 
- LDA K2+3               \ Set A = K2+2
+ LDA K2+3               \ Set A = K2+3
                         \       = |roofv_y / z|
 
  JSR FMLTU              \ Set K = A * Q / 256
@@ -32325,8 +32340,8 @@ ENDIF
                         \ on-screen, so return from the subroutine (as RTS2
                         \ contains an RTS)
 
- LDA #0                 \ Set LSX2 = 0
- STA LSX2
+ LDA #0                 \ Set LSX2 = 0 to indicate that the ball line heap is
+ STA LSX2               \ not empty, as we are about to fill it
 
  LDX K                  \ Set X = K = radius
 
@@ -43345,7 +43360,7 @@ LOAD_G% = LOAD% + P% - CODE%
  CPY XX14+1             \ If Y >= XX14+1, jump to LLEX to return from the ship
  BCS LLEX               \ drawing routine, because the index in Y is greater
                         \ than the size of the existing ship line heap, which
-                        \ means we have alrady erased all the old ships lines
+                        \ means we have alrady erased all the old ship's lines
                         \ when drawing the new ship
 
                         \ If we get here then Y < XX14+1, which means Y is
