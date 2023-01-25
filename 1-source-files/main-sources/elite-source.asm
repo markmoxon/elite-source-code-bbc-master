@@ -13572,6 +13572,12 @@ NEXT
 
 .BL5
 
+                        \ --- Mod: Code added for flicker-free Elite: --------->
+
+ JSR LLB30              \ Draw the current line from the old heap
+
+                        \ --- End of added code ------------------------------->
+
                         \ The following inserts a &FF marker into the LSY2 line
                         \ heap to indicate that the next call to BLINE should
                         \ store both the (X1, Y1) and (X2, Y2) points. We do
@@ -13591,12 +13597,6 @@ NEXT
                         \ didn't fit on-screen, so put the &FF marker into the
                         \ heap for this point, so the next call to BLINE starts
                         \ a new segment
-
-                        \ --- Mod: Code added for flicker-free Elite: --------->
-
- JSR LLB30              \ Draw the current line from the old heap
-
-                        \ --- End of added code ------------------------------->
 
  INC LSP                \ Increment LSP to point to the next point in the heap
 
@@ -13761,22 +13761,23 @@ NEXT
 
 .LLB30A
 
- LDA LSX2+1
+ LDA LSX2+1             \ Store the heap's first coordinate in K3+2 and K3+3
  STA K3+2
  LDA LSY2+1
  STA K3+3
 
- INC XX14
+ INC XX14               \ Increment XX14 to point to the next coordinate, so we
+                        \ work our way through the current heap
 
- RTS
+ RTS                    \ Return from the subroutine
 
 .LLB30
 
- LDA XX14
- CMP #2
- BCC LLB30A
+ LDA XX14               \ If XX14 = 1, then this is the first point from the
+ CMP #2                 \ heap, so jump to LLB30A to set the previous coordinate
+ BCC LLB30A             \ and return from the subroutine
 
- LDA X1                 \ Save X1, X2, Y1 and Y2
+ LDA X1                 \ Save X1, X2, Y1, Y2 and Y on the stack
  PHA
  LDA Y1
  PHA
@@ -13784,8 +13785,8 @@ NEXT
  PHA
  LDA Y2
  PHA
-
- PHY                    \ Save Y
+ TYA
+ PHA
 
  LDY XX14               \ Set Y to the offset in XX14, which points to the part
                         \ of the heap that we are overwriting with new points
@@ -13815,7 +13816,8 @@ NEXT
  STA K3+3               \ Store the y-coordinate of the point we are overwriting
                         \ in K3+3, so we can use it on the next iteration
 
- INC XX14               \ Increment XX14 to point to the next coordinate
+ INC XX14               \ Increment XX14 to point to the next coordinate, so we
+                        \ work our way through the current heap
 
  LDA Y1                 \ If Y1 or Y2 = &FF then this indicates a break in the
  CMP #&FF               \ circle, so jump to LLBL to skip the following as there
@@ -13831,9 +13833,9 @@ NEXT
 
 .LLBL
 
- PLY                    \ Restore Y
-
- PLA                    \ Restore X1, X2, Y1 and Y2
+ PLA                    \ Restore Y, X1, X2, Y1 and Y2 from the stack
+ TAY
+ PLA
  STA Y2
  PLA
  STA X2
@@ -31360,17 +31362,16 @@ ENDIF
 
 .PL20
 
-                        \ --- Mod: Code added for flicker-free Elite: --------->
+                        \ --- Mod: Original Acornsoft code removed: ----------->
 
- JSR LLB30X             \ We have drawn the new circle, so now we need to erase
-                        \ any lines that are left in the ball line heap
+\RTS                    \ The planet doesn't fit on-screen, so return from the
+\                       \ subroutine
 
-                        \ --- End of added code ------------------------------->
+                        \ --- And replaced by: -------------------------------->
 
- RTS                    \ The planet doesn't fit on-screen, so return from the
-                        \ subroutine
-
-                        \ --- Mod: Code added for flicker-free Elite: --------->
+ JMP LLB30X             \ We have drawn the new circle, so now we need to erase
+                        \ any lines that are left in the ball line heap, before
+                        \ returning from the subroutine using a tail call
 
 .PL20A
 
