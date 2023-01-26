@@ -43,7 +43,7 @@ if release == 1:
     scramble_to = 0x7FA0 - 1    # F%-1
 elif release == 2:
     # Compact
-    scramble_to = 0x7FEC        # F%-1
+    scramble_to = 0x7FED - 1    # F%-1
 
 data_block = bytearray()
 
