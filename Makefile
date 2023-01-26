@@ -59,4 +59,4 @@ verify:
 .PHONY:b2
 b2:
 	curl -G "http://localhost:48075/reset/b2" --data-urlencode "config=Master 128 (MOS 3.20)"
-	curl -H "Content-Type:application/binary" --upload-file "5-compiled-game-discs/elite-master$(suffix-master).ssd" "http://localhost:48075/run/b2?name=elite-master$(suffix-master).ssd"
+	curl -H "Content-Type:application/binary" --upload-file "5-compiled-game-discs/elite-master-flicker-free$(suffix-master).ssd" "http://localhost:48075/run/b2?name=elite-master$(suffix-master).ssd"
