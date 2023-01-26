@@ -13739,7 +13739,7 @@ NEXT
 \       Name: LLB30X
 \       Type: Subroutine
 \   Category: Drawing lines
-\    Summary: Draw a ball line using flicker-free animation
+\    Summary: Draw all remaining ball lines using flicker-free animation
 \
 \ ******************************************************************************
 
