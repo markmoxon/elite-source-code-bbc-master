@@ -13761,6 +13761,14 @@ NEXT
 
                         \ --- Mod: Code added for flicker-free Elite: --------->
 
+IF _COMPACT
+
+ PLANET% = P%           \ For the Master Compact version, we need to store the
+ ORG &B200              \ additional flicker-free planet code at &B200, after
+                        \ the end of the game data
+
+ENDIF
+
 .EraseRestOfPlanet
 
  LDY XX14               \ Set Y to the offset in XX14, which points to the part
@@ -13969,6 +13977,18 @@ NEXT
 .nlin3
 
  RTS                    \ Return from the subroutine
+
+IF _COMPACT
+
+ SAVE "3-assembled-output/COMPACT.unprot.bin", &B200, P%, &B200
+
+ ORG PLANET%            \ First we save the flicker-free routines for the Master
+                        \ Compact in a binary file that we can insert after the
+                        \ game data at address &B200 in the elite-data.asm file,
+                        \ and then we restore the assembly address to continue
+                        \ assembling the game code
+
+ENDIF
 
                         \ --- End of added code ------------------------------->
 

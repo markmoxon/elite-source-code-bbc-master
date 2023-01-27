@@ -9031,6 +9031,16 @@ ELSE
 
 ENDIF
 
+                        \ --- Mod: Code added for flicker-free Elite: --------->
+
+IF _COMPACT
+
+ INCBIN "3-assembled-output/COMPACT.unprot.bin"
+
+ENDIF
+
+                        \ --- End of added code ------------------------------->
+
 \ ******************************************************************************
 \
 \ Save BDATA.unprot.bin
