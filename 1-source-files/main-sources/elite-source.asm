@@ -13692,7 +13692,13 @@ NEXT
 
                         \ --- Mod: Code added for flicker-free Elite: --------->
 
- JSR LLB30              \ Draw the current line from the old heap
+ LDA #&FF               \ Set bit 7 of K3+8 so we do not draw the current line
+ STA K3+8               \ in the call to LLB30, but store the coordinates so we
+                        \ we can check them below
+
+ JSR LLB30+2            \ Calculate the current line from the old heap, but do
+                        \ not draw it, but store the coordinates X1, Y1, X2, Y2
+                        \ in K3+4 to K3+7
 
                         \ --- End of added code ------------------------------->
 
@@ -13706,7 +13712,16 @@ NEXT
 
  STY LSP                \ Update LSP to point to the same as Y
 
- JSR LL30               \ Draw a line from (X1, Y1) to (X2, Y2)
+                        \ --- Mod: Original Acornsoft code removed: ----------->
+
+\JSR LL30               \ Draw a line from (X1, Y1) to (X2, Y2)
+
+                        \ --- And replaced by: -------------------------------->
+
+ JSR LL30C              \ Draw a line from (X1, Y1) to (X2, Y2), but only if it
+                        \ is different to the old line in K3+4 to K3+7
+
+                        \ --- End of replacement ------------------------------>
 
  LDA XX13               \ If XX13 is non-zero, jump up to BL5 to add a &FF
  BNE BL5                \ marker to the end of the line heap. XX13 is non-zero
@@ -13766,10 +13781,19 @@ NEXT
 
 \ ******************************************************************************
 \
-\       Name: LLB30
+\       Name: LLB30Z
 \       Type: Subroutine
 \   Category: Drawing lines
 \    Summary: Draw a ball line using flicker-free animation
+\
+\ ------------------------------------------------------------------------------
+\
+\ Draw an existing segment from the ball line heap.
+\
+\ Other entry points:
+\
+\   LLB30+2             If bit 7 of K3+8 is set, store the line coordinates in
+\                       K3+4 to K3+7 (X1, Y1, X2, Y2) and do not draw the line
 \
 \ ******************************************************************************
 
@@ -13788,6 +13812,11 @@ NEXT
  RTS                    \ Return from the subroutine
 
 .LLB30
+
+ STZ K3+8               \ Clear bit 7 of K3+8 so we draw the current line below
+
+ STZ K3+9               \ Clear bit 7 of K3+9 to indicate that there is no line
+                        \ to draw (we may change this below)
 
  LDA XX14               \ If XX14 = 1, then this is the first point from the
  CMP #2                 \ heap, so jump to LLB30A to set the previous coordinate
@@ -13842,6 +13871,12 @@ NEXT
  CMP #&FF
  BEQ LLBL
 
+ DEC K3+9               \ Decrement K3+9 to &FF to indicate that there is a line
+                        \ to draw
+
+ BIT K3+8               \ If bit 7 of K3+8 is set, jump to LLBS to store the
+ BMI LLBS               \ line coordinates rather than drawing the line
+
  JSR LL30               \ The coordinates in (X1, Y1) and (X2, Y2) that we just
                         \ pulled from the ball line heap point to a line that is
                         \ still on-screen, so call LL30 to draw this line and
@@ -13859,6 +13894,80 @@ NEXT
  STA Y1
  PLA
  STA X1
+
+ RTS                    \ Return from the subroutine
+
+.LLBS
+
+ LDA X1                 \ Store X1, Y1, X2, Y2 in K3+4 to K3+7
+ STA K3+4
+ LDA Y1
+ STA K3+5
+ LDA X2
+ STA K3+6
+ LDA Y2
+ STA K3+7
+
+ JMP LLBL               \ Jump to LLBL to return from the subroutine
+
+                        \ --- End of added code ------------------------------->
+
+\ ******************************************************************************
+\
+\       Name: LLB30C
+\       Type: Subroutine
+\   Category: Drawing lines
+\    Summary: Draw a ball line, but only if it is different to the old line
+\
+\ ------------------------------------------------------------------------------
+\
+\ Arguments:
+\
+\   K3+4 to K3+7        The (X1, Y1) and (X2, Y2) coordinates of the old line
+\
+\ ******************************************************************************
+
+                        \ --- Mod: Code added for flicker-free Elite: --------->
+
+.LL30C
+
+ BIT K3+9               \ If bit 7 of K3+9 is clear, then there is no old line
+ BPL LL30D              \ to draw, so jump to LL30D to draw the new line only
+
+ LDA K3+4               \ If the old line equals the new line, jump to LL30B
+ CMP X1                 \ to skip drawing both lines
+ BNE LL30A
+ LDA K3+5
+ CMP Y1
+ BNE LL30A
+ LDA K3+6
+ CMP X2
+ BNE LL30A
+ LDA K3+7
+ CMP Y2
+ BEQ LL30B
+
+.LL30A
+
+                        \ If we get here then the old line is differnt to the new
+                        \ line, so we draw them both
+
+ JSR LL30               \ Draw the new line from (X1, Y1) to (X2, Y2)
+
+ LDA K3+4               \ Set up the old line's coordinates
+ STA X1
+ LDA K3+5
+ STA Y1
+ LDA K3+6
+ STA X2
+ LDA K3+7
+ STA Y2
+
+.LL30D
+
+ JSR LL30               \ Draw the old line to erase it
+
+.LL30B
 
  RTS                    \ Return from the subroutine
 
@@ -32537,13 +32646,14 @@ ENDIF
                         \            circle that's currently on-screen (or 0 if
                         \            there is no ship currently on-screen)
 
- LDY #1                 \ Set XX14 = 1, the offset of the first set of circle
- STY XX14               \ coordinates in the ball line heap
+ STZ XX14               \ Set XX14 = 0, to point to the offset before the first
+                        \ set of circle coordinates in the ball line heap
 
  LDA LSP                \ Set XX14+1 to the last byte of the ball line heap
  STA XX14+1
 
- STY LSP                \ Set LSP = 1 to reset the ball line heap pointer
+ LDY #1                 \ Set LSP = 1 to reset the ball line heap pointer
+ STY LSP
 
                         \ --- End of added code ------------------------------->
 
