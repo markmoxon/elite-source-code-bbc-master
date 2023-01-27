@@ -13586,7 +13586,7 @@ NEXT
 
                         \ --- Mod: Code added for flicker-free Elite: --------->
 
- JSR LLB30              \ Draw the current line from the old heap
+ JSR DrawPlanetLine     \ Draw the current line from the old planet
 
                         \ --- End of added code ------------------------------->
 
@@ -13676,7 +13676,7 @@ NEXT
 
                         \ --- Mod: Code added for flicker-free Elite: --------->
 
- JSR LLB30              \ Draw the current line from the old heap
+ JSR DrawPlanetLine     \ Draw the current line from the old planet
 
                         \ --- End of added code ------------------------------->
 
@@ -13693,12 +13693,12 @@ NEXT
                         \ --- Mod: Code added for flicker-free Elite: --------->
 
  LDA #&FF               \ Set bit 7 of K3+8 so we do not draw the current line
- STA K3+8               \ in the call to LLB30, but store the coordinates so we
-                        \ we can check them below
+ STA K3+8               \ in the call to DrawPlanetLine, but store the
+                        \ coordinates so we we can check them below
 
- JSR LLB30+2            \ Calculate the current line from the old heap, but do
-                        \ not draw it, but store the coordinates X1, Y1, X2, Y2
-                        \ in K3+4 to K3+7
+ JSR DrawPlanetLine+2   \ Calculate the current line from the old heap, but do
+                        \ not draw it, but store the coordinates (X1, Y1) and
+                        \ (X2, Y2) in K3+4 to K3+7
 
                         \ --- End of added code ------------------------------->
 
@@ -13718,7 +13718,7 @@ NEXT
 
                         \ --- And replaced by: -------------------------------->
 
- JSR LL30C              \ Draw a line from (X1, Y1) to (X2, Y2), but only if it
+ JSR DrawNewPlanetLine  \ Draw a line from (X1, Y1) to (X2, Y2), but only if it
                         \ is different to the old line in K3+4 to K3+7
 
                         \ --- End of replacement ------------------------------>
@@ -13751,29 +13751,30 @@ NEXT
 
 \ ******************************************************************************
 \
-\       Name: LLB30X
+\       Name: EraseRestOfPlanet
 \       Type: Subroutine
 \   Category: Drawing lines
-\    Summary: Draw all remaining ball lines using flicker-free animation
+\    Summary: Draw all remaining lines in the ball line heap to erase the rest
+\             of the old planet
 \
 \ ******************************************************************************
 
                         \ --- Mod: Code added for flicker-free Elite: --------->
 
-.LLB30X
+.EraseRestOfPlanet
 
  LDY XX14               \ Set Y to the offset in XX14, which points to the part
                         \ of the heap that we are overwriting with new points
 
  CPY XX14+1             \ If XX14 >= XX14+1, then we have already redrawn all of
- BCS LLBLX              \ the lines from the old circle's ball line heap, so
+ BCS eras1              \ the lines from the old circle's ball line heap, so
                         \ skip the following
 
- JSR LLB30              \ Erase the next line from the old ball line heap
+ JSR DrawPlanetLine     \ Erase the next planet line from the ball line heap
 
- JMP LLB30X             \ Loop back for the next line in the old ball line heap
+ JMP EraseRestOfPlanet  \ Loop back for the next line in the ball line heap
 
-.LLBLX
+.eras1
 
  RTS                    \ Return from the subroutine
 
@@ -13781,37 +13782,23 @@ NEXT
 
 \ ******************************************************************************
 \
-\       Name: LLB30Z
+\       Name: DrawPlanetLine
 \       Type: Subroutine
 \   Category: Drawing lines
-\    Summary: Draw a ball line using flicker-free animation
+\    Summary: Draw a segment of the old planet from the ball line heap
 \
 \ ------------------------------------------------------------------------------
 \
-\ Draw an existing segment from the ball line heap.
-\
 \ Other entry points:
 \
-\   LLB30+2             If bit 7 of K3+8 is set, store the line coordinates in
+\   DrawPlanetLine+2    If bit 7 of K3+8 is set, store the line coordinates in
 \                       K3+4 to K3+7 (X1, Y1, X2, Y2) and do not draw the line
 \
 \ ******************************************************************************
 
                         \ --- Mod: Code added for flicker-free Elite: --------->
 
-.LLB30A
-
- LDA LSX2+1             \ Store the heap's first coordinate in K3+2 and K3+3
- STA K3+2
- LDA LSY2+1
- STA K3+3
-
- INC XX14               \ Increment XX14 to point to the next coordinate, so we
-                        \ work our way through the current heap
-
- RTS                    \ Return from the subroutine
-
-.LLB30
+.DrawPlanetLine
 
  STZ K3+8               \ Clear bit 7 of K3+8 so we draw the current line below
 
@@ -13819,8 +13806,8 @@ NEXT
                         \ to draw (we may change this below)
 
  LDA XX14               \ If XX14 = 1, then this is the first point from the
- CMP #2                 \ heap, so jump to LLB30A to set the previous coordinate
- BCC LLB30A             \ and return from the subroutine
+ CMP #2                 \ heap, so jump to plin3 to set the previous coordinate
+ BCC plin3              \ and return from the subroutine
 
  LDA X1                 \ Save X1, X2, Y1, Y2 and Y on the stack
  PHA
@@ -13837,8 +13824,8 @@ NEXT
                         \ of the heap that we are overwriting with new points
 
  CPY XX14+1             \ If XX14 >= XX14+1, then we have already redrawn all of
- BCS LLBL               \ the lines from the old circle's ball line heap, so
-                        \ skip the following
+ BCS plin1              \ the lines from the old circle's ball line heap, so
+                        \ jump to plin1 to return from the subroutine
 
                         \ Otherwise we need to draw the line from the heap, to
                         \ erase it from the screen
@@ -13865,24 +13852,24 @@ NEXT
                         \ work our way through the current heap
 
  LDA Y1                 \ If Y1 or Y2 = &FF then this indicates a break in the
- CMP #&FF               \ circle, so jump to LLBL to skip the following as there
- BEQ LLBL               \ is no line to erase
- LDA Y2
+ CMP #&FF               \ circle, so jump to plin1 to skip the following and
+ BEQ plin1              \ return from the subroutine, asthere is no line to
+ LDA Y2                 \ erase
  CMP #&FF
- BEQ LLBL
+ BEQ plin1
 
  DEC K3+9               \ Decrement K3+9 to &FF to indicate that there is a line
                         \ to draw
 
- BIT K3+8               \ If bit 7 of K3+8 is set, jump to LLBS to store the
- BMI LLBS               \ line coordinates rather than drawing the line
+ BIT K3+8               \ If bit 7 of K3+8 is set, jump to plin2 to store the
+ BMI plin2              \ line coordinates rather than drawing the line
 
  JSR LL30               \ The coordinates in (X1, Y1) and (X2, Y2) that we just
                         \ pulled from the ball line heap point to a line that is
                         \ still on-screen, so call LL30 to draw this line and
                         \ erase it from the screen
 
-.LLBL
+.plin1
 
  PLA                    \ Restore Y, X1, X2, Y1 and Y2 from the stack
  TAY
@@ -13897,7 +13884,7 @@ NEXT
 
  RTS                    \ Return from the subroutine
 
-.LLBS
+.plin2
 
  LDA X1                 \ Store X1, Y1, X2, Y2 in K3+4 to K3+7
  STA K3+4
@@ -13908,13 +13895,25 @@ NEXT
  LDA Y2
  STA K3+7
 
- JMP LLBL               \ Jump to LLBL to return from the subroutine
+ JMP plin1              \ Jump to plin1 to return from the subroutine
+
+.plin3
+
+ LDA LSX2+1             \ Store the heap's first coordinate in K3+2 and K3+3
+ STA K3+2
+ LDA LSY2+1
+ STA K3+3
+
+ INC XX14               \ Increment XX14 to point to the next coordinate, so we
+                        \ work our way through the current heap
+
+ RTS                    \ Return from the subroutine
 
                         \ --- End of added code ------------------------------->
 
 \ ******************************************************************************
 \
-\       Name: LLB30C
+\       Name: DrawNewPlanetLine
 \       Type: Subroutine
 \   Category: Drawing lines
 \    Summary: Draw a ball line, but only if it is different to the old line
@@ -13929,25 +13928,25 @@ NEXT
 
                         \ --- Mod: Code added for flicker-free Elite: --------->
 
-.LL30C
+.DrawNewPlanetLine
 
  BIT K3+9               \ If bit 7 of K3+9 is clear, then there is no old line
- BPL LL30D              \ to draw, so jump to LL30D to draw the new line only
+ BPL nlin2              \ to draw, so jump to nlin2 to draw the new line only
 
- LDA K3+4               \ If the old line equals the new line, jump to LL30B
+ LDA K3+4               \ If the old line equals the new line, jump to nlin3
  CMP X1                 \ to skip drawing both lines
- BNE LL30A
+ BNE nlin1
  LDA K3+5
  CMP Y1
- BNE LL30A
+ BNE nlin1
  LDA K3+6
  CMP X2
- BNE LL30A
+ BNE nlin1
  LDA K3+7
  CMP Y2
- BEQ LL30B
+ BEQ nlin3
 
-.LL30A
+.nlin1
 
                         \ If we get here then the old line is differnt to the new
                         \ line, so we draw them both
@@ -13963,11 +13962,11 @@ NEXT
  LDA K3+7
  STA Y2
 
-.LL30D
+.nlin2
 
  JSR LL30               \ Draw the old line to erase it
 
-.LL30B
+.nlin3
 
  RTS                    \ Return from the subroutine
 
@@ -31495,7 +31494,7 @@ ENDIF
 
                         \ --- And replaced by: -------------------------------->
 
- JMP LLB30X             \ We have drawn the new circle, so now we need to erase
+ JMP EraseRestOfPlanet  \ We have drawn the new circle, so now we need to erase
                         \ any lines that are left in the ball line heap, before
                         \ returning from the subroutine using a tail call
 
@@ -32043,7 +32042,7 @@ ENDIF
 
                         \ --- And replaced by: -------------------------------->
 
- JMP LLB30X             \ We have drawn the new circle, so now we need to erase
+ JMP EraseRestOfPlanet  \ We have drawn the new circle, so now we need to erase
                         \ any lines that are left in the ball line heap,
                         \ returning from the subroutine using a tail call
 
@@ -32902,7 +32901,8 @@ ENDIF
  LDA LSP                \ Set XX14+1 to the end of the ball line heap
  STA XX14+1
 
- JSR LLB30X             \ Draw the contents of the ball line heap
+ JSR EraseRestOfPlanet  \ Draw the contents of the ball line heap to erase the
+                        \ old planet
 
  JMP WP1                \ Reset the ball line heap and return from the
                         \ subroutine using a tail call

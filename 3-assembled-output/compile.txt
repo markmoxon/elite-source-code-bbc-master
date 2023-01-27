@@ -4852,7 +4852,7 @@ S.ELTA &3463  &3579  &1300  &1300
      35CF   F0 15      BEQ &35E6
      35D1   E6 89      INC &89
 .BL5
-     35D3   20 84 36   JSR &3684
+     35D3   20 77 36   JSR &3677
      35D6   A4 5D      LDY &5D
      35D8   A9 FF      LDA #&FF
      35DA   D9 7D 0F   CMP &0F7D,Y
@@ -4894,7 +4894,7 @@ S.ELTA &3463  &3579  &1300  &1300
      3622   B9 7D 0F   LDA &0F7D,Y
      3625   C9 FF      CMP #&FF
      3627   D0 0E      BNE &3637
-     3629   20 84 36   JSR &3684
+     3629   20 77 36   JSR &3677
      362C   A5 4A      LDA &4A
      362E   99 7E 0E   STA &0E7E,Y
      3631   A5 4B      LDA &4B
@@ -4903,7 +4903,7 @@ S.ELTA &3463  &3579  &1300  &1300
 .BL8
      3637   A9 FF      LDA #&FF
      3639   85 1C      STA &1C
-     363B   20 86 36   JSR &3686
+     363B   20 79 36   JSR &3679
      363E   A5 4C      LDA &4C
      3640   99 7E 0E   STA &0E7E,Y
      3643   A5 4D      LDA &4D
@@ -4927,84 +4927,84 @@ S.ELTA &3463  &3579  &1300  &1300
      3665   65 8C      ADC &8C
      3667   85 8A      STA &8A
      3669   60         RTS
-.LLB30X
+.EraseRestOfPlanet
      366A   A4 8F      LDY &8F
      366C   C4 90      CPY &90
      366E   B0 06      BCS &3676
-     3670   20 84 36   JSR &3684
+     3670   20 77 36   JSR &3677
      3673   4C 6A 36   JMP &366A
-.LLBLX
+.eras1
      3676   60         RTS
-.LLB30A
-     3677   AD 7F 0E   LDA &0E7F
-     367A   85 16      STA &16
-     367C   AD 7F 0F   LDA &0F7F
-     367F   85 17      STA &17
-     3681   E6 8F      INC &8F
-     3683   60         RTS
-.LLB30
-     3684   64 1C      STZ &1C
-     3686   64 1D      STZ &1D
-     3688   A5 8F      LDA &8F
-     368A   C9 02      CMP #&02
-     368C   90 E9      BCC &3677
-     368E   A5 4A      LDA &4A
-     3690   48         PHA
-     3691   A5 4B      LDA &4B
-     3693   48         PHA
-     3694   A5 4C      LDA &4C
-     3696   48         PHA
-     3697   A5 4D      LDA &4D
-     3699   48         PHA
-     369A   98         TYA
-     369B   48         PHA
-     369C   A4 8F      LDY &8F
-     369E   C4 90      CPY &90
-     36A0   B0 2D      BCS &36CF
-     36A2   A5 16      LDA &16
-     36A4   85 4A      STA &4A
-     36A6   A5 17      LDA &17
-     36A8   85 4B      STA &4B
-     36AA   B9 7E 0E   LDA &0E7E,Y
-     36AD   85 4C      STA &4C
-     36AF   85 16      STA &16
-     36B1   B9 7E 0F   LDA &0F7E,Y
-     36B4   85 4D      STA &4D
-     36B6   85 17      STA &17
-     36B8   E6 8F      INC &8F
-     36BA   A5 4B      LDA &4B
-     36BC   C9 FF      CMP #&FF
-     36BE   F0 0F      BEQ &36CF
-     36C0   A5 4D      LDA &4D
-     36C2   C9 FF      CMP #&FF
-     36C4   F0 09      BEQ &36CF
-     36C6   C6 1D      DEC &1D
-     36C8   24 1C      BIT &1C
-     36CA   30 12      BMI &36DE
-     36CC   20 28 17   JSR &1728
-.LLBL
-     36CF   68         PLA
-     36D0   A8         TAY
-     36D1   68         PLA
-     36D2   85 4D      STA &4D
-     36D4   68         PLA
-     36D5   85 4C      STA &4C
-     36D7   68         PLA
-     36D8   85 4B      STA &4B
-     36DA   68         PLA
-     36DB   85 4A      STA &4A
-     36DD   60         RTS
-.LLBS
-     36DE   A5 4A      LDA &4A
-     36E0   85 18      STA &18
-     36E2   A5 4B      LDA &4B
-     36E4   85 19      STA &19
-     36E6   A5 4C      LDA &4C
-     36E8   85 1A      STA &1A
-     36EA   A5 4D      LDA &4D
-     36EC   85 1B      STA &1B
-     36EE   4C CF 36   JMP &36CF
-.LL30C
+.DrawPlanetLine
+     3677   64 1C      STZ &1C
+     3679   64 1D      STZ &1D
+     367B   A5 8F      LDA &8F
+     367D   C9 02      CMP #&02
+     367F   90 63      BCC &36E4
+     3681   A5 4A      LDA &4A
+     3683   48         PHA
+     3684   A5 4B      LDA &4B
+     3686   48         PHA
+     3687   A5 4C      LDA &4C
+     3689   48         PHA
+     368A   A5 4D      LDA &4D
+     368C   48         PHA
+     368D   98         TYA
+     368E   48         PHA
+     368F   A4 8F      LDY &8F
+     3691   C4 90      CPY &90
+     3693   B0 2D      BCS &36C2
+     3695   A5 16      LDA &16
+     3697   85 4A      STA &4A
+     3699   A5 17      LDA &17
+     369B   85 4B      STA &4B
+     369D   B9 7E 0E   LDA &0E7E,Y
+     36A0   85 4C      STA &4C
+     36A2   85 16      STA &16
+     36A4   B9 7E 0F   LDA &0F7E,Y
+     36A7   85 4D      STA &4D
+     36A9   85 17      STA &17
+     36AB   E6 8F      INC &8F
+     36AD   A5 4B      LDA &4B
+     36AF   C9 FF      CMP #&FF
+     36B1   F0 0F      BEQ &36C2
+     36B3   A5 4D      LDA &4D
+     36B5   C9 FF      CMP #&FF
+     36B7   F0 09      BEQ &36C2
+     36B9   C6 1D      DEC &1D
+     36BB   24 1C      BIT &1C
+     36BD   30 12      BMI &36D1
+     36BF   20 28 17   JSR &1728
+.plin1
+     36C2   68         PLA
+     36C3   A8         TAY
+     36C4   68         PLA
+     36C5   85 4D      STA &4D
+     36C7   68         PLA
+     36C8   85 4C      STA &4C
+     36CA   68         PLA
+     36CB   85 4B      STA &4B
+     36CD   68         PLA
+     36CE   85 4A      STA &4A
+     36D0   60         RTS
+.plin2
+     36D1   A5 4A      LDA &4A
+     36D3   85 18      STA &18
+     36D5   A5 4B      LDA &4B
+     36D7   85 19      STA &19
+     36D9   A5 4C      LDA &4C
+     36DB   85 1A      STA &1A
+     36DD   A5 4D      LDA &4D
+     36DF   85 1B      STA &1B
+     36E1   4C C2 36   JMP &36C2
+.plin3
+     36E4   AD 7F 0E   LDA &0E7F
+     36E7   85 16      STA &16
+     36E9   AD 7F 0F   LDA &0F7F
+     36EC   85 17      STA &17
+     36EE   E6 8F      INC &8F
+     36F0   60         RTS
+.DrawNewPlanetLine
      36F1   24 1D      BIT &1D
      36F3   10 2B      BPL &3720
      36F5   A5 18      LDA &18
@@ -5019,7 +5019,7 @@ S.ELTA &3463  &3579  &1300  &1300
      3707   A5 1B      LDA &1B
      3709   C5 4D      CMP &4D
      370B   F0 16      BEQ &3723
-.LL30A
+.nlin1
      370D   20 28 17   JSR &1728
      3710   A5 18      LDA &18
      3712   85 4A      STA &4A
@@ -5029,9 +5029,9 @@ S.ELTA &3463  &3579  &1300  &1300
      371A   85 4C      STA &4C
      371C   A5 1B      LDA &1B
      371E   85 4D      STA &4D
-.LL30D
+.nlin2
      3720   20 28 17   JSR &1728
-.LL30B
+.nlin3
      3723   60         RTS
 .FLIP
      3724   A9 FA      LDA #&FA
