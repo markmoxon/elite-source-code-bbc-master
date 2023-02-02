@@ -9027,7 +9027,7 @@ IF _MATCH_ORIGINAL_BINARIES
 
 ELSE
 
-  SKIP 29               \ These bytes appear to be unused
+ SKIP 29                \ These bytes appear to be unused
 
 ENDIF
 
