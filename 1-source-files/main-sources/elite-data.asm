@@ -9033,7 +9033,7 @@ ELSE
 
 ENDIF
 
-                        \ --- Mod: Code added for flicker-free Elite: --------->
+                        \ --- Mod: Code added for flicker-free planets: ------->
 
 IF _COMPACT
 

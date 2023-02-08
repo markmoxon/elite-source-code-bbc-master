@@ -13584,7 +13584,7 @@ NEXT
 
 .BL5
 
-                        \ --- Mod: Code added for flicker-free Elite: --------->
+                        \ --- Mod: Code added for flicker-free planets: ------->
 
  JSR DrawPlanetLine     \ Draw the current line from the old planet
 
@@ -13674,7 +13674,7 @@ NEXT
                         \ Byte LSP-1 of LSY2 is &FF, which indicates that we
                         \ need to store (X1, Y1) in the heap
 
-                        \ --- Mod: Code added for flicker-free Elite: --------->
+                        \ --- Mod: Code added for flicker-free planets: ------->
 
  JSR DrawPlanetLine     \ Draw the current line from the old planet
 
@@ -13690,7 +13690,7 @@ NEXT
 
 .BL8
 
-                        \ --- Mod: Code added for flicker-free Elite: --------->
+                        \ --- Mod: Code added for flicker-free planets: ------->
 
  LDA #&FF               \ Set bit 7 of K3+8 so we do not draw the current line
  STA K3+8               \ in the call to DrawPlanetLine, but store the
@@ -13712,7 +13712,7 @@ NEXT
 
  STY LSP                \ Update LSP to point to the same as Y
 
-                        \ --- Mod: Original Acornsoft code removed: ----------->
+                        \ --- Mod: Code removed for flicker-free planets: ----->
 
 \JSR LL30               \ Draw a line from (X1, Y1) to (X2, Y2)
 
@@ -13759,7 +13759,7 @@ NEXT
 \
 \ ******************************************************************************
 
-                        \ --- Mod: Code added for flicker-free Elite: --------->
+                        \ --- Mod: Code added for flicker-free planets: ------->
 
 IF _COMPACT
 
@@ -13804,7 +13804,7 @@ ENDIF
 \
 \ ******************************************************************************
 
-                        \ --- Mod: Code added for flicker-free Elite: --------->
+                        \ --- Mod: Code added for flicker-free planets: ------->
 
 .DrawPlanetLine
 
@@ -13934,7 +13934,7 @@ ENDIF
 \
 \ ******************************************************************************
 
-                        \ --- Mod: Code added for flicker-free Elite: --------->
+                        \ --- Mod: Code added for flicker-free planets: ------->
 
 .DrawNewPlanetLine
 
@@ -31480,7 +31480,7 @@ ENDIF
 
 .PL9
 
-                        \ --- Mod: Original Acornsoft code removed: ----------->
+                        \ --- Mod: Code removed for flicker-free planets: ----->
 
 \JSR WPLS2              \ Call WPLS2 to remove the planet from the screen
 \
@@ -31507,7 +31507,7 @@ ENDIF
 
 .PL20
 
-                        \ --- Mod: Original Acornsoft code removed: ----------->
+                        \ --- Mod: Code removed for flicker-free planets: ----->
 
 \RTS                    \ The planet doesn't fit on-screen, so return from the
 \                       \ subroutine
@@ -32058,7 +32058,7 @@ ENDIF
 
 .PL40
 
-                        \ --- Mod: Original Acornsoft code removed: ----------->
+                        \ --- Mod: Code removed for flicker-free planets: ----->
 
 \RTS                    \ Return from the subroutine
 
@@ -32655,7 +32655,7 @@ ENDIF
                         \ on-screen, so return from the subroutine (as RTS2
                         \ contains an RTS)
 
-                        \ --- Mod: Code added for flicker-free Elite: --------->
+                        \ --- Mod: Code added for flicker-free planets: ------->
 
                         \ We now set things up for flicker-free circle plotting,
                         \ by setting the following:
@@ -32861,7 +32861,7 @@ ENDIF
  BNE WP1                \ heap is empty), jump to WP1 to reset the line heap
                         \ without redrawing the planet
 
-                        \ --- Mod: Original Acornsoft code removed: ----------->
+                        \ --- Mod: Code removed for flicker-free planets: ----->
 
 \                       \ Otherwise Y is now 0, so we can use it as a counter to
 \                       \ loop through the lines in the line heap, redrawing
