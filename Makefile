@@ -17,12 +17,12 @@ PYTHON?=python
 ifeq ($(variant), compact)
   variant-master=2
   folder-master=/compact
-  suffix-master=-compact
+  suffix-master=-flicker-free-compact
   boot-master=-opt 2
 else
   variant-master=1
   folder-master=/sng47
-  suffix-master=-sng47
+  suffix-master=-flicker-free-sng47
   boot-master=-boot M128Elt
 endif
 
@@ -37,7 +37,7 @@ build:
 	$(BEEBASM) -i 1-source-files/main-sources/elite-data.asm -v >> 3-assembled-output/compile.txt
 	$(BEEBASM) -i 1-source-files/main-sources/elite-readme.asm -v >> 3-assembled-output/compile.txt
 	$(PYTHON) 2-build-files/elite-checksum.py -u -rel$(variant-master)
-	$(BEEBASM) -i 1-source-files/main-sources/elite-disc.asm $(boot-master) -do 5-compiled-game-discs/elite-master-flicker-free$(suffix-master).ssd -title "E L I T E"
+	$(BEEBASM) -i 1-source-files/main-sources/elite-disc.asm $(boot-master) -do 5-compiled-game-discs/elite-master$(suffix-master).ssd -title "E L I T E"
 
 .PHONY:encrypt
 encrypt:
@@ -50,7 +50,7 @@ encrypt:
 	$(BEEBASM) -i 1-source-files/main-sources/elite-data.asm -v >> 3-assembled-output/compile.txt
 	$(BEEBASM) -i 1-source-files/main-sources/elite-readme.asm -v >> 3-assembled-output/compile.txt
 	$(PYTHON) 2-build-files/elite-checksum.py -rel$(variant-master)
-	$(BEEBASM) -i 1-source-files/main-sources/elite-disc.asm $(boot-master) -do 5-compiled-game-discs/elite-master-flicker-free$(suffix-master).ssd -title "E L I T E"
+	$(BEEBASM) -i 1-source-files/main-sources/elite-disc.asm $(boot-master) -do 5-compiled-game-discs/elite-master$(suffix-master).ssd -title "E L I T E"
 
 .PHONY:verify
 verify:
@@ -58,5 +58,5 @@ verify:
 
 .PHONY:b2
 b2:
-	curl -G "http://localhost:48075/reset/b2" --data-urlencode "config=Master 128 (MOS 3.20)"
-	curl -H "Content-Type:application/binary" --upload-file "5-compiled-game-discs/elite-master-flicker-free$(suffix-master).ssd" "http://localhost:48075/run/b2?name=elite-master-flicker-free$(suffix-master).ssd"
+	curl -G "http://localhost:48075/reset/b2"
+	curl -H "Content-Type:application/binary" --upload-file "5-compiled-game-discs/elite-master$(suffix-master).ssd" "http://localhost:48075/run/b2?name=elite-master$(suffix-master).ssd"
