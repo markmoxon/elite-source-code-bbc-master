@@ -35,7 +35,7 @@ _COMPACT                = (_VARIANT = 2)
  EQUB 10, 13
  EQUS "---------------------------------------"
  EQUB 10, 13
- EQUS "Acornsoft Elite"
+ EQUS "Acornsoft Elite (flicker-free version)"
  EQUB 10, 13
  EQUB 10, 13
  EQUS "Version: BBC Master"
@@ -58,7 +58,15 @@ ELIF _COMPACT
 ENDIF
 
  EQUB 10, 13
+ EQUS "Contains flicker-free planet drawing"
+ EQUB 10, 13
+ EQUS "routines by Mark Moxon"
+ EQUB 10, 13
+ EQUB 10, 13
  EQUS "See www.bbcelite.com for details"
+ EQUB 10, 13
+ EQUB 10, 13
+ EQUS "Build: ", TIME$("%F %T")
  EQUB 10, 13
  EQUS "---------------------------------------"
  EQUB 10, 13
