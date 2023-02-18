@@ -6876,7 +6876,7 @@ S.ELTB &3579  &3DA8  &1300  &3579
 .HFL2
      444B   A9 01      LDA #&01
      444D   85 5D      STA &5D
-     444F   20 BB 60   JSR &60BB
+     444F   20 B1 60   JSR &60B1
      4452   06 56      ASL &56
      4454   B0 06      BCS &445C
      4456   A5 56      LDA &56
@@ -8331,7 +8331,7 @@ S.ELTC &3DA8  &4ACA  &1300  &3DA8
      4E33   86 8C      STX &8C
      4E35   A9 F0      LDA #&F0
      4E37   85 11      STA &11
-     4E39   4C BB 60   JMP &60BB
+     4E39   4C B1 60   JMP &60B1
 .TT219
      4E3C   A9 02      LDA #&02
      4E3E   20 49 4B   JSR &4B49
@@ -10887,24 +10887,24 @@ S.ELTD &4ACA  &5818  &1300  &4ACA
 .CIRCLE
      6097   20 81 61   JSR &6181
      609A   B0 FA      BCS &6096
-     609C   64 8F      STZ &8F
-     609E   A5 5D      LDA &5D
-     60A0   85 90      STA &90
-     60A2   A0 01      LDY #&01
-     60A4   84 5D      STY &5D
-     60A6   A9 00      LDA #&00
-     60A8   8D 7E 0E   STA &0E7E
-     60AB   A6 56      LDX &56
-     60AD   A9 08      LDA #&08
-     60AF   E0 08      CPX #&08
-     60B1   90 06      BCC &60B9
-     60B3   4A         LSR A
-     60B4   E0 3C      CPX #&3C
-     60B6   90 01      BCC &60B9
-     60B8   4A         LSR A
+     609C   A9 00      LDA #&00
+     609E   8D 7E 0E   STA &0E7E
+     60A1   A6 56      LDX &56
+     60A3   A9 08      LDA #&08
+     60A5   E0 08      CPX #&08
+     60A7   90 06      BCC &60AF
+     60A9   4A         LSR A
+     60AA   E0 3C      CPX #&3C
+     60AC   90 01      BCC &60AF
+     60AE   4A         LSR A
 .PL89
-     60B9   85 8C      STA &8C
+     60AF   85 8C      STA &8C
 .CIRCLE2
+     60B1   64 8F      STZ &8F
+     60B3   A6 5D      LDX &5D
+     60B5   86 90      STX &90
+     60B7   A2 01      LDX #&01
+     60B9   86 5D      STX &5D
      60BB   A2 FF      LDX #&FF
      60BD   86 89      STX &89
      60BF   E8         INX

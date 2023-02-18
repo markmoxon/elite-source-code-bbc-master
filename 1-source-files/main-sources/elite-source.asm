@@ -32655,29 +32655,6 @@ ENDIF
                         \ on-screen, so return from the subroutine (as RTS2
                         \ contains an RTS)
 
-                        \ --- Mod: Code added for flicker-free planets: ------->
-
-                        \ We now set things up for flicker-free circle plotting,
-                        \ by setting the following:
-                        \
-                        \   XX14 = offset to the first coordinate in the ball
-                        \          line heap
-                        \
-                        \   XX14+1 = the number of bytes in the heap for the
-                        \            circle that's currently on-screen (or 0 if
-                        \            there is no ship currently on-screen)
-
- STZ XX14               \ Set XX14 = 0, to point to the offset before the first
-                        \ set of circle coordinates in the ball line heap
-
- LDA LSP                \ Set XX14+1 to the last byte of the ball line heap
- STA XX14+1
-
- LDY #1                 \ Set LSP = 1 to reset the ball line heap pointer
- STY LSP
-
-                        \ --- End of added code ------------------------------->
-
  LDA #0                 \ Set LSX2 = 0 to indicate that the ball line heap is
  STA LSX2               \ not empty, as we are about to fill it
 
@@ -32733,6 +32710,29 @@ ENDIF
 \ ******************************************************************************
 
 .CIRCLE2
+
+                        \ --- Mod: Code added for flicker-free planets: ------->
+
+                        \ We now set things up for flicker-free circle plotting,
+                        \ by setting the following:
+                        \
+                        \   XX14 = offset to the first coordinate in the ball
+                        \          line heap
+                        \
+                        \   XX14+1 = the number of bytes in the heap for the
+                        \            circle that's currently on-screen (or 0 if
+                        \            there is no ship currently on-screen)
+
+ STZ XX14               \ Set XX14 = 0, to point to the offset before the first
+                        \ set of circle coordinates in the ball line heap
+
+ LDX LSP                \ Set XX14+1 to the last byte of the ball line heap
+ STX XX14+1
+
+ LDX #1                 \ Set LSP = 1 to reset the ball line heap pointer
+ STX LSP
+
+                        \ --- End of added code ------------------------------->
 
  LDX #&FF               \ Set FLAG = &FF to reset the ball line heap in the call
  STX FLAG               \ to the BLINE routine below
