@@ -31522,7 +31522,7 @@ ENDIF
 
  JMP WPLS2              \ Call WPLS2 to remove the planet from the screen
 
-                        \ --- End of added code ------------------------------->
+                        \ --- End of replacement ------------------------------>
 
 .PL25
 
