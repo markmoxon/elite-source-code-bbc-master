@@ -29,8 +29,27 @@ for arg in argv[1:]:
     if arg == "-rel2":
         release = 2
 
-print("Elite Big Code File")
+print("Master Elite Checksum")
 print("Encryption = ", Encrypt)
+
+# Configuration variables for scrambling code and calculating checksums
+#
+# Values must match those in 3-assembled-output/compile.txt
+#
+# If you alter the source code, then you should extract the correct values for
+# the following variables and plug them into the following, otherwise the game
+# will fail the checksum process and will hang on loading
+#
+# You can find the correct values for these variables by building your updated
+# source, and then searching compile.txt for "elite-checksum.py", where the new
+# values will be listed
+
+if release == 1:
+    # SNG47
+    f = 0x7F48                  # F%
+elif release == 2:
+    # Compact
+    f = 0x7FED                  # F%
 
 # Configuration variables for BCODE
 
@@ -40,14 +59,14 @@ scramble_from = 0x2cc1
 
 if release == 1:
     # SNG47
-    scramble_to = 0x7F48 - 1    # F%-1
+    scramble_to = f - 1
 elif release == 2:
     # Compact
-    scramble_to = 0x7FED - 1    # F%-1
+    scramble_to = f - 1
+
+# Load assembled code file for BCODE
 
 data_block = bytearray()
-
-# Load assembled code file
 
 elite_file = open("3-assembled-output/BCODE.unprot.bin", "rb")
 data_block.extend(elite_file.read())
@@ -66,7 +85,7 @@ for i in range(CH, 0, -1):
     CH = CH % 256
     CH = CH ^ data_block[commander_start + i + 8]
 
-print("Commander checksum = ", CH)
+print("Commander checksum = ", hex(CH))
 
 # Must have Commander checksum otherwise game will lock
 
@@ -98,7 +117,7 @@ scramble_to = 0xB1FF
 
 data_block = bytearray()
 
-# Load assembled code file
+# Load assembled code file for BDATA
 
 elite_file = open("3-assembled-output/BDATA.unprot.bin", "rb")
 data_block.extend(elite_file.read())
