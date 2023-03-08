@@ -15384,6 +15384,8 @@ Reload at &79E1
 S.ELTH &79E1  &7FF4  &1300  &79E1 
 S.BCODE &1300  &7FF4  &1300  &1300 
 Saving file '3-assembled-output/BCODE.unprot.bin'
+Addresses for the scramble routines in elite-checksum.py
+F% = &7FF4 
 .DIALS
      7E00
      7F00
