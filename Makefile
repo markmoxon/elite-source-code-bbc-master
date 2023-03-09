@@ -23,7 +23,7 @@ else
   variant-master=1
   folder-master=/sng47
   suffix-master=-sng47
-  boot-master=-boot M128Elt
+  boot-master=-opt 3
 endif
 
 .PHONY:build

@@ -225,7 +225,21 @@ ORG &0000
 
  SKIP 0                 \ The start of the zero page workspace
 
- SKIP 2                 \ These bytes appear to be unused
+                        \ --- Mod: Code removed for music: -------------------->
+
+\SKIP 2                 \ These bytes appear to be unused
+
+                        \ --- And replaced by: -------------------------------->
+
+.XX4
+
+ SKIP 1                 \ Temporary storage, used in a number of places
+
+.XX20
+
+ SKIP 1                 \ Temporary storage, used in a number of places
+
+                        \ --- End of replacement ------------------------------>
 
 IF _COMPACT
 
@@ -248,7 +262,15 @@ ENDIF
 
  SKIP 1                 \ Temporary storage, used in a number of places
 
- SKIP 3                 \ These bytes appear to be unused
+                        \ --- Mod: Code removed for music: -------------------->
+
+\SKIP 3                 \ These bytes appear to be unused
+
+                        \ --- And replaced by: -------------------------------->
+
+ SKIP 2                 \ These bytes appear to be unused
+
+                        \ --- End of replacement ------------------------------>
 
 .SC
 
@@ -333,10 +355,59 @@ ENDIF
 
  SKIP 0                 \ Temporary storage, used in a number of places
 
+                        \ --- Mod: Code removed for music: -------------------->
+
+\.XX2
+\
+\SKIP 14                \ Temporary storage, used to store the visibility of the
+\                       \ ship's faces during the ship-drawing routine at LL9
+
+                        \ --- And replaced by: -------------------------------->
+
 .XX2
 
- SKIP 14                \ Temporary storage, used to store the visibility of the
+ SKIP 6                 \ Temporary storage, used to store the visibility of the
                         \ ship's faces during the ship-drawing routine at LL9
+
+.K2
+
+ SKIP 4                 \ Temporary storage, used in a number of places
+
+.RAT
+
+ SKIP 1                 \ Used to store different signs depending on the current
+                        \ space view, for use in calculating stardust movement
+
+.RAT2
+
+ SKIP 1                 \ Temporary storage, used to store the pitch and roll
+                        \ signs when moving objects and stardust
+
+.STP
+
+ SKIP 1                 \ The step size for drawing circles
+                        \
+                        \ Circles in Elite are split up into 64 points, and the
+                        \ step size determines how many points to skip with each
+                        \ straight-line segment, so the smaller the step size,
+                        \ the smoother the circle. The values used are:
+                        \
+                        \   * 2 for big planets and the circles on the charts
+                        \   * 4 for medium planets and the launch tunnel
+                        \   * 8 for small planets and the hyperspace tunnel
+                        \
+                        \ As the step size increases we move from smoother
+                        \ circles at the top to more polygonal at the bottom.
+                        \ See the CIRCLE2 routine for more details
+
+.FLAG
+
+ SKIP 1                 \ A flag that's used to define whether this is the first
+                        \ call to the ball line routine in BLINE, so it knows
+                        \ whether to wait for the second call before storing
+                        \ segment data in the ball line heap
+
+                        \ --- End of replacement ------------------------------>
 
 .K4
 
@@ -692,12 +763,16 @@ ENDIF
                         \ for counters when drawing explosion clouds and partial
                         \ circles
 
-.FLAG
+                        \ --- Mod: Code removed for music: -------------------->
 
- SKIP 1                 \ A flag that's used to define whether this is the first
-                        \ call to the ball line routine in BLINE, so it knows
-                        \ whether to wait for the second call before storing
-                        \ segment data in the ball line heap
+\.FLAG
+\
+\SKIP 1                 \ A flag that's used to define whether this is the first
+\                       \ call to the ball line routine in BLINE, so it knows
+\                       \ whether to wait for the second call before storing
+\                       \ segment data in the ball line heap
+
+                        \ --- End of removed code ----------------------------->
 
 .CNT
 
@@ -710,30 +785,34 @@ ENDIF
                         \ to store the segment number where the arc of a partial
                         \ circle should start
 
-.STP
+                        \ --- Mod: Code removed for music: -------------------->
 
- SKIP 1                 \ The step size for drawing circles
-                        \
-                        \ Circles in Elite are split up into 64 points, and the
-                        \ step size determines how many points to skip with each
-                        \ straight-line segment, so the smaller the step size,
-                        \ the smoother the circle. The values used are:
-                        \
-                        \   * 2 for big planets and the circles on the charts
-                        \   * 4 for medium planets and the launch tunnel
-                        \   * 8 for small planets and the hyperspace tunnel
-                        \
-                        \ As the step size increases we move from smoother
-                        \ circles at the top to more polygonal at the bottom.
-                        \ See the CIRCLE2 routine for more details
+\.STP
+\
+\SKIP 1                 \ The step size for drawing circles
+\                       \
+\                       \ Circles in Elite are split up into 64 points, and the
+\                       \ step size determines how many points to skip with each
+\                       \ straight-line segment, so the smaller the step size,
+\                       \ the smoother the circle. The values used are:
+\                       \
+\                       \   * 2 for big planets and the circles on the charts
+\                       \   * 4 for medium planets and the launch tunnel
+\                       \   * 8 for small planets and the hyperspace tunnel
+\                       \
+\                       \ As the step size increases we move from smoother
+\                       \ circles at the top to more polygonal at the bottom.
+\                       \ See the CIRCLE2 routine for more details
+\
+\.XX4
+\
+\SKIP 1                 \ Temporary storage, used in a number of places
+\
+\.XX20
+\
+\SKIP 1                 \ Temporary storage, used in a number of places
 
-.XX4
-
- SKIP 1                 \ Temporary storage, used in a number of places
-
-.XX20
-
- SKIP 1                 \ Temporary storage, used in a number of places
+                        \ --- End of removed code ----------------------------->
 
 .XX14
 
@@ -747,19 +826,43 @@ ENDIF
                         \ old ship that is currently shown on-screen and which
                         \ we need to erase
 
-.RAT
+                        \ --- Mod: Code removed for music: -------------------->
 
- SKIP 1                 \ Used to store different signs depending on the current
-                        \ space view, for use in calculating stardust movement
+\.RAT
+\
+\SKIP 1                 \ Used to store different signs depending on the current
+\                       \ space view, for use in calculating stardust movement
+\
+\.RAT2
+\
+\SKIP 1                 \ Temporary storage, used to store the pitch and roll
+\                       \ signs when moving objects and stardust
+\
+\.K2
+\
+\SKIP 4                 \ Temporary storage, used in a number of places
 
-.RAT2
+                        \ --- And replaced by: -------------------------------->
 
- SKIP 1                 \ Temporary storage, used to store the pitch and roll
-                        \ signs when moving objects and stardust
+.musicWorkspace
 
-.K2
+ SKIP 8                 \ Storage for the music player, &0092 to &0099 inclusive
 
- SKIP 4                 \ Temporary storage, used in a number of places
+.musicRomNumber
+
+ SKIP 1                 \ The bank number of the sideways ROM slot containing
+                        \ the music player at &009A
+
+.musicStatus
+
+ SKIP 1                 \ A flag to determine whether to play the currently
+                        \ selected music:
+                        \
+                        \   * 0 = do not play the music
+                        \
+                        \   * Non-zero = do play the music
+
+                        \ --- End of replacement ------------------------------>
 
 .widget
 
@@ -9761,6 +9864,12 @@ ENDIF
 
 .DOENTRY
 
+                        \ --- Mod: Code added for music: ---------------------->
+
+ JSR StopMusic          \ Stop any music that is currently playing
+
+                        \ --- End of added code ------------------------------->
+
  JSR RES2               \ Reset a number of flight variables and workspaces
 
  JSR LAUN               \ Show the space station docking tunnel
@@ -9902,6 +10011,118 @@ ENDIF
  EQUB &08, &EF, &10
  EQUB &DF, &20, &BF
  EQUB &40, &7F, &80
+
+\ ******************************************************************************
+\
+\       Name: IRQMusic
+\       Type: Subroutine
+\   Category: Music
+\    Summary: The IRQ handler for playing music
+\
+\ ******************************************************************************
+
+                        \ --- Mod: Code added for music: ---------------------->
+
+.IRQMusic
+
+ STA VIA+&45            \ Re-do the instruction we replaced when inserting this
+                        \ routine into the standard IRQ1 interrupt handler
+
+ LDA musicStatus        \ If the music status flag is zero, then music is
+ BEQ mirq1              \ disabled, so jump to mirq1 to skip playing the
+                        \ currently selected music
+
+ JSR PlayMusic+3        \ Play the currently selected music
+
+.mirq1
+
+ JMP LINSCN+20          \ Jump back to the normal interrupt handler
+
+                        \ --- End of added code ------------------------------->
+
+\ ******************************************************************************
+\
+\       Name: PlayMusic
+\       Type: Subroutine
+\   Category: Music
+\    Summary: Select, play or stop music
+\
+\ ------------------------------------------------------------------------------
+\
+\ Arguments:
+\
+\   A                   The action to perform:
+\
+\                         * 0 = Select the title music
+\
+\                         * 3 = Select the docking music
+\
+\                         * 6 = Play the currently selected music
+\
+\                         * 9 = Stop the currently selected music
+\
+\ Other entry points:
+\
+\   PlayMusic+3         Repeat the last action (typically used to continue
+\                       playing in the interrupt routine)
+\
+\ ******************************************************************************
+
+                        \ --- Mod: Code added for music: ---------------------->
+
+.PlayMusic
+
+ STA play1+1            \ Modify JSR to jump to &8000 + A
+
+ LDA &F4                \ Fetch the RAM copy of the currently selected ROM and
+ PHA                    \ store it on the stack
+
+ LDA musicRomNumber     \ Fetch the number of the music ROM and switch to it
+ STA &F4
+ STA &FE30
+
+ TYA                    \ Store X and Y on the stack
+ PHA
+ TXA
+ PHA
+
+.play1
+
+ JSR &8006              \ Call the relevant routine in the music ROM (this
+                        \ address is set to &80xx, where xx is the value of A
+                        \ that was passed to the routine)
+
+ PLA                    \ Retrieve X and Y from the stack
+ TAX
+ PLA
+ TAY
+
+ PLA                    \ Set the ROM number back to the value that we stored
+ STA &F4                \ above, to switch back to the previous ROM
+ STA &FE30
+
+ RTS                    \ Return from the subroutine
+
+                        \ --- End of added code ------------------------------->
+
+\ ******************************************************************************
+\
+\       Name: StopMusic
+\       Type: Subroutine
+\   Category: Music
+\    Summary: Stop any music that is currently playing
+\
+\ ******************************************************************************
+
+                        \ --- Mod: Code added for music: ---------------------->
+
+.StopMusic
+
+ LDA #9                 \ Stop any music that is currently playing and select
+ JMP PlayMusic          \ the docking music, returning from the subroutine using
+                        \ a tail call
+
+                        \ --- End of added code ------------------------------->
 
 \ ******************************************************************************
 \
@@ -10251,6 +10472,12 @@ ENDIF
  LDA #0                 \ The "cancel docking computer" key is bring pressed,
  STA auto               \ so turn it off by setting auto to 0
 
+                        \ --- Mod: Code added for music: ---------------------->
+
+ JSR StopMusic          \ Stop any music that is currently playing
+
+                        \ --- End of added code ------------------------------->
+
 .MA78
 
  LDA KY13               \ If ESCAPE is being pressed and we have an escape pod
@@ -10299,6 +10526,13 @@ ENDIF
 
  STA auto               \ Set auto to the non-zero value of A, so the docking
                         \ computer is activated
+
+                        \ --- Mod: Code added for music: ---------------------->
+
+ STA musicStatus        \ Set the status flag to a non-zero value to indicate we
+                        \ are playing music, so the docking music starts playing
+
+                        \ --- End of added code ------------------------------->
 
 .MA68
 
@@ -10785,6 +11019,12 @@ ENDIF
 .GOIN
 
                         \ If we arrive here, we just docked successfully
+
+                        \ --- Mod: Code added for music: ---------------------->
+
+ JSR StopMusic          \ Stop any music that is currently playing
+
+                        \ --- End of added code ------------------------------->
 
  JMP DOENTRY            \ Go to the docking bay (i.e. show the ship hangar)
 
@@ -36136,6 +36376,32 @@ ENDIF
  LDA #3                 \ Set XC = 3 (set text cursor to column 3)
  STA XC
 
+                        \ --- Mod: Code added for music: ---------------------->
+
+ LDA #0                 \ Select the title music
+ JSR PlayMusic
+
+ LDA #6                 \ Modify the PlayMusic routine so it plays music on the
+ STA play1+1            \ next call
+
+ SEI                    \ Disable interrupts so we can update the interrupt
+                        \ handler
+
+ LDA #&4C               \ Insert JMP IRQMusic into the LINSCN handler, replacing
+ STA LINSCN+17          \ the STA VIA+&44 instruction, so the IRQMusic routine
+ LDA #LO(IRQMusic)      \ gets called on each vertical sync
+ STA LINSCN+18
+ LDA #HI(IRQMusic)
+ STA LINSCN+19
+
+ CLI                    \ Re-enable interrupts
+
+ LDA #&FF               \ Set the status flag to a non-zero value to indicate
+ STA musicStatus        \ we are playing music, so the title music starts
+                        \ playing
+
+                        \ --- End of added code ------------------------------->
+
  LDX #CYL               \ Call TITLE to show a rotating Cobra Mk III (#CYL) and
  LDA #6                 \ token 6 ("LOAD NEW {single cap}COMMANDER {all caps}
  LDY #200               \ (Y/N)?{sentence case}{cr}{cr}"), with the ship at a
@@ -36177,6 +36443,12 @@ ENDIF
  LDX #COU               \ 7 ("PRESS SPACE OR FIRE,{single cap}COMMANDER.{cr}
  LDY #100               \ {cr}"), with the ship at a distance of 100, returning
  JSR TITLE              \ with the internal number of the key pressed in A
+
+                        \ --- Mod: Code added for music: ---------------------->
+
+ JSR StopMusic          \ Stop the title music
+
+                        \ --- End of added code ------------------------------->
 
  JSR ping               \ Set the target system coordinates (QQ9, QQ10) to the
                         \ current system coordinates (QQ0, QQ1) we just loaded
@@ -37273,6 +37545,12 @@ ENDIF
 \ ******************************************************************************
 
 .SVE
+
+                        \ --- Mod: Code added for music: ---------------------->
+
+ JSR StopMusic          \ Stop any music that is currently playing
+
+                        \ --- End of added code ------------------------------->
 
  TSX                    \ Transfer the stack pointer to X and store it in stack,
  STX stack              \ so we can restore it in the BRBR routine
@@ -38810,11 +39088,30 @@ ENDIF
                         \ ASCII code of the key pressed in X (or 0 for no key
                         \ press)
 
- CPX #'Q'               \ If "Q" is not being pressed, skip to DK6
- BNE DK6
+                        \ --- Mod: Code removed for music: -------------------->
 
- LDX #&FF               \ "Q" is being pressed, so set DNOIZ to &FF to turn the
- STX DNOIZ              \ sound off
+\CPX #'Q'               \ If "Q" is not being pressed, skip to DK6
+\BNE DK6
+\
+\LDX #&FF               \ "Q" is being pressed, so set DNOIZ to &FF to turn the
+\STX DNOIZ              \ sound off
+
+                        \ --- And replaced by: -------------------------------->
+
+ LDA #12                \ Process the "Q" and music-related options
+ JSR PlayMusic
+
+
+ BCC DK6                \ If no music-related options were changed, then the C
+                        \ flag will be clear, so jump to DK6 to skip the
+                        \ following
+
+ JSR BELL               \ Make a beep sound so we know something has happened
+
+ JSR DELAY              \ Wait for Y vertical syncs (Y is between 64 and 70, so
+                        \ this is always a bit longer than a second)
+
+                        \ --- End of replacement ------------------------------>
 
  LDX #&51               \ Set X to &51, which is the internal key for "S" on the
                         \ BBC Micro. This is set to ensure that X has the same

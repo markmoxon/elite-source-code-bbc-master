@@ -44,4 +44,10 @@ ELIF _COMPACT
  PUTFILE "3-assembled-output/BCODE.bin", "ELITE", &001300, &002C6C
 ENDIF
 
+PUTFILE "1-source-files/other-files/E.MAX.bin", "E.MAX", &000000, &000000
+
 PUTFILE "3-assembled-output/README.txt", "README", &FFFFFF, &FFFFFF
+
+PUTFILE "1-source-files/boot-files/$.!BOOT.bin", "!BOOT", &FFFFFF, &FFFFFF
+PUTBASIC "1-source-files/music/load-music.bas", "ELITE"
+PUTFILE "1-source-files/music/elite-music-master.rom", "MUSIC", &008000, &008000
