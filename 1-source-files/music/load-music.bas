@@ -6,7 +6,7 @@ RomSel = &FE30
 RamSel = &FE32
 UsrDat = &FE60
 UsrDDR = &FE62
-romNumber = &0094
+romNumber = &0094 : REM Set to address of .musicRomNumber
 
 PRINT"Acornsoft Elite... with music!"
 PRINT"=============================="
