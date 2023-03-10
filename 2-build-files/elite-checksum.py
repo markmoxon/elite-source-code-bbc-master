@@ -50,8 +50,8 @@ if release == 1:
     default_per_cent = 0x3509   # DEFAULT%
 elif release == 2:
     # Compact
-    f = 0x7FED                  # F%
-    default_per_cent = 0x34CD   # DEFAULT%
+    f = 0x7FD2                  # F%
+    default_per_cent = 0x3509   # DEFAULT%
 
 # Configuration variables for BCODE
 

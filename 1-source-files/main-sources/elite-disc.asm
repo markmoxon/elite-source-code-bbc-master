@@ -39,7 +39,7 @@ IF _SNG47
  PUTFILE "3-assembled-output/BDATA.bin", "BDATA", &000000, &000000
  PUTFILE "3-assembled-output/BCODE.bin", "BCODE", &000000, &000000
 ELIF _COMPACT
- PUTFILE "3-assembled-output/M128Elt.bin", "!BOOT", &000E00, &000E43
+ PUTFILE "3-assembled-output/M128Elt.bin", "M128Elt", &000E00, &000E43
  PUTFILE "3-assembled-output/BDATA.bin", "BDATA", &001300, &001300
  PUTFILE "3-assembled-output/BCODE.bin", "ELITE", &001300, &002C6C
 ENDIF
@@ -49,5 +49,5 @@ PUTFILE "1-source-files/other-files/E.MAX.bin", "E.MAX", &000000, &000000
 PUTFILE "3-assembled-output/README.txt", "README", &FFFFFF, &FFFFFF
 
 PUTFILE "1-source-files/boot-files/$.!BOOT.bin", "!BOOT", &FFFFFF, &FFFFFF
-PUTBASIC "1-source-files/music/load-music.bas", "ELITE"
+PUTBASIC "1-source-files/music/load-music.bas", "ELITEM"
 PUTFILE "1-source-files/music/elite-music-master.rom", "MUSIC", &008000, &008000

@@ -268,7 +268,15 @@ ENDIF
 
                         \ --- And replaced by: -------------------------------->
 
+IF _SNG47
+
  SKIP 2                 \ These bytes appear to be unused
+
+ELIF _COMPACT
+
+ SKIP 1                 \ These bytes appear to be unused
+
+ENDIF
 
                         \ --- End of replacement ------------------------------>
 
@@ -45807,6 +45815,12 @@ LOAD_H% = LOAD% + P% - CODE%
 \
 \ ******************************************************************************
 
+                        \ --- Mod: Code added for music: ---------------------->
+
+IF _SNG47
+
+                        \ --- End of added code ------------------------------->
+
 .TRANTABLE
 
  EQUB &00, &40, &FE     \ MOS code
@@ -45892,6 +45906,17 @@ LOAD_H% = LOAD% + P% - CODE%
 
  EQUB &34, &35, &32     \ MOS code
  EQUB &2C, &4E, &E3
+
+                        \ --- Mod: Code added for music: ---------------------->
+
+ELIF _COMPACT
+
+ TRANTABLE = &9D95      \ TRANTABLE has been moved to this address in
+                        \ elite-data.asm
+
+ENDIF
+
+                        \ --- End of added code ------------------------------->
 
 \ ******************************************************************************
 \
