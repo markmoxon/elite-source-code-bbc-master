@@ -17,12 +17,12 @@ PYTHON?=python
 ifeq ($(variant), compact)
   variant-master=2
   folder-master=/compact
-  suffix-master=-compact
+  suffix-master=-music-compact
   boot-master=-opt 2
 else
   variant-master=1
   folder-master=/sng47
-  suffix-master=-sng47
+  suffix-master=-music-sng47
   boot-master=-opt 3
 endif
 
