@@ -10,8 +10,8 @@ romNumber = &0094 : REM Set to address of .musicRomNumber
 
 PRINT"Acornsoft Elite... with music!"
 PRINT"=============================="
-PRINT'"For the BBC Master 128"
-PRINT'"Based on the Acornsoft SNG47 release"
+PRINT'"For the BBC Master Compact"
+PRINT'"Based on the Superior Software release"
 PRINT"of Elite by Ian Bell and David Braben"
 PRINT"Copyright (c) Acornsoft 1986"
 PRINT'"Sound routines by Kieran Connell and"
