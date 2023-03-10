@@ -89,6 +89,8 @@ IF N%=0 THEN PRINT'"Can't run:";CHR$129;"no sideways RAM detected":END
 PRINT'"Detected ";16-?&90;" sideways RAM bank";
 IF N% > 1 THEN PRINT "s";
 REM IF N% > 0 THEN FOR X% = ?&90 TO 15 : PRINT;" ";X%?&90; : NEXT
+IF ?(&90+?&90) = 6 AND N% = 1 THEN PRINT", but Elite needs that one to run (RAM bank 6)":END
+IF ?(&90+?&90) = 6 AND N% > 1 THEN ?(&90+?&90) = ?(&90+?&90+1) : REM Skip bank 6
 ?romNumber=?(&90+?&90):REM STORE RAM BANK USED SOMEWHERE IN ZERO PAGE
 PRINT'"Loading music into RAM bank ";?romNumber;"...";
 OSCLI "SRLOAD MUSIC 8000 "+STR$(?romNumber)
