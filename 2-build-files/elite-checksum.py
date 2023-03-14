@@ -46,12 +46,12 @@ print("Encryption = ", Encrypt)
 
 if release == 1:
     # SNG47
-    f = 0x7FAD                  # F%
-    default_per_cent = 0x3509   # DEFAULT%
+    f = 0x7FAE                  # F%
+    default_per_cent = 0x350A   # DEFAULT%
 elif release == 2:
     # Compact
-    f = 0x7FD2                  # F%
-    default_per_cent = 0x3509   # DEFAULT%
+    f = 0x7FD3                  # F%
+    default_per_cent = 0x350A   # DEFAULT%
 
 # Configuration variables for BCODE
 
