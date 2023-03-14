@@ -39109,7 +39109,6 @@ ENDIF
  LDA #12                \ Process the "Q" and music-related options
  JSR PlayMusic
 
-
  BCC DK6                \ If no music-related options were changed, then the C
                         \ flag will be clear, so jump to DK6 to skip the
                         \ following
