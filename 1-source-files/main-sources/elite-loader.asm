@@ -25,15 +25,15 @@
 \
 \ ******************************************************************************
 
-INCLUDE "1-source-files/main-sources/elite-build-options.asm"
+ INCLUDE "1-source-files/main-sources/elite-build-options.asm"
 
-CPU 1                   \ Switch to 65SC12 assembly, as this code runs on the
+ CPU 1                  \ Switch to 65SC12 assembly, as this code runs on the
                         \ BBC Master
 
-_SNG47                  = (_VARIANT = 1)
-_COMPACT                = (_VARIANT = 2)
+ _SNG47                 = (_VARIANT = 1)
+ _COMPACT               = (_VARIANT = 2)
 
-GUARD &C000             \ Guard against assembling over MOS memory
+ GUARD &C000            \ Guard against assembling over MOS memory
 
 \ ******************************************************************************
 \
@@ -41,16 +41,16 @@ GUARD &C000             \ Guard against assembling over MOS memory
 \
 \ ******************************************************************************
 
-N% = 67                 \ N% is set to the number of bytes in the VDU table, so
+ N% = 67                \ N% is set to the number of bytes in the VDU table, so
                         \ we can loop through them below
 
-VIA = &FE00             \ Memory-mapped space for accessing internal hardware,
+ VIA = &FE00            \ Memory-mapped space for accessing internal hardware,
                         \ such as the video ULA, 6845 CRTC and 6522 VIAs (also
                         \ known as SHEILA)
 
-OSWRCH = &FFEE          \ The address for the OSWRCH routine
-OSBYTE = &FFF4          \ The address for the OSBYTE routine
-OSCLI = &FFF7           \ The address for the OSCLI routine
+ OSWRCH = &FFEE         \ The address for the OSWRCH routine
+ OSBYTE = &FFF4         \ The address for the OSBYTE routine
+ OSCLI = &FFF7          \ The address for the OSCLI routine
 
 \ ******************************************************************************
 \
@@ -62,7 +62,7 @@ OSCLI = &FFF7           \ The address for the OSCLI routine
 \
 \ ******************************************************************************
 
-ORG &0002
+ ORG &0002
 
 IF _COMPACT
 
@@ -76,7 +76,7 @@ IF _COMPACT
 
 ENDIF
 
-ORG &0070
+ ORG &0070
 
 .ZP
 
@@ -98,7 +98,7 @@ ORG &0070
 
  SKIP 1                 \ Temporary storage, used in a number of places
 
-ORG &00F4
+ ORG &00F4
 
 .LATCH
 
@@ -111,10 +111,10 @@ ORG &00F4
 \
 \ ******************************************************************************
 
-CODE% = &0E00
-LOAD% = &0E00
+ CODE% = &0E00
+ LOAD% = &0E00
 
-ORG CODE%
+ ORG CODE%
 
 \ ******************************************************************************
 \
@@ -1247,6 +1247,6 @@ ENDIF
 \
 \ ******************************************************************************
 
-PRINT "S.M128Elt ", ~CODE%, " ", ~P%, " ", ~LOAD%, " ", ~LOAD%
-SAVE "3-assembled-output/M128Elt.bin", CODE%, P%, LOAD%
+ PRINT "S.M128Elt ", ~CODE%, " ", ~P%, " ", ~LOAD%, " ", ~LOAD%
+ SAVE "3-assembled-output/M128Elt.bin", CODE%, P%, LOAD%
 
