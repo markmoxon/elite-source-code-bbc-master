@@ -29,10 +29,10 @@
 \
 \ ******************************************************************************
 
-INCLUDE "1-source-files/main-sources/elite-build-options.asm"
+ INCLUDE "1-source-files/main-sources/elite-build-options.asm"
 
-_SNG47                  = (_VARIANT = 1)
-_COMPACT                = (_VARIANT = 2)
+ _SNG47                 = (_VARIANT = 1)
+ _COMPACT               = (_VARIANT = 2)
 
 IF _SNG47
  PUTFILE "3-assembled-output/M128Elt.bin", "M128Elt", &FF0E00, &FF0E43
@@ -46,9 +46,9 @@ ELIF _COMPACT
  PUTBASIC "1-source-files/music/load-music-compact.bas", "ELITEM"
 ENDIF
 
-PUTFILE "1-source-files/other-files/E.MAX.bin", "E.MAX", &000000, &000000
+ PUTFILE "1-source-files/other-files/E.MAX.bin", "E.MAX", &000000, &000000
 
-PUTFILE "3-assembled-output/README.txt", "README", &FFFFFF, &FFFFFF
+ PUTFILE "3-assembled-output/README.txt", "README", &FFFFFF, &FFFFFF
 
-PUTFILE "1-source-files/boot-files/$.!BOOT.bin", "!BOOT", &FFFFFF, &FFFFFF
-PUTFILE "1-source-files/music/elite-music-master.rom", "MUSIC", &008000, &008000
+ PUTFILE "1-source-files/boot-files/$.!BOOT.bin", "!BOOT", &FFFFFF, &FFFFFF
+ PUTFILE "1-source-files/music/elite-music-master.rom", "MUSIC", &008000, &008000
