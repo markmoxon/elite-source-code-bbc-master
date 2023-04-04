@@ -3328,7 +3328,7 @@ IF _MATCH_ORIGINAL_BINARIES
 
 ELSE
 
-  SKIP 619              \ These bytes appear to be unused
+ SKIP 619               \ These bytes appear to be unused
 
 ENDIF
 
