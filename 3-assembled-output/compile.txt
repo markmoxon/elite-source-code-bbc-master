@@ -3511,16 +3511,16 @@ WP workspace from  &E41  to &12AA
      2C5B
 .JSTK
      2C5C
-.LCASE
+.UPTOG
      2C5D
-.DTAPE
+.DISK
      2C5E
 .BSTK
      2C5F
      2C60
-.VOLUME
+.VOL
      2C61   07
-.CKEYS
+.TGINT
      2C62   01
      2C63   41 58 46 ...
      2C6B   60         RTS
@@ -3529,7 +3529,7 @@ WP workspace from  &E41  to &12AA
      2C6D   20 76 2C   JSR &2C76
      2C70   20 29 7F   JSR &7F29
      2C73   4C 62 67   JMP &6762
-.scramble
+.DEEOR
      2C76   A9 C0      LDA #&C0
      2C78   8D 41 0E   STA &0E41
      2C7B   A9 2C      LDA #&2C
@@ -3545,12 +3545,12 @@ WP workspace from  &E41  to &12AA
      2C93   A9 B1      LDA #&B1
      2C95   A0 FF      LDY #&FF
      2C97   A2 62      LDX #&62
-.DECRYPT
+.DEEORS
      2C99   86 7C      STX &7C
      2C9B   85 0B      STA &0B
      2C9D   A9 00      LDA #&00
      2C9F   85 0A      STA &0A
-.DEL
+.DEEORL
      2CA1   B1 0A      LDA (&0A),Y
      2CA3   38         SEC
      2CA4   E5 7C      SBC &7C
@@ -3570,6 +3570,7 @@ WP workspace from  &E41  to &12AA
      2CBE   AA
      2CBF   45
      2CC0   23
+.G%
 .DOENTRY
      2CC1   20 49 63   JSR &6349
      2CC4   20 4B 43   JSR &434B
@@ -4077,6 +4078,7 @@ WP workspace from  &E41  to &12AA
      3087   65 D7      ADC &D7
      3089   B0 02      BCS &308D
      308B   85 D7      STA &D7
+.paen1
      308D   AD 73 0E   LDA &0E73
      3090   D0 42      BNE &30D4
      3092   A5 84      LDA &84
@@ -4222,7 +4224,7 @@ WP workspace from  &E41  to &12AA
      31A9   D0 F7      BNE &31A2
 .oh
      31AB   60         RTS
-.BOMBLINES
+.BOMBOFF
      31AC   A9 FF      LDA #&FF
      31AE   85 11      STA &11
      31B0   A5 81      LDA &81
@@ -4247,17 +4249,18 @@ WP workspace from  &E41  to &12AA
      31D9   C8         INY
      31DA   C0 0A      CPY #&0A
      31DC   90 E2      BCC &31C0
-.BOMBEX
+.BOMBR1
      31DE   60         RTS
-.BOMBFX
+.BOMBEFF2
      31DF   20 E2 31   JSR &31E2
      31E2   20 E5 31   JSR &31E5
+.BOMBEFF
      31E5   A0 06      LDY #&06
      31E7   20 9F 13   JSR &139F
      31EA   20 AC 31   JSR &31AC
-.BOMBINIT
+.BOMBON
      31ED   A0 00      LDY #&00
-.BOMBSL1
+.BOMBL2
      31EF   20 01 64   JSR &6401
      31F2   29 7F      AND #&7F
      31F4   69 03      ADC #&03
@@ -4275,7 +4278,7 @@ WP workspace from  &E41  to &12AA
      320D   CA         DEX
      320E   8E 1D 32   STX &321D
      3211   B0 99      BCS &31AC
-.BOMBSTEP
+.BOMBPOS
      3213   E0
      3214   E0
      3215   C0
@@ -4286,9 +4289,9 @@ WP workspace from  &E41  to &12AA
      321A   20
      321B   00
      321C   00
-.BOMBX
+.BOMBTBX
      321D
-.BOMBY
+.BOMBTBY
      3227
 .MT27
      3231   A9 D9      LDA #&D9
@@ -4652,7 +4655,7 @@ WP workspace from  &E41  to &12AA
      34BB   00
      34BC
      34C8   3A 30 2E ...
-.DEFAULT%
+.NA2%
      34CD   4A 41 4D ...
      34D4   0D
      34D5   00
@@ -4822,6 +4825,7 @@ S.ELTA &3463  &3579  &1300  &1300
      3599   D0 04      BNE &359F
 .NLIN
      359B   A9 17      LDA #&17
+.NLIN5
      359D   E6 12      INC &12
 .NLIN2
      359F   85 4B      STA &4B
@@ -5280,7 +5284,6 @@ S.ELTA &3463  &3579  &1300  &1300
      3933   AD 7B 12   LDA &127B
      3936   4A         LSR A
      3937   4A         LSR A
-.st5L
      3938   E8         INX
      3939   4A         LSR A
      393A   D0 FC      BNE &3938
@@ -15290,7 +15293,7 @@ S.BCODE &1300  &7F48  &1300  &1300
 Saving file '3-assembled-output/BCODE.unprot.bin'
 Addresses for the scramble routines in elite-checksum.py
 F% = &7F48 
-DEFAULT% = &34CD 
+NA2% = &34CD 
 .DIALS
      7E00
      7F00

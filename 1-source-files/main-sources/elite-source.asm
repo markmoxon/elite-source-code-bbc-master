@@ -2534,9 +2534,9 @@ ENDIF
 
 .NS6
 
- LDA SBUF+6,Y           \ Set A = SBUF+6+Y + VOLUME
+ LDA SBUF+6,Y           \ Set A = SBUF+6+Y + VOL
  CLC                    \
- ADC VOLUME             \ where VOLUME is the the current volume setting (0-7)
+ ADC VOL                \ where VOL is the the current volume setting (0-7)
 
 .NS7
 
@@ -9568,7 +9568,7 @@ ENDIF
                         \ Toggled by pressing "K" when paused, see the DKS3
                         \ routine for details
 
-.LCASE
+.UPTOG
 
  SKIP 1                 \ The configuration setting for toggle key "U", which
                         \ isn't actually used but is still updated by pressing
@@ -9576,7 +9576,7 @@ ENDIF
                         \ option from some non-BBC versions of Elite that lets
                         \ you switch between lower-case and upper-case text
 
-.DTAPE
+.DISK
 
  SKIP 1                 \ The configuration setting for toggle key "T", which
                         \ isn't actually used but is still updated by pressing
@@ -9597,7 +9597,7 @@ ENDIF
 
  SKIP 1                 \ This byte appears to be unused
 
-.VOLUME
+.VOL
 
  EQUB 7                 \ The volume level for the game's sound effects (0-7)
                         \
@@ -9606,7 +9606,7 @@ ENDIF
 
 \ ******************************************************************************
 \
-\       Name: CKEYS
+\       Name: TGINT
 \       Type: Variable
 \   Category: Keyboard
 \    Summary: The keys used to toggle configuration settings when the game is
@@ -9614,7 +9614,7 @@ ENDIF
 \
 \ ******************************************************************************
 
-.CKEYS
+.TGINT
 
  EQUB 1                 \ The configuration keys in the same order as their
  EQUS "AXFYJKUT"        \ configuration bytes (starting from DAMP). The 1 is
@@ -9639,7 +9639,7 @@ ENDIF
 
  CLD                    \ Clear the D flag to make sure we are in binary mode
 
- JSR scramble           \ Call scramble to unscramble the main code
+ JSR DEEOR              \ Call DEEOR to unscramble the main code
 
  JSR BRKBK              \ Call BRKBK to set up the break handler
 
@@ -9647,7 +9647,7 @@ ENDIF
 
 \ ******************************************************************************
 \
-\       Name: scramble
+\       Name: DEEOR
 \       Type: Subroutine
 \   Category: Utility routines
 \    Summary: Unscramble the main code
@@ -9663,11 +9663,11 @@ ENDIF
 \
 \ ******************************************************************************
 
-.scramble
+.DEEOR
 
- LDA #LO(DOENTRY-1)     \ Set FRIN(1 0) = DECRYPT-1 as the low address of the
+ LDA #LO(DOENTRY-1)     \ Set FRIN(1 0) = DEEORS-1 as the low address of the
  STA FRIN               \ decryption block, so we decrypt from just after the
- LDA #HI(DOENTRY-1)     \ DECRYPT routine
+ LDA #HI(DOENTRY-1)     \ DEEORS routine
  STA FRIN+1
 
  LDA #HI(F%-1)          \ Set (A Y) to F% as the high address of the decryption
@@ -9677,7 +9677,7 @@ ENDIF
  LDX #&19               \ Set X = &19 as the decryption seed (the value used to
                         \ encrypt the code, which is done in elite-checksum.py)
 
- JSR DECRYPT            \ Call DECRYPT to decrypt between DOENTRY and F%
+ JSR DEEORS             \ Call DEEORS to decrypt between DOENTRY and F%
 
  LDA #LO(XX21-1)        \ Set FRIN(1 0) = XX21-1 as the low address of the
  STA FRIN               \ decryption block
@@ -9690,12 +9690,12 @@ ENDIF
  LDX #&62               \ Set X = &62 as the decryption seed (the value used to
                         \ encrypt the code, which is done in elite-checksum.py)
 
-                        \ Fall througn into DECRYPT to decrypt between XX21 and
+                        \ Fall througn into DEEORS to decrypt between XX21 and
                         \ &B1FF
 
 \ ******************************************************************************
 \
-\       Name: DECRYPT
+\       Name: DEEORS
 \       Type: Subroutine
 \   Category: Utility routines
 \    Summary: Decrypt a multi-page block of memory
@@ -9712,7 +9712,7 @@ ENDIF
 \
 \ ******************************************************************************
 
-.DECRYPT
+.DEEORS
 
  STX T                  \ Store the decryption seed in T as our starting point
 
@@ -9720,7 +9720,7 @@ ENDIF
  LDA #0                 \ so we can use SC(1 0) + Y as our pointer to the next
  STA SC                 \ byte to decrypt
 
-.DEL
+.DEEORL
 
  LDA (SC),Y             \ Set A to the Y-th byte of SC(1 0)
 
@@ -9739,17 +9739,24 @@ ENDIF
  DEY                    \ Decrement the byte pointer
 
  CPY FRIN               \ Loop back to decrypt the next byte, until Y = the low
- BNE DEL                \ byte of FRIN(1 0), at which point we have decrypted a
+ BNE DEEORL             \ byte of FRIN(1 0), at which point we have decrypted a
                         \ whole page
 
  LDA SC+1               \ Check whether SC(1 0) matches FRIN(1 0) and loop back
  CMP FRIN+1             \ to decrypt the next byte until it does, at which point
- BNE DEL                \ we have decrypted the whole block
+ BNE DEEORL             \ we have decrypted the whole block
 
  RTS                    \ Return from the subroutine
 
- EQUB &B7, &AA          \ These bytes appear to be unused
- EQUB &45, &23
+ EQUB &B7, &AA          \ These bytes appear to be unused, though there is a
+ EQUB &45, &23          \ comment in the original source that says "red
+                        \ herring", so this would appear to be a red herring
+                        \ aimed at confusing any crackers
+
+.G%
+
+                        \ The game code is scrambled from here to F% (or, as the
+                        \ original source code puts it, "mutiliated")
 
 \ ******************************************************************************
 \
@@ -10242,7 +10249,7 @@ ENDIF
                         \ any more (or it never was), so skip the following
                         \ instruction
 
- JSR BOMBINIT           \ Call BOMBINIT to set up and display a new energy bomb
+ JSR BOMBON             \ Call BOMBON to set up and display a new energy bomb
                         \ zig-zag lightning bolt
 
 .MA76
@@ -11164,10 +11171,11 @@ ENDIF
  BPL MA77               \ BOMB is now negative, so this skips to MA21 if our
                         \ energy bomb is not going off
 
- JSR BOMBFX             \ Call BOMBFX to erase the energy bomb zig-zag lightning
-                        \ bolt that we drew in part 3, make the sound of the
-                        \ energy bomb going off, draw a new lightning bolt, and
-                        \ repeat the process four times so the bolt flashes
+ JSR BOMBEFF2           \ Call BOMBEFF2 to erase the energy bomb zig-zag
+                        \ lightning bolt that we drew in part 3, make the sound
+                        \ of the energy bomb going off, draw a new lightning
+                        \ bolt, and repeat the process four times so the bolt
+                        \ flashes
 
  ASL BOMB               \ We set off our energy bomb, so rotate BOMB to the
                         \ left by one place. BOMB was rotated left once already
@@ -11180,8 +11188,8 @@ ENDIF
  BMI MA77               \ If the result has bit 7 set, skip the following
                         \ instruction as the bomb is still going off
 
- JSR BOMBLINES          \ Our energy bomb has finished going off, so call
-                        \ BOMBLINES to draw the zig-zag lightning bolt, which
+ JSR BOMBOFF            \ Our energy bomb has finished going off, so call
+                        \ BOMBOFF to draw the zig-zag lightning bolt, which
                         \ erases it from the screen
 
 .MA77
@@ -11208,8 +11216,10 @@ ENDIF
  LDA ENGY               \ level goes up by 2 if we have an energy unit fitted,
  ADC ENERGY             \ otherwise it goes up by 1
 
- BCS P%+4               \ If the value of A did not overflow (the maximum
+ BCS paen1              \ If the value of A did not overflow (the maximum
  STA ENERGY             \ energy level is &FF), then store A in ENERGY
+
+.paen1
 
 \ ******************************************************************************
 \
@@ -11687,31 +11697,31 @@ ENDIF
 
 \ ******************************************************************************
 \
-\       Name: BOMBLINES
+\       Name: BOMBOFF
 \       Type: Subroutine
 \   Category: Drawing lines
 \    Summary: Draw the zig-zag lightning bolt for the energy bomb
 \
 \ ******************************************************************************
 
-.BOMBLINES
+.BOMBOFF
 
  LDA #CYAN              \ Change the current colour to cyan
  STA COL
 
  LDA QQ11               \ If the current view is non-zero (i.e. not a space
- BNE BOMBEX             \ view), return from the subroutine (as BOMBEX contains
+ BNE BOMBR1             \ view), return from the subroutine (as BOMBR1 contains
                         \ an RTS)
 
- LDY #1                 \ We now want to loop through the 10 (BOMBX, BOMBY)
+ LDY #1                 \ We now want to loop through the 10 (BOMBTBX, BOMBTBY)
                         \ coordinates, drawing a total of 9 lines between them
                         \ to make the lightning effect, so set an index in Y
                         \ to point to the end-point for each line, starting with
                         \ the second coordinate pair
 
- LDA BOMBX              \ Store the first coordinate pair from (BOMBX, BOMBY) in
- STA XX12               \ (XX12, XX12+1)
- LDA BOMBY
+ LDA BOMBTBX            \ Store the first coordinate pair from (BOMBTBX,
+ STA XX12               \ BOMBTBY) in (XX12, XX12+1)
+ LDA BOMBTBY
  STA XX12+1
 
 .BOMBL1
@@ -11721,14 +11731,15 @@ ENDIF
  LDA XX12+1             \ so the start point for this line
  STA Y1
 
- LDA BOMBX,Y            \ Set X2 = Y-th x-coordinate from BOMBX
+ LDA BOMBTBX,Y          \ Set X2 = Y-th x-coordinate from BOMBTBX
  STA X2
 
  STA XX12               \ Set XX12 = X2
 
- LDA BOMBY,Y            \ Set Y2 = Y-th y-coordinate from BOMBY, so we now have:
- STA Y2                 \
-                        \   (X2, Y2) = Y-th coordinate from (BOMBX, BOMBY)
+ LDA BOMBTBY,Y          \ Set Y2 = Y-th y-coordinate from BOMBTBY, so we now
+ STA Y2                 \ have:
+                        \
+                        \   (X2, Y2) = Y-th coordinate from (BOMBTBX, BOMBTBY)
 
  STA XX12+1             \ Set XX12+1 = Y2, so we now have
                         \
@@ -11745,13 +11756,13 @@ ENDIF
  CPY #10                \ If Y < 10, loop back until we have drawn all the lines
  BCC BOMBL1
 
-.BOMBEX
+.BOMBR1
 
  RTS                    \ Return from the subroutine
 
 \ ******************************************************************************
 \
-\       Name: BOMBFX
+\       Name: BOMBEFF2
 \       Type: Subroutine
 \   Category: Drawing lines
 \    Summary: Erase the energy bomb zig-zag lightning bolt, make the sound of
@@ -11759,42 +11770,44 @@ ENDIF
 \
 \ ******************************************************************************
 
-.BOMBFX
+.BOMBEFF2
 
  JSR P%+3               \ This pair of JSRs runs the following code four times
- JSR P%+3
+ JSR BOMBEFF
+
+.BOMBEFF
 
  LDY #6                 \ Call the NOISE routine with Y = 6 to make the sound of
  JSR NOISE              \ an energy bomb going off
 
- JSR BOMBLINES          \ Our energy bomb is going off, so call BOMBLINES to
-                        \ draw the current zig-zag lightning bolt, which will
-                        \ erase it from the screen
+ JSR BOMBOFF            \ Our energy bomb is going off, so call BOMBOFF to draw
+                        \ the current zig-zag lightning bolt, which will erase
+                        \ it from the screen
 
-                        \ Fall through into BOMBINIT to set up and display a new
+                        \ Fall through into BOMBON to set up and display a new
                         \ zig-zag lightning bolt
 
 \ ******************************************************************************
 \
-\       Name: BOMBINIT
+\       Name: BOMBON
 \       Type: Subroutine
 \   Category: Drawing lines
 \    Summary: Randomise and draw the energy bomb's zig-zag lightning bolt lines
 \
 \ ******************************************************************************
 
-.BOMBINIT
+.BOMBON
 
  LDY #0                 \ We first need to generate 10 random coordinates for a
                         \ zig-zag lightning bolt, with the x-coordinates in the
-                        \ table at BOMBX and the y-coordinates in the table at
-                        \ BOMBY, so set a counter in Y as an index to point at
+                        \ table at BOMBTBX and the y-coordinates in the table at
+                        \ BOMBTBY, so set a counter in Y as an index to point at
                         \ each coordinate as we create them
                         \
                         \ Note that we generate the points from right to left,
                         \ so that's high x-coordinate to low x-coordinate
 
-.BOMBSL1
+.BOMBL2
 
  JSR DORND              \ Set A and X to random numbers and reduce A to a
  AND #127               \ random number in the range 0-127
@@ -11805,40 +11818,40 @@ ENDIF
                         \ y-coordinate that's around two-thirds of the way down
                         \ the space view
 
- STA BOMBY,Y            \ Store A in the Y-th byte of BOMBY, as the y-coordinate
-                        \ of the Y-th point in our lightning bolt
+ STA BOMBTBY,Y          \ Store A in the Y-th byte of BOMBTBY, as the
+                        \ y-coordinate of the Y-th point in our lightning bolt
 
  TXA                    \ Fetch the random number from X into A and reduce it to
  AND #31                \ the range 0-31
 
- CLC                    \ Add the Y-th value from BOMBSTEP table, which contains
- ADC BOMBSTEP,Y         \ the smallest possible x-coordinate for the Y-th point
+ CLC                    \ Add the Y-th value from BOMBPOS table, which contains
+ ADC BOMBPOS,Y          \ the smallest possible x-coordinate for the Y-th point
                         \ (so the coordinates in the bolt will step along the
                         \ screen from right to left, but with varying step
                         \ sizes)
 
- STA BOMBX,Y            \ Store A in the Y-th byte of BOMBX, as the x-coordinate
-                        \ of the Y-th point in our lightning bolt
+ STA BOMBTBX,Y          \ Store A in the Y-th byte of BOMBTBX, as the
+                        \ x-coordinate of the Y-th point in our lightning bolt
 
  INY                    \ Increment the loop index
 
  CPY #10                \ Loop back to generate the next coordinate until we
- BCC BOMBSL1            \ have generated all ten
+ BCC BOMBL2             \ have generated all ten
 
- LDX #0                 \ Set BOMBX+9 = 0, so the lightning bolt starts at the
- STX BOMBX+9            \ left edge of the screen
+ LDX #0                 \ Set BOMBTBX+9 = 0, so the lightning bolt starts at the
+ STX BOMBTBX+9          \ left edge of the screen
 
- DEX                    \ Set BOMBX = 255, so the lightning bolt ends at the
- STX BOMBX              \ right edge of the screen
+ DEX                    \ Set BOMBTBX = 255, so the lightning bolt ends at the
+ STX BOMBTBX            \ right edge of the screen
 
- BCS BOMBLINES          \ Call BOMBLINES to draw the newly generated zig-zag
+ BCS BOMBOFF            \ Call BOMBOFF to draw the newly generated zig-zag
                         \ lightning bolt and return from the subroutine using a
                         \ tail call (this BCS is effectively a JMP as we passed
                         \ through the BCC above)
 
 \ ******************************************************************************
 \
-\       Name: BOMBSTEP
+\       Name: BOMBPOS
 \       Type: Variable
 \   Category: Drawing lines
 \    Summary: A set of x-coordinates that are used as the basis for the energy
@@ -11846,7 +11859,7 @@ ENDIF
 \
 \ ******************************************************************************
 
-.BOMBSTEP
+.BOMBPOS
 
  EQUB 224
  EQUB 224
@@ -11861,7 +11874,7 @@ ENDIF
 
 \ ******************************************************************************
 \
-\       Name: BOMBX
+\       Name: BOMBTBX
 \       Type: Variable
 \   Category: Drawing lines
 \    Summary: This is where we store the x-coordinates for the energy bomb's
@@ -11869,13 +11882,13 @@ ENDIF
 \
 \ ******************************************************************************
 
-.BOMBX
+.BOMBTBX
 
  SKIP 10
 
 \ ******************************************************************************
 \
-\       Name: BOMBY
+\       Name: BOMBTBY
 \       Type: Variable
 \   Category: Drawing lines
 \    Summary: This is where we store the y-coordinates for the energy bomb's
@@ -11883,7 +11896,7 @@ ENDIF
 \
 \ ******************************************************************************
 
-.BOMBY
+.BOMBTBY
 
  SKIP 10
 
@@ -13026,7 +13039,7 @@ ENDIF
 
 \ ******************************************************************************
 \
-\       Name: DEFAULT%
+\       Name: NA2%
 \       Type: Variable
 \   Category: Save and load
 \    Summary: The data block for the default commander
@@ -13054,7 +13067,7 @@ ENDIF
 
  EQUS ":0.E."
 
-.DEFAULT%
+.NA2%
 
  EQUS "JAMESON"         \ The current commander name, which defaults to JAMESON
  EQUB 13                \
@@ -13402,12 +13415,19 @@ ENDIF
 \ Draw a horizontal line at pixel row 23 and move the text cursor down one
 \ line.
 \
+\ Other entry points:
+\
+\   NLIN5               Move the text cursor down one line before drawing the
+\                       line
+\
 \ ******************************************************************************
 
 .NLIN
 
  LDA #23                \ Set A = 23 so NLIN2 below draws a horizontal line at
                         \ pixel row 23
+
+.NLIN5
 
  INC YC                 \ Move the text cursor down one line
 
@@ -13429,11 +13449,6 @@ ENDIF
 \ Arguments:
 \
 \   A                   The pixel row on which to draw the horizontal line
-\
-\ Other entry points:
-\
-\   NLIN2-2             Move the text cursor down one line before drawing the
-\                       line
 \
 \ ******************************************************************************
 
@@ -14885,8 +14900,6 @@ ENDIF
  LSR A
  LSR A
 
-.st5L
-
                         \ We now loop through bits 2 to 7, shifting each of them
                         \ off the end of A until there are no set bits left, and
                         \ incrementing X for each shift, so at the end of the
@@ -14912,8 +14925,9 @@ ENDIF
 
  LSR A                  \ Shift A to the right
 
- BNE st5L               \ Keep looping around until A = 0, which means there are
-                        \ no set bits left in A
+ BNE P%-2               \ Keep looping back two instructions (i.e. to the INX
+                        \ instruction) until A = 0, which means there are no set
+                        \ bits left in A
 
 .st3
 
@@ -23948,7 +23962,7 @@ ENDIF
                         \ the text cursor down one line
 
  LDA #153               \ Move the text cursor down one line and draw a
- JSR NLIN2-2            \ screen-wide horizontal line at pixel row 153 for the
+ JSR NLIN5              \ screen-wide horizontal line at pixel row 153 for the
                         \ bottom edge of the chart, so the chart itself is 128
                         \ pixels high, starting on row 24 and ending on row 153
 
@@ -36040,9 +36054,9 @@ ENDIF
 
 .BEGIN
 
- LDX #(DTAPE-COMC)      \ We start by zeroing all the configuration variables
-                        \ between COMC and DTAPE, to set them to their default
-                        \ values, so set a counter in X for DTAPE - COMC bytes
+ LDX #(DISK-COMC)       \ We start by zeroing all the configuration variables
+                        \ between COMC and DISK, to set them to their default
+                        \ values, so set a counter in X for DISK - COMC bytes
 
  LDA #0                 \ Set A = 0 so we can zero the variables
 
@@ -36596,14 +36610,14 @@ ENDIF
 
 .JAMESON
 
- LDY #96                \ We are going to copy the default commander at DEFAULT%
+ LDY #96                \ We are going to copy the default commander at NA2%
                         \ over the top of the last saved commander at NA%, so
                         \ set a counter to copy 97 bytes
 
 .JAMESL
 
- LDA DEFAULT%,Y         \ Copy the Y-th byte of DEFAULT% to the Y-th byte of
- STA NA%,Y              \ NA%
+ LDA NA2%,Y             \ Copy the Y-th byte of NA2% to the Y-th byte of NA%
+ STA NA%,Y
 
  DEY                    \ Decrement the loop counter
 
@@ -36928,9 +36942,9 @@ ENDIF
 
 .MT30
 
- LDA #3                 \ Print extended token 3 + DTAPE, i.e. token 3 or 2 (as
- CLC                    \ DTAPE can be 0 or &FF). In other versions of the game,
- ADC DTAPE              \ such as the Commodore 64 version, token 2 is "disk"
+ LDA #3                 \ Print extended token 3 + DISK, i.e. token 3 or 2 (as
+ CLC                    \ DISK can be 0 or &FF). In other versions of the game,
+ ADC DISK               \ such as the Commodore 64 version, token 2 is "disk"
  JMP DETOK              \ and token 3 is "tape", so this displays the currently
                         \ selected media, but this system is unused in the
                         \ Master version and tokens 2 and 3 contain different
@@ -36948,9 +36962,9 @@ ENDIF
 
 .MT31
 
- LDA #2                 \ Print extended token 2 - DTAPE, i.e. token 2 or 3 (as
- SEC                    \ DTAPE can be 0 or &FF). In other versions of the game,
- SBC DTAPE              \ such as the Commodore 64 version, token 2 is "disk"
+ LDA #2                 \ Print extended token 2 - DISK, i.e. token 2 or 3 (as
+ SEC                    \ DISK can be 0 or &FF). In other versions of the game,
+ SBC DISK               \ such as the Commodore 64 version, token 2 is "disk"
  JMP DETOK              \ and token 3 is "tape", so this displays the other,
                         \ non-selected media, but this system is unused in the
                         \ Master version and tokens 2 and 3 contain different
@@ -38435,11 +38449,11 @@ ENDIF
  TXA                    \ Copy the ASCII code of the key that has been pressed
                         \ into A
 
- CMP CKEYS,Y            \ If the pressed key doesn't match the configuration key
- BNE Dk3                \ for option Y (as listed in the CKEYS table), then jump
+ CMP TGINT,Y            \ If the pressed key doesn't match the configuration key
+ BNE Dk3                \ for option Y (as listed in the TGINT table), then jump
                         \ to Dk3 to return from the subroutine
 
- LDA DAMP,Y             \ The configuration keys listed in CKEYS correspond to
+ LDA DAMP,Y             \ The configuration keys listed in TGINT correspond to
  EOR #&FF               \ the configuration option settings from DAMP onwards,
  STA DAMP,Y             \ so to toggle a setting, we fetch the existing byte
                         \ from DAMP+Y, invert it and put it back (0 means no
@@ -38841,7 +38855,7 @@ ENDIF
 
  BNE DKL4               \ If not, loop back to check for the next toggle key
 
- LDA VOLUME             \ Fetch the current volume setting into A
+ LDA VOL                \ Fetch the current volume setting into A
 
  CPX #'.'               \ If "." is being pressed (i.e. the ">" key) then jump
  BEQ VOLUP              \ to VOLUP to increase the volume
@@ -38869,7 +38883,7 @@ ENDIF
                         \ neither case do we want to change the volume as we are
                         \ already at the maximum or minimum level
 
- STY VOLUME             \ Store the new volume level in VOLUME
+ STY VOL                \ Store the new volume level in VOL
 
 .MAXVOL
 
@@ -45239,8 +45253,8 @@ ENDMACRO
  BPL P%+5               \ negative, so this skips the following instruction if
                         \ our energy bomb is not going off
 
- JSR BOMBLINES          \ Our energy bomb is going off, so call BOMBLINES to
-                        \ draw the zig-zag lightning bolt
+ JSR BOMBOFF            \ Our energy bomb is going off, so call BOMBOFF to draw
+                        \ the zig-zag lightning bolt
 
  JMP NWSTARS            \ Set up a new stardust field and return from the
                         \ subroutine using a tail call
@@ -45273,8 +45287,8 @@ ENDMACRO
  BPL P%+5               \ negative, so this skips the following instruction if
                         \ our energy bomb is not going off
 
- JSR BOMBLINES          \ Our energy bomb is going off, so call BOMBLINES to
-                        \ draw the zig-zag lightning bolt
+ JSR BOMBOFF            \ Our energy bomb is going off, so call BOMBOFF to draw
+                        \ the zig-zag lightning bolt
 
  JSR WPSHPS             \ Wipe all the ships from the scanner and mark them all
                         \ as not being shown on-screen
@@ -46602,4 +46616,4 @@ ENDIF
 
  PRINT "Addresses for the scramble routines in elite-checksum.py"
  PRINT "F% = ", ~F%
- PRINT "DEFAULT% = ", ~DEFAULT%
+ PRINT "NA2% = ", ~NA2%
