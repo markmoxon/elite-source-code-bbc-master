@@ -1616,7 +1616,7 @@ WP workspace from  &E41  to &12AA
      1719   69 01      ADC #&01
      171B   85 0B      STA &0B
      171D   A0 00      LDY #&00
-.VL2
+.VLO7
      171F   CA         DEX
      1720   D0 EA      BNE &170C
      1722   A9 09      LDA #&09

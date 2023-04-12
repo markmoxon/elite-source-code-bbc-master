@@ -3694,8 +3694,8 @@ ENDIF
                         \ so increment the pixel row in Y
 
  CPY #8                 \ If the row number in Y is less than 8, then it
- BNE VL2                \ correctly points at the next line down, so jump to
-                        \ VL2 to skip the following
+ BNE VLO7               \ correctly points at the next line down, so jump to
+                        \ VLO7 to skip the following
 
  LDA SC+1               \ We just incremented Y down through the bottom of the
  ADC #1                 \ character block, so increment the high byte of the
@@ -3704,7 +3704,7 @@ ENDIF
  LDY #0                 \ We need to move to the first row in the character
                         \ below, so set Y to 0, the number of the first row
 
-.VL2
+.VLO7
 
  DEX                    \ Decrement the (positive) stick height in X
 
