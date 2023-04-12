@@ -3488,13 +3488,20 @@ WP workspace from  &E41  to &12AA
      23B2   60         RTS
 .log
 .logL
-.antilog
+.alogh
 .COMC
      2C40
-     2C41
+.dials
+     2C41   00 00 00 00
+     2C45   00 00 00 00
+     2C49   00 00 00 00
+     2C4D   00 00
+.mscol
+     2C4F   00 00 00 00
 .CATF
      2C53
-     2C54
+.DFLAG
+     2C54   00
 .DNOIZ
      2C55
 .DAMP
@@ -3632,18 +3639,13 @@ WP workspace from  &E41  to &12AA
      2D3D   4C 31 49   JMP &4931
 .EN4
      2D40   4C D6 67   JMP &67D6
-     2D43   FB
-     2D44   04
-     2D45   F7
-     2D46   08
-     2D47   EF
-     2D48   10
-     2D49   DF
-     2D4A   20
-     2D4B   BF
-     2D4C   40
-     2D4D   7F
-     2D4E   80
+.SPMASK
+     2D43   FB 04
+     2D45   F7 08
+     2D47   EF 10
+     2D49   DF 20
+     2D4B   BF 40
+     2D4D   7F 80
 .M%
      2D4F   AD 00 04   LDA &0400
      2D52   85 02      STA &02
@@ -4724,6 +4726,8 @@ WP workspace from  &E41  to &12AA
      351F   AA
      3520   03
      3521
+.NAEND%
+     352D
 .shpcol
      3531   00
      3532   0F
@@ -5715,7 +5719,7 @@ S.ELTA &3463  &3579  &1300  &1300
      3C2A   C8         INY
      3C2B   CA         DEX
      3C2C   D0 F6      BNE &3C24
-.rT9
+.dec27
      3C2E   60         RTS
 .DA6
      3C2F   20 22 3C   JSR &3C22
@@ -5954,13 +5958,14 @@ S.ELTB &3579  &3CE1  &1300  &3579
      3DC1   4C 10 71   JMP &7110
 .HA1
      3DC4   60         RTS
-.TAX35
+.TA352
      3DC5   A5 9C      LDA &9C
      3DC7   05 9F      ORA &9F
      3DC9   05 A2      ORA &A2
      3DCB   D0 05      BNE &3DD2
      3DCD   A9 50      LDA #&50
      3DCF   20 61 5B   JSR &5B61
+.TA872
      3DD2   A2 04      LDX #&04
      3DD4   D0 61      BNE &3E37
 .TA34
@@ -6008,12 +6013,14 @@ S.ELTB &3579  &3CE1  &1300  &3579
      3E2A   D0 05      BNE &3E31
      3E2C   A9 50      LDA #&50
      3E2E   20 61 5B   JSR &5B61
+.TA87
      3E31   A5 BC      LDA &BC
      3E33   29 7F      AND #&7F
      3E35   4A         LSR A
      3E36   AA         TAX
-.TA87
+.TA353
      3E37   20 02 7F   JSR &7F02
+.TA873
      3E3A   06 BB      ASL &BB
      3E3C   38         SEC
      3E3D   66 BB      ROR &BB
@@ -7315,10 +7322,10 @@ S.ELTB &3579  &3CE1  &1300  &3579
      4737   B0 07      BCS &4740
      4739   AA         TAX
      473A   BD 00 29   LDA &2900,X
-.LLfix
+.LLfix22
      473D   85 7A      STA &7A
      473F   60         RTS
-.LL2
+.LL222
      4740   A9 FF      LDA #&FF
      4742   85 7A      STA &7A
      4744   60         RTS
@@ -7365,7 +7372,7 @@ S.ELTB &3579  &3CE1  &1300  &3579
      4785   A9 FE      LDA #&FE
      4787   85 7A      STA &7A
      4789   A5 0E      LDA &0E
-.LL31
+.LL31new
      478B   0A         ASL A
      478C   B0 0D      BCS &479B
      478E   C5 79      CMP &79
@@ -7374,13 +7381,13 @@ S.ELTB &3579  &3CE1  &1300  &3579
      4794   26 7A      ROL &7A
      4796   B0 F3      BCS &478B
      4798   4C A4 47   JMP &47A4
-.LL29
+.LL29new
      479B   E5 79      SBC &79
      479D   38         SEC
      479E   26 7A      ROL &7A
      47A0   B0 E9      BCS &478B
      47A2   A5 7A      LDA &7A
-.RTS
+.LL312new
      47A4   A9 00      LDA #&00
      47A6   85 57      STA &57
      47A8   85 58      STA &58
@@ -7506,7 +7513,7 @@ S.ELTB &3579  &3CE1  &1300  &3579
      4859   4A         LSR A
      485A   AA         TAX
      485B   BD E0 A3   LDA &A3E0,X
-.ARCRTS
+.ARSR1
      485E   60         RTS
 .LASLI
      485F   20 01 64   JSR &6401
@@ -7604,6 +7611,7 @@ S.ELTB &3579  &3CE1  &1300  &3579
      4919   A2 FF      LDX #&FF
      491B   86 11      STX &11
      491D   20 4F 32   JSR &324F
+.BAYSTEP
      4920   4C D6 67   JMP &67D6
 .BRIEF3
      4923   AD 34 12   LDA &1234
@@ -7716,6 +7724,7 @@ S.ELTB &3579  &3CE1  &1300  &3579
      49FB   D0 FB      BNE &49F8
      49FD   20 D8 7E   JSR &7ED8
      4A00   F0 F6      BEQ &49F8
+.newyearseve
      4A02   60         RTS
 ELITE C
 Assembled at &3CE1 
@@ -7828,7 +7837,7 @@ S.ELTC &3CE1  &4A03  &1300  &3CE1
 .TRADEMODE
      4A82   20 93 7D   JSR &7D93
      4A85   20 93 35   JSR &3593
-.TRADE
+.TRADEMODE2
      4A88   A9 30      LDA #&30
      4A8A   20 3C 15   JSR &153C
      4A8D   A9 FF      LDA #&FF
@@ -8133,6 +8142,7 @@ S.ELTC &3CE1  &4A03  &1300  &3CE1
      4CC1   90 04      BCC &4CC7
      4CC3   C9 02      CMP #&02
      4CC5   B0 02      BCS &4CC9
+.botchfix13
      4CC7   A9 02      LDA #&02
 .TT84
      4CC9   85 4A      STA &4A
@@ -8142,6 +8152,7 @@ S.ELTC &3CE1  &4A03  &1300  &3CE1
      4CD0   B0 04      BCS &4CD6
      4CD2   C9 FE      CMP #&FE
      4CD4   90 02      BCC &4CD8
+.botchfix12
      4CD6   A9 FE      LDA #&FE
 .TT85
      4CD8   85 4C      STA &4C
@@ -8263,6 +8274,7 @@ S.ELTC &3CE1  &4A03  &1300  &3CE1
      4DC0   86 7A      STX &7A
      4DC2   A2 0C      LDX #&0C
      4DC4   86 06      STX &06
+.TT223
      4DC6   20 23 4E   JSR &4E23
      4DC9   B0 C6      BCS &4D91
      4DCB   85 0C      STA &0C
@@ -8452,7 +8464,7 @@ S.ELTC &3CE1  &4A03  &1300  &3CE1
      4F41   AD 64 12   LDA &1264
      4F44   0D 65 12   ORA &1265
      4F47   D0 01      BNE &4F4A
-.TRRTS
+.zebra
      4F49   60         RTS
      4F4A   18         CLC
      4F4B   A9 00      LDA #&00
@@ -8471,7 +8483,7 @@ S.ELTC &3CE1  &4A03  &1300  &3CE1
      4F6B   AE 64 12   LDX &1264
      4F6E   CA         DEX
      4F6F   F0 D8      BEQ &4F49
-.TRDONE
+.DOANS
      4F71   A9 73      LDA #&73
      4F73   4C 72 3B   JMP &3B72
 .TT213
@@ -8776,7 +8788,7 @@ S.ELTC &3CE1  &4A03  &1300  &3CE1
      518D   85 E2      STA &E2
      518F   A5 61      LDA &61
      5191   85 E1      STA &E1
-.DIST
+.readdistnce
      5193   38         SEC
      5194   ED 35 12   SBC &1235
      5197   B0 04      BCS &519D
@@ -8816,7 +8828,7 @@ S.ELTC &3CE1  &4A03  &1300  &3CE1
      51D4   26 E0      ROL &E0
      51D6   85 DF      STA &DF
      51D8   4C EF 4B   JMP &4BEF
-.hy6
+.dockEd
      51DB   20 C1 21   JSR &21C1
      51DE   A9 0F      LDA #&0F
      51E0   85 10      STA &10
@@ -9769,9 +9781,9 @@ S.ELTD &4A03  &5751  &1300  &4A03
      58B4   D0 E6      BNE &589C
 .TT48
      58B6   60         RTS
-.SWAPZP2
+.SWAPPZERO
      58B7   A2 15      LDX #&15
-.SWPL2
+.SWPZL
      58B9   B5 00      LDA &00,X
      58BB   B4 00      LDY &00,X
      58BD   95 00      STA &00,X
@@ -9970,9 +9982,10 @@ S.ELTD &4A03  &5751  &1300  &4A03
      5A06   A5 7B      LDA &7B
      5A08   E9 00      SBC #&00
      5A0A   60         RTS
+.exlook
      5A0B   00
      5A0C   02
-.EXCOL
+.coltabl
      5A0D   0F
      5A0E   F0
      5A0F   0F
@@ -9986,7 +9999,7 @@ S.ELTD &4A03  &5751  &1300  &4A03
      5A1D   29 02      AND #&02
      5A1F   09 80      ORA #&80
      5A21   4C F2 5B   JMP &5BF2
-.SOLARX
+.SOLAR
      5A24   AD 64 12   LDA &1264
      5A27   F0 1E      BEQ &5A47
      5A29   A9 00      LDA #&00
@@ -10001,7 +10014,7 @@ S.ELTD &4A03  &5751  &1300  &4A03
      5A3F   2E 65 12   ROL &1265
      5A42   10 03      BPL &5A47
      5A44   6E 65 12   ROR &1265
-.SOLAR
+.nobirths
      5A47   4E 68 12   LSR &1268
      5A4A   20 99 63   JSR &6399
      5A4D   A5 5F      LDA &5F
@@ -10103,6 +10116,7 @@ S.ELTD &4A03  &5751  &1300  &4A03
      5AF7   08         PHP
      5AF8   D0 02      BNE &5AFC
      5AFA   E6 D7      INC &D7
+.paen2
      5AFC   28         PLP
      5AFD   60         RTS
 .COMPAS
@@ -10132,6 +10146,7 @@ S.ELTD &4A03  &5751  &1300  &4A03
      5B25   49 FF      EOR #&FF
      5B27   AA         TAX
      5B28   E8         INX
+.COR1
      5B29   60         RTS
 .SPS4
      5B2A   A2 08      LDX #&08
@@ -10336,8 +10351,12 @@ S.ELTD &4A03  &5751  &1300  &4A03
      5C9A   20 4D 1F   JSR &1F4D
      5C9D   8C 76 0E   STY &0E76
      5CA0   60         RTS
+.msbpars
      5CA1   04
-     5CA2
+     5CA2   00
+     5CA3   00
+     5CA4   00
+     5CA5   00
 .PROJ
      5CA6   A5 9C      LDA &9C
      5CA8   85 0C      STA &0C
@@ -10601,6 +10620,7 @@ S.ELTD &4A03  &5751  &1300  &4A03
      5E95   4C E5 5D   JMP &5DE5
 .PL40
      5E98   60         RTS
+.PLF3M3
      5E99   4C 87 60   JMP &6087
 .PLF3
      5E9C   8A         TXA
@@ -11023,7 +11043,7 @@ S.ELTD &4A03  &5751  &1300  &4A03
      6172   18         CLC
 .PL6
      6173   60         RTS
-.GETYN
+.YESNO
      6174   20 B4 6D   JSR &6DB4
      6177   C9 59      CMP #&59
      6179   F0 F8      BEQ &6173
@@ -11037,6 +11057,7 @@ S.ELTD &4A03  &5751  &1300  &4A03
      6185   20 90 6C   JSR &6C90
      6188   8A         TXA
      6189   60         RTS
+.TT17afterall
      618A   20 90 6C   JSR &6C90
      618D   AD 5C 2C   LDA &2C5C
      6190   F0 11      BEQ &61A3
@@ -11072,6 +11093,7 @@ S.ELTD &4A03  &5751  &1300  &4A03
      61C5   FA         PLX
      61C6   A5 C3      LDA &C3
      61C8   60         RTS
+.speedup
      61C9   68         PLA
      61CA   0A         ASL A
      61CB   0A         ASL A
@@ -11269,7 +11291,7 @@ S.ELTE &5751  &61DE  &1300  &5751
 .THEX
      6317   18         CLC
      6318   60         RTS
-.HEXPRNT
+.NUMBOR
      6319   48         PHA
      631A   4A         LSR A
      631B   4A         LSR A
@@ -11278,11 +11300,12 @@ S.ELTE &5751  &61DE  &1300  &5751
      631E   20 24 63   JSR &6324
      6321   68         PLA
      6322   29 0F      AND #&0F
-.HEXP
+.DIDGIT
      6324   C9 0A      CMP #&0A
      6326   B0 05      BCS &632D
      6328   69 30      ADC #&30
      632A   4C 85 20   JMP &2085
+.DIDGIT2
      632D   69 36      ADC #&36
      632F   4C 85 20   JMP &2085
 .RESET
@@ -11375,7 +11398,7 @@ S.ELTE &5751  &61DE  &1300  &5751
      63D1   A9 00      LDA #&00
      63D3   8D 7C 0E   STA &0E7C
      63D6   4C 4C 64   JMP &644C
-.nomess
+.clynsneed
      63D9   20 C1 21   JSR &21C1
      63DC   4C 4C 64   JMP &644C
 .Ze
@@ -11673,10 +11696,10 @@ S.ELTE &5751  &61DE  &1300  &5751
      6618   D0 0B      BNE &6625
      661A   A2 03      LDX #&03
      661C   2C
-.LVIEW
+.chview2
      661D   A2 02      LDX #&02
      661F   2C
-.BVIEW
+.chview1
      6620   A2 01      LDX #&01
      6622   4C 35 7D   JMP &7D35
 .LABEL_3
@@ -11760,9 +11783,9 @@ S.ELTE &5751  &61DE  &1300  &5751
      66B3   05 A0      ORA &A0
      66B5   05 A3      ORA &A3
      66B7   60         RTS
-.stack
+.stackpt
      66B8   FF
-.BRBR
+.NEWBRK
      66B9   AE B8 66   LDX &66B8
      66BC   9A         TXS
      66BD   20 55 15   JSR &1555
@@ -11915,6 +11938,7 @@ S.ELTE &5751  &61DE  &1300  &5751
      67E7   CA         DEX
      67E8   D0 F7      BNE &67E1
      67EA   86 81      STX &81
+.doitagain
      67EC   20 AD 68   JSR &68AD
      67EF   CD BB 34   CMP &34BB
      67F2   D0 F8      BNE &67EC
@@ -12005,7 +12029,7 @@ S.ELTE &5751  &61DE  &1300  &5751
      68A3   20 D8 7E   JSR &7ED8
      68A6   F0 D9      BEQ &6881
      68A8   60         RTS
-.TL2
+.TL3
      68A9   CE 5C 2C   DEC &2C5C
      68AC   60         RTS
 .CHECK
@@ -12018,9 +12042,10 @@ S.ELTE &5751  &61DE  &1300  &5751
      68B7   CA         DEX
      68B8   D0 F7      BNE &68B1
      68BA   60         RTS
+.CHECK2
 .JAMESON
      68BB   A0 60      LDY #&60
-.JAMESL
+.JAMEL1
      68BD   B9 CD 34   LDA &34CD,Y
      68C0   99 68 34   STA &3468,Y
      68C3   88         DEY
@@ -12073,7 +12098,7 @@ S.ELTE &5751  &61DE  &1300  &5751
      6913   20 49 13   JSR &1349
      6916   20 93 35   JSR &3593
      6919   A0 00      LDY #&00
-.MT26L
+.OSW0L
      691B   20 B2 6D   JSR &6DB2
      691E   C9 0D      CMP #&0D
      6920   F0 23      BEQ &6945
@@ -12090,22 +12115,22 @@ S.ELTE &5751  &61DE  &1300  &5751
      6939   99 A1 00   STA &00A1,Y
      693C   C8         INY
      693D   2C
-.MT26err
+.OSW01
      693E   A9 07      LDA #&07
-.MT26LS
+.OSW06
      6940   20 85 20   JSR &2085
      6943   90 D6      BCC &691B
-.MT26ret
+.OSW03
      6945   99 A1 00   STA &00A1,Y
      6948   A9 0C      LDA #&0C
      694A   20 85 20   JSR &2085
      694D   24
-.MT26esc
+.OSW04
      694E   38         SEC
      694F   68         PLA
      6950   85 11      STA &11
      6952   60         RTS
-.MT26del
+.OSW05
      6953   98         TYA
      6954   F0 E8      BEQ &693E
      6956   88         DEY
@@ -12116,12 +12141,12 @@ S.ELTE &5751  &61DE  &1300  &5751
      695D   09
      695E   21
      695F   7B
-.MT30
+.FILEPR
      6960   A9 03      LDA #&03
      6962   18         CLC
      6963   6D 5E 2C   ADC &2C5E
      6966   4C 4F 32   JMP &324F
-.MT31
+.OTHERFILEPR
      6969   A9 02      LDA #&02
      696B   38         SEC
      696C   ED 5E 2C   SBC &2C5E
@@ -12191,6 +12216,7 @@ S.ELTE &5751  &61DE  &1300  &5751
      69F3   D0 06      BNE &69FB
      69F5   20 A6 69   JSR &69A6
      69F8   4C D6 69   JMP &69D6
+.jan18
      69FB   C9 35      CMP #&35
      69FD   D0 10      BNE &6A0F
      69FF   A9 E0      LDA #&E0
@@ -12199,14 +12225,14 @@ S.ELTE &5751  &61DE  &1300  &5751
      6A07   90 06      BCC &6A0F
      6A09   20 BB 68   JSR &68BB
      6A0C   4C DF 67   JMP &67DF
-.exit
+.feb13
      6A0F   18         CLC
      6A10   60         RTS
-.CAT
+.feb10
      6A11   20 7D 69   JSR &697D
      6A14   20 B4 6D   JSR &6DB4
      6A17   4C D6 69   JMP &69D6
-.LD1
+.loading
      6A1A   20 E7 68   JSR &68E7
      6A1D   20 8C 6A   JSR &6A8C
      6A20   B0 0A      BCS &6A2C
@@ -12214,7 +12240,7 @@ S.ELTE &5751  &61DE  &1300  &5751
      6A25   20 A5 6A   JSR &6AA5
      6A28   20 CC 68   JSR &68CC
      6A2B   38         SEC
-.LDdone
+.jan2186
      6A2C   60         RTS
 .SV1
      6A2D   20 E7 68   JSR &68E7
@@ -12247,7 +12273,7 @@ S.ELTE &5751  &61DE  &1300  &5751
      6A6A   49 A9      EOR #&A9
      6A6C   8D BA 34   STA &34BA
      6A6F   A0 4C      LDY #&4C
-.SVL2
+.copyme2
      6A71   B9 70 34   LDA &3470,Y
      6A74   99 91 07   STA &0791,Y
      6A77   88         DEY
@@ -12256,12 +12282,14 @@ S.ELTE &5751  &61DE  &1300  &5751
      6A7D   B0 06      BCS &6A85
      6A7F   8D E5 6A   STA &6AE5
      6A82   20 16 6B   JSR &6B16
+.SVEX9
      6A85   20 DF 67   JSR &67DF
+.SVEX
      6A88   18         CLC
      6A89   60         RTS
-.NAMELEN1
+.thislong
      6A8A   07
-.NAMELEN2
+.oldlong
      6A8B   07
 .GTDRV
      6A8C   A9 02      LDA #&02
@@ -12281,7 +12309,7 @@ S.ELTE &5751  &61DE  &1300  &5751
      6AA8   AD 91 07   LDA &0791
      6AAB   30 0D      BMI &6ABA
      6AAD   A0 4C      LDY #&4C
-.LOL1
+.copyme
      6AAF   B9 91 07   LDA &0791,Y
      6AB2   99 70 34   STA &3470,Y
      6AB5   88         DEY
@@ -12294,7 +12322,9 @@ S.ELTE &5751  &61DE  &1300  &5751
      6ABC   20 4F 32   JSR &324F
      6ABF   20 B4 6D   JSR &6DB4
      6AC2   4C D6 69   JMP &69D6
+.backtonormal
      6AC5   60         RTS
+.CLDELAY
      6AC6   60         RTS
 .CTLI
      6AC7   43 41 54 ...
@@ -12302,27 +12332,27 @@ S.ELTE &5751  &61DE  &1300  &5751
 .DELI
      6ACD   44 45 4C ...
      6ADE   0D
-.SVLI
+.savosc
      6ADF   53 41 56 ...
      6AFE   0D
-.LDLI
+.lodosc
      6AFF   4C 4F 41 ...
      6B15   0D
-.SAVE
+.wfile
      6B16   A0 4C      LDY #&4C
-.SAVEL1
+.wfileL1
      6B18   B9 70 34   LDA &3470,Y
      6B1B   99 7E 0E   STA &0E7E,Y
      6B1E   88         DEY
      6B1F   10 F7      BPL &6B18
      6B21   A9 00      LDA #&00
      6B23   A0 4C      LDY #&4C
-.SAVEL2
+.wfileL2
      6B25   99 7E 0E   STA &0E7E,Y
      6B28   C8         INY
      6B29   D0 FA      BNE &6B25
      6B2B   A0 00      LDY #&00
-.SAVEL3
+.wfileL3
      6B2D   B9 68 34   LDA &3468,Y
      6B30   C9 0D      CMP #&0D
      6B32   F0 08      BEQ &6B3C
@@ -12330,8 +12360,9 @@ S.ELTE &5751  &61DE  &1300  &5751
      6B37   C8         INY
      6B38   C0 07      CPY #&07
      6B3A   90 F1      BCC &6B2D
-.SAVEL4
+.wfileL4
      6B3C   A9 20      LDA #&20
+.wfileL5
      6B3E   99 E9 6A   STA &6AE9,Y
      6B41   C8         INY
      6B42   C0 07      CPY #&07
@@ -12341,9 +12372,9 @@ S.ELTE &5751  &61DE  &1300  &5751
      6B4B   A0 6A      LDY #&6A
      6B4D   20 F7 FF   JSR &FFF7
      6B50   4C 55 15   JMP &1555
-.LOAD
+.rfile
      6B53   A0 00      LDY #&00
-.LOADL1
+.rfileL3
      6B55   B9 A1 00   LDA &00A1,Y
      6B58   C9 0D      CMP #&0D
      6B5A   F0 08      BEQ &6B64
@@ -12351,8 +12382,9 @@ S.ELTE &5751  &61DE  &1300  &5751
      6B5F   C8         INY
      6B60   C0 07      CPY #&07
      6B62   90 F1      BCC &6B55
-.LOADL2
+.rfileL4
      6B64   A9 20      LDA #&20
+.rfileL5
      6B66   99 09 6B   STA &6B09,Y
      6B69   C8         INY
      6B6A   C0 07      CPY #&07
@@ -12363,7 +12395,7 @@ S.ELTE &5751  &61DE  &1300  &5751
      6B75   20 F7 FF   JSR &FFF7
      6B78   20 55 15   JSR &1555
      6B7B   A0 4C      LDY #&4C
-.LOADL3
+.rfileL1
      6B7D   B9 7E 0E   LDA &0E7E,Y
      6B80   99 91 07   STA &0791,Y
      6B83   88         DEY
@@ -12508,7 +12540,6 @@ S.ELTE &5751  &61DE  &1300  &5751
      6C90   20 D7 7E   JSR &7ED7
      6C93   AD 71 0E   LDA &0E71
      6C96   F0 5A      BEQ &6CF2
-.auton
      6C98   20 99 63   JSR &6399
      6C9B   A9 60      LDA #&60
      6C9D   85 AA      STA &AA
@@ -12557,7 +12588,7 @@ S.ELTE &5751  &61DE  &1300  &5751
      6CEE   A5 C2      LDA &C2
 .DK13
      6CF0   85 C2      STA &C2
-.DK16
+.DK15
      6CF2   AD 5C 2C   LDA &2C5C
      6CF5   F0 24      BEQ &6D1B
      6CF7   AD A7 12   LDA &12A7
@@ -12575,7 +12606,7 @@ S.ELTE &5751  &61DE  &1300  &5751
      6D15   A9 FF      LDA #&FF
      6D17   85 C8      STA &C8
      6D19   D0 27      BNE &6D42
-.DK15
+.DK152
      6D1B   A6 C1      LDX &C1
      6D1D   A9 07      LDA #&07
      6D1F   A4 D0      LDY &D0
@@ -12620,19 +12651,19 @@ S.ELTE &5751  &61DE  &1300  &5751
      6D6C   D0 15      BNE &6D83
      6D6E   3A         DEC A
      6D6F   24
-.VOLUP
+.DOVOL1
      6D70   1A         INC A
      6D71   A8         TAY
      6D72   29 F8      AND #&F8
      6D74   D0 03      BNE &6D79
      6D76   8C 61 2C   STY &2C61
-.MAXVOL
+.DOVOL3
      6D79   DA         PHX
      6D7A   20 54 13   JSR &1354
      6D7D   A0 0A      LDY #&0A
      6D7F   20 49 13   JSR &1349
      6D82   FA         PLX
-.NOVOL
+.DOVOL4
      6D83   E0 42      CPX #&42
      6D85   D0 16      BNE &6D9D
      6D87   AD 5F 2C   LDA &2C5F
@@ -12643,7 +12674,7 @@ S.ELTE &5751  &61DE  &1300  &5751
      6D95   10 03      BPL &6D9A
      6D97   20 3C 3C   JSR &3C3C
      6D9A   20 3C 3C   JSR &3C3C
-.nobit
+.DOVOL2
      6D9D   E0 53      CPX #&53
      6D9F   D0 05      BNE &6DA6
      6DA1   A9 00      LDA #&00
@@ -12683,6 +12714,7 @@ S.ELTE &5751  &61DE  &1300  &5751
      6DD7   A6 81      LDX &81
      6DD9   F0 03      BEQ &6DDE
      6DDB   20 C1 21   JSR &21C1
+.infrontvw
      6DDE   A9 15      LDA #&15
      6DE0   85 12      STA &12
      6DE2   A9 0F      LDA #&0F
@@ -13003,6 +13035,7 @@ End macro ITEM
      6FBF   D0 F2      BNE &6FB3
      6FC1   A5 0C      LDA &0C
      6FC3   05 7C      ORA &7C
+.itsoff
      6FC5   60         RTS
 .buf
      6FC6   02
@@ -13063,7 +13096,6 @@ S.ELTF &61DE  &6FD9  &1300  &61DE
      7029   D0 04      BNE &702F
      702B   C0 40      CPY #&40
      702D   90 08      BCC &7037
-.LL8
      702F   98         TYA
      7030   E9 40      SBC #&40
      7032   A8         TAY
@@ -13146,6 +13178,7 @@ S.ELTF &61DE  &6FD9  &1300  &61DE
      70A5   90 02      BCC &70A9
      70A7   18         CLC
      70A8   60         RTS
+.LL40
      70A9   48         PHA
      70AA   A5 7B      LDA &7B
      70AC   49 80      EOR #&80
@@ -13811,7 +13844,6 @@ S.ELTF &61DE  &6FD9  &1300  &61DE
      7548   4C 4E 75   JMP &754E
 .LL69
      754B   20 4E 70   JSR &704E
-.LL65
      754E   A6 8A      LDX &8A
      7550   A5 4C      LDA &4C
      7552   30 9E      BMI &74F2
@@ -13886,7 +13918,6 @@ S.ELTF &61DE  &6FD9  &1300  &61DE
      75CD   B1 36      LDA (&36),Y
      75CF   85 8E      STA &8E
      75D1   A9 08      LDA #&08
-.LL74
      75D3   05 BB      ORA &BB
      75D5   85 BB      STA &BB
      75D7   A0 00      LDY #&00
@@ -13992,7 +14023,6 @@ S.ELTF &61DE  &6FD9  &1300  &61DE
      7697   85 3A      STA &3A
      7699   90 02      BCC &769D
      769B   E6 3B      INC &3B
-.ll81
      769D   E6 7F      INC &7F
      769F   A4 7F      LDY &7F
      76A1   C4 8E      CPY &8E
@@ -14168,10 +14198,11 @@ S.ELTF &61DE  &6FD9  &1300  &61DE
      77A6   45 53      EOR &53
      77A8   60         RTS
 .LL145
+.CLIP
      77A9   A9 00      LDA #&00
      77AB   8D 22 12   STA &1222
      77AE   A5 4F      LDA &4F
-.LL147
+.CLIP2
      77B0   A2 BF      LDX #&BF
      77B2   05 51      ORA &51
      77B4   D0 06      BNE &77BC
@@ -14340,9 +14371,9 @@ S.ELTF &61DE  &6FD9  &1300  &61DE
      78CE   A8         TAY
      78CF   38         SEC
      78D0   60         RTS
-.LL155
+.LSCLR
      78D1   A4 8F      LDY &8F
-.LL27
+.LSC1
      78D3   C4 90      CPY &90
      78D5   B0 1A      BCS &78F1
      78D7   B1 BD      LDA (&BD),Y
@@ -14359,18 +14390,18 @@ S.ELTF &61DE  &6FD9  &1300  &61DE
      78E9   85 4D      STA &4D
      78EB   20 28 17   JSR &1728
      78EE   4C D3 78   JMP &78D3
-.LLEX
+.LSC2
      78F1   A5 8F      LDA &8F
      78F3   A0 00      LDY #&00
      78F5   91 BD      STA (&BD),Y
-.LL82
+.LSC3
      78F7   60         RTS
-.LLX30
+.LSPUT
      78F8   A4 8F      LDY &8F
      78FA   C4 90      CPY &90
      78FC   08         PHP
      78FD   A2 03      LDX #&03
-.LLXL
+.LSC4
      78FF   B5 4A      LDA &4A,X
      7901   95 50      STA &50,X
      7903   CA         DEX
@@ -14955,7 +14986,7 @@ S.ELTG &6FD9  &7935  &1300  &6FD9
      7D6B   C9 97      CMP #&97
      7D6D   F0 01      BEQ &7D70
      7D6F   C8         INY
-.SIGHT1
+.SIG1
      7D70   B9 8B 7D   LDA &7D8B,Y
      7D73   85 11      STA &11
      7D75   A9 80      LDA #&80
@@ -14973,6 +15004,7 @@ S.ELTG &6FD9  &7935  &1300  &6FD9
      7D8C   FF
      7D8D   FF
      7D8E   0F
+.beamcol
      7D8F   FA
      7D90   FA
      7D91   FA
@@ -14995,7 +15027,6 @@ S.ELTG &6FD9  &7935  &1300  &6FD9
      7DB4   A6 45      LDX &45
      7DB6   F0 03      BEQ &7DBB
      7DB8   20 A5 52   JSR &52A5
-.OLDBOX
      7DBB   A5 81      LDA &81
      7DBD   D0 18      BNE &7DD7
      7DBF   A9 0B      LDA #&0B
@@ -15012,7 +15043,7 @@ S.ELTG &6FD9  &7935  &1300  &6FD9
      7DD7   A2 00      LDX #&00
      7DD9   86 13      STX &13
      7DDB   60         RTS
-.TRANTABLE
+.TRTB%
      7DDC   00
      7DDD   40
      7DDE   FE
@@ -15141,7 +15172,7 @@ S.ELTG &6FD9  &7935  &1300  &6FD9
      7E59   2C
      7E5A   4E
      7E5B   E3
-.KYTB
+.IKNS
      7E5C   22
      7E5D   23
      7E5E   35
@@ -15159,11 +15190,11 @@ S.ELTG &6FD9  &7935  &1300  &6FD9
      7E6A   68
      7E6B   70
      7E6C   F0
-.RDKEY2
+.FILLKL
      7E6D   20 CD 7E   JSR &7ECD
      7E70   A9 10      LDA #&10
      7E72   18         CLC
-.RDK1
+.Rd1
      7E73   A0 03      LDY #&03
      7E75   78         SEI
      7E76   8C 40 FE   STY &FE40
@@ -15176,7 +15207,7 @@ S.ELTG &6FD9  &7935  &1300  &6FD9
      7E89   58         CLI
      7E8A   98         TYA
      7E8B   30 11      BMI &7E9E
-.RDK2
+.Rd3
      7E8D   69 01      ADC #&01
      7E8F   10 E2      BPL &7E73
      7E91   D8         CLD
@@ -15187,22 +15218,23 @@ S.ELTG &6FD9  &7935  &1300  &6FD9
      7E9A   A5 C3      LDA &C3
      7E9C   AA         TAX
      7E9D   60         RTS
-.RDK3
+.Rd2
      7E9E   49 80      EOR #&80
      7EA0   85 C3      STA &C3
-.DKL5
+.Rd5
      7EA2   DD 5C 7E   CMP &7E5C,X
      7EA5   90 E6      BCC &7E8D
      7EA7   F0 03      BEQ &7EAC
      7EA9   E8         INX
      7EAA   D0 F6      BNE &7EA2
+.Rd4
      7EAC   D6 C4      DEC &C4,X
      7EAE   E8         INX
      7EAF   18         CLC
      7EB0   90 DB      BCC &7E8D
 .CTRL
      7EB2   A9 01      LDA #&01
-.DKS4
+.DKS5
      7EB4   A2 03      LDX #&03
      7EB6   78         SEI
      7EB7   8E 40 FE   STX &FE40
@@ -15215,10 +15247,10 @@ S.ELTG &6FD9  &7935  &1300  &6FD9
      7ECA   58         CLI
      7ECB   8A         TXA
      7ECC   60         RTS
-.U%
+.ZEKTRAN
      7ECD   A9 00      LDA #&00
      7ECF   A2 11      LDX #&11
-.DKL3
+.ZEKLOOP
      7ED1   95 C2      STA &C2,X
      7ED3   CA         DEX
      7ED4   D0 FB      BNE &7ED1
@@ -15234,6 +15266,8 @@ S.ELTG &6FD9  &7935  &1300  &6FD9
      7EE2   85 C3      STA &C3
      7EE4   AA         TAX
      7EE5   60         RTS
+.yetanotherrts
+.DEMON
      7EE6   60         RTS
 .ECMOF
      7EE7   A9 00      LDA #&00
@@ -15260,13 +15294,14 @@ S.ELTG &6FD9  &7935  &1300  &6FD9
      7F17   EE 7C 12   INC &127C
      7F1A   A9 65      LDA #&65
      7F1C   20 D6 6D   JSR &6DD6
+.davidscockup
 .EXNO3
      7F1F   A0 04      LDY #&04
      7F21   4C 9F 13   JMP &139F
 .EXNO
      7F24   A0 06      LDY #&06
      7F26   4C 9F 13   JMP &139F
-.BRKBK
+.COLD
      7F29   A9 B9      LDA #&B9
      7F2B   8D 02 02   STA &0202
      7F2E   A9 66      LDA #&66
@@ -15278,6 +15313,7 @@ S.ELTG &6FD9  &7935  &1300  &6FD9
      7F3D   20 40 15   JSR &1540
      7F40   20 92 14   JSR &1492
      7F43   4C 77 13   JMP &1377
+.NMIpissoff
      7F46   58         CLI
      7F47   40         RTI
 .F%
