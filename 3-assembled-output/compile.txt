@@ -422,7 +422,12 @@ Saving file '3-assembled-output/M128Elt.bin'
      0002
 .T1
      0006
+.T2
      0007
+.T3
+     0008
+.T4
+     0009
 .SC
      000A
 .SCH
@@ -555,8 +560,9 @@ Saving file '3-assembled-output/M128Elt.bin'
      008D
 .XX20
      008E
-.XX14
+.LSNUM
      008F
+.LSNUM2
      0090
 .RAT
      0091
@@ -566,13 +572,13 @@ Saving file '3-assembled-output/M128Elt.bin'
      0093
 .widget
      0097
-.XMAX
+.dontclip
      0098
-.YMAX
+.Yx2M1
      0099
 .messXC
      009A
-.deltX
+.newzp
      009B
 .XX1
      009C
@@ -711,15 +717,30 @@ Zero page variables from &0  to &E4
      121E
 .LASY
      121F
+.XX24
      1220
 .ALTIT
      1221
 .SWAP
      1222
+.XP
      1223
-.SDIST
+.YP
+     1224
+.YS
+     1225
+.BALI
+     1226
+.UPO
+     1227
+.boxsize
+     1228
+.distaway
      1229
+.XSAV2
      122A
+.YSAV2
+     122B
 .NAME
      122C
 .TP
@@ -760,9 +781,9 @@ Zero page variables from &0  to &E4
 .ESCP
      1262
      1263
-.TRUMBLE
+.TRIBBLE
      1264
-.TALLYF
+.TALLYL
      1266
 .NOMSL
      1267
@@ -784,6 +805,7 @@ Zero page variables from &0  to &E4
      1282
 .COMY
      1283
+.dialc
      1284
 .QQ24
      1292
@@ -803,13 +825,11 @@ Zero page variables from &0  to &E4
      129A
 .safehouse
      12A0
-.CLCNT
+.frump
      12A6
-.ADCH1
+.JOPOS
      12A7
-.ADCH2
      12A8
-.ADCH3
      12A9
 WP workspace from  &E41  to &12AA 
 .TVT3
@@ -881,7 +901,7 @@ WP workspace from  &E41  to &12AA
      1340   88 88
 .WSCAN
      1342   64 5C      STZ &5C
-.WSCAN1
+.DELL1
      1344   A5 5C      LDA &5C
      1346   F0 FC      BEQ &1344
      1348   60         RTS
@@ -890,23 +910,23 @@ WP workspace from  &E41  to &12AA
      134C   88         DEY
      134D   D0 FA      BNE &1349
      134F   60         RTS
-.LOWBEEP
+.BOOP
      1350   A0 00      LDY #&00
      1352   80 4B      BRA &139F
 .BEEP
      1354   A0 01      LDY #&01
      1356   80 47      BRA &139F
-.CHANNEL
+.SOFH
      1358   C0
      1359   A0
      135A   80
-.QUIET
+.SOOFF
      135B   FF
      135C   BF
      135D   9F
      135E   DF
      135F   EF
-.SOUND
+.SOUS1
      1360   A2 FF      LDX #&FF
      1362   8E 43 FE   STX &FE43
      1365   8D 4F FE   STA &FE4F
@@ -918,17 +938,17 @@ WP workspace from  &E41  to &12AA
      1370   68         PLA
      1371   A9 08      LDA #&08
      1373   8D 40 FE   STA &FE40
-.SRTS
+.SOUR1
      1376   60         RTS
-.SRESET
+.SOFLUSH
      1377   A0 03      LDY #&03
      1379   A9 00      LDA #&00
-.SRL1
+.SOUL2
      137B   99 4C 14   STA &144C,Y
      137E   88         DEY
      137F   D0 FA      BNE &137B
      1381   78         SEI
-.SRL2
+.SOUL1
      1382   B9 5B 13   LDA &135B,Y
      1385   20 60 13   JSR &1360
      1388   C8         INY
@@ -936,12 +956,12 @@ WP workspace from  &E41  to &12AA
      138B   D0 F5      BNE &1382
      138D   58         CLI
      138E   60         RTS
-.NOISEHIT
+.ELASNO
      138F   A0 09      LDY #&09
      1391   20 9F 13   JSR &139F
      1394   A0 05      LDY #&05
      1396   80 07      BRA &139F
-.NOISELASER
+.LASNO
      1398   A0 03      LDY #&03
      139A   20 9F 13   JSR &139F
      139D   A0 05      LDY #&05
@@ -958,8 +978,9 @@ WP workspace from  &E41  to &12AA
      13B1   CD 5B 14   CMP &145B
      13B4   90 01      BCC &13B7
      13B6   E8         INX
-.NS1
+.SOUS4
      13B7   B9 62 14   LDA &1462,Y
+.SOUS9
      13BA   DD 59 14   CMP &1459,X
      13BD   90 B7      BCC &1376
      13BF   78         SEI
@@ -983,16 +1004,16 @@ WP workspace from  &E41  to &12AA
      13E9   58         CLI
      13EA   38         SEC
      13EB   60         RTS
-.NOISE2
+.SOINT
      13EC   A0 02      LDY #&02
-.NSL1
+.SOUL8
      13EE   B9 4D 14   LDA &144D,Y
      13F1   F0 56      BEQ &1449
      13F3   30 06      BMI &13FB
      13F5   B9 5C 14   LDA &145C,Y
      13F8   F0 1C      BEQ &1416
      13FA   2C
-.NS2
+.SOUL4
      13FB   A9 00      LDA #&00
      13FD   18         CLC
      13FE   D8         CLD
@@ -1008,7 +1029,7 @@ WP workspace from  &E41  to &12AA
      1411   4A         LSR A
      1412   4A         LSR A
      1413   20 60 13   JSR &1360
-.NS3
+.SOUL5
      1416   98         TYA
      1417   AA         TAX
      1418   B9 4D 14   LDA &144D,Y
@@ -1020,28 +1041,39 @@ WP workspace from  &E41  to &12AA
      1428   D0 1F      BNE &1449
      142A   DE 53 14   DEC &1453,X
      142D   D0 0D      BNE &143C
-.NS4
+.SOKILL
      142F   A9 00      LDA #&00
      1431   99 4D 14   STA &144D,Y
      1434   99 59 14   STA &1459,Y
      1437   F0 0A      BEQ &1443
-.NS5
+.SOUL6
      1439   5E 4D 14   LSR &144D,X
-.NS6
+.SOU1
      143C   B9 53 14   LDA &1453,Y
      143F   18         CLC
      1440   6D 61 2C   ADC &2C61
-.NS7
+.SOU3
      1443   59 5B 13   EOR &135B,Y
      1446   20 60 13   JSR &1360
-.NS8
+.SOUL3
      1449   88         DEY
      144A   10 A2      BPL &13EE
-.NS9
      144C   60         RTS
-.SBUF
+.SOFLG
      144D
-.SFX1
+.SOCNT
+     1450
+.SOVOL
+     1453
+.SOVCH
+     1456
+.SOPR
+     1459
+.SOFRCH
+     145C
+.SOFRQ
+     145F
+.SFXPR
      1462   4B
      1463   5B
      1464   3F
@@ -1054,7 +1086,7 @@ WP workspace from  &E41  to &12AA
      146B   E7
      146C   FF
      146D   EF
-.SFX2
+.SFXBT
      146E   40
      146F   10
      1470   01
@@ -1067,7 +1099,7 @@ WP workspace from  &E41  to &12AA
      1477   FA
      1478   FE
      1479   FE
-.SFX3
+.SFXFQ
      147A   F0
      147B   20
      147C   10
@@ -1080,7 +1112,7 @@ WP workspace from  &E41  to &12AA
      1483   38
      1484   00
      1485   80
-.SFX4
+.SFXVC
      1486   FF
      1487   FF
      1488   00
@@ -1093,7 +1125,7 @@ WP workspace from  &E41  to &12AA
      148F   03
      1490   0F
      1491   0F
-.STARTUP
+.SETINTS
      1492   78         SEI
      1493   A9 39      LDA #&39
      1495   8D 4E FE   STA &FE4E
@@ -1156,7 +1188,7 @@ WP workspace from  &E41  to &12AA
      14FD   90 02      BCC &1501
      14FF   A9 00      LDA #&00
      1501   8D 18 FE   STA &FE18
-.NOADC
+.jvec
      1504   7A         PLY
      1505   AD 44 FE   LDA &FE44
      1508   A5 FC      LDA &FC
@@ -1179,7 +1211,7 @@ WP workspace from  &E41  to &12AA
      152C   8D 21 FE   STA &FE21
      152F   88         DEY
      1530   D0 F7      BNE &1529
-.jvec
+.j2vec
      1532   DA         PHX
      1533   20 EC 13   JSR &13EC
      1536   FA         PLX
@@ -1188,16 +1220,15 @@ WP workspace from  &E41  to &12AA
      1539   40         RTI
 .VSCAN
      153A   39
-.DLCNT
      153B   1E
 .DOVDU19
      153C   8D 2A 15   STA &152A
      153F   60         RTS
-.SAVEZP
+.setzp
      1540   A9 0F      LDA #&0F
      1542   8D 34 FE   STA &FE34
      1545   A2 90      LDX #&90
-.SZPL1
+.sz1
      1547   B5 00      LDA &00,X
      1549   9D 00 30   STA &3000,X
      154C   E8         INX
@@ -1205,11 +1236,11 @@ WP workspace from  &E41  to &12AA
      154F   A9 09      LDA #&09
      1551   8D 34 FE   STA &FE34
      1554   60         RTS
-.SWAPZP
+.getzp
      1555   A9 0F      LDA #&0F
      1557   8D 34 FE   STA &FE34
      155A   A2 90      LDX #&90
-.SWPL1
+.sz2
      155C   B5 00      LDA &00,X
      155E   BC 00 30   LDY &3000,X
      1561   94 00      STY &00,X
@@ -1479,7 +1510,7 @@ WP workspace from  &E41  to &12AA
      1673   7E
      1674   7E
      1675   7E
-.SC5
+.SCR1
      1676   60         RTS
 .SCAN
      1677   A5 BB      LDA &BB
@@ -1535,7 +1566,7 @@ WP workspace from  &E41  to &12AA
      16CA   A9 C2      LDA #&C2
      16CC   C9 F7      CMP #&F7
      16CE   90 02      BCC &16D2
-.FIXIT
+.ld246
      16D0   A9 F6      LDA #&F6
      16D2   A0 0F      LDY #&0F
      16D4   8C 34 FE   STY &FE34
@@ -1548,36 +1579,36 @@ WP workspace from  &E41  to &12AA
      16E3   AA         TAX
      16E4   E8         INX
      16E5   4C EE 16   JMP &16EE
-.VLL1
+.VLOL1
      16E8   A5 7A      LDA &7A
      16EA   51 0A      EOR (&0A),Y
      16EC   91 0A      STA (&0A),Y
-.VLL1a
+.VLO4
      16EE   88         DEY
      16EF   10 08      BPL &16F9
      16F1   A5 0B      LDA &0B
      16F3   E9 02      SBC #&02
      16F5   85 0B      STA &0B
      16F7   A0 07      LDY #&07
-.VL1
+.VLO3
      16F9   CA         DEX
      16FA   D0 EC      BNE &16E8
-.RTS
+.VLO5
      16FC   A9 09      LDA #&09
      16FE   8D 34 FE   STA &FE34
      1701   60         RTS
-.VL3
+.VLO1
      1702   A5 4D      LDA &4D
      1704   38         SEC
      1705   E5 4B      SBC &4B
      1707   AA         TAX
      1708   E8         INX
      1709   4C 12 17   JMP &1712
-.VLL2
+.VLOL2
      170C   A5 7A      LDA &7A
      170E   51 0A      EOR (&0A),Y
      1710   91 0A      STA (&0A),Y
-.VLL2a
+.VLO6
      1712   C8         INY
      1713   C0 08      CPY #&08
      1715   D0 08      BNE &171F
@@ -1591,7 +1622,7 @@ WP workspace from  &E41  to &12AA
      1722   A9 09      LDA #&09
      1724   8D 34 FE   STA &FE34
      1727   60         RTS
-.LL30
+.LOIN
      1728   84 7E      STY &7E
      172A   A9 0F      LDA #&0F
      172C   8D 34 FE   STA &FE34
@@ -1617,8 +1648,9 @@ WP workspace from  &E41  to &12AA
      1745   55
      1746   AA
      1747   AA
+.HLOIN22
      1748   4C 49 1D   JMP &1D49
-.LOIN
+.LOINQ
      174B   A9 80      LDA #&80
      174D   85 7B      STA &7B
      174F   0A         ASL A
@@ -2631,7 +2663,7 @@ WP workspace from  &E41  to &12AA
      1E0E   49 7F      EOR #&7F
      1E10   18         CLC
      1E11   69 01      ADC #&01
-.PX1
+.PX21
      1E13   49 80      EOR #&80
      1E15   AA         TAX
      1E16   A5 4B      LDA &4B
@@ -2642,7 +2674,7 @@ WP workspace from  &E41  to &12AA
      1E20   10 04      BPL &1E26
      1E22   49 7F      EOR #&7F
      1E24   69 01      ADC #&01
-.PX2
+.PX22
      1E26   85 7C      STA &7C
      1E28   A9 61      LDA #&61
      1E2A   E5 7C      SBC &7C
@@ -2675,9 +2707,9 @@ WP workspace from  &E41  to &12AA
      1E5A   A0 09      LDY #&09
      1E5C   8C 34 FE   STY &FE34
      1E5F   A4 06      LDY &06
-.PX4
+.PXR1
      1E61   60         RTS
-.PX21
+.PX2
      1E62   BD 3E 17   LDA &173E,X
      1E65   25 11      AND &11
      1E67   51 0A      EOR (&0A),Y
@@ -2715,11 +2747,12 @@ WP workspace from  &E41  to &12AA
      1E9F   20 AE 1E   JSR &1EAE
      1EA2   A5 4B      LDA &4B
      1EA4   3A         DEC A
+.DOT2
      1EA5   20 AE 1E   JSR &1EAE
      1EA8   A9 09      LDA #&09
      1EAA   8D 34 FE   STA &FE34
      1EAD   60         RTS
-.CPIX2
+.CPIXK
      1EAE   85 4B      STA &4B
      1EB0   A8         TAY
      1EB1   B9 76 15   LDA &1576,Y
@@ -2766,7 +2799,7 @@ WP workspace from  &E41  to &12AA
      1EFC   A9 7A      LDA #&7A
      1EFE   85 0B      STA &0B
      1F00   A0 0F      LDY #&0F
-.BULL2
+.BULL1
      1F02   B9 3D 1F   LDA &1F3D,Y
      1F05   51 0A      EOR (&0A),Y
      1F07   91 0A      STA (&0A),Y
@@ -2781,13 +2814,13 @@ WP workspace from  &E41  to &12AA
      1F17   A9 7B      LDA #&7B
      1F19   85 0B      STA &0B
      1F1B   A0 0F      LDY #&0F
-.BULL
+.BULL2
      1F1D   B9 2D 1F   LDA &1F2D,Y
      1F20   51 0A      EOR (&0A),Y
      1F22   91 0A      STA (&0A),Y
      1F24   88         DEY
      1F25   10 F6      BPL &1F1D
-.BULB2
+.away
      1F27   A9 09      LDA #&09
      1F29   8D 34 FE   STA &FE34
      1F2C   60         RTS
@@ -2862,7 +2895,7 @@ WP workspace from  &E41  to &12AA
      1F7F   A9 09      LDA #&09
      1F81   8D 34 FE   STA &FE34
      1F84   60         RTS
-.HCNT
+.HANGFLAG
      1F85   00
 .HANGER
      1F86   A2 02      LDX #&02
@@ -2998,19 +3031,19 @@ WP workspace from  &E41  to &12AA
      2062   A9 10      LDA #&10
      2064   B0 EA      BCS &2050
      2066   60         RTS
-.DVID4_DUPLICATE
+.DVID4K
      2067   A2 08      LDX #&08
      2069   0A         ASL A
      206A   85 0C      STA &0C
      206C   A9 00      LDA #&00
-.DVL4
+.DVL4K
      206E   2A         ROL A
      206F   B0 04      BCS &2075
      2071   C5 79      CMP &79
      2073   90 02      BCC &2077
-.DV8
+.DV8K
      2075   E5 79      SBC &79
-.DV5
+.DV5K
      2077   26 0C      ROL &0C
      2079   CA         DEX
      207A   D0 F2      BNE &206E
@@ -3018,7 +3051,7 @@ WP workspace from  &E41  to &12AA
 .cls
      207D   20 57 21   JSR &2157
      2080   4C 46 21   JMP &2146
-.TT67_DUPLICATE
+.TT67X
      2083   A9 0C      LDA #&0C
 .CHPR
      2085   85 14      STA &14
@@ -3449,7 +3482,7 @@ WP workspace from  &E41  to &12AA
      2372   E6 0B      INC &0B
      2374   E6 0B      INC &0B
      2376   60         RTS
-.ADD_DUPLICATE
+.ADDK
      2377   85 06      STA &06
      2379   29 80      AND #&80
      237B   85 7C      STA &7C
@@ -3463,7 +3496,7 @@ WP workspace from  &E41  to &12AA
      2389   65 06      ADC &06
      238B   05 7C      ORA &7C
      238D   60         RTS
-.MU8
+.MU8K
      238E   A5 7B      LDA &7B
      2390   29 7F      AND #&7F
      2392   85 78      STA &78
@@ -3483,7 +3516,7 @@ WP workspace from  &E41  to &12AA
      23AA   A9 00      LDA #&00
      23AC   E5 78      SBC &78
      23AE   09 80      ORA #&80
-.MU9
+.MU9K
      23B0   45 7C      EOR &7C
      23B2   60         RTS
 .log
@@ -7726,13 +7759,6 @@ S.ELTB &3579  &3CE1  &1300  &3579
      4A00   F0 F6      BEQ &49F8
 .newyearseve
      4A02   60         RTS
-ELITE C
-Assembled at &3CE1 
-Ends at &4A03 
-Code size is &D22 
-Execute at &1300 
-Reload at &3CE1 
-S.ELTC &3CE1  &4A03  &1300  &3CE1 
 .GINF
      4A03   8A         TXA
      4A04   0A         ASL A
@@ -7789,6 +7815,13 @@ S.ELTC &3CE1  &4A03  &1300  &3CE1
      4A3F   73
      4A40   78
      4A41   7D
+ELITE C
+Assembled at &3CE1 
+Ends at &4A42 
+Code size is &D61 
+Execute at &1300 
+Reload at &3CE1 
+S.ELTC &3CE1  &4A42  &1300  &3CE1 
 .SCALEY
      4A42   4A         LSR A
 .SCALEY2
@@ -9553,12 +9586,12 @@ S.ELTC &3CE1  &4A03  &1300  &3CE1
      574D   60 EA
      574F   40 1F
 ELITE D
-Assembled at &4A03 
+Assembled at &4A42 
 Ends at &5751 
-Code size is &D4E 
+Code size is &D0F 
 Execute at &1300 
-Reload at &4A03 
-S.ELTD &4A03  &5751  &1300  &4A03 
+Reload at &4A42 
+S.ELTD &4A42  &5751  &1300  &4A42 
 .cpl
      5751   A2 05      LDX #&05
 .TT53
@@ -15011,7 +15044,7 @@ S.ELTG &6FD9  &7935  &1300  &6FD9
      7D92   FA
 .TT66
      7D93   85 81      STA &81
-.TTX662
+.TTX66K
      7D95   20 57 21   JSR &2157
      7D98   20 2C 33   JSR &332C
      7D9B   A9 00      LDA #&00
@@ -15401,7 +15434,7 @@ NA2% = &34CD
      8060   04
      8061   20
      8062   00
-.TALLYFRAC
+.KWL%
      8063   95
      8064   00
      8065   10
@@ -15435,7 +15468,7 @@ NA2% = &34CD
      8081   55
      8082   55
      8083   00
-.TALLYINT
+.KWH%
      8084   00
      8085   00
      8086   00
