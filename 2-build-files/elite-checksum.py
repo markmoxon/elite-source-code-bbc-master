@@ -47,11 +47,11 @@ print("Encryption = ", Encrypt)
 if release == 1:
     # SNG47
     f = 0x7FF4                  # F%
-    default_per_cent = 0x34CD   # DEFAULT%
+    na2_per_cent = 0x34CD       # NA2%
 elif release == 2:
     # Compact
     f = 0x7FDF                  # F%
-    default_per_cent = 0x34CD   # DEFAULT%
+    na2_per_cent = 0x34CD       # NA2%
 
 # Configuration variables for BCODE
 
@@ -76,7 +76,7 @@ elite_file.close()
 
 # Commander data checksum
 
-commander_start = default_per_cent - load_address
+commander_start = na2_per_cent - load_address
 commander_offset = 0x52
 CH = 0x4B - 2
 CY = 0
