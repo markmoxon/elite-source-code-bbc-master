@@ -294,7 +294,19 @@ By default the build process builds the SNG47 release, but you can build a speci
 
 You can add `variant=sng47` to produce the `elite-master-sng47.ssd` file that contains the SNG47 release, though that's the default value so it isn't necessary.
 
-The verification checksums for this version are shown above.
+The verification checksums for this version are as follows:
+
+```
+Results for variant: sng47
+[--originals--]  [---output----]
+Checksum   Size  Checksum   Size  Match  Filename
+-----------------------------------------------------------
+d52370e7  27720  d52370e7  27720   Yes   BCODE.bin
+86e9fa69  27720  86e9fa69  27720   Yes   BCODE.unprot.bin
+bf10f02b  16896  bf10f02b  16896   Yes   BDATA.bin
+f7a27087  16896  f7a27087  16896   Yes   BDATA.unprot.bin
+6dce29cc    721  6dce29cc    721   Yes   M128Elt.bin
+```
 
 ### Building the Master Compact release
 

@@ -209,7 +209,7 @@
 
 \ ******************************************************************************
 \
-\       Name: TALLYFRAC
+\       Name: KWL%
 \       Type: Variable
 \   Category: Status
 \    Summary: Fractional number of kills awarded for destroying each type of
@@ -222,14 +222,14 @@
 \ the other BBC versions, where you always get a single combat point for
 \ everything you kill; in the Master version, it's more sophisticated.
 \
-\ The integral part is stored in the TALLYINT table.
+\ The integral part is stored in the KWH% table.
 \
 \ Each fraction is stored as the numerator in a fraction with a denominator of
 \ 256, so 149 represents 149 / 256 = 0.58203125 points.
 \
 \ ******************************************************************************
 
-.TALLYFRAC
+.KWL%
 
  EQUB 149               \ Missile                               0.58203125
  EQUB 0                 \ Coriolis space station                0.0
@@ -267,7 +267,7 @@
 
 \ ******************************************************************************
 \
-\       Name: TALLYINT
+\       Name: KWH%
 \       Type: Variable
 \   Category: Status
 \    Summary: Integer number of kills awarded for destroying each type of ship
@@ -279,11 +279,11 @@
 \ the other BBC versions, where you always get a single combat point for
 \ everything you kill; in the Master version, it's more sophisticated.
 \
-\ The fractional part is stored in the TALLYFRAC table.
+\ The fractional part is stored in the KWL% table.
 \
 \ ******************************************************************************
 
-.TALLYINT
+.KWH%
 
  EQUB 0                 \ Missile                               0.58203125
  EQUB 0                 \ Coriolis space station                0.0
@@ -3320,7 +3320,7 @@ ENDMACRO
 
 \ ******************************************************************************
 \
-\       Name: TRANTABLE
+\       Name: TRTB%
 \       Type: Variable
 \   Category: Keyboard
 \    Summary: Translation table from internal key number to ASCII
@@ -3338,7 +3338,7 @@ ENDMACRO
 \ &39, and so on. This means that the other locations - i.e. &1A to &1F, &2A to
 \ &2F and so on - aren't used by the lookup table, but the MOS doesn't let this
 \ space go to waste; instead, those gaps contain MOS code, which is replicated
-\ below as TRANTABLE contains a copy of this entire block of the MOS, not just
+\ below as the table contains a copy of this entire block of the MOS, not just
 \ the table entries.
 \
 \ This table allows code running on the parasite to convert internal key numbers
@@ -3379,7 +3379,7 @@ IF _SNG47
 
  ELSE
 
-  SKIP 619              \ These bytes appear to be unused
+ SKIP 619               \ These bytes appear to be unused
 
  ENDIF
 
@@ -3388,7 +3388,7 @@ ELIF _COMPACT
                         \ This table has been moved from the main source to make
                         \ room for the music routines
 
-.TRANTABLE
+.TRTB%
 
  EQUB &00, &40, &FE     \ MOS code
  EQUB &A0, &5F, &8C
@@ -4822,11 +4822,13 @@ ENDMACRO
   N = ABS(SIN((I% / 64) * 2 * PI))
  
   IF N >= 1
-   EQUB 255
+   B% = 255
   ELSE
-   EQUB INT(256 * N + 0.5)
+   B% = INT(256 * N + 0.5)
   ENDIF
- 
+
+  EQUB B%
+
  NEXT
 
 \ ******************************************************************************
