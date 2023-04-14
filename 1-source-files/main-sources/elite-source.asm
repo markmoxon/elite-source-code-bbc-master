@@ -2442,8 +2442,8 @@ ENDIF
 
  CLV                    \ Clear the V flag
 
- LDX #0                 \ If bit 0 of SFXBT+Y is set, set X = 0 and jump to SOUS4
- BCS SOUS4
+ LDX #0                 \ If bit 0 of SFXBT+Y is set, set X = 0 and jump to
+ BCS SOUS4              \ SOUS4
 
  INX                    \ Increment X to 1
 
