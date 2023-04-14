@@ -2561,8 +2561,8 @@ ENDIF
 
  CLV                    \ Clear the V flag
 
- LDX #0                 \ If bit 0 of SFXBT+Y is set, set X = 0 and jump to SOUS4
- BCS SOUS4
+ LDX #0                 \ If bit 0 of SFXBT+Y is set, set X = 0 and jump to
+ BCS SOUS4              \ SOUS4
 
  INX                    \ Increment X to 1
 
@@ -37296,8 +37296,8 @@ ELIF _COMPACT
  JSR RDFIRE             \ Call RDFIRE to check whether the joystick's fire
                         \ button is being pressed
 
- BCS TL2                \ If the C flag is set then the joystick fire button
-                        \ is being pressed, so jump to TL2
+ BCS TL3                \ If the C flag is set then the joystick fire button
+                        \ is being pressed, so jump to TL3
 
 ENDIF
 
@@ -42979,7 +42979,7 @@ ENDMACRO
  STA XX3,X              \ Store the high byte of the result in the X-th byte of
                         \ the heap at XX3
 
- JMP LL50               \ Jump to LL68 to skip the division for y_lo < z_lo
+ JMP LL50               \ Jump to LL50 to move on to the next vertex
 
 .LL67
 
