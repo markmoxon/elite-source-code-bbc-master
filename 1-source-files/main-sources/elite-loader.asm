@@ -250,7 +250,7 @@ ENDIF
 \ &1300-&7FEC.
 \
 \ The main game code is then responsible for decrypting BDATA (from &8000 to
-\ &B1FF) and BCODE/ELITE (from the end of the scramble routine to the end of the
+\ &B1FF) and BCODE/ELITE (from the end of the DEEOR routine to the end of the
 \ file).
 \
 \ ******************************************************************************
