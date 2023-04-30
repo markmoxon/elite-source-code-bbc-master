@@ -1180,7 +1180,7 @@ ENDIF
 \
 \       Name: K%
 \       Type: Workspace
-\    Address: &0400 to &0800
+\    Address: &0400 to &07FF
 \   Category: Workspaces
 \    Summary: Ship data blocks and ship line heaps
 \  Deep dive: Ship data blocks
