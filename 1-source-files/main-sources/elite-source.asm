@@ -6498,7 +6498,7 @@ ENDIF
 
 .PIXEL
 
- STY T1                 \ Store Y, the index of this pixel's y-coordinate, in T1
+ STY T1                 \ Store Y in T1
 
  LDY #%00001111         \ Set bits 1 and 2 of the Access Control Register at
  STY VIA+&34            \ SHEILA &34 to switch screen memory into &3000-&7FFF
