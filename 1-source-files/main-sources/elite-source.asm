@@ -11422,6 +11422,7 @@ ENDIF
 \  Deep dive: Program flow of the main game loop
 \             Scheduling tasks with the main loop counter
 \             Ship data blocks
+\             The space station safe zone
 \
 \ ------------------------------------------------------------------------------
 \
@@ -14780,6 +14781,7 @@ ENDIF
 \       Type: Subroutine
 \   Category: Maths (Geometry)
 \    Summary: Add an orientation vector coordinate to an INWK coordinate
+\  Deep dive: The space station safe zone
 \
 \ ------------------------------------------------------------------------------
 \
