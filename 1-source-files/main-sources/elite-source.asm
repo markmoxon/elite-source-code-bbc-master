@@ -11715,7 +11715,7 @@ ENDIF
  BCS MA28               \ If the C flag is set then jump to MA28 to die, as
                         \ our temperature is off the scale
 
- CMP #&E0               \ If the cabin temperature < 224 then jump to MA23 to
+ CMP #224               \ If the cabin temperature < 224 then jump to MA23 to
  BCC MA23               \ to skip fuel scooping, as we aren't close enough
 
 \CMP #&F0               \ These instructions are commented out in the original
@@ -13486,8 +13486,9 @@ ENDIF
  EQUB WHITE             \ Thargoid
  EQUB WHITE             \ Thargon
  EQUB CYAN              \ Constrictor
- EQUB CYAN              \ The Elite logo
  EQUB CYAN              \ Cougar
+
+ EQUB CYAN              \ This byte appears to be unused
 
 \ ******************************************************************************
 \
@@ -13495,6 +13496,7 @@ ENDIF
 \       Type: Variable
 \   Category: Drawing ships
 \    Summary: Ship colours on the scanner
+\  Deep dive: The elusive Cougar
 \
 \ ******************************************************************************
 
@@ -13533,10 +13535,11 @@ ENDIF
  EQUB WHITE2            \ Thargoid
  EQUB CYAN2             \ Thargon
  EQUB CYAN2             \ Constrictor
- EQUB 0                 \ The Elite logo
- EQUB CYAN2             \ Cougar
+ EQUB 0                 \ Cougar
 
- EQUD 0
+ EQUB CYAN2             \ This byte appears to be unused
+
+ EQUD 0                 \ These bytes appear to be unused
 
 \ ******************************************************************************
 \
@@ -35509,6 +35512,7 @@ ENDIF
 \  Deep dive: Program flow of the main game loop
 \             Ship data blocks
 \             Fixing ship positions
+\             The elusive Cougar
 \
 \ ------------------------------------------------------------------------------
 \
