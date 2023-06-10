@@ -16912,7 +16912,7 @@ ENDIF
                         \ indicate a failed search
 
  LDA #215               \ Print extended token 215 ("{left align} UNKNOWN
- JMP DETOK              \ PLANET"), which will print on-screem as the left align
+ JMP DETOK              \ PLANET"), which will print on-screen as the left align
                         \ code disables justified text, and return from the
                         \ subroutine using a tail call
 
@@ -22664,6 +22664,12 @@ ENDIF
 \   Category: Missions
 \    Summary: Print an extended token and show the Status Mode screen
 \
+\ ------------------------------------------------------------------------------
+\
+\ Other entry points:
+\
+\   BAYSTEP             Go to the docking bay (i.e. show the Status Mode screen)
+\
 \ ******************************************************************************
 
 .BRP
@@ -22772,6 +22778,15 @@ ENDIF
                         \ the Status Mode screen, returning from the subroutine
                         \ using a tail call (this BNE is effectively a JMP as A
                         \ is never zero)
+
+\ ******************************************************************************
+\
+\       Name: TBRIEF
+\       Type: Subroutine
+\   Category: Missions
+\    Summary: Start mission 3
+\
+\ ******************************************************************************
 
 \.TBRIEF                \ These instructions are commented out in the original
 \LDA TP                 \ source
