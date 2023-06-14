@@ -348,8 +348,8 @@ ENDIF
 
  JSR PLL1               \ Call PLL1 to draw Saturn
 
- LDA #%00001001         \ Clear bits 1 and 2 of the the Access Control latch
- STA VIA+&34            \ at SHEILA &34, which changes the following:
+ LDA #%00001001         \ Clear bits 1 and 2 of the Access Control latch at
+ STA VIA+&34            \ SHEILA &34, which changes the following:
                         \
                         \   * Bit 2 = X = 0: &3000-&7FFF set to main RAM
                         \   * Bit 1 = E = 0: VDU shadow RAM locations accessible
