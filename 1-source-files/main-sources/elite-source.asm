@@ -30699,8 +30699,8 @@ ENDIF
 \
 \ ------------------------------------------------------------------------------
 \
-\ Calculate the following, where A is a signed 8-bit integer and the result is a
-\ signed 16-bit integer:
+\ Calculate the following, where A is a sign-magnitude 8-bit integer and the
+\ result is a signed 16-bit integer:
 \
 \   (Y X) = A / 10
 \
@@ -30843,7 +30843,7 @@ ENDIF
                         \ +96 as the vector has been normalised
 
  JSR SPS2               \ Set (Y X) = A / 10, so X will be from -9 to +9, which
-                        \ is the y-offset from the centre of the compass of the
+                        \ is the x-offset from the centre of the compass of the
                         \ dot we want to draw. Returns with the C flag clear
 
  STX T                  \ Set COMY = 204 - X, as 203 is the pixel y-coordinate
@@ -30917,7 +30917,7 @@ ENDIF
 
 .OO2
 
- LDX #0                \ Set the forward shield to 0
+ LDX #0                 \ Set the forward shield to 0
  STX FSH
 
  BCC OO3                \ Jump to OO3 to start taking damage directly from the
@@ -35014,7 +35014,7 @@ ENDIF
 .ss
 
  CPX NOMSL              \ If the counter is equal to the number of missiles,
- BEQ SAL8               \ jump down to SQL8 to draw remaining the missiles, as
+ BEQ SAL8               \ jump down to SAL8 to draw the remaining missiles, as
                         \ the rest of them are present and should be drawn in
                         \ green
 
@@ -36518,7 +36518,6 @@ ENDIF
 
  LDA #0                 \ Set our speed in DELTA to 0, as we aren't going
  STA DELTA              \ anywhere any more
-                        \
 
  JSR M%                 \ Call the M% routine to do the main flight loop once,
                         \ which will display our exploding canister scene and
@@ -36905,9 +36904,9 @@ ENDIF
 \   X                   The type of the ship to show (see variable XX21 for a
 \                       list of ship types)
 \
-\
 \   Y                   The distance to show the ship rotating, once it has
 \                       finished moving towards us
+\
 \ Returns:
 \
 \   X                   If a key is being pressed, X contains the ASCII code
@@ -39229,7 +39228,7 @@ ENDIF
 
  BCS P%+4               \ If the C flag is set, skip the following instruction
 
- LDX #8                 \ Set X = 6, so we "press" KY+8, i.e. KY6, with the next
+ LDX #8                 \ Set X = 8, so we "press" KY+8, i.e. KY6, with the next
                         \ instruction ("S", increase pitch)
 
  STA KL,X               \ Store 128 in either KY5 or KY6 to "press" the relevant
@@ -44606,8 +44605,9 @@ ENDMACRO
 
  LDA #0                 \ Set A to 0 to stop the speed from going negative
 
- LDY #15                \ Fetch byte #15 from the ship's blueprint, which
-                        \ contains the ship's maximum speed
+ LDY #15                \ We now fetch byte #15 from the ship's blueprint, which
+                        \ contains the ship's maximum speed, so set Y = 15 to
+                        \ use as an index
 
  CMP (XX0),Y            \ If A < the ship's maximum speed, skip the following
  BCC P%+4               \ instruction
@@ -46552,11 +46552,11 @@ ENDIF
                         \ key logger at KL
 
  LDX #17                \ We want to clear the 17 key logger locations from
-                        \ KL to KY20, so set a counter in Y
+                        \ KL to KY20, so set a counter in X
 
 .ZEKLOOP
 
- STA JSTY,X             \ Store 0 in the Y-th byte of the key logger
+ STA JSTY,X             \ Store 0 in the X-th byte of the key logger
 
  DEX                    \ Decrement the counter
 
@@ -47085,7 +47085,7 @@ ENDIF
 \
 \       Name: EXNO2
 \       Type: Subroutine
-\   Category: Sound
+\   Category: Status
 \    Summary: Process us making a kill
 \  Deep dive: Combat rank
 \
