@@ -666,7 +666,7 @@ ENDIF
                         \   6   = Death screen
                         \   8   = Status Mode screen (red key f8)
                         \         Inventory screen (red key f9)
-                        \   13  = Rotating ship view (title or debrief screen)
+                        \   13  = Rotating ship view (title or mission screen)
                         \   16  = Market Price screen (red key f7)
                         \   32  = Equip Ship screen (red key f3)
                         \   64  = Long-range Chart (red key f4)
