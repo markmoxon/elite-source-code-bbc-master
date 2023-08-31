@@ -28410,12 +28410,8 @@ ENDIF
 \       Name: dn
 \       Type: Subroutine
 \   Category: Text
-\    Summary: Print the amount of cash and beep
-\
-\ ------------------------------------------------------------------------------
-\
-\ Print the amount of money in the cash pot, then make a short, high beep and
-\ delay for 1 second.
+\    Summary: Print the amount of money we have left in the cash pot, then make
+\             a short, high beep and delay for 1 second
 \
 \ ******************************************************************************
 
@@ -45961,7 +45957,7 @@ ENDMACRO
 
  INY                    \ Increment Y to 1, to represent a beam laser
 
- CMP #(POW+128)         \ If the laser power in A is equal to a beam laser,
+ CMP #POW+128           \ If the laser power in A is equal to a beam laser,
  BEQ SIG1               \ jump to SIG1 with Y = 1
 
  INY                    \ Increment Y to 2, to represent a military laser
