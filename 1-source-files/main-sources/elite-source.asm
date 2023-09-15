@@ -1152,7 +1152,7 @@ ENDIF
 .NOSTM
 
  SKIP 1                 \ The number of stardust particles shown on screen,
-                        \ which is 18 (#NOST) for normal space, and 3 for
+                        \ which is 20 (#NOST) for normal space, and 3 for
                         \ witchspace
 
  PRINT "Zero page variables from ", ~ZP, " to ", ~P%
@@ -1364,14 +1364,14 @@ ENDIF
                         \
                         \   * 10 for a pulse laser
                         \
-                        \ It gets decremented every vertical sync (in the LINSCN
-                        \ routine, which is called 50 times a second) and is set
-                        \ to a non-zero value for pulse lasers only
+                        \ It gets decremented by 2 on each iteration round the
+                        \ main game loop and is set to a non-zero value for
+                        \ pulse lasers only
                         \
                         \ The laser only fires when the value of LASCT hits
                         \ zero, so for pulse lasers with a value of 10, that
-                        \ means the laser fires once every 10 vertical syncs (or
-                        \ 5 times a second)
+                        \ means the laser fires once every four iterations
+                        \ round the main game loop (LASCT = 10, 6, 2, 0)
                         \
                         \ In comparison, beam lasers fire continuously as the
                         \ value of LASCT is always 0
@@ -1675,10 +1675,10 @@ ENDIF
  SKIP 4                 \ The specifications of the lasers fitted to each of the
                         \ four space views:
                         \
-                        \   * Byte #0 = front view (red key f0)
-                        \   * Byte #1 = rear view (red key f1)
-                        \   * Byte #2 = left view (red key f2)
-                        \   * Byte #3 = right view (red key f3)
+                        \   * Byte #0 = front view
+                        \   * Byte #1 = rear view
+                        \   * Byte #2 = left view
+                        \   * Byte #3 = right view
                         \
                         \ For each of the views:
                         \
@@ -1881,7 +1881,8 @@ ENDIF
                         \   Deadly          = 10 to 24    = 2560 to 6399 kills
                         \   Elite           = 25 and up   = 6400 kills and up
                         \
-                        \ You can see the rating calculation in STATUS
+                        \ You can see the rating calculation in the STATUS
+                        \ subroutine
 
 .SVC
 
@@ -3449,7 +3450,7 @@ ENDIF
                         \
                         \   X1 = 123 + (x_sign x_hi)
 
- LDA INWK+1             \ Set x_hi
+ LDA INWK+1             \ Set A = x_hi
 
  CLC                    \ Clear the C flag so we can do addition below
 
@@ -3457,8 +3458,8 @@ ENDIF
 
  BPL SC2                \ If x_sign is positive, skip the following
 
- EOR #%11111111         \ x_sign is negative, so flip the bits in A and subtract
- ADC #1                 \ 1 to make it a negative number (bit 7 will now be set
+ EOR #%11111111         \ x_sign is negative, so flip the bits in A and add 1
+ ADC #1                 \ to make it a negative number (bit 7 will now be set
                         \ as we confirmed above that bits 6 and 7 are clear). So
                         \ this gives A the sign of x_sign and gives it a value
                         \ range of -63 (%11000001) to 0
@@ -3467,7 +3468,7 @@ ENDIF
 
 .SC2
 
- ADC #125               \ Set X1 = 125 + x_hi
+ ADC #125               \ Set X1 = 125 + (x_sign x_hi)
  AND #%11111110         \
  STA X1                 \ and if the result is odd, subtract 1 to make it even
 
@@ -3490,7 +3491,7 @@ ENDIF
  LSR A                  \
  LSR A                  \ So A is in the range 0-15
 
- CLC                    \ Clear the C flag
+ CLC                    \ Clear the C flag for the addition below
 
  LDY INWK+8             \ Set Y = z_sign
 
@@ -6821,12 +6822,8 @@ ENDIF
 \       Name: ECBLB2
 \       Type: Subroutine
 \   Category: Dashboard
-\    Summary: Start up the E.C.M. (indicator, start countdown and make sound)
-\
-\ ------------------------------------------------------------------------------
-\
-\ Light up the E.C.M. indicator bulb on the dashboard, set the E.C.M. countdown
-\ timer to 32, and start making the E.C.M. sound.
+\    Summary: Start up the E.C.M. (light up the indicator, start the countdown
+\             and make the E.C.M. sound)
 \
 \ ******************************************************************************
 
@@ -16824,14 +16821,14 @@ ENDIF
 
 \LDA TRIBBLE            \ These instructions are commented out in the original
 \ORA TRIBBLE+1          \ source
-\BEQ nosurviv
-\JSR DORND
-\AND #7
-\ORA #1
-\STA TRIBBLE
-\LDA #0
-\STA TRIBBLE+1
-\.nosurviv
+\BEQ nosurviv           \
+\JSR DORND              \ They ensure that in games with the Trumble mission,
+\AND #7                 \ at least one Trumble will hitch a ride in the escape
+\ORA #1                 \ pod (so using an escape pod is not a solution to the
+\STA TRIBBLE            \ trouble with Trumbles)
+\LDA #0                 \
+\STA TRIBBLE+1          \ The Master version does not contains the Trumble
+\.nosurviv              \ mission, so the code is disabled
 
  LDA #70                \ Our replacement ship is delivered with a full tank of
  STA QQ14               \ fuel, so set the current fuel level in QQ14 to 70, or
@@ -26611,7 +26608,7 @@ ENDIF
 
 .wW2
 
- STA QQ22+1             \ Set the number in QQ22+1 to 15, which is the number
+ STA QQ22+1             \ Set the number in QQ22+1 to A, which is the number
                         \ that's shown on-screen during the hyperspace countdown
 
  STA QQ22               \ Set the number in QQ22 to 15, which is the internal
@@ -31493,7 +31490,8 @@ ENDIF
 
 .msbpars
 
- EQUB 4, 0, 0, 0, 0     \ These bytes appear to be unused
+ EQUB 4, 0, 0, 0, 0     \ These bytes appear to be unused (they are left over
+                        \ from the 6502 Second Processor version of Elite)
 
 \ ******************************************************************************
 \
@@ -33593,7 +33591,7 @@ ENDIF
                         \ by checking the low byte of the result in X against
                         \ Yx2M1, and returning the C flag from this comparison.
                         \ The value in Yx2M1 is the y-coordinate of the bottom
-                        \ pixel row of the space view, or 191, so this does the
+                        \ pixel row of the space view, so this does the
                         \ following:
                         \
                         \   * The C flag is set if coordinate (A X) is below the
@@ -34892,7 +34890,7 @@ ENDIF
                         \ source
 
  LDA #NOST              \ Reset NOSTM, the number of stardust particles, to the
- STA NOSTM              \ maximum allowed (18)
+ STA NOSTM              \ maximum allowed (20)
 
  LDX #&FF               \ Reset LSX2 and LSY2, the ball line heaps used by the
  STX LSX2               \ BLINE routine for drawing circles, to &FF, to set the
@@ -39102,7 +39100,8 @@ ENDIF
 \       Name: DOKEY
 \       Type: Subroutine
 \   Category: Keyboard
-\    Summary: Scan for the seven primary flight controls
+\    Summary: Scan for the seven primary flight controls and apply the docking
+\             computer manoeuvring code
 \  Deep dive: The key logger
 \             The docking computer
 \
