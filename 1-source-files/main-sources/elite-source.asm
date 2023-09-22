@@ -1247,8 +1247,7 @@ ENDIF
                         \ of universe
                         \
                         \ The number of ships of type X in the local bubble is
-                        \ stored at MANY+X, so the number of Sidewinders is at
-                        \ MANY+1, the number of Mambas is at MANY+2, and so on
+                        \ stored at MANY+X
                         \
                         \ See the deep dive on "Ship blueprints" for a list of
                         \ ship types
@@ -10880,12 +10879,12 @@ ENDIF
                         \ scooping checks
 
                         \ Only the Thargon, alloy plate, splinter and escape pod
-                        \ have non-zero upper nibbles in their blueprint byte #0
+                        \ have non-zero high nibbles in their blueprint byte #0
                         \ so if we get here, our ship is one of those, and the
-                        \ upper nibble gives the market item number of the item
+                        \ high nibble gives the market item number of the item
                         \ when scooped, less 1
 
- ADC #1                 \ Add 1 to the upper nibble to get the market item
+ ADC #1                 \ Add 1 to the high nibble to get the market item
                         \ number
 
  BNE slvy2              \ Skip to slvy2 so we scoop the ship as a market item
@@ -17545,11 +17544,13 @@ ENDIF
 .TA87
 
  LDA INWK+32            \ Set X to bits 1-6 of the missile's AI flag in ship
- AND #%01111111         \ byte #32, so bits 0-3 of X are the target's slot
- LSR A                  \ number, and bit 4 is set (as the missile is hostile)
- TAX                    \ so X is fairly random and in the range 16-31. This is
-                        \ used to determine the number of kill points awarded
-                        \ for the destruction of the missile
+ AND #%01111111         \ byte #32, so bits 0-4 of X are the target's slot
+ LSR A                  \ number, and bit 5 is set (as the missile is hostile)
+ TAX                    \ so X is fairly random and in the range 32-43 (as the
+                        \ maximum slot number is 11)
+                        \
+                        \ The value of X is used to determine the number of kill
+                        \ points awarded for the destruction of the missile
 
 .TA353
 
@@ -21083,7 +21084,7 @@ ENDIF
 \       Name: MUT3
 \       Type: Subroutine
 \   Category: Maths (Arithmetic)
-\    Summary: Unused routine that does the same as MUT2
+\    Summary: An unused routine that does the same as MUT2
 \
 \ ------------------------------------------------------------------------------
 \
@@ -21807,12 +21808,12 @@ ENDIF
 
 .LLfix22
 
- STA R
+ STA R                  \ This is also part of the inline LL28+4 routine
  RTS
 
 .LL222
 
- LDA #255
+ LDA #255               \ This is also part of the inline LL28+4 routine
  STA R
  RTS
 
@@ -21975,7 +21976,7 @@ ENDIF
 .LL29new
 
  SBC Q                  \ This is also part of the inline LL31 routine
- SEC                    \ calculation above
+ SEC
  ROL R
  BCS LL31new
  LDA R
@@ -26706,7 +26707,7 @@ ENDIF
  STA GCNT               \ to the starting point in galaxy 1). We also retain any
                         \ set bits in the high nibble, so if the galaxy number
                         \ is manually set to 16 or higher, it will stay high
-                        \ (though the upper nibble doesn't seem to get set by
+                        \ (though the high nibble doesn't seem to get set by
                         \ the game at any point, so it isn't clear what this is
                         \ for, though Lave in galaxy 16 does show a unique
                         \ system description override, so something is going on
@@ -29742,7 +29743,7 @@ ENDIF
 \       Name: SWAPPZERO
 \       Type: Subroutine
 \   Category: Utility routines
-\    Summary: An unused placeholder routine for swapping zero page bytes
+\    Summary: An unused routine that swaps bytes in zero page
 \
 \ ******************************************************************************
 
@@ -30216,7 +30217,7 @@ ENDIF
 \       Name: exlook
 \       Type: Variable
 \   Category: Drawing ships
-\    Summary: Unused block of explosion data
+\    Summary: An unused block of explosion data
 \
 \ ******************************************************************************
 
@@ -34204,13 +34205,13 @@ ENDIF
 \       Name: KS3
 \       Type: Subroutine
 \   Category: Universe
-\    Summary: Set the SLSP ship heap pointer after shuffling ship slots
+\    Summary: Set the SLSP ship line heap pointer after shuffling ship slots
 \
 \ ------------------------------------------------------------------------------
 \
 \ The final part of the KILLSHP routine, called after we have shuffled the ship
 \ slots and sorted out our missiles. This simply sets SLSP to the new bottom of
-\ the ship heap space.
+\ the ship line heap.
 \
 \ Arguments:
 \
@@ -34223,7 +34224,7 @@ ENDIF
 .KS3
 
  LDA P                  \ After shuffling the ship slots, P(1 0) will point to
- STA SLSP               \ the new bottom of the ship heap, so store this in
+ STA SLSP               \ the new bottom of the ship line heap, so store this in
  LDA P+1                \ SLSP(1 0), which stores the bottom of the heap
  STA SLSP+1
 
@@ -34336,8 +34337,8 @@ ENDIF
  INX                    \ Increment the counter (so it starts at 0 on the first
                         \ iteration)
 
- LDA FRIN,X             \ If slot X is empty, loop round again until it isn't,
- BEQ KS3                \ at which point A contains the ship type in that slot
+ LDA FRIN,X             \ If slot X is empty then we have worked our way through
+ BEQ KS3                \ all the slots, so jump to KS3 to stop looking
 
  CMP #MSL               \ If the slot does not contain a missile, loop back to
  BNE KSL4               \ KSL4 to check the next slot
@@ -34754,7 +34755,7 @@ ENDIF
 \       Name: NUMBOR
 \       Type: Subroutine
 \   Category: Text
-\    Summary: Print a number in hexadecimal (unused)
+\    Summary: An unused routine that prints a number in hexadecimal
 \
 \ ------------------------------------------------------------------------------
 \
@@ -34766,20 +34767,20 @@ ENDIF
 
 .NUMBOR
 
- PHA                    \ Store A on the stack so we can grab the lower nibble
+ PHA                    \ Store A on the stack so we can grab the low nibble
                         \ from it later
 
- LSR A                  \ Shift A right so that it contains the upper nibble
+ LSR A                  \ Shift A right so that it contains the high nibble
  LSR A                  \ of the original argument
  LSR A
  LSR A
 
- JSR DIDGIT             \ Call DIDGIT below to print 0-F for the upper nibble
+ JSR DIDGIT             \ Call DIDGIT below to print 0-F for the high nibble
 
  PLA                    \ Restore A from the stack
 
- AND #%00001111         \ Extract the lower nibble and fall through into DIDGIT
-                        \ to print 0-F for the lower nibble
+ AND #%00001111         \ Extract the low nibble and fall through into DIDGIT
+                        \ to print 0-F for the low nibble
 
 .DIDGIT
 
@@ -35014,7 +35015,7 @@ ENDIF
 
  STA INWK+22            \ Set byte #22 = sidev_x_hi = 96 = 1
 
- ORA #128               \ Flip the sign of A to represent a -1
+ ORA #%10000000         \ Flip the sign of A to represent a -1
 
  STA INWK+14            \ Set byte #14 = nosev_z_hi = -96 = -1
 
