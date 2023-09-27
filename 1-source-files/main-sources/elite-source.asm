@@ -10173,7 +10173,8 @@ ENDIF
  JSR cntr               \ rate in X creeps towards the centre by 2
 
                         \ The roll rate in JSTX increases if we press ">" (and
-                        \ the RL indicator on the dashboard goes to the right).
+                        \ the RL indicator on the dashboard goes to the right)
+                        \
                         \ This rolls our ship to the right (clockwise), but we
                         \ actually implement this by rolling everything else
                         \ to the left (anti-clockwise), so a positive roll rate
@@ -10466,8 +10467,8 @@ ENDIF
  LDA MJ                 \ If we are in witchspace, we can't launch our escape
  BNE noescp             \ pod, so jump down to noescp
 
- JMP ESCAPE             \ The "launch escape pod" button is being pressed and
-                        \ we have an escape pod fitted, so jump to ESCAPE to
+ JMP ESCAPE             \ The button is being pressed to launch an escape pod
+                        \ and we have an escape pod fitted, so jump to ESCAPE to
                         \ launch it, and exit the main flight loop using a tail
                         \ call
 
@@ -10488,7 +10489,7 @@ ENDIF
                         \ skip the following (as we can't have two E.C.M.
                         \ systems operating at the same time)
 
- DEC ECMP               \ The "E.C.M." button is being pressed and nobody else
+ DEC ECMP               \ The E.C.M. button is being pressed and nobody else
                         \ is operating their E.C.M., so decrease the value of
                         \ ECMP to make it non-zero, to denote that our E.C.M.
                         \ is now on
@@ -10566,10 +10567,9 @@ ENDIF
                         \ otherwise jump down to ma1 to skip the following
                         \ instruction
 
- LDA #0                 \ This is an "always on" laser (i.e. a beam laser,
-                        \ as the cassette version of Elite doesn't have military
-                        \ lasers), so set A = 0, which will be stored in LASCT
-                        \ to denote that this is not a pulsing laser
+ LDA #0                 \ This is an "always on" laser (i.e. a beam laser or a
+                        \ military laser), so set A = 0, which will be stored in
+                        \ LASCT to denote that this is not a pulsing laser
 
 .ma1
 
@@ -14343,8 +14343,8 @@ ENDIF
 
  STA XX+1               \ Store the high byte A in XX+1
 
- TXA
- STA SXL,Y              \ Store the low byte X in x_lo
+ TXA                    \ Store the low byte X in x_lo
+ STA SXL,Y
 
                         \ So (XX+1 x_lo) now contains:
                         \
@@ -14688,8 +14688,8 @@ ENDIF
 
  STA XX+1               \ Store the high byte A in XX+1
 
- TXA
- STA SXL,Y              \ Store the low byte X in x_lo
+ TXA                    \ Store the low byte X in x_lo
+ STA SXL,Y
 
                         \ So (XX+1 x_lo) now contains:
                         \
@@ -18172,6 +18172,7 @@ ENDIF
 
  CPX #163               \ If X < 163, i.e. X > -35, then we are not in the enemy
  BCC TA4                \ ship's crosshairs, so jump to TA4 to skip the laser
+                        \ checks
 
 \LDY #19                \ This instruction is commented out in the original
                         \ source
@@ -18242,18 +18243,23 @@ ENDIF
 
  JSR DORND              \ Set A and X to random numbers
 
- ORA #%10000000         \ Set bit 7 of A
+ ORA #%10000000         \ Set bit 7 of A, so A is at least 128
 
  CMP INWK+32            \ If A >= byte #32 (the ship's AI flag) then jump down
  BCS TA15               \ to TA15 so it heads away from us
 
                         \ We get here if A < byte #32, and the chances of this
-                        \ being true are greater with high values of byte #32.
+                        \ being true are greater with high values of byte #32,
+                        \ as long as they are at least 128
+                        \
                         \ In other words, higher byte #32 values increase the
                         \ chances of a ship changing direction to head towards
                         \ us - or, to put it another way, ships with higher
-                        \ byte #32 values are spoiling for a fight. Thargoids
-                        \ have byte #32 set to 255, which explains an awful lot
+                        \ byte #32 values of 128 or more are spoiling for a
+                        \ fight
+                        \
+                        \ Thargoids have byte #32 set to 255, which explains
+                        \ an awful lot
 
 .TA20
 
@@ -20137,8 +20143,8 @@ ENDIF
 
  STA XX+1               \ Store the high byte A in XX+1
 
- TXA
- STA SXL,Y              \ Store the low byte X in x_lo
+ TXA                    \ Store the low byte X in x_lo
+ STA SXL,Y
 
                         \ So (XX+1 x_lo) now contains result 5 above:
                         \
@@ -41448,11 +41454,11 @@ ENDMACRO
 
  LDA #255               \ Set the 15th byte of XX2 to 255, so that face 15 is
  STA XX2+15             \ always visible. No ship definitions actually have this
-                        \ number of faces in the cassette version, but this
-                        \ allows us to force a vertex to always be visible by
-                        \ associating it with face 15 (see the blueprints for
-                        \ the Cobra Mk III at SHIP_COBRA_MK_3 and asteroid at
-                        \ SHIP_ASTEROID for examples)
+                        \ number of faces, but this allows us to force a vertex
+                        \ to always be visible by associating it with face 15
+                        \ (see the ship blueprints for the Cobra Mk III at
+                        \ SHIP_COBRA_MK_3 and the asteroid at SHIP_ASTEROID for
+                        \ examples of vertices that are associated with face 15)
 
  LDY #12                \ Set Y = 12 to point to the ship blueprint byte #12,
 
