@@ -39,8 +39,8 @@ See the [introduction](#introduction) for more information, or jump straight int
 
 * [Building different variants of BBC Master Elite](#building-different-variants-of-bbc-master-elite)
 
-  * [Building the SNG47 release](#building-the-sng47-release)
-  * [Building the Master Compact release](#building-the-master-compact-release)
+  * [Building the SNG47 variant](#building-the-sng47-variant)
+  * [Building the Master Compact variant](#building-the-master-compact-variant)
   * [Differences between the variants](#differences-between-the-variants)
 
 * [Notes on the original source files](#notes-on-the-original-source-files)
@@ -290,9 +290,21 @@ This repository contains the source code for two different variants of BBC Maste
 
 By default the build process builds the SNG47 release, but you can build a specified variant using the `variant=` build parameter.
 
-### Building the SNG47 release
+### Building the SNG47 variant
 
-You can add `variant=sng47` to produce the `elite-master-sng47.ssd` file that contains the SNG47 release, though that's the default value so it isn't necessary.
+You can add `variant=sng47` to produce the `elite-master-sng47.ssd` file that contains the SNG47 variant, though that's the default value so it isn't necessary. In other words, you can build it like this:
+
+```
+make.bat encrypt verify variant=sng47
+```
+
+or this on a Mac or Linux:
+
+```
+make encrypt verify variant=sng47
+```
+
+This will produce a file called `elite-master-sng47.NES` in the `5-compiled-game-discs` folder that contains the SNG47 variant.
 
 The verification checksums for this version are as follows:
 
@@ -308,7 +320,7 @@ f7a27087  16896  f7a27087  16896   Yes   BDATA.unprot.bin
 6dce29cc    721  6dce29cc    721   Yes   M128Elt.bin
 ```
 
-### Building the Master Compact release
+### Building the Master Compact variant
 
 You can build the Master Compact release by appending `variant=compact` to the `make` command, like this on Windows:
 
@@ -322,7 +334,7 @@ or this on a Mac or Linux:
 make encrypt verify variant=compact
 ```
 
-This will produce a file called `elite-master-compact.ssd` in the `5-compiled-game-discs` folder that contains the Master Compact release.
+This will produce a file called `elite-master-compact.ssd` in the `5-compiled-game-discs` folder that contains the Master Compact variant.
 
 The verification checksums for this version are as follows:
 
