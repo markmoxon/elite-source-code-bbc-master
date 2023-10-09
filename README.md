@@ -4,7 +4,7 @@
 
 ![Screenshot of Elite on the BBC Master](https://www.bbcelite.com/images/github/Elite-Master.png)
 
-This repository contains source code for Elite on the BBC Master, with every single line documented and (for the most part) explained.
+This repository contains source code for Elite on the BBC Master, with every single line documented and (for the most part) explained. It has been reconstructed by hand from a disassembly of the original game binaries.
 
 It is a companion to the [bbcelite.com website](https://www.bbcelite.com).
 
