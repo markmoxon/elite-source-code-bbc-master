@@ -18226,6 +18226,8 @@ ENDIF
 \
 \   TA151               Make the ship head towards the planet
 \
+\   TA9-1               Contains an RTS
+\
 \ ******************************************************************************
 
 .TA4
@@ -46922,6 +46924,10 @@ ENDIF
 \
 \   Y                   Change in the y-coordinate according to the joystick
 \                       movement, as an integer (see above)
+\
+\ Other entry points:
+\
+\   TT17X-1             Contains an RTS
 \
 \ ******************************************************************************
 
