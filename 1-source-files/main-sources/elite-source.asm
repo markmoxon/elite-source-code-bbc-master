@@ -8327,6 +8327,10 @@ ENDIF
 \ Clear the top part of the screen (the space view) and draw a white border
 \ along the top and sides.
 \
+\ Other entry points:
+\
+\   BOX                 Just draw the white border along the top and sides
+\
 \ ******************************************************************************
 
 .TTX66
@@ -32707,6 +32711,8 @@ ENDIF
 \
 \ This part draws the new sun. By the time we get to this point, the following
 \ variables should have been set up by parts 1 and 2:
+\
+\ Arguments:
 \
 \   V                   As we draw lines for the new sun, V contains the
 \                       vertical distance between the line we're drawing and the
