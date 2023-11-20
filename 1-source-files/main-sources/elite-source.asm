@@ -3860,6 +3860,10 @@ ENDIF
 \
 \   Y2                  The screen y-coordinate of the end of the line
 \
+\ Other entry points:
+\
+\   LOINQ               Draw a one-segment line from (X1, Y1) to (X2, Y2)
+\
 \ ******************************************************************************
 
 .HLOIN22
@@ -33865,6 +33869,8 @@ ENDIF
 \
 \   PL44                Clear the C flag and return from the subroutine
 \
+\   PL6                 Contains an RTS
+\
 \ ******************************************************************************
 
 .PLS6
@@ -33982,6 +33988,12 @@ ENDIF
 \   Y                   Change in the y-coordinate according to the cursor keys
 \                       being pressed or joystick movement, as an integer (see
 \                       above)
+\
+\ Other entry points:
+\
+\   TJ1                 Check for cursor key presses and return the combined
+\                       deltas for the digital joystick and cursor keys (Master
+\                       Compact only)
 \
 \ ******************************************************************************
 
@@ -36837,6 +36849,7 @@ ENDIF
 
 \ ******************************************************************************
 \
+\       Name: DFAULT
 \       Type: Subroutine
 \   Category: Start and end
 \    Summary: Reset the current commander data block to the last saved commander
@@ -42634,6 +42647,9 @@ ENDMACRO
 \   LL70+1              Contains an RTS (as the first byte of an LDA
 \                       instruction)
 \
+\   LL66                A re-entry point into the ship-drawing routine, used by
+\                       the LL62 routine to store 128 - (U R) on the XX3 heap
+\
 \ ******************************************************************************
 
 .LL60
@@ -44221,6 +44237,13 @@ ENDMACRO
 \
 \ This part draws any remaining lines from the old ship that are still in the
 \ ship line heap.
+\
+\ Other entry points:
+\
+\   LSCLR               Draw any remaining lines from the old ship that are
+\                       still in the ship line heap
+\
+\   LSC3                Contains an RTS
 \
 \ ******************************************************************************
 
