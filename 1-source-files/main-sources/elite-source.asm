@@ -903,6 +903,7 @@ ENDIF
                         \ the value is slowly moved towards the centre value of
                         \ 128 (no pitch) if there are no key presses or joystick
                         \ movement
+
 .KL
 
  SKIP 1                 \ The following bytes implement a key logger that
@@ -9930,6 +9931,8 @@ ENDIF
 \   Category: Flight
 \    Summary: Dock at the space station, show the ship hangar and work out any
 \             mission progression
+\  Deep dive: The Constrictor mission
+\             The Thargoid Plans mission
 \
 \ ******************************************************************************
 
@@ -12161,6 +12164,7 @@ ENDIF
 \   Category: Text
 \    Summary: Print the captain's name during mission briefings
 \  Deep dive: Extended text tokens
+\             The Constrictor mission
 \
 \ ------------------------------------------------------------------------------
 \
@@ -12198,6 +12202,7 @@ ENDIF
 \   Category: Text
 \    Summary: Print the location hint during the mission 1 briefing
 \  Deep dive: Extended text tokens
+\             The Constrictor mission
 \
 \ ------------------------------------------------------------------------------
 \
@@ -22681,6 +22686,7 @@ ENDIF
 \       Type: Subroutine
 \   Category: Missions
 \    Summary: Start mission 2
+\  Deep dive: The Thargoid Plans mission
 \
 \ ******************************************************************************
 
@@ -22731,6 +22737,7 @@ ENDIF
 \       Type: Subroutine
 \   Category: Missions
 \    Summary: Receive the briefing and plans for mission 2
+\  Deep dive: The Thargoid Plans mission
 \
 \ ******************************************************************************
 
@@ -22756,6 +22763,7 @@ ENDIF
 \       Type: Subroutine
 \   Category: Missions
 \    Summary: Finish mission 2
+\  Deep dive: The Thargoid Plans mission
 \
 \ ******************************************************************************
 
@@ -22787,6 +22795,7 @@ ENDIF
 \       Type: Subroutine
 \   Category: Missions
 \    Summary: Finish mission 1
+\  Deep dive: The Constrictor mission
 \
 \ ------------------------------------------------------------------------------
 \
@@ -22825,6 +22834,7 @@ ENDIF
 \       Type: Subroutine
 \   Category: Missions
 \    Summary: Start mission 3
+\  Deep dive: The Trumbles mission
 \
 \ ******************************************************************************
 
@@ -22848,6 +22858,7 @@ ENDIF
 \       Type: Subroutine
 \   Category: Missions
 \    Summary: Start mission 1 and show the mission briefing
+\  Deep dive: The Constrictor mission
 \
 \ ------------------------------------------------------------------------------
 \
