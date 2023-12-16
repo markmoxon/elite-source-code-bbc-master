@@ -1177,7 +1177,7 @@ ENDIF
 
 .XX3
 
- SKIP 0                 \ Temporary storage, typically used for storing tables
+ SKIP 256               \ Temporary storage, typically used for storing tables
                         \ of values such as screen coordinates or ship data
 
 \ ******************************************************************************
@@ -1209,7 +1209,7 @@ ENDIF
 
 .K%
 
- SKIP 0                 \ Ship data blocks and ship line heap
+ SKIP NOSH * NI%        \ Ship data blocks and ship line heap
 
 \ ******************************************************************************
 \
