@@ -4659,7 +4659,6 @@ WP workspace from  &E41  to &12AA
      345D   49 53 
      345F   52 49 
      3461   4F 4E 
-.S1%
      3463   3A 30 2E ...
 .NA%
      3468   6A 61 6D ...
@@ -4689,6 +4688,7 @@ WP workspace from  &E41  to &12AA
 .CHK
      34BB   00
      34BC
+.S1%
      34C8   3A 30 2E ...
 .NA2%
      34CD   4A 41 4D ...

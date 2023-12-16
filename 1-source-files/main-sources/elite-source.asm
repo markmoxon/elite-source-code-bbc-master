@@ -13188,35 +13188,20 @@ ENDIF
 
 \ ******************************************************************************
 \
-\       Name: S1%
-\       Type: Variable
-\   Category: Save and load
-\    Summary: The drive and directory number used when saving or loading a
-\             commander file
-\  Deep dive: Commander save files
-\
-\ ------------------------------------------------------------------------------
-\
-\ The drive part of this string (the "0") is updated with the chosen drive in
-\ the GTNMEW routine, but the directory part (the "E") is fixed. The variable
-\ is followed directly by the commander file at NA%, which starts with the
-\ commander name, so the full string at S1% is in the format ":0.E.JAMESON",
-\ which gives the full filename of the commander file.
-\
-\ ******************************************************************************
-
-.S1%
-
- EQUS ":0.E."
-
-\ ******************************************************************************
-\
 \       Name: NA%
 \       Type: Variable
 \   Category: Save and load
 \    Summary: The data block for the last saved commander
 \
 \ ******************************************************************************
+
+ EQUS ":0.E."           \ The drive part of this string (the "0") is updated
+                        \ with the chosen drive in the GTNMEW routine, but the
+                        \ directory part (the "E") is fixed. The variable is
+                        \ followed directly by the commander file at NA%, which
+                        \ starts with the commander name, so the full string at
+                        \ NA%-5 is in the format ":0.E.jameson", which gives the
+                        \ full filename of the commander file
 
 .NA%
 
@@ -13304,6 +13289,21 @@ ENDIF
 
 \ ******************************************************************************
 \
+\       Name: S1%
+\       Type: Variable
+\   Category: Save and load
+\    Summary: The drive and directory number used when saving or loading a
+\             commander file
+\  Deep dive: Commander save files
+\
+\ ******************************************************************************
+
+.S1%
+
+ EQUS ":0.E."
+
+\ ******************************************************************************
+\
 \       Name: NA2%
 \       Type: Variable
 \   Category: Save and load
@@ -13329,8 +13329,6 @@ ENDIF
 \ also shown.
 \
 \ ******************************************************************************
-
- EQUS ":0.E."
 
 .NA2%
 
@@ -13583,14 +13581,14 @@ ENDIF
 \ ******************************************************************************
 
  PRINT "ELITE A"
- PRINT "Assembled at ", ~S1%
+ PRINT "Assembled at ", ~(NA%-5)
  PRINT "Ends at ", ~P%
- PRINT "Code size is ", ~(P% - S1%)
+ PRINT "Code size is ", ~(P% - (NA%-5))
  PRINT "Execute at ", ~LOAD%
  PRINT "Reload at ", ~LOAD_A%
 
- PRINT "S.ELTA ", ~S1%, " ", ~P%, " ", ~LOAD%, " ", ~LOAD_A%
-\SAVE "3-assembled-output/ELTA.bin", S1%, P%, LOAD%
+ PRINT "S.ELTA ", ~(NA%-5), " ", ~P%, " ", ~LOAD%, " ", ~LOAD_A%
+\SAVE "3-assembled-output/ELTA.bin", (NA%-5), P%, LOAD%
 
 \ ******************************************************************************
 \
@@ -37351,9 +37349,8 @@ ENDIF
 .GTNME
 
  LDX #4                 \ First we want to copy the drive and directory part of
-                        \ the commander file from S1% (which equals NA%-5), so
-                        \ set a counter in x for 5 bytes, as the string is of
-                        \ the form ":0.E."
+                        \ the commander file from NA%-5, so set a counter in X
+                        \ for 5 bytes, as the string is of the form ":0.E."
 
 .GTL3
 
