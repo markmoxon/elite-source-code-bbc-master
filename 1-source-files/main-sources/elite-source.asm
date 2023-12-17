@@ -9396,17 +9396,36 @@ ENDIF
 IF _MATCH_ORIGINAL_BINARIES
 
  IF _SNG47
-  INCBIN "4-reference-binaries/sng47/workspaces/ELTA-align1.bin"
+
+  EQUB &41, &23, &6D, &65, &6D, &3A, &53, &54  \ These bytes appear to be
+  EQUB &41, &6C, &61, &74, &63, &68, &3A, &52  \ unused and just contain random
+  EQUB &54, &53, &0D, &13, &74, &09, &5C, &2E  \ workspace noise left over from
+  EQUB &2E, &2E, &2E, &0D, &18, &60, &05, &20  \ the BBC Micro assembly process
+  EQUB &0D, &1A, &F4, &21, &5C, &2E, &2E, &2E
+  EQUB &2E, &2E, &2E, &2E, &2E, &2E, &2E, &42
+  EQUB &61, &79, &20, &56, &69, &65, &77, &2E
+  EQUB &2E, &2E, &2E, &2E, &2E, &2E, &2E, &2E
+  EQUB &2E, &0D, &1A, &FE, &05, &20, &0D, &1B
+  EQUB &08, &11, &2E, &48, &41
+
  ELIF _COMPACT
-  INCBIN "4-reference-binaries/compact/workspaces/ELTA-align1.bin"
+
+  EQUB &2B, &26, &33    \ These bytes appear to be unused and just contain
+                        \ random workspace noise left over from the BBC Micro
+                        \ assembly process
+
  ENDIF
 
 ELSE
 
  IF _SNG47
+
   SKIP 77               \ These bytes appear to be unused
+
  ELIF _COMPACT
+
   SKIP 3                \ These bytes appear to be unused
+
  ENDIF
 
 ENDIF
@@ -9468,12 +9487,44 @@ ENDIF
 
 IF _MATCH_ORIGINAL_BINARIES
 
- IF _SNG47
-  INCBIN "4-reference-binaries/sng47/workspaces/ELTA-log.bin"
- ELIF _COMPACT
-  INCBIN "4-reference-binaries/compact/workspaces/ELTA-log.bin"
- ENDIF
+ EQUB &00              \ This byte appears to be unused and just contains
+                       \ random workspace noise left over from the BBC Micro
+                       \ assembly process
 
+ EQUB &00, &20, &32, &40, &4A, &52, &59
+ EQUB &60, &65, &6A, &6E, &72, &76, &79, &7D
+ EQUB &80, &82, &85, &87, &8A, &8C, &8E, &90
+ EQUB &92, &94, &96, &98, &99, &9B, &9D, &9E
+ EQUB &A0, &A1, &A2, &A4, &A5, &A6, &A7, &A9
+ EQUB &AA, &AB, &AC, &AD, &AE, &AF, &B0, &B1
+ EQUB &B2, &B3, &B4, &B5, &B6, &B7, &B8, &B9
+ EQUB &B9, &BA, &BB, &BC, &BD, &BD, &BE, &BF
+ EQUB &C0, &C0, &C1, &C2, &C2, &C3, &C4, &C4
+ EQUB &C5, &C6, &C6, &C7, &C7, &C8, &C9, &C9
+ EQUB &CA, &CA, &CB, &CC, &CC, &CD, &CD, &CE
+ EQUB &CE, &CF, &CF, &D0, &D0, &D1, &D1, &D2
+ EQUB &D2, &D3, &D3, &D4, &D4, &D5, &D5, &D5
+ EQUB &D6, &D6, &D7, &D7, &D8, &D8, &D9, &D9
+ EQUB &D9, &DA, &DA, &DB, &DB, &DB, &DC, &DC
+ EQUB &DD, &DD, &DD, &DE, &DE, &DE, &DF, &DF
+ EQUB &E0, &E0, &E0, &E1, &E1, &E1, &E2, &E2
+ EQUB &E2, &E3, &E3, &E3, &E4, &E4, &E4, &E5
+ EQUB &E5, &E5, &E6, &E6, &E6, &E7, &E7, &E7
+ EQUB &E7, &E8, &E8, &E8, &E9, &E9, &E9, &EA
+ EQUB &EA, &EA, &EA, &EB, &EB, &EB, &EC, &EC
+ EQUB &EC, &EC, &ED, &ED, &ED, &ED, &EE, &EE
+ EQUB &EE, &EE, &EF, &EF, &EF, &EF, &F0, &F0
+ EQUB &F0, &F1, &F1, &F1, &F1, &F1, &F2, &F2
+ EQUB &F2, &F2, &F3, &F3, &F3, &F3, &F4, &F4
+ EQUB &F4, &F4, &F5, &F5, &F5, &F5, &F5, &F6
+ EQUB &F6, &F6, &F6, &F7, &F7, &F7, &F7, &F7
+ EQUB &F8, &F8, &F8, &F8, &F9, &F9, &F9, &F9
+ EQUB &F9, &FA, &FA, &FA, &FA, &FA, &FB, &FB
+ EQUB &FB, &FB, &FB, &FC, &FC, &FC, &FC, &FC
+ EQUB &FD, &FD, &FD, &FD, &FD, &FD, &FE, &FE
+ EQUB &FE, &FE, &FE, &FF, &FF, &FF, &FF, &FF
+
+ 
 ELSE
 
  SKIP 1
@@ -9508,11 +9559,53 @@ ENDIF
 IF _MATCH_ORIGINAL_BINARIES
 
  IF _SNG47
-  INCBIN "4-reference-binaries/sng47/workspaces/ELTA-logL.bin"
+
+  EQUB &60             \ This byte appears to be unused and just contains
+                       \ random workspace noise left over from the BBC Micro
+                       \ assembly process
+
  ELIF _COMPACT
-  INCBIN "4-reference-binaries/compact/workspaces/ELTA-logL.bin"
+
+  EQUB &A9             \ This byte appears to be unused and just contains
+                       \ random workspace noise left over from the BBC Micro
+                       \ assembly process
+
  ENDIF
 
+ EQUB &00, &00, &B8, &00, &4D, &B8, &D6
+ EQUB &00, &70, &4D, &B4, &B8, &6A, &D6, &05
+ EQUB &00, &CC, &70, &EF, &4D, &8E, &B4, &C1
+ EQUB &B8, &9A, &6A, &28, &D6, &75, &05, &89
+ EQUB &00, &6C, &CC, &23, &70, &B4, &EF, &22
+ EQUB &4D, &71, &8E, &A4, &B4, &BD, &C1, &BF
+ EQUB &B8, &AC, &9A, &85, &6A, &4B, &28, &01
+ EQUB &D6, &A7, &75, &3F, &05, &C9, &89, &46
+ EQUB &00, &B7, &6C, &1D, &CC, &79, &23, &CB
+ EQUB &70, &13, &B4, &52, &EF, &8A, &22, &B9
+ EQUB &4D, &E0, &71, &00, &8E, &1A, &A4, &2D
+ EQUB &B4, &39, &BD, &40, &C1, &41, &BF, &3C
+ EQUB &B8, &32, &AC, &24, &9A, &10, &85, &F8
+ EQUB &6A, &DB, &4B, &BA, &28, &95, &01, &6C
+ EQUB &D6, &3F, &A7, &0E, &75, &DA, &3F, &A2
+ EQUB &05, &67, &C9, &29, &89, &E8, &46, &A3
+ EQUB &00, &5C, &B7, &12, &6C, &C5, &1D, &75
+ EQUB &CC, &23, &79, &CE, &23, &77, &CB, &1E
+ EQUB &70, &C2, &13, &64, &B4, &03, &52, &A1
+ EQUB &EF, &3D, &8A, &D6, &22, &6E, &B9, &03
+ EQUB &4D, &97, &E0, &29, &71, &B9, &00, &47
+ EQUB &8E, &D4, &1A, &5F, &A4, &E8, &2D, &70
+ EQUB &B4, &F7, &39, &7B, &BD, &FF, &40, &81
+ EQUB &C1, &01, &41, &80, &BF, &FE, &3C, &7A
+ EQUB &B8, &F5, &32, &6F, &AC, &E8, &24, &5F
+ EQUB &9A, &D5, &10, &4A, &85, &BE, &F8, &31
+ EQUB &6A, &A3, &DB, &13, &4B, &83, &BA, &F1
+ EQUB &28, &5F, &95, &CB, &01, &36, &6C, &A1
+ EQUB &D6, &0A, &3F, &73, &A7, &DB, &0E, &42
+ EQUB &75, &A7, &DA, &0C, &3F, &71, &A2, &D4
+ EQUB &05, &36, &67, &98, &C9, &F9, &29, &59
+ EQUB &89, &B8, &E8, &17, &46, &75, &A3, &D2
+
+ 
 ELSE
 
  SKIP 1
@@ -9595,11 +9688,78 @@ ENDIF
 
 IF _MATCH_ORIGINAL_BINARIES
 
- IF _SNG47
-  INCBIN "4-reference-binaries/sng47/workspaces/ELTA-align2.bin"
- ELIF _COMPACT
-  INCBIN "4-reference-binaries/compact/workspaces/ELTA-align2.bin"
- ENDIF
+ EQUB &01, &02, &03, &04, &05, &06, &00, &01   \ These bytes appear to be
+ EQUB &02, &03, &04, &05, &06, &00, &01, &02   \ unused and just contain random
+ EQUB &03, &04, &05, &06, &00, &01, &02, &03   \ workspace noise left over from
+ EQUB &04, &05, &06, &00, &01, &02, &03, &04   \ the BBC Micro assembly process
+ EQUB &05, &06, &00, &01, &02, &03, &04, &05
+ EQUB &06, &00, &01, &02, &03, &04, &05, &06
+ EQUB &00, &01, &02, &03, &04, &05, &06, &00
+ EQUB &01, &02, &03, &04, &05, &06, &00, &01
+ EQUB &02, &03, &04, &05, &06, &00, &01, &02
+ EQUB &03, &04, &05, &06, &00, &01, &02, &03
+ EQUB &04, &05, &06, &00, &01, &02, &03, &04
+ EQUB &05, &06, &00, &01, &02, &03, &04, &05
+ EQUB &06, &00, &01, &02, &03, &04, &05, &06
+ EQUB &00, &01, &02, &03, &04, &05, &06, &00
+ EQUB &01, &02, &03, &04, &05, &06, &00, &01
+ EQUB &02, &03, &04, &05, &06, &00, &01, &02
+ EQUB &03, &04, &05, &06, &00, &01, &02, &03
+ EQUB &04, &05, &06, &00, &01, &02, &03, &04
+ EQUB &05, &06, &00, &01, &02, &03, &04, &05
+ EQUB &06, &00, &01, &02, &03, &04, &05, &06
+ EQUB &00, &01, &02, &03, &04, &05, &06, &00
+ EQUB &01, &02, &03, &04, &05, &06, &00, &01
+ EQUB &02, &03, &04, &05, &06, &00, &01, &02
+ EQUB &03, &04, &05, &06, &00, &01, &02, &03
+ EQUB &04, &05, &06, &00, &01, &02, &03, &04
+ EQUB &05, &06, &00, &01, &02, &03, &04, &05
+ EQUB &06, &00, &01, &02, &03, &04, &05, &06
+ EQUB &00, &01, &02, &03, &04, &05, &06, &00
+ EQUB &01, &02, &03, &04, &05, &06, &00, &01
+ EQUB &02, &03, &04, &05, &06, &00, &01, &02
+ EQUB &03, &04, &05, &06, &00, &01, &02, &03
+ EQUB &04, &05, &06, &00, &01, &02, &03, &04
+ EQUB &01, &01, &01, &01, &01, &01, &02, &02
+ EQUB &02, &02, &02, &02, &02, &03, &03, &03
+ EQUB &03, &03, &03, &03, &04, &04, &04, &04
+ EQUB &04, &04, &04, &05, &05, &05, &05, &05
+ EQUB &05, &05, &06, &06, &06, &06, &06, &06
+ EQUB &06, &07, &07, &07, &07, &07, &07, &07
+ EQUB &08, &08, &08, &08, &08, &08, &08, &09
+ EQUB &09, &09, &09, &09, &09, &09, &0A, &0A
+ EQUB &0A, &0A, &0A, &0A, &0A, &0B, &0B, &0B
+ EQUB &0B, &0B, &0B, &0B, &0C, &0C, &0C, &0C
+ EQUB &0C, &0C, &0C, &0D, &0D, &0D, &0D, &0D
+ EQUB &0D, &0D, &0E, &0E, &0E, &0E, &0E, &0E
+ EQUB &0E, &0F, &0F, &0F, &0F, &0F, &0F, &0F
+ EQUB &10, &10, &10, &10, &10, &10, &10, &11
+ EQUB &11, &11, &11, &11, &11, &11, &12, &12
+ EQUB &12, &12, &12, &12, &12, &13, &13, &13
+ EQUB &13, &13, &13, &13, &14, &14, &14, &14
+ EQUB &14, &14, &14, &15, &15, &15, &15, &15
+ EQUB &15, &15, &16, &16, &16, &16, &16, &16
+ EQUB &16, &17, &17, &17, &17, &17, &17, &17
+ EQUB &18, &18, &18, &18, &18, &18, &18, &19
+ EQUB &19, &19, &19, &19, &19, &19, &1A, &1A
+ EQUB &1A, &1A, &1A, &1A, &1A, &1B, &1B, &1B
+ EQUB &1B, &1B, &1B, &1B, &1C, &1C, &1C, &1C
+ EQUB &1C, &1C, &1C, &1D, &1D, &1D, &1D, &1D
+ EQUB &1D, &1D, &1E, &1E, &1E, &1E, &1E, &1E
+ EQUB &1E, &1F, &1F, &1F, &1F, &1F, &1F, &1F
+ EQUB &20, &20, &20, &20, &20, &20, &20, &21
+ EQUB &21, &21, &21, &21, &21, &21, &22, &22
+ EQUB &22, &22, &22, &22, &22, &23, &23, &23
+ EQUB &23, &23, &23, &23, &24, &24, &24, &24
+ EQUB &24, &24, &24, &25, &25, &25, &25, &25
+ EQUB &96, &97, &9A, &9B, &9D, &9E, &9F, &A6
+ EQUB &A7, &AB, &AC, &AD, &AE, &AF, &B2, &B3
+ EQUB &B4, &B5, &B6, &B7, &B9, &BA, &BB, &BC
+ EQUB &BD, &BE, &BF, &CB, &CD, &CE, &CF, &D3
+ EQUB &D6, &D7, &D9, &DA, &DB, &DC, &DD, &DE
+ EQUB &DF, &E5, &E6, &E7, &E9, &EA, &EB, &EC
+ EQUB &ED, &EE, &EF, &F2, &F3, &F4, &F5, &F6
+ EQUB &F7, &F9, &FA, &FB, &FC, &FD, &FE, &FF
 
 ELSE
 

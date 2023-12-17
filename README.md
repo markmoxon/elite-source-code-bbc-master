@@ -364,32 +364,45 @@ See the [accompanying website](https://www.bbcelite.com/master/releases.html) fo
 
 ### Producing byte-accurate binaries
 
-The `4-reference-binaries/<variant>/workspaces` folders (where `<variant>` is the variant) contain binary files that match the workspaces in the original game binaries (a workspace being a block of memory, such as `LBUF` or `LSX2`). Instead of initialising workspaces with null values like BeebAsm, the original BBC Micro source code creates its workspaces by simply incrementing the `P%` and `O%` program counters, which means that the workspaces end up containing whatever contents the allocated memory had at the time. As the source files are broken into multiple BBC BASIC programs that run each other sequentially, this means the workspaces in the source code tend to contain either fragments of these BBC BASIC source programs, or assembled code from an earlier stage. This doesn't make any difference to the game code, which either initialises the workspaces at runtime or just ignores their initial contents, but if we want to be able to produce byte-accurate binaries from the modern BeebAsm assembly process, we need to include this "workspace noise" when building the project, and that's what the binaries in the `4-reference-binaries/<variant>/workspaces` folder are for. These binaries are only loaded by the `encrypt` target; for the `build` target, workspaces are initialised with zeroes.
+Instead of initialising workspaces with null values like BeebAsm, the original BBC Micro source code creates its workspaces by simply incrementing the `P%` and `O%` program counters, which means that the workspaces end up containing whatever contents the allocated memory had at the time. As the source files are broken into multiple BBC BASIC programs that run each other sequentially, this means the workspaces in the source code tend to contain either fragments of these BBC BASIC source programs, or assembled code from an earlier stage. This doesn't make any difference to the game code, which either initialises the workspaces at runtime or just ignores their initial contents, but if we want to be able to produce byte-accurate binaries from the modern BeebAsm assembly process, we need to include this "workspace noise" when building the project. Workspace noise is only loaded by the `encrypt` target; for the `build` target, workspaces are initialised with zeroes.
 
-Here's an example of how these binaries are included, in this case for the `log` workspace in the `ELTA` section:
+Here's an example of how workspace noise is included, from the end of the main source in elite-source.asm:
 
 ```
-.log
-
 IF _MATCH_ORIGINAL_BINARIES
 
  IF _SNG47
-  INCBIN "4-reference-binaries/sng47/workspaces/ELTA-log.bin"
+
+  EQUB &41, &23, &6D, &65, &6D, &3A, &53, &54  \ These bytes appear to be
+  EQUB &41, &6C, &61, &74, &63, &68, &3A, &52  \ unused and just contain random
+  EQUB &54, &53, &0D, &13, &74, &09, &5C, &2E  \ workspace noise left over from
+  EQUB &2E, &2E, &2E, &0D, &18, &60, &05, &20  \ the BBC Micro assembly process
+  EQUB &0D, &1A, &F4, &21, &5C, &2E, &2E, &2E
+  EQUB &2E, &2E, &2E, &2E, &2E, &2E, &2E, &42
+  EQUB &61, &79, &20, &56, &69, &65, &77, &2E
+  EQUB &2E, &2E, &2E, &2E, &2E, &2E, &2E, &2E
+  EQUB &2E, &0D, &1A, &FE, &05, &20, &0D, &1B
+  EQUB &08, &11, &2E, &48, &41
+
  ELIF _COMPACT
-  INCBIN "4-reference-binaries/compact/workspaces/ELTA-log.bin"
+
+  EQUB &2B, &26, &33    \ These bytes appear to be unused and just contain
+                        \ random workspace noise left over from the BBC Micro
+                        \ assembly process
+
  ENDIF
 
 ELSE
 
- SKIP 1
+ IF _SNG47
 
- FOR I%, 1, 255
+  SKIP 77               \ These bytes appear to be unused
 
-  B% = INT(&2000 * LOG(I%) / LOG(2) + 0.5)
+ ELIF _COMPACT
 
-  EQUB B% DIV 256
+  SKIP 3                \ These bytes appear to be unused
 
- NEXT
+ ENDIF
 
 ENDIF
 ```
