@@ -9412,7 +9412,15 @@ IF _MATCH_ORIGINAL_BINARIES
 
 ELSE
 
- SKIP 29                \ These bytes appear to be unused
+ IF _SNG47
+
+  SKIP 29               \ These bytes appear to be unused
+
+ ELIF _COMPACT
+
+  SKIP 34               \ These bytes appear to be unused
+
+ ENDIF
 
 ENDIF
 
