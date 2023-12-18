@@ -41,9 +41,8 @@
 \
 \ ******************************************************************************
 
- Q% = _REMOVE_CHECKSUMS \ Set Q% to TRUE to max out the default commander, FALSE
-                        \ for the standard default commander (this is set to
-                        \ TRUE if checksums are disabled, just for convenience)
+ Q% = _MAX_COMMANDER    \ Set Q% to TRUE to max out the default commander, FALSE
+                        \ for the standard default commander
 
  NOST = 20              \ The number of stardust particles in normal space (this
                         \ goes down to 3 in witchspace)
@@ -9487,9 +9486,9 @@ ENDIF
 
 IF _MATCH_ORIGINAL_BINARIES
 
- EQUB &00              \ This byte appears to be unused and just contains
-                       \ random workspace noise left over from the BBC Micro
-                       \ assembly process
+ EQUB &00               \ This byte appears to be unused and just contains
+                        \ random workspace noise left over from the BBC Micro
+                        \ assembly process
 
  EQUB &00, &20, &32, &40, &4A, &52, &59
  EQUB &60, &65, &6A, &6E, &72, &76, &79, &7D
@@ -9524,7 +9523,6 @@ IF _MATCH_ORIGINAL_BINARIES
  EQUB &FD, &FD, &FD, &FD, &FD, &FD, &FE, &FE
  EQUB &FE, &FE, &FE, &FF, &FF, &FF, &FF, &FF
 
- 
 ELSE
 
  SKIP 1
@@ -9560,15 +9558,15 @@ IF _MATCH_ORIGINAL_BINARIES
 
  IF _SNG47
 
-  EQUB &60             \ This byte appears to be unused and just contains
-                       \ random workspace noise left over from the BBC Micro
-                       \ assembly process
+  EQUB &60              \ This byte appears to be unused and just contains
+                        \ random workspace noise left over from the BBC Micro
+                        \ assembly process
 
  ELIF _COMPACT
 
-  EQUB &A9             \ This byte appears to be unused and just contains
-                       \ random workspace noise left over from the BBC Micro
-                       \ assembly process
+  EQUB &A9              \ This byte appears to be unused and just contains
+                        \ random workspace noise left over from the BBC Micro
+                        \ assembly process
 
  ENDIF
 
@@ -9605,7 +9603,6 @@ IF _MATCH_ORIGINAL_BINARIES
  EQUB &05, &36, &67, &98, &C9, &F9, &29, &59
  EQUB &89, &B8, &E8, &17, &46, &75, &A3, &D2
 
- 
 ELSE
 
  SKIP 1
