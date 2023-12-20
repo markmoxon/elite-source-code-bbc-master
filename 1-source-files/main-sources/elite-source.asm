@@ -298,9 +298,7 @@ ENDIF
 
 .P
 
- SKIP 3                 \ Temporary storage, used in a number of places
-
- SKIP 1                 \ This byte appears to be unused
+ SKIP 4                 \ Temporary storage, used in a number of places
 
 .XC
 
