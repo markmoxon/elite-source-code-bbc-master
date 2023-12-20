@@ -984,6 +984,8 @@ ENDIF
 \
 \ See the PIXEL routine in the main game code for more details.
 \
+\ ------------------------------------------------------------------------------
+\
 \ Arguments:
 \
 \   X                   The screen x-coordinate of the pixel to draw
