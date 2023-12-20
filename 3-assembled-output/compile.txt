@@ -435,7 +435,6 @@ Saving file '3-assembled-output/M128Elt.bin'
      000A
 .P
      000B
-     000E
 .XC
      000F
 .COL
