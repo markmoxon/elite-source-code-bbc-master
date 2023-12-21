@@ -51,13 +51,13 @@ endif
 ifeq ($(variant), compact)
   variant-number=2
   folder=/compact
-  suffix=-flicker-free-compact
+  suffix=-elite-m-compact
   boot=-opt 2
 else
   variant-number=1
   folder=/sng47
-  suffix=-flicker-free-sng47
-  boot=-boot M128Elt
+  suffix=-elite-m-sng47
+  boot=-opt 2
 endif
 
 .PHONY:all

@@ -1,16 +1,28 @@
 
 ---------------------------------------
-Acornsoft Elite (flicker-free version)
+Elite-M
 
-Version: BBC Master
-Variant: Acornsoft SNG47 release
-Product: Acornsoft SNG47
+For the BBC Master 128
 
-Contains flicker-free planet drawing
+Based on the Acornsoft SNG47 release
+of Elite by Ian Bell and David Braben
+Copyright (c) Acornsoft 1986Contains flicker-free planet drawing
 routines by Mark Moxon
+
+Sound routines by Kieran Connell and
+Simon Morris
+
+Original music by Aidan Bell and Julie
+Dunn (c) D. Braben and I. Bell 1985,
+ported from the C64 by Negative Charge
+
+Elite integration by Mark Moxon
+
+Sideways RAM detection and loading
+routines by Tricky and J.G.Harston
 
 See www.bbcelite.com for details
 
-Build: 2023-02-18 12:22:47
+Build: 2023-12-21 16:05:23
 ---------------------------------------
 

@@ -35,34 +35,60 @@
  EQUB 10, 13
  EQUS "---------------------------------------"
  EQUB 10, 13
- EQUS "Acornsoft Elite (flicker-free version)"
+ EQUS "Elite-M"
  EQUB 10, 13
- EQUB 10, 13
- EQUS "Version: BBC Master"
  EQUB 10, 13
 
 IF _SNG47
 
- EQUS "Variant: Acornsoft SNG47 release"
+ EQUS "For the BBC Master 128"
  EQUB 10, 13
- EQUS "Product: Acornsoft SNG47"
  EQUB 10, 13
+ EQUS "Based on the Acornsoft SNG47 release"
+ EQUB 10, 13
+ EQUS "of Elite by Ian Bell and David Braben"
+ EQUB 10, 13
+ EQUS "Copyright (c) Acornsoft 1986"
 
 ELIF _COMPACT
 
- EQUS "Variant: Master Compact release"
+ EQUS "For the BBC Master Compact"
  EQUB 10, 13
- EQUS "Product: Superior Software"
  EQUB 10, 13
+ EQUS "Based on the Superior Software release"
+ EQUB 10, 13
+ EQUS "of Elite by Ian Bell and David Braben"
+ EQUB 10, 13
+ EQUS "Copyright (c) Acornsoft 1986"
 
 ENDIF
 
- EQUB 10, 13
  EQUS "Contains flicker-free planet drawing"
  EQUB 10, 13
  EQUS "routines by Mark Moxon"
  EQUB 10, 13
  EQUB 10, 13
+ EQUS "Sound routines by Kieran Connell and"
+ EQUB 10, 13
+ EQUS "Simon Morris"
+ EQUB 10, 13
+ EQUB 10, 13
+ EQUS "Original music by Aidan Bell and Julie"
+ EQUB 10, 13
+ EQUS "Dunn (c) D. Braben and I. Bell 1985,"
+ EQUB 10, 13
+ EQUS "ported from the C64 by Negative Charge"
+ EQUB 10, 13
+ EQUB 10, 13
+ EQUS "Elite integration by Mark Moxon"
+ EQUB 10, 13
+ EQUB 10, 13
+ EQUS "Sideways RAM detection and loading"
+ EQUB 10, 13
+ EQUS "routines by Tricky and J.G.Harston"
+ EQUB 10, 13
+ EQUB 10, 13
+
  EQUS "See www.bbcelite.com for details"
  EQUB 10, 13
  EQUB 10, 13

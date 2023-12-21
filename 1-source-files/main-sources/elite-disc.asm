@@ -22,8 +22,8 @@
 \ This source file produces one of the following SSD disc images, depending on
 \ which release is being built:
 \
-\   * elite-master-sng47.ssd
-\   * elite-master-compact.ssd
+\   * elite-m-sng47.ssd
+\   * elite-m-compact.ssd
 \
 \ This can be loaded into an emulator or a real BBC Master.
 \
@@ -38,10 +38,17 @@ IF _SNG47
  PUTFILE "3-assembled-output/M128Elt.bin", "M128Elt", &FF0E00, &FF0E43
  PUTFILE "3-assembled-output/BDATA.bin", "BDATA", &000000, &000000
  PUTFILE "3-assembled-output/BCODE.bin", "BCODE", &000000, &000000
+ PUTBASIC "1-source-files/music/load-music.bas", "ELITEM"
 ELIF _COMPACT
- PUTFILE "3-assembled-output/M128Elt.bin", "!BOOT", &000E00, &000E43
+ PUTFILE "3-assembled-output/M128Elt.bin", "M128Elt", &000E00, &000E43
  PUTFILE "3-assembled-output/BDATA.bin", "BDATA", &001300, &001300
  PUTFILE "3-assembled-output/BCODE.bin", "ELITE", &001300, &002C6C
+ PUTBASIC "1-source-files/music/load-music-compact.bas", "ELITEM"
 ENDIF
 
+ PUTFILE "1-source-files/other-files/E.MAX.bin", "E.MAX", &000000, &000000
+
  PUTFILE "3-assembled-output/README.txt", "README", &FFFFFF, &FFFFFF
+
+ PUTFILE "1-source-files/boot-files/$.!BOOT.bin", "!BOOT", &FFFFFF, &FFFFFF
+ PUTFILE "1-source-files/music/elite-music-master.rom", "MUSIC", &008000, &008000
