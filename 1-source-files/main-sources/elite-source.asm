@@ -48123,4 +48123,5 @@ ENDIF
 
  PRINT "Addresses for the scramble routines in elite-checksum.py"
  PRINT "F% = ", ~F%
+ PRINT "G% = ", ~G%
  PRINT "NA2% = ", ~NA2%

@@ -16782,6 +16782,7 @@ S.BCODE &1300  &7F48  &1300  &1300
 Saving file '3-assembled-output/BCODE.unprot.bin'
 Addresses for the scramble routines in elite-checksum.py
 F% = &7F48 
+G% = &2CC1 
 NA2% = &34CD 
 .DIALS
      7E00

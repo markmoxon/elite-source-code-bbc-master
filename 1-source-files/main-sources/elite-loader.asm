@@ -44,6 +44,9 @@
  N% = 67                \ N% is set to the number of bytes in the VDU table, so
                         \ we can loop through them below
 
+ S% = &2C6C             \ The address of the main entry point workspace in the
+                        \ main game code
+
  VIA = &FE00            \ Memory-mapped space for accessing internal hardware,
                         \ such as the video ULA, 6845 CRTC and 6522 VIAs (also
                         \ known as SHEILA)
@@ -497,8 +500,8 @@ ENDIF
  ORA #6
  STA VIA+&30
 
- JMP &2C6C              \ Jump to the start of the main game code at &2C6C,
-                        \ which we just loaded in the BCODE/ELITE file
+ JMP S%                 \ Jump to the start of the main game code at S%, which
+                        \ we just loaded in the BCODE/ELITE file
 
 \ ******************************************************************************
 \
