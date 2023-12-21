@@ -424,6 +424,10 @@ ENDIF
  SKIP 8                 \ Temporary storage, used to store the visibility of the
                         \ ship's faces during the ship-drawing routine at LL9
 
+.K2
+
+ SKIP 4                 \ Temporary storage, used in a number of places
+
 .RAT
 
  SKIP 1                 \ Used to store different signs depending on the current
@@ -433,10 +437,6 @@ ENDIF
 
  SKIP 1                 \ Temporary storage, used to store the pitch and roll
                         \ signs when moving objects and stardust
-
-.K2
-
- SKIP 4                 \ Temporary storage, used in a number of places
 
                         \ --- End of replacement ------------------------------>
 
