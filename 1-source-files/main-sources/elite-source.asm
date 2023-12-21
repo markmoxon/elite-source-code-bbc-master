@@ -308,17 +308,24 @@ IF _SNG47
 
  SKIP 1                 \ This byte appears to be unused
 
-.T3
-
- SKIP 1                 \ This byte appears to be unused
-
-ELIF _COMPACT
-
-.T2
-
- SKIP 1                 \ This byte appears to be unused
-
 ENDIF
+
+.STP
+
+ SKIP 1                 \ The step size for drawing circles
+                        \
+                        \ Circles in Elite are split up into 64 points, and the
+                        \ step size determines how many points to skip with each
+                        \ straight-line segment, so the smaller the step size,
+                        \ the smoother the circle. The values used are:
+                        \
+                        \   * 2 for big planets and the circles on the charts
+                        \   * 4 for medium planets and the launch tunnel
+                        \   * 8 for small planets and the hyperspace tunnel
+                        \
+                        \ As the step size increases we move from smoother
+                        \ circles at the top to more polygonal at the bottom.
+                        \ See the CIRCLE2 routine for more details
 
                         \ --- End of replacement ------------------------------>
 
@@ -414,12 +421,8 @@ ENDIF
 
 .XX2
 
- SKIP 6                 \ Temporary storage, used to store the visibility of the
+ SKIP 8                 \ Temporary storage, used to store the visibility of the
                         \ ship's faces during the ship-drawing routine at LL9
-
-.K2
-
- SKIP 4                 \ Temporary storage, used in a number of places
 
 .RAT
 
@@ -431,29 +434,9 @@ ENDIF
  SKIP 1                 \ Temporary storage, used to store the pitch and roll
                         \ signs when moving objects and stardust
 
-.STP
+.K2
 
- SKIP 1                 \ The step size for drawing circles
-                        \
-                        \ Circles in Elite are split up into 64 points, and the
-                        \ step size determines how many points to skip with each
-                        \ straight-line segment, so the smaller the step size,
-                        \ the smoother the circle. The values used are:
-                        \
-                        \   * 2 for big planets and the circles on the charts
-                        \   * 4 for medium planets and the launch tunnel
-                        \   * 8 for small planets and the hyperspace tunnel
-                        \
-                        \ As the step size increases we move from smoother
-                        \ circles at the top to more polygonal at the bottom.
-                        \ See the CIRCLE2 routine for more details
-
-.FLAG
-
- SKIP 1                 \ A flag that's used to define whether this is the first
-                        \ call to the ball line routine in BLINE, so it knows
-                        \ whether to wait for the second call before storing
-                        \ segment data in the ball line heap
+ SKIP 4                 \ Temporary storage, used in a number of places
 
                         \ --- End of replacement ------------------------------>
 
@@ -919,10 +902,23 @@ ENDIF
  SKIP 1                 \ Temporary storage, used to store the original argument
                         \ in A in the logarithmic FMLTU and LL28 routines
 
-.dontclip
+                        \ --- Mod: Code removed for music: -------------------->
 
- SKIP 1                 \ This is set to 0 in the RES2 routine, but the value is
+\.dontclip
+\
+\SKIP 1                 \ This is set to 0 in the RES2 routine, but the value is
                         \ never actually read
+
+                        \ --- And replaced by: -------------------------------->
+
+.FLAG
+
+ SKIP 1                 \ A flag that's used to define whether this is the first
+                        \ call to the ball line routine in BLINE, so it knows
+                        \ whether to wait for the second call before storing
+                        \ segment data in the ball line heap
+
+                        \ --- End of replacement ------------------------------>
 
 .Yx2M1
 
@@ -35838,8 +35834,12 @@ ENDIF
 \LDA #&10               \ These instructions are commented out in the original
 \STA COL2               \ source
 
- LDA #0                 \ Set dontclip to 0 (though this variable is never used,
- STA dontclip           \ so this has no effect)
+                        \ --- Mod: Code removed for music: -------------------->
+
+\LDA #0                 \ Set dontclip to 0 (though this variable is never used,
+\STA dontclip           \ so this has no effect)
+
+                        \ --- End of removed code ----------------------------->
 
  LDA #191               \ Set Yx2M1 to 191, the number of pixel lines in the
  STA Yx2M1              \ space view
@@ -47299,104 +47299,8 @@ ENDMACRO
 
                         \ --- Mod: Code added for music: ---------------------->
 
-IF _SNG47
-
-                        \ --- End of added code ------------------------------->
-
-.TRTB%
-
- EQUB &00, &40, &FE     \ MOS code
- EQUB &A0, &5F, &8C
- EQUB &43, &FE, &8E
- EQUB &4F, &FE, &EA
- EQUB &AE, &4F, &FE
- EQUB &60
-
-                        \ Internal key numbers &10 to &19:
-                        \
- EQUB &51, &33          \ Q             3
- EQUB &34, &35          \ 4             5
- EQUB &84, &38          \ f4            8
- EQUB &87, &2D          \ f7            -
- EQUB &5E, &8C          \ ^             Left arrow
-
- EQUB &36, &37, &BC     \ MOS code
- EQUB &00, &FC, &60
-
-                        \ Internal key numbers &20 to &29:
-                        \
- EQUB &80, &57          \ f0            W
- EQUB &45, &54          \ E             T
- EQUB &37, &49          \ 7             I
- EQUB &39, &30          \ 9             0
- EQUB &5F, &8E          \ _             Down arrow
-
- EQUB &38, &39, &BC     \ MOS code
- EQUB &00, &FD, &60
-
-                        \ Internal key numbers &30 to &39:
-                        \
- EQUB &31, &32          \ 1             2
- EQUB &44, &52          \ D             R
- EQUB &36, &55          \ 6             U
- EQUB &4F, &50          \ O             P
- EQUB &5B, &8F          \ [             Up arrow
-
- EQUB &81, &82, &0D     \ MOS code
- EQUB &4C, &20, &02
-
-                        \ Internal key numbers &40 to &49:
-                        \
- EQUB &01, &41          \ CAPS LOCK     A
- EQUB &58, &46          \ X             F
- EQUB &59, &4A          \ Y             J
- EQUB &4B, &40          \ K             @
- EQUB &3A, &0D          \ :             RETURN
-
- EQUB &83, &7F, &AE     \ MOS code
- EQUB &4C, &FE, &FD
-
-                        \ Internal key numbers &50 to &59:
-                        \
- EQUB &02, &53          \ SHIFT LOCK    S
- EQUB &43, &47          \ C             G
- EQUB &48, &4E          \ H             N
- EQUB &4C, &3B          \ L             ;
- EQUB &5D, &7F          \ ]             DELETE
-
- EQUB &85, &84, &86     \ MOS code
- EQUB &4C, &FA, &00
-
-                        \ Internal key numbers &60 to &69:
-                        \
- EQUB &00, &5A          \ TAB           Z
- EQUB &20, &56          \ Space         V
- EQUB &42, &4D          \ B             M
- EQUB &2C, &2E          \ ,             .
- EQUB &2F, &8B          \ /             COPY
-
- EQUB &30, &31, &33     \ MOS code
- EQUB &00, &00, &00
-
-                        \ Internal key numbers &70 to &79:
-                        \
- EQUB &1B, &81          \ ESCAPE        f1
- EQUB &82, &83          \ f2            f3
- EQUB &85, &86          \ f5            f6
- EQUB &88, &89          \ f8            f9
- EQUB &5C, &8D          \ \             Right arrow
-
- EQUB &34, &35, &32     \ MOS code
- EQUB &2C, &4E, &E3
-
-                        \ --- Mod: Code added for music: ---------------------->
-
-ELIF _COMPACT
-
  TRTB% = &9D95          \ TRTB% has been moved to this address in
                         \ elite-data.asm
-
-ENDIF
 
                         \ --- End of added code ------------------------------->
 

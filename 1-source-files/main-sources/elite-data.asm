@@ -3732,97 +3732,6 @@ ENDMACRO
 
                         \ --- And replaced by: -------------------------------->
 
-IF _SNG47
-
- IF _MATCH_ORIGINAL_BINARIES
-
-  EQUB &41, &44, &43, &23, &D7, &FB, &1F, &66   \ These bytes appear to be
-  EQUB &2D, &94, &A9, &2A, &B5, &58, &48, &95   \ unused and just contain random
-  EQUB &B6, &61, &6C, &8C, &E2, &A2, &86, &3E   \ workspace noise left over from
-  EQUB &A0, &6E, &3D, &17, &80, &3B, &5C, &61   \ the BBC Micro assembly process
-  EQUB &A8, &C9, &61, &A8, &C9, &61, &B7, &02
-  EQUB &8B, &95, &B6, &8D, &98, &8C, &26, &9E
-  EQUB &61, &28, &04, &3E, &89, &15, &E7, &A2
-  EQUB &86, &18, &18, &40, &5F, &2A, &95, &30
-  EQUB &65, &8F, &8F, &90, &55, &B3, &AB, &6C
-  EQUB &EF, &3E, &5E, &EF, &54, &D3, &D5, &BC
-  EQUB &73, &68, &F0, &55, &B3, &AB, &6C, &EF
-  EQUB &3F, &5F, &F0, &55, &D3, &D5, &BC, &64
-  EQUB &3A, &3F, &5E, &57, &37, &CF, &EF, &59
-  EQUB &39, &D0, &F0, &5B, &3B, &D1, &EC, &B0
-  EQUB &30, &73, &94, &4B, &D3, &0B, &F2, &66
-  EQUB &D6, &CA, &EA, &E5, &C3, &EE, &D5, &0B
-  EQUB &C6, &F8, &9E, &26, &20, &09, &CE, &AA
-  EQUB &BF, &E3, &AD, &89, &C0, &DB, &A2, &22
-  EQUB &4F, &70, &E1, &A5, &25, &4F, &70, &E1
-  EQUB &A8, &B9, &EB, &83, &C9, &05, &DE, &E1
-  EQUB &39, &EB, &BF, &DD, &E0, &39, &EB, &BF
-  EQUB &DC, &DB, &FC, &1E, &1E, &98, &D7, &F0
-  EQUB &DD, &1C, &0D, &AB, &BB, &FD, &ED, &AA
-  EQUB &BA, &FC, &EC, &A9, &74, &1E, &E3, &29
-  EQUB &8A, &FF, &1E, &EF, &6A, &61, &87, &04
-  EQUB &E5, &2B, &8A, &FF, &1E, &F0, &6B, &87
-  EQUB &AD, &CB, &00, &01, &00, &38, &E7, &2D
-  EQUB &8A, &FF, &1E, &F1, &98, &B3, &AD, &EB
-  EQUB &EF, &93, &C9, &05, &CF, &EF, &F0, &94
-  EQUB &C9, &05, &D0, &F0, &F1, &95, &C9, &05
-  EQUB &D1, &AC, &80, &AB, &CC, &EE, &DC, &33
-  EQUB &A6, &A2, &20, &C0, &E1, &EE, &DE, &35
-  EQUB &A6, &A5, &23, &C0, &E1, &EE, &E0, &37
-  EQUB &A6, &A8, &10, &8F, &FF, &23, &A9, &6A
-  EQUB &B3, &C9, &D5, &6B, &46, &3B, &B0, &1F
-  EQUB &EF, &89, &A9, &A9, &A4, &92, &F8, &0B
-  EQUB &75, &15, &C9, &4C, &1D, &5F, &0F, &A9
-  EQUB &C9, &CA, &FE, &E9, &95, &AA, &C5, &A0
-  EQUB &A5, &C9, &5D, &48, &68, &6A, &96, &A9
-  EQUB &C9, &CA, &5E, &48, &68, &69, &95, &AA
-  EQUB &CA, &CB, &5F, &C9, &15, &AB, &62, &02
-  EQUB &F7, &59, &BD, &49, &74, &09, &DE, &2A
-  EQUB &B5, &65, &DA, &60, &E4, &49, &25, &A2
-  EQUB &A2, &A5, &70, &FB, &D0, &41, &BC, &54
-  EQUB &79, &CA, &00, &20, &B1, &91, &FF, &1F
-  EQUB &44, &BF, &54, &79, &EF, &4F, &B1, &71
-  EQUB &DF, &FF, &FF, &04, &EF, &E0, &2B, &C0
-  EQUB &95, &00, &1B, &A2, &B3, &E7, &FB, &40
-  EQUB &4B, &D5, &8D, &39, &E7, &FB, &3F, &DA
-  EQUB &78, &78, &80, &B9, &FC, &0C, &C5, &A1
-  EQUB &24, &E9, &CF, &27, &4B, &29, &05, &26
-  EQUB &46, &00, &65, &13, &89, &05, &41, &65
-  EQUB &09, &E5, &2F, &B3, &89, &05, &37, &57
-  EQUB &1A, &9F, &AF, &3C, &41, &D6, &3E, &4D
-  EQUB &FD, &A3, &21, &40, &62, &D2, &E4, &FA
-  EQUB &01, &7B, &23, &4D, &07, &FE, &4F, &2E
-  EQUB &85, &A7, &E2, &A0, &20, &B3, &EF, &2A
-  EQUB &35, &79, &B2, &A8, &28, &BF, &B2, &DC
-  EQUB &CB, &F2, &1F, &CF, &C4, &D5, &E9, &61
-  EQUB &49, &10, &F3, &23, &B8, &DA, &E2, &C0
-  EQUB &D1, &E9, &28, &93, &AC, &89, &11, &C9
-  EQUB &D8, &BC, &C5, &AB, &93, &C9, &42, &AA
-  EQUB &BE, &AF, &C9, &DD, &2A, &4E, &D4, &9B
-  EQUB &98, &A8, &C4, &D5, &E9, &41, &0D, &95
-  EQUB &C9, &98, &0D, &F6, &4D, &0D, &0D, &91
-  EQUB &D6, &4D, &64, &09, &72, &15, &22, &43
-  EQUB &0F, &A5, &AC, &A7, &83, &8B, &90, &D2
-  EQUB &ED, &DB, &7E, &ED, &DC, &7F, &ED, &DD
-  EQUB &80, &ED, &DE, &81, &E8, &C4, &DD, &55
-  EQUB &9C, &99, &99, &01, &B2, &E9, &D1, &35
-  EQUB &9C, &88, &98, &02, &97, &2A, &4E, &CB
-  EQUB &D2, &ED, &A7, &D2, &F1, &C9, &A5, &3C
-  EQUB &59, &A2, &A5, &4B, &C6, &4C, &6F, &E5
-  EQUB &A5, &A8, &4D, &C8, &4C, &6F, &E5, &A8
-  EQUB &AB, &4F, &CA, &4C, &6F, &AB, &12, &4F
-  EQUB &AB, &8B, &41, &02, &FF, &BF, &BF, &43
-  EQUB &53, &D2, &B9, &C6, &DF, &CD, &94, &A2
-  EQUB &5A, &68, &21
-
- ELSE
-
-  SKIP 619              \ These bytes appear to be unused
-
- ENDIF
-
-ELIF _COMPACT
-
                         \ This table has been moved from the main source to make
                         \ room for the music routines
 
@@ -3914,7 +3823,7 @@ ELIF _COMPACT
 
  SKIP 491               \ These bytes appear to be unused
 
-ENDIF
+                        \ --- End of replacement ------------------------------>
 
                         \ --- Mod: Code added for music: ---------------------->
 
