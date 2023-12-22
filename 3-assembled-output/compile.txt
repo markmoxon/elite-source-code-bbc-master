@@ -14134,39 +14134,40 @@ S.ELTE &578E  &621B  &1300  &578E
 .FREEZE
      6DA6   20 42 13   JSR &1342
      6DA9   20 BA 7E   JSR &7EBA
-     6DAC   A9 0C      LDA #&0C
-     6DAE   20 60 2D   JSR &2D60
-     6DB1   90 08      BCC &6DBB
-     6DB3   20 79 3C   JSR &3C79
-     6DB6   20 49 13   JSR &1349
-     6DB9   A2 51      LDX #&51
 .DK6
-     6DBB   A0 00      LDY #&00
+     6DAC   A0 00      LDY #&00
 .DKL4
-     6DBD   20 CE 6C   JSR &6CCE
-     6DC0   C8         INY
-     6DC1   C0 09      CPY #&09
-     6DC3   D0 F8      BNE &6DBD
-     6DC5   AD 61 2C   LDA &2C61
-     6DC8   E0 2E      CPX #&2E
-     6DCA   F0 06      BEQ &6DD2
-     6DCC   E0 2C      CPX #&2C
-     6DCE   D0 15      BNE &6DE5
-     6DD0   3A         DEC A
-     6DD1   24
+     6DAE   20 CE 6C   JSR &6CCE
+     6DB1   C8         INY
+     6DB2   C0 09      CPY #&09
+     6DB4   D0 F8      BNE &6DAE
+     6DB6   AD 61 2C   LDA &2C61
+     6DB9   E0 2E      CPX #&2E
+     6DBB   F0 06      BEQ &6DC3
+     6DBD   E0 2C      CPX #&2C
+     6DBF   D0 15      BNE &6DD6
+     6DC1   3A         DEC A
+     6DC2   24
 .DOVOL1
-     6DD2   1A         INC A
-     6DD3   A8         TAY
-     6DD4   29 F8      AND #&F8
-     6DD6   D0 03      BNE &6DDB
-     6DD8   8C 61 2C   STY &2C61
+     6DC3   1A         INC A
+     6DC4   A8         TAY
+     6DC5   29 F8      AND #&F8
+     6DC7   D0 03      BNE &6DCC
+     6DC9   8C 61 2C   STY &2C61
 .DOVOL3
-     6DDB   DA         PHX
-     6DDC   20 54 13   JSR &1354
-     6DDF   A0 0A      LDY #&0A
-     6DE1   20 49 13   JSR &1349
-     6DE4   FA         PLX
+     6DCC   DA         PHX
+     6DCD   20 54 13   JSR &1354
+     6DD0   A0 0A      LDY #&0A
+     6DD2   20 49 13   JSR &1349
+     6DD5   FA         PLX
 .DOVOL4
+     6DD6   A9 0C      LDA #&0C
+     6DD8   20 60 2D   JSR &2D60
+     6DDB   90 08      BCC &6DE5
+     6DDD   20 79 3C   JSR &3C79
+     6DE0   20 49 13   JSR &1349
+     6DE3   A2 51      LDX #&51
+.skipMusicToggles
      6DE5   E0 42      CPX #&42
      6DE7   D0 16      BNE &6DFF
      6DE9   AD 5F 2C   LDA &2C5F

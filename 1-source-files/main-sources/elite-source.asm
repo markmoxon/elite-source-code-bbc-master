@@ -40471,27 +40471,13 @@ ENDIF
 \
 \LDX #&FF               \ "Q" is being pressed, so set DNOIZ to &FF to turn the
 \STX DNOIZ              \ sound off
+\
+\LDX #&51               \ Set X to &51, which is the internal key for "S" on the
+\                       \ BBC Micro. This is set to ensure that X has the same
+\                       \ value at this point as the BBC Micro version of this
+\                       \ routine would
 
-                        \ --- And replaced by: -------------------------------->
-
- LDA #12                \ Process the "Q" and music-related options
- JSR PlayMusic
-
- BCC DK6                \ If no music-related options were changed, then the C
-                        \ flag will be clear, so jump to DK6 to skip the
-                        \ following
-
- JSR BELL               \ Make a beep sound so we know something has happened
-
- JSR DELAY              \ Wait for Y vertical syncs (Y is between 64 and 70, so
-                        \ this is always a bit longer than a second)
-
-                        \ --- End of replacement ------------------------------>
-
- LDX #&51               \ Set X to &51, which is the internal key for "S" on the
-                        \ BBC Micro. This is set to ensure that X has the same
-                        \ value at this point as the BBC Micro version of this
-                        \ routine would
+                        \ --- End of removed code ----------------------------->
 
 .DK6
 
@@ -40555,6 +40541,29 @@ ENDIF
  PLX                    \ Restore the value of X we stored above
 
 .DOVOL4
+
+                        \ --- Mod: Code added for music: ---------------------->
+
+ LDA #12                \ Process the "Q" and music-related options
+ JSR PlayMusic
+
+ BCC skipMusicToggles   \ If no music-related options were changed, then the C
+                        \ flag will be clear, so jump to skipMusicToggles to
+                        \ skip the following
+
+ JSR BELL               \ Make a beep sound so we know something has happened
+
+ JSR DELAY              \ Wait for Y vertical syncs (Y is between 64 and 70, so
+                        \ this is always a bit longer than a second)
+
+ LDX #&51               \ Set X to &51, which is the internal key for "S" on the
+                        \ BBC Micro. This is set to ensure that X has the same
+                        \ value at this point as the BBC Micro version of this
+                        \ routine would
+
+.skipMusicToggles
+
+                        \ --- End of added code ------------------------------->
 
  CPX #'B'               \ If "B" is not being pressed, skip to DOVOL2
  BNE DOVOL2
