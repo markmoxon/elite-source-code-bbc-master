@@ -310,23 +310,6 @@ IF _SNG47
 
 ENDIF
 
-.STP
-
- SKIP 1                 \ The step size for drawing circles
-                        \
-                        \ Circles in Elite are split up into 64 points, and the
-                        \ step size determines how many points to skip with each
-                        \ straight-line segment, so the smaller the step size,
-                        \ the smoother the circle. The values used are:
-                        \
-                        \   * 2 for big planets and the circles on the charts
-                        \   * 4 for medium planets and the launch tunnel
-                        \   * 8 for small planets and the hyperspace tunnel
-                        \
-                        \ As the step size increases we move from smoother
-                        \ circles at the top to more polygonal at the bottom.
-                        \ See the CIRCLE2 routine for more details
-
                         \ --- End of replacement ------------------------------>
 
 .SC
@@ -423,6 +406,15 @@ ENDIF
 
  SKIP 8                 \ Temporary storage, used to store the visibility of the
                         \ ship's faces during the ship-drawing routine at LL9
+
+.newzp
+
+ SKIP 1                 \ This is used by the STARS2 routine for storing the
+                        \ stardust particle's delta_x value
+
+.W
+
+ SKIP 1                 \ Temporary storage, used in a number of places
 
 .K2
 
@@ -714,9 +706,13 @@ ENDIF
                         \ of characters to print, and as the edge counter in the
                         \ main ship-drawing routine
 
-.W
+                        \ --- Mod: Code moved for music: ---------------------->
 
- SKIP 1                 \ Temporary storage, used in a number of places
+\.W
+\
+\SKIP 1                 \ Temporary storage, used in a number of places
+
+                        \ --- End of moved code ------------------------------->
 
 .QQ11
 
@@ -911,6 +907,23 @@ ENDIF
 
                         \ --- And replaced by: -------------------------------->
 
+.STP
+
+ SKIP 1                 \ The step size for drawing circles
+                        \
+                        \ Circles in Elite are split up into 64 points, and the
+                        \ step size determines how many points to skip with each
+                        \ straight-line segment, so the smaller the step size,
+                        \ the smoother the circle. The values used are:
+                        \
+                        \   * 2 for big planets and the circles on the charts
+                        \   * 4 for medium planets and the launch tunnel
+                        \   * 8 for small planets and the hyperspace tunnel
+                        \
+                        \ As the step size increases we move from smoother
+                        \ circles at the top to more polygonal at the bottom.
+                        \ See the CIRCLE2 routine for more details
+
 .FLAG
 
  SKIP 1                 \ A flag that's used to define whether this is the first
@@ -933,10 +946,14 @@ ENDIF
                         \ of the in-flight message in MESS, so it can be erased
                         \ from the screen at the correct time
 
-.newzp
+                        \ --- Mod: Code moved for music: ---------------------->
 
- SKIP 1                 \ This is used by the STARS2 routine for storing the
-                        \ stardust particle's delta_x value
+\.newzp
+\
+\SKIP 1                 \ This is used by the STARS2 routine for storing the
+\                       \ stardust particle's delta_x value
+
+                        \ --- End of moved code ------------------------------->
 
 .XX1
 
