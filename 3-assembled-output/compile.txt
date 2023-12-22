@@ -14230,39 +14230,40 @@ S.ELTE &5855  &62C7  &1300  &5855
 .FREEZE
      6E52   20 42 13   JSR &1342
      6E55   20 66 7F   JSR &7F66
-     6E58   A9 0C      LDA #&0C
-     6E5A   20 60 2D   JSR &2D60
-     6E5D   90 08      BCC &6E67
-     6E5F   20 40 3D   JSR &3D40
-     6E62   20 49 13   JSR &1349
-     6E65   A2 51      LDX #&51
 .DK6
-     6E67   A0 00      LDY #&00
+     6E58   A0 00      LDY #&00
 .DKL4
-     6E69   20 7A 6D   JSR &6D7A
-     6E6C   C8         INY
-     6E6D   C0 09      CPY #&09
-     6E6F   D0 F8      BNE &6E69
-     6E71   AD 61 2C   LDA &2C61
-     6E74   E0 2E      CPX #&2E
-     6E76   F0 06      BEQ &6E7E
-     6E78   E0 2C      CPX #&2C
-     6E7A   D0 15      BNE &6E91
-     6E7C   3A         DEC A
-     6E7D   24
+     6E5A   20 7A 6D   JSR &6D7A
+     6E5D   C8         INY
+     6E5E   C0 09      CPY #&09
+     6E60   D0 F8      BNE &6E5A
+     6E62   AD 61 2C   LDA &2C61
+     6E65   E0 2E      CPX #&2E
+     6E67   F0 06      BEQ &6E6F
+     6E69   E0 2C      CPX #&2C
+     6E6B   D0 15      BNE &6E82
+     6E6D   3A         DEC A
+     6E6E   24
 .DOVOL1
-     6E7E   1A         INC A
-     6E7F   A8         TAY
-     6E80   29 F8      AND #&F8
-     6E82   D0 03      BNE &6E87
-     6E84   8C 61 2C   STY &2C61
+     6E6F   1A         INC A
+     6E70   A8         TAY
+     6E71   29 F8      AND #&F8
+     6E73   D0 03      BNE &6E78
+     6E75   8C 61 2C   STY &2C61
 .DOVOL3
-     6E87   DA         PHX
-     6E88   20 54 13   JSR &1354
-     6E8B   A0 0A      LDY #&0A
-     6E8D   20 49 13   JSR &1349
-     6E90   FA         PLX
+     6E78   DA         PHX
+     6E79   20 54 13   JSR &1354
+     6E7C   A0 0A      LDY #&0A
+     6E7E   20 49 13   JSR &1349
+     6E81   FA         PLX
 .DOVOL4
+     6E82   A9 0C      LDA #&0C
+     6E84   20 60 2D   JSR &2D60
+     6E87   90 08      BCC &6E91
+     6E89   20 40 3D   JSR &3D40
+     6E8C   20 49 13   JSR &1349
+     6E8F   A2 51      LDX #&51
+.skipMusicToggles
      6E91   E0 42      CPX #&42
      6E93   D0 16      BNE &6EAB
      6E95   AD 5F 2C   LDA &2C5F
