@@ -461,13 +461,13 @@ ENDIF
 
 IF _SNG47
 
- LDX #&33               \ Set a page counter in X to copy &33 pages
+ LDX #&34               \ Set a page counter in X to copy &34 pages
 
 ELIF _COMPACT
 
- LDX #&34               \ Set a page counter in X to copy &33 pages, plus one
+ LDX #&35               \ Set a page counter in X to copy &35 pages, plus one
                         \ extra page for the flicker-free planet code that we
-                        \ have added at &B200
+                        \ have added at &B200, plus the Trumbles tokens
 
 ENDIF
 

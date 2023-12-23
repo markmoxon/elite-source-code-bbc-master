@@ -47,6 +47,22 @@
  VE = &57               \ The obfuscation byte used to hide the extended tokens
                         \ table from crackers viewing the binary code
 
+                        \ --- Mod: Code added for music: ---------------------->
+
+ P     = &000A          \ Labels used in MV40, which is now in elite-data.asm
+ K2    = &001C
+ BETA  = &0042
+ K     = &0056
+ Q     = &0079
+ T     = &007C
+ ALPHA = &0085
+ INWK  = &009B
+ MULT3 = &45A8
+ MVT3  = &3ABB
+ MV45  = &7B62
+
+                        \ --- End of added code ------------------------------->
+
 \ ******************************************************************************
 \
 \ ELITE GAME DATA FILE
@@ -3821,11 +3837,268 @@ ENDMACRO
  EQUB &34, &35, &32     \ MOS code
  EQUB &2C, &4E, &E3
 
- SKIP 491               \ These bytes appear to be unused
-
                         \ --- End of replacement ------------------------------>
 
-                        \ --- Mod: Code added for music: ---------------------->
+                        \ --- Mod: Code moved for Trumbles: ------------------->
+
+\ ******************************************************************************
+\
+\       Name: MV40
+\       Type: Subroutine
+\   Category: Moving
+\    Summary: Rotate the planet or sun's location in space by the amount of
+\             pitch and roll of our ship
+\
+\ ------------------------------------------------------------------------------
+\
+\ We implement this using the same equations as in part 5 of MVEIT, where we
+\ rotated the current ship's location by our pitch and roll. Specifically, the
+\ calculation is as follows:
+\
+\   1. K2 = y - alpha * x
+\   2. z = z + beta * K2
+\   3. y = K2 - beta * z
+\   4. x = x + alpha * y
+\
+\ See the deep dive on "Rotating the universe" for more details on the above.
+\
+\ ******************************************************************************
+
+.MV40
+
+ LDA ALPHA              \ Set Q = -ALPHA, so Q contains the angle we want to
+ EOR #%10000000         \ roll the planet through (i.e. in the opposite
+ STA Q                  \ direction to our ship's roll angle alpha)
+
+ LDA INWK               \ Set P(1 0) = (x_hi x_lo)
+ STA P
+ LDA INWK+1
+ STA P+1
+
+ LDA INWK+2             \ Set A = x_sign
+
+ JSR MULT3              \ Set K(3 2 1 0) = (A P+1 P) * Q
+                        \
+                        \ which also means:
+                        \
+                        \   K(3 2 1) = (A P+1 P) * Q / 256
+                        \            = x * -alpha / 256
+                        \            = - alpha * x / 256
+
+ LDX #3                 \ Set K(3 2 1) = (y_sign y_hi y_lo) + K(3 2 1)
+ JSR MVT3               \              = y - alpha * x / 256
+
+ LDA K+1                \ Set K2(2 1) = P(1 0) = K(2 1)
+ STA K2+1
+ STA P
+
+ LDA K+2                \ Set K2+2 = K+2
+ STA K2+2
+
+ STA P+1                \ Set P+1 = K+2
+
+ LDA BETA               \ Set Q = beta, the pitch angle of our ship
+ STA Q
+
+ LDA K+3                \ Set K+3 to K2+3, so now we have result 1 above:
+ STA K2+3               \
+                        \   K2(3 2 1) = K(3 2 1)
+                        \             = y - alpha * x / 256
+
+                        \ We also have:
+                        \
+                        \   A = K+3
+                        \
+                        \   P(1 0) = K(2 1)
+                        \
+                        \ so combined, these mean:
+                        \
+                        \   (A P+1 P) = K(3 2 1)
+                        \             = K2(3 2 1)
+
+ JSR MULT3              \ Set K(3 2 1 0) = (A P+1 P) * Q
+                        \
+                        \ which also means:
+                        \
+                        \   K(3 2 1) = (A P+1 P) * Q / 256
+                        \            = K2(3 2 1) * beta / 256
+                        \            = beta * K2 / 256
+
+ LDX #6                 \ K(3 2 1) = (z_sign z_hi z_lo) + K(3 2 1)
+ JSR MVT3               \          = z + beta * K2 / 256
+
+ LDA K+1                \ Set P = K+1
+ STA P
+
+ STA INWK+6             \ Set z_lo = K+1
+
+ LDA K+2                \ Set P+1 = K+2
+ STA P+1
+
+ STA INWK+7             \ Set z_hi = K+2
+
+ LDA K+3                \ Set A = z_sign = K+3, so now we have:
+ STA INWK+8             \
+                        \   (z_sign z_hi z_lo) = K(3 2 1)
+                        \                      = z + beta * K2 / 256
+
+                        \ So we now have result 2 above:
+                        \
+                        \   z = z + beta * K2
+
+ EOR #%10000000         \ Flip the sign bit of A to give A = -z_sign
+
+ JSR MULT3              \ Set K(3 2 1 0) = (A P+1 P) * Q
+                        \                = (-z_sign z_hi z_lo) * beta
+                        \                = -z * beta
+
+ LDA K+3                \ Set T to the sign bit of K(3 2 1 0), i.e. to the sign
+ AND #%10000000         \ bit of -z * beta
+ STA T
+
+ EOR K2+3               \ If K2(3 2 1 0) has a different sign to K(3 2 1 0),
+ BMI MV1                \ then EOR'ing them will produce a 1 in bit 7, so jump
+                        \ to MV1 to take this into account
+
+                        \ If we get here, K and K2 have the same sign, so we can
+                        \ add them together to get the result we're after, and
+                        \ then set the sign afterwards
+
+ LDA K                  \ We now do the following sum:
+ CLC                    \
+ ADC K2                 \   (A y_hi y_lo -) = K(3 2 1 0) + K2(3 2 1 0)
+                        \
+                        \ starting with the low bytes (which we don't keep)
+                        \
+                        \ The CLC has no effect because MULT3 clears the C
+                        \ flag, so this instruction could be removed (as it is
+                        \ in the cassette version, for example)
+
+ LDA K+1                \ We then do the middle bytes, which go into y_lo
+ ADC K2+1
+ STA INWK+3
+
+ LDA K+2                \ And then the high bytes, which go into y_hi
+ ADC K2+2
+ STA INWK+4
+
+ LDA K+3                \ And then the sign bytes into A, so overall we have the
+ ADC K2+3               \ following, if we drop the low bytes from the result:
+                        \
+                        \   (A y_hi y_lo) = (K + K2) / 256
+
+ JMP MV2                \ Jump to MV2 to skip the calculation for when K and K2
+                        \ have different signs
+
+.MV1
+
+ LDA K                  \ If we get here then K2 and K have different signs, so
+ SEC                    \ instead of adding, we need to subtract to get the
+ SBC K2                 \ result we want, like this:
+                        \
+                        \   (A y_hi y_lo -) = K(3 2 1 0) - K2(3 2 1 0)
+                        \
+                        \ starting with the low bytes (which we don't keep)
+
+ LDA K+1                \ We then do the middle bytes, which go into y_lo
+ SBC K2+1
+ STA INWK+3
+
+ LDA K+2                \ And then the high bytes, which go into y_hi
+ SBC K2+2
+ STA INWK+4
+
+ LDA K2+3               \ Now for the sign bytes, so first we extract the sign
+ AND #%01111111         \ byte from K2 without the sign bit, so P = |K2+3|
+ STA P
+
+ LDA K+3                \ And then we extract the sign byte from K without the
+ AND #%01111111         \ sign bit, so A = |K+3|
+
+ SBC P                  \ And finally we subtract the sign bytes, so P = A - P
+ STA P
+
+                        \ By now we have the following, if we drop the low bytes
+                        \ from the result:
+                        \
+                        \   (A y_hi y_lo) = (K - K2) / 256
+                        \
+                        \ so now we just need to make sure the sign of the
+                        \ result is correct
+
+ BCS MV2                \ If the C flag is set, then the last subtraction above
+                        \ didn't underflow and the result is correct, so jump to
+                        \ MV2 as we are done with this particular stage
+
+ LDA #1                 \ Otherwise the subtraction above underflowed, as K2 is
+ SBC INWK+3             \ the dominant part of the subtraction, so we need to
+ STA INWK+3             \ negate the result using two's complement, starting
+                        \ with the low bytes:
+                        \
+                        \   y_lo = 1 - y_lo
+
+ LDA #0                 \ And then the high bytes:
+ SBC INWK+4             \
+ STA INWK+4             \   y_hi = 0 - y_hi
+
+ LDA #0                 \ And finally the sign bytes:
+ SBC P                  \
+                        \   A = 0 - P
+
+ ORA #%10000000         \ We now force the sign bit to be negative, so that the
+                        \ final result below gets the opposite sign to K, which
+                        \ we want as K2 is the dominant part of the sum
+
+.MV2
+
+ EOR T                  \ T contains the sign bit of K, so if K is negative,
+                        \ this flips the sign of A
+
+ STA INWK+5             \ Store A in y_sign
+
+                        \ So we now have result 3 above:
+                        \
+                        \   y = K2 + K
+                        \     = K2 - beta * z
+
+ LDA ALPHA              \ Set A = alpha
+ STA Q
+
+ LDA INWK+3             \ Set P(1 0) = (y_hi y_lo)
+ STA P
+ LDA INWK+4
+ STA P+1
+
+ LDA INWK+5             \ Set A = y_sign
+
+ JSR MULT3              \ Set K(3 2 1 0) = (A P+1 P) * Q
+                        \                = (y_sign y_hi y_lo) * alpha
+                        \                = y * alpha
+
+ LDX #0                 \ Set K(3 2 1) = (x_sign x_hi x_lo) + K(3 2 1)
+ JSR MVT3               \              = x + y * alpha / 256
+
+ LDA K+1                \ Set (x_sign x_hi x_lo) = K(3 2 1)
+ STA INWK               \                        = x + y * alpha / 256
+ LDA K+2
+ STA INWK+1
+ LDA K+3
+ STA INWK+2
+
+                        \ So we now have result 4 above:
+                        \
+                        \   x = x + y * alpha
+
+ JMP MV45               \ We have now finished rotating the planet or sun by
+                        \ our pitch and roll, so jump back into the MVEIT
+                        \ routine at MV45 to apply all the other movements
+
+\SKIP 491               \ These bytes appear to be unused
+
+
+ ORG &A000
+
+                        \ --- End of moved code ------------------------------->
 
 \ ******************************************************************************
 \
@@ -7668,13 +7941,247 @@ ENDIF
  ECHR 'L'
  EQUB VE
 
- EQUB VE                \ Token 198:    ""
-                        \
-                        \ Encoded as:   ""
+                        \ --- Mod: Code removed for Trumbles: ----------------->
 
- EQUB VE                \ Token 199:    ""
-                        \
-                        \ Encoded as:   ""
+\EQUB VE                \ Token 198:    ""
+\                       \
+\                       \ Encoded as:   ""
+\
+\EQUB VE                \ Token 199:    ""
+\                       \
+\                       \ Encoded as:   ""
+
+                        \ --- And replaced by: -------------------------------->
+
+ ECHR ' '               \ Token 198:    "LITTLE TRUMBLE"
+ ECHR 'L'
+ ETWO 'I', 'T'
+ ECHR 'T'
+ ETWO 'L', 'E'
+ ECHR ' '
+ ECHR 'T'
+ ECHR 'R'
+ ECHR 'U'
+ ECHR 'M'
+ ECHR 'B'
+ ETWO 'L', 'E'
+ EQUB VE  
+
+ EJMP 25                \ Token 199:    "{incoming message screen, wait 2s}
+ EJMP 9                 \                {clear screen}
+ EJMP 23                \                {move to row 10, white, lower case}
+ EJMP 14                \                {justify}
+ EJMP 2                 \                {sentence case}
+ ECHR ' '               \                 GOOD DAY {single cap}
+ ECHR 'G'               \                COMMANDER {commander name}, ALLOW ME
+ ECHR 'O'               \                TO INTRODUCE MYSELF. {single cap}I AM
+ ECHR 'O'               \                 {single cap}THE {single cap}MERCHANT
+ ECHR 'D'               \                {single cap}PRINCE OF THRUN AND I
+ ECHR ' '               \                {single cap}FIND MYSELF FORCED TO SELL
+ ECHR 'D'               \                MY MOST TREASURED POSSESSION.{cr}
+ ECHR 'A'               \                {cr}
+ ECHR 'Y'               \                {single cap}{single cap}I AM OFFERING
+ ECHR ' '               \                YOU, FOR THE PALTRY SUM OF JUST 5000
+ ETOK 154               \                {single cap}C{single cap}R THE RAREST
+ ECHR ' '               \                THING IN THE {single cap}KNOWN {single
+ EJMP 4                 \                cap}UNIVERSE.{cr}
+ ECHR ','               \                {cr}
+ ECHR ' '               \                {single cap}{single cap}WILL YOU TAKE
+ ETWO 'A', 'L'          \                IT?{cr}
+ ETWO 'L', 'O'          \                {left align}{all caps}{tab 6}
+ ECHR 'W'               \
+ ECHR ' '               \ Encoded as:   "{25}{9}{23}{14}{2} GOOD DAY [154]
+ ECHR 'M'               \                 [4], <228><224>W ME[201]<240>TRODU
+ ECHR 'E'               \                <233> MY<218>LF.{26}I AM{26}<226>E{26}M
+ ETOK 201               \                <244>CH<255>T{26}PR<240><233> OF{26}
+ ETWO 'I', 'N'          \                <226>RUN <255>D{26}I{26}F<240>D MY<218>
+ ECHR 'T'               \                LF F<253><233>D[201]<218>LL MY MO<222>
+ ECHR 'R'               \                 T<242>ASU<242>D POS<218>SSI<223>[204]
+ ECHR 'O'               \                {19}I AM OFF<244>[195][179], F<253>
+ ECHR 'D'               \                 [147]P<228>TRY SUM OF JU<222> 4000{19}
+ ECHR 'U'               \                C{19}R [147]R<238>E<222> <226>[195]
+ ETWO 'C', 'E'          \                 <240> <226>E{26}K<227>WN{26}UNIV<244>
+ ECHR ' '               \                <218>[204]{19}W<220>L [179] TAKE <219>?
+ ECHR 'M'               \                {12}{15}{1}{8}"
+ ECHR 'Y'
+ ETWO 'S', 'E'
+ ECHR 'L'
+ ECHR 'F'
+ ECHR '.'
+ ECHR ' '
+ EJMP 19
+ ECHR 'I'
+ ECHR ' '
+ ECHR 'A'
+ ECHR 'M'
+ ECHR ' '
+ EJMP 19
+ ETWO 'T', 'H'
+ ECHR 'E'
+ ECHR ' '
+ EJMP 19
+ ECHR 'M'
+ ETWO 'E', 'R'
+ ECHR 'C'
+ ECHR 'H'
+ ETWO 'A', 'N'
+ ECHR 'T'
+ ECHR ' '
+ EJMP 19
+ ECHR 'P'
+ ECHR 'R'
+ ETWO 'I', 'N'
+ ETWO 'C', 'E'
+ ECHR ' '
+ ECHR 'O'
+ ECHR 'F'
+ ECHR ' '
+ EJMP 19
+ ETWO 'T', 'H'
+ ECHR 'R'
+ ECHR 'U'
+ ECHR 'N'
+ ECHR ' '
+ ETWO 'A', 'N'
+ ECHR 'D'
+ ECHR ' '
+ EJMP 19
+ ECHR 'I'
+ ECHR ' '
+ ECHR 'F'
+ ETWO 'I', 'N'
+ ECHR 'D'
+ ECHR ' '
+ ECHR 'M'
+ ECHR 'Y'
+ ETWO 'S', 'E'
+ ECHR 'L'
+ ECHR 'F'
+ ECHR ' '
+ ECHR 'F'
+ ETWO 'O', 'R'
+ ETWO 'C', 'E'
+ ECHR 'D'
+ ETOK 201
+ ETWO 'S', 'E'
+ ECHR 'L'
+ ECHR 'L'
+ ECHR ' '
+ ECHR 'M'
+ ECHR 'Y'
+ ECHR ' '
+ ECHR 'M'
+ ECHR 'O'
+ ETWO 'S', 'T'
+ ECHR ' '
+ ECHR 'T'
+ ETWO 'R', 'E'
+ ECHR 'A'
+ ECHR 'S'
+ ECHR 'U'
+ ECHR 'R'
+ ETWO 'E', 'D'
+ ECHR ' '
+ ECHR 'P'
+ ECHR 'O'
+ ECHR 'S'
+ ECHR 'S'
+ ETWO 'E', 'S'
+ ECHR 'S'
+ ECHR 'I'
+ ETWO 'O', 'N'
+ ETOK 204
+ ECHR 'I'
+ ECHR ' '
+ ECHR 'A'
+ ECHR 'M'
+ ECHR ' '
+ ECHR 'O'
+ ECHR 'F'
+ ECHR 'F'
+ ETWO 'E', 'R'
+ ETOK 195
+ ETOK 179
+ ECHR ','
+ ECHR ' '
+ ECHR 'F'
+ ETWO 'O', 'R'
+ ECHR ' '
+ ETOK 147
+ ECHR 'P'
+ ETWO 'A', 'L'
+ ECHR 'T'
+ ECHR 'R'
+ ECHR 'Y'
+ ECHR ' '
+ ECHR 'S'
+ ECHR 'U'
+ ECHR 'M'
+ ECHR ' '
+ ECHR 'O'
+ ECHR 'F'
+ ECHR ' '
+ ECHR 'J'
+ ECHR 'U'
+ ETWO 'S', 'T'
+ ECHR ' '
+ ECHR '5'
+ ECHR '0'
+ ECHR '0'
+ ECHR '0'
+ EJMP 19
+ ECHR 'C'
+ EJMP 19
+ ECHR 'R'
+ ECHR ' '
+ ETOK 147
+ ECHR 'R'
+ ETWO 'A', 'R'
+ ECHR 'E'
+ ETWO 'S', 'T'
+ ECHR ' '
+ ETWO 'T', 'H'
+ ETOK 195
+ ECHR ' '
+ ETWO 'I', 'N'
+ ECHR ' '
+ ETWO 'T', 'H'
+ ECHR 'E'
+ ECHR ' '
+ EJMP 19
+ ECHR 'K'
+ ETWO 'N', 'O'
+ ECHR 'W'
+ ECHR 'N'
+ ECHR ' '
+ EJMP 19
+ ECHR 'U'
+ ECHR 'N'
+ ECHR 'I'
+ ECHR 'V'
+ ETWO 'E', 'R'
+ ETWO 'S', 'E'
+ ETOK 204
+ ECHR 'W'
+ ETWO 'I', 'L'
+ ECHR 'L'
+ ECHR ' '
+ ETOK 179
+ ECHR ' '
+ ECHR 'T'
+ ECHR 'A'
+ ECHR 'K'
+ ECHR 'E'
+ ECHR ' '
+ ETWO 'I', 'T'
+ ETOK 206
+ EJMP 12
+ EJMP 15
+ EJMP 1
+ EJMP 8
+ EQUB VE
+
+                        \ --- End of replacement ------------------------------>
 
  ECHR ' '               \ Token 200:    " NAME? "
  ECHR 'N'               \
