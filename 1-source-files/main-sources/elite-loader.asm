@@ -467,7 +467,7 @@ ELIF _COMPACT
 
  LDX #&35               \ Set a page counter in X to copy &35 pages, plus one
                         \ extra page for the flicker-free planet code that we
-                        \ have added at &B200, plus the Trumbles tokens
+                        \ have added at &B300
 
 ENDIF
 

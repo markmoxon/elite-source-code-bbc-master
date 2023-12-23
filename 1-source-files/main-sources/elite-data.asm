@@ -57,9 +57,20 @@
  T     = &007C
  ALPHA = &0085
  INWK  = &009B
- MULT3 = &45D1
+
+IF _SNG47
+
  MVT3  = &3ACD
+ MULT3 = &45D1
  MV45  = &7BD4
+
+ELIF _COMPACT
+
+ MVT3  = &3A13
+ MULT3 = &4517
+ MV45  = &7B31
+
+ENDIF
 
                         \ --- End of added code ------------------------------->
 
@@ -10132,6 +10143,8 @@ ENDIF
                         \ --- Mod: Code added for flicker-free planets: ------->
 
 IF _COMPACT
+
+ ORG &B300
 
  INCBIN "3-assembled-output/COMPACT.unprot.bin"
 

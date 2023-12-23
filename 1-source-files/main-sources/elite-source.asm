@@ -14667,7 +14667,7 @@ ENDIF
 IF _COMPACT
 
  PLANET% = P%           \ For the Master Compact version, we need to store the
- ORG &B200              \ additional flicker-free planet code at &B200, after
+ ORG &B300              \ additional flicker-free planet code at &B300, after
                         \ the end of the game data
 
 ENDIF
@@ -14883,11 +14883,11 @@ ENDIF
 
 IF _COMPACT
 
- SAVE "3-assembled-output/COMPACT.unprot.bin", &B200, P%, &B200
+ SAVE "3-assembled-output/COMPACT.unprot.bin", &B300, P%, &B300
 
  ORG PLANET%            \ First we save the flicker-free routines for the Master
                         \ Compact in a binary file that we can insert after the
-                        \ game data at address &B200 in the elite-data.asm file,
+                        \ game data at address &B300 in the elite-data.asm file,
                         \ and then we restore the assembly address to continue
                         \ assembling the game code
 
