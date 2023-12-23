@@ -10284,10 +10284,21 @@ ENDIF
 
  RTS                    \ Return from the subroutine
 
- EQUB &B7, &AA          \ These bytes appear to be unused, though there is a
- EQUB &45, &23          \ comment in the original source that says "red
-                        \ herring", so this would appear to be a red herring
-                        \ aimed at confusing any crackers
+                        \ --- Mod: Code removed for Trumbles: ----------------->
+
+\EQUB &B7, &AA          \ These bytes appear to be unused, though there is a
+\EQUB &45, &23          \ comment in the original source that says "red
+\                       \ herring", so this would appear to be a red herring
+\                       \ aimed at confusing any crackers
+
+                        \ --- And replaced by: -------------------------------->
+
+ SKIP 1                 \ This change and the removal of the SPMASK table below
+                        \ ensure that the address of PlayMusic doesn't change,
+                        \ so we can use the same music ROM as in the Master
+                        \ music version
+
+                        \ --- End of replacement ------------------------------>
 
 .G%
 
@@ -10456,6 +10467,31 @@ ENDIF
 \JMP TBRIEF
 \.EN6
 
+                        \ --- Mod: Code added for Trumbles: ------------------->
+
+\LDA CASH+2             \ ??? Different to NES, what does C64 say?
+\CMP #&C4
+\BCC EN6
+
+ LDA CASH+1             \ If the second most significant byte of CASH(0 1 2 3)
+ BEQ EN6                \ is zero then the cash amount is less than &010000
+                        \ (6553.6 credits), so jump to EN6
+
+ LDA TP                 \ If bit 4 of TP is set, then the Tribbles mission has
+ AND #%00010000         \ already been completed, so jump to EN6
+ BNE EN6
+
+                        \ If we get here then cheat mode has not been applied,
+                        \ we have at least 6553.6 credits and the Trumble
+                        \ mission has not yet been offered, so we do that now
+
+ JMP TBRIEF             \ Jump to TBRIEF to offer the Trumble mission, returning
+                        \ from the subroutine using a tail call
+
+.EN6
+
+                        \ --- End of added code ------------------------------->
+
  JMP BAY                \ If we get here them we didn't start or any missions,
                         \ so jump to BAY to go to the docking bay (i.e. show the
                         \ Status Mode screen)
@@ -10474,14 +10510,18 @@ ENDIF
 \EQUB &FF
 \EQUB 0
 
-.SPMASK
+                        \ --- Mod: Code removed for Trumbles: ----------------->
 
- EQUW &04FB             \ These bytes appear to be unused
- EQUW &08F7
- EQUW &10EF
- EQUW &20DF
- EQUW &40BF
- EQUW &807F
+\.SPMASK
+\
+\EQUW &04FB             \ These bytes appear to be unused
+\EQUW &08F7
+\EQUW &10EF
+\EQUW &20DF
+\EQUW &40BF
+\EQUW &807F
+
+                        \ --- End of removed code ----------------------------->
 
 \.MVTRIBS               \ These instructions are commented out in the original
 \.MVTR1                 \ source
@@ -12277,6 +12317,26 @@ ENDIF
 \LSR TRIBBLE+1
 \ROR TRIBBLE
 \.nokilltr
+
+                        \ --- Mod: Code added for Trumbles: ------------------->
+
+ CMP #240               \ If the cabin temperature < 240 then jump to nokilltr
+ BCC nokilltr           \ as the heat isn't high enough to kill Trumbles
+
+ LDA TRIBBLE+1          \ If TRIBBLE(1 0) = 0 then there are no Trumbles in the
+ ORA TRIBBLE            \ hold, so jump to nokilltr to skip the following
+ BEQ nokilltr
+
+ LSR TRIBBLE+1          \ Halve the number of Trumbles in TRIBBLE(1 0) as the
+ ROR TRIBBLE            \ cabin temperature is high enough to kill them off
+                        \ (this will eventually bring the number down to zero)
+
+\LDY #31                \ Call the NOISE routine with Y = 31 to make the sound
+\JSR NOISE              \ of Trumbles being killed off by the heat of the sun
+
+.nokilltr
+
+                        \ --- End of added code ------------------------------->
 
  LDA BST                \ If we don't have fuel scoops fitted, jump to BA23 to
  BEQ MA23               \ skip fuel scooping, as we can't scoop without fuel
@@ -17693,6 +17753,23 @@ ENDIF
 \LDA #0                 \
 \STA TRIBBLE+1          \ The Master version does not contains the Trumble
 \.nosurviv              \ mission, so the code is disabled
+
+                        \ --- Mod: Code added for Trumbles: ------------------->
+
+ LDA TRIBBLE            \ If there are no Trumbles in our hold, then both bytes
+ ORA TRIBBLE+1          \ of TRIBBLE(1 0) will be zero, so jump to nosurviv to
+ BEQ nosurviv           \ skip the following
+
+ JSR DORND              \ Otherwise set TRIBBLE(1 0) to a random number between
+ AND #7                 \ 1 and 7, to determine how many Trumbles manage to
+ ORA #1                 \ hitch a ride in the escape pod (so using an escape pod
+ STA TRIBBLE            \ is not a solution to the trouble with Trumbles)
+ LDA #0
+ STA TRIBBLE+1
+
+.nosurviv
+
+                        \ --- End of added code ------------------------------->
 
  LDA #70                \ Our replacement ship is delivered with a full tank of
  STA QQ14               \ fuel, so set the current fuel level in QQ14 to 70, or
@@ -23785,6 +23862,35 @@ ENDIF
 \JSR LCASH
 \INC TRIBBLE
 \JMP BAY
+
+                        \ --- Mod: Code added for Trumbles: ------------------->
+
+.TBRIEF
+
+ LDA TP                 \ Set bit 4 of TP to indicate that mission 3 has been
+ ORA #%00010000         \ triggered
+ STA TP
+
+ LDA #199               \ Print extended token 199, which is the briefing for
+ JSR DETOK              \ the Trumbles mission
+
+ JSR YESNO              \ Call YESNO to wait until either "Y" or "N" is pressed
+
+ BCC BAYSTEP            \ If "N" was pressed, then the mission was not accepted,
+                        \ jump to BAYSTEP to go to the docking bay (i.e. show
+                        \ the Status Mode screen)
+
+ LDY #HI(50000)         \ Otherwise the mission was accepted, so subtract
+ LDX #LO(50000)         \ 50,000 CR from the cash pot to pay for the Trumble
+ JSR LCASH
+
+ INC TRIBBLE            \ Increment the number of Trumbles from 0 to 1, so they
+                        \ start breeding
+
+ JMP BAY                \ Go to the docking bay (i.e. show the Status Mode
+                        \ screen)
+
+                        \ --- End of added code ------------------------------->
 
 \ ******************************************************************************
 \
@@ -37155,6 +37261,82 @@ ENDIF
 
  LDY #2                 \ Wait for 2/50 of a second (0.04 seconds), to slow the
  JSR DELAY              \ main loop down a bit
+
+                        \ --- Mod: Code added for Trumbles: ------------------->
+
+ LDA TRIBBLE+1          \ If the high byte of TRIBBLE(1 0), the number of
+ BEQ game5              \ Trumbles in the hold, is zero, jump to game5 to skip
+                        \ the following
+
+                        \ We have a lot of Trumbles in the hold, so let's see if
+                        \ any of them are breeding (note that Trumbles always
+                        \ breed when we jump into a new system in the SOLAR
+                        \ routine, but when we have lots of them, they also
+                        \ breed here in the main flight loop)
+
+ JSR DORND              \ Set A and X to random numbers
+
+ CMP #220               \ If A >= 220 then set the C flag (14% chance)
+
+ LDA TRIBBLE            \ Add the C flag to TRIBBLE(1 0), starting with the low
+ ADC #0                 \ bytes
+ STA TRIBBLE
+
+ BCC game5              \ And then the high bytes
+ INC TRIBBLE+1          \
+                        \ So there is a 14% chance of a Trumble being born
+
+ BPL game5              \ If the high byte of TRIBBLE(1 0) is now &80, then
+ DEC TRIBBLE+1          \ decrement it back to &7F, so the number of Trumbles
+                        \ never goes above &7FFF (32767)
+
+.game5
+
+ LDA TRIBBLE+1          \ If the high byte of TRIBBLE(1 0), the number of
+ BEQ game7              \ Trumbles in the hold, is zero, jump to game7 to skip
+                        \ the following
+
+                        \ We have a lot of Trumbles in the hold, so they are
+                        \ probably making a bit of a noise
+
+ LDY CABTMP             \ If the cabin temperature is >= 224 then jump to game6
+ CPY #224               \ to skip the following and leave the value of A as a
+ BCS game6              \ high value, so the chances of the Trumbles making a
+                        \ noise in hot temperature is greater (specifically,
+                        \ this is the temperature at which the fuel scoop start
+                        \ working)
+
+ LSR A                  \ Set A = A / 2
+ LSR A
+
+.game6
+
+\STA T                  \ Set T = A, which will be higher with more Trumbles and
+\                       \ higher temperatures
+\
+\JSR DORND              \ Set A and X to random numbers
+\
+\CMP T                  \ If A >= T then jump to game7 to skip making any noise,
+\BCS game7              \ so there is a higher chance of Trumbles making noise
+\                       \ when there are lots of them or the cabin temperature
+\                       \ is hot enough for the fuel scoops to work
+\
+\AND #3                 \ Set Y to our random number reduced to the range 0 to 3
+\TAY
+\
+\LDA trumbleSounds,Y    \ Set Y to the Y-th sound effect from the trumbleSounds
+\TAY                    \ table, so there's a 75% change of Y being set to 5,
+\                       \ and a 25% chance of Y being set to 6
+\
+\JSR NOISE              \ Call the NOISE routine to make the sound of the
+\                       \ Trumbles in Y, which will be one of 5 or 6, with 5
+\                       \ more likely than 6
+
+.game7
+
+                        \ --- End of added code ------------------------------->
+
+
 
  JSR TT17               \ Scan the keyboard for the cursor keys or joystick,
                         \ returning the cursor's delta values in X and Y and

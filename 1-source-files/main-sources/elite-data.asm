@@ -47,7 +47,7 @@
  VE = &57               \ The obfuscation byte used to hide the extended tokens
                         \ table from crackers viewing the binary code
 
-                        \ --- Mod: Code added for music: ---------------------->
+                        \ --- Mod: Code added for Trumbles: ------------------->
 
  P     = &000A          \ Labels used in MV40, which is now in elite-data.asm
  K2    = &001C
@@ -57,9 +57,9 @@
  T     = &007C
  ALPHA = &0085
  INWK  = &009B
- MULT3 = &45A8
- MVT3  = &3ABB
- MV45  = &7B62
+ MULT3 = &45D1
+ MVT3  = &3ACD
+ MV45  = &7BD4
 
                         \ --- End of added code ------------------------------->
 
@@ -7346,21 +7346,61 @@ ENDIF
  ETOK 209
  EQUB VE
 
- EQUB VE                \ Token 111:    ""
-                        \
-                        \ Encoded as:   ""
+                        \ --- Mod: Code removed for Trumbles: ----------------->
 
- EQUB VE                \ Token 112:    ""
-                        \
-                        \ Encoded as:   ""
+\EQUB VE                \ Token 111:    ""
+\                       \
+\                       \ Encoded as:   ""
+\
+\EQUB VE                \ Token 112:    ""
+\                       \
+\                       \ Encoded as:   ""
+\
+\EQUB VE                \ Token 113:    ""
+\                       \
+\                       \ Encoded as:   ""
+\
+\EQUB VE                \ Token 114:    ""
+\                       \
+\                       \ Encoded as:   ""
 
- EQUB VE                \ Token 113:    ""
-                        \
-                        \ Encoded as:   ""
+                        \ --- And replaced by: -------------------------------->
 
- EQUB VE                \ Token 114:    ""
-                        \
-                        \ Encoded as:   ""
+ ECHR ' '               \ Token 111:    " CUDDLY"
+ ECHR 'C'               \
+ ECHR 'U'               \ Encoded as:   " CUDDLY"
+ ECHR 'D'
+ ECHR 'D'
+ ECHR 'L'
+ ECHR 'Y'
+ EQUB VE
+
+ ECHR ' '               \ Token 112:    " CUTE"
+ ECHR 'C'               \
+ ECHR 'U'               \ Encoded as:   " CUTE"
+ ECHR 'T'
+ ECHR 'E'
+ EQUB VE
+
+ ECHR ' '               \ Token 113:    " FURRY"
+ ECHR 'F'               \
+ ECHR 'U'               \ Encoded as:   " FURRY"
+ ECHR 'R'
+ ECHR 'R'
+ ECHR 'Y'
+ EQUB VE
+
+ ECHR ' '               \ Token 114:    " FRIENDLY"
+ ECHR 'F'               \
+ ECHR 'R'               \ Encoded as:   " FRI<246>DLY"
+ ECHR 'I'
+ ETWO 'E', 'N'
+ ECHR 'D'
+ ECHR 'L'
+ ECHR 'Y'
+ EQUB VE
+
+                        \ --- End of replacement ------------------------------>
 
  ECHR 'W'               \ Token 115:    "WASP"
  ECHR 'A'               \
@@ -7953,9 +7993,9 @@ ENDIF
 
                         \ --- And replaced by: -------------------------------->
 
- ECHR ' '               \ Token 198:    "LITTLE TRUMBLE"
- ECHR 'L'
- ETWO 'I', 'T'
+ ECHR ' '               \ Token 198:    " LITTLE TRUMBLE"
+ ECHR 'L'               \
+ ETWO 'I', 'T'          \ Encoded as:   " L<219>T<229> TRUMB<229>"
  ECHR 'T'
  ETWO 'L', 'E'
  ECHR ' '
@@ -7971,38 +8011,40 @@ ENDIF
  EJMP 9                 \                {clear screen}
  EJMP 23                \                {move to row 10, white, lower case}
  EJMP 14                \                {justify}
- EJMP 2                 \                {sentence case}
- ECHR ' '               \                 GOOD DAY {single cap}
- ECHR 'G'               \                COMMANDER {commander name}, ALLOW ME
- ECHR 'O'               \                TO INTRODUCE MYSELF. {single cap}I AM
- ECHR 'O'               \                 {single cap}THE {single cap}MERCHANT
- ECHR 'D'               \                {single cap}PRINCE OF THRUN AND I
- ECHR ' '               \                {single cap}FIND MYSELF FORCED TO SELL
- ECHR 'D'               \                MY MOST TREASURED POSSESSION.{cr}
- ECHR 'A'               \                {cr}
- ECHR 'Y'               \                {single cap}{single cap}I AM OFFERING
- ECHR ' '               \                YOU, FOR THE PALTRY SUM OF JUST 5000
- ETOK 154               \                {single cap}C{single cap}R THE RAREST
- ECHR ' '               \                THING IN THE {single cap}KNOWN {single
- EJMP 4                 \                cap}UNIVERSE.{cr}
- ECHR ','               \                {cr}
- ECHR ' '               \                {single cap}{single cap}WILL YOU TAKE
- ETWO 'A', 'L'          \                IT?{cr}
- ETWO 'L', 'O'          \                {left align}{all caps}{tab 6}
- ECHR 'W'               \
- ECHR ' '               \ Encoded as:   "{25}{9}{23}{14}{2} GOOD DAY [154]
- ECHR 'M'               \                 [4], <228><224>W ME[201]<240>TRODU
- ECHR 'E'               \                <233> MY<218>LF.{26}I AM{26}<226>E{26}M
- ETOK 201               \                <244>CH<255>T{26}PR<240><233> OF{26}
- ETWO 'I', 'N'          \                <226>RUN <255>D{26}I{26}F<240>D MY<218>
- ECHR 'T'               \                LF F<253><233>D[201]<218>LL MY MO<222>
- ECHR 'R'               \                 T<242>ASU<242>D POS<218>SSI<223>[204]
- ECHR 'O'               \                {19}I AM OFF<244>[195][179], F<253>
- ECHR 'D'               \                 [147]P<228>TRY SUM OF JU<222> 4000{19}
- ECHR 'U'               \                C{19}R [147]R<238>E<222> <226>[195]
- ETWO 'C', 'E'          \                 <240> <226>E{26}K<227>WN{26}UNIV<244>
- ECHR ' '               \                <218>[204]{19}W<220>L [179] TAKE <219>?
- ECHR 'M'               \                {12}{15}{1}{8}"
+ ECHR ' '               \                  {single cap}GOOD DAY COMMANDER
+ ECHR ' '               \                {commander name}, ALLOW ME TO INTRODUCE
+ EJMP 19                \                MYSELF. {single cap}I AM {single cap}
+ ECHR 'G'               \                THE {single cap}MERCHANT {single cap}
+ ECHR 'O'               \                PRINCE OF THRUN AND I {single cap}FIND
+ ECHR 'O'               \                MYSELF FORCED TO SELL MY MOST            
+ ECHR 'D'               \                TREASURED POSSESSION.{cr}
+ ECHR ' '               \                 {single cap}I AM OFFERING YOU, FOR THE
+ ECHR 'D'               \                PALTRY SUM OF JUST 5000{single cap}C
+ ECHR 'A'               \                {single cap}R THE RAREST THING IN THE
+ ECHR 'Y'               \                {single cap}KNOWN {single cap}UNIVERSE.
+ ECHR ' '               \                {cr}
+ ETOK 154               \                 {single cap}{single cap}WILL YOU TAKE
+ ECHR ' '               \                IT(Y/N)?{cr}
+ EJMP 4                 \                {left align}{all caps}{tab 6}
+ ECHR ','               \
+ EJMP 13                \ Encoded as:   "{25}{9}{23}{14}  {19}GOOD DAY [154] {4}
+ ECHR ' '               \                ,{13} <228><224>W ME[201]<240>TRODU
+ ETWO 'A', 'L'          \                <233> MY<218>LF. {19}I AM {19}<226>E
+ ETWO 'L', 'O'          \                 {19}M<244>CH<255>T {19}PR<240><233> OF
+ ECHR 'W'               \                 {19}<226>RUN <255>D {19}I{26}F<240>D M
+ ECHR ' '               \                Y<218>LF F<253><233>D[201]<218>LL MY MO
+ ECHR 'M'               \                <222> T<242>ASUR<242> POSS<237>SI<223>
+ ECHR 'E'               \                [204]I AM OFF<244>[195][179], F<253>
+ ETOK 201               \                 [147]P<228>TRY SUM OF JU<222> 5000{19}
+ ETWO 'I', 'N'          \                C{19}R [147]R<238>E<222> <226>[195]
+ ECHR 'T'               \                 <240> <226>E {19}K<227>WN {19}UNIV
+ ECHR 'R'               \                <244><218>[204]W<220>L [179] TAKE <219>
+ ECHR 'O'               \                [206]{12}{15}{1}{8}"
+ ECHR 'D'
+ ECHR 'U'             
+ ETWO 'C', 'E'
+ ECHR ' '             
+ ECHR 'M'
  ECHR 'Y'
  ETWO 'S', 'E'
  ECHR 'L'
