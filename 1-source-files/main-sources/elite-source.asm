@@ -47325,8 +47325,7 @@ ENDMACRO
 
                         \ --- Mod: Code added for music: ---------------------->
 
- TRTB% = &9D95          \ TRTB% has been moved to this address in
-                        \ elite-data.asm
+ TRTB% = &9D95          \ TRTB% has been moved to this address in elite-data.asm
 
                         \ --- End of added code ------------------------------->
 
