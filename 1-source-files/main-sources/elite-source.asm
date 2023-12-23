@@ -25847,8 +25847,8 @@ ENDIF
  JSR DETOK
 
  LDA #198               \ Print extended token 198, which is blank, but would
- JSR DETOK              \ presumably contain the word "TRIBBLE" if they were
-                        \ enabled
+ JSR DETOK              \ contain the text "LITTLE TRUMBLE" if the Trumbles
+                        \ mission was enabled
 
  LDA TRIBBLE+1          \ If we have more than 256 Trumbles, skip to DOANS
  BNE DOANS
@@ -36513,8 +36513,8 @@ ENDIF
 
  JSR DIALS              \ Call DIALS to update the dashboard
 
- LDA QQ11               \ If this is a space view, skip the following five
- BEQ P%+13              \ instructions (i.e. jump to JSR TT17 below)
+ LDA QQ11               \ If this is a space view, jump to plus13 to skip the
+ BEQ plus13             \ following five instructions
 
  AND PATG               \ If PATG = &FF (author names are shown on start-up)
  LSR A                  \ and bit 0 of QQ11 is 1 (the current view is type 1),
@@ -36522,6 +36522,8 @@ ENDIF
 
  LDY #2                 \ Wait for 2/50 of a second (0.04 seconds), to slow the
  JSR DELAY              \ main loop down a bit
+
+.plus13
 
  JSR TT17               \ Scan the keyboard for the cursor keys or joystick,
                         \ returning the cursor's delta values in X and Y and
