@@ -51,12 +51,12 @@ endif
 ifeq ($(variant), compact)
   variant-number=2
   folder=/compact
-  suffix=-elite-m-compact
+  suffix=-elite-compendium-compact
   boot=-opt 2
 else
   variant-number=1
   folder=/sng47
-  suffix=-elite-m-sng47
+  suffix=-elite-compendium-sng47
   boot=-opt 2
 endif
 
