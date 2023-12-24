@@ -35,7 +35,7 @@
  EQUB 10, 13
  EQUS "---------------------------------------"
  EQUB 10, 13
- EQUS "Elite-M"
+ EQUS "Acornsoft Elite (compendium version)"
  EQUB 10, 13
  EQUB 10, 13
 

@@ -5,13 +5,13 @@ unique = &80
 RomSel = &FE30
 romNumber = &0094 : REM Set to address of .musicRomNumber
 
-PRINT"Elite-M for the BBC Master 128"
-PRINT"=============================="
+PRINT"Elite for the BBC Master 128"
+PRINT"============================"
 PRINT'"Based on the Acornsoft SNG47 release"
 PRINT"of Elite by Ian Bell and David Braben"
 PRINT"Copyright (c) Acornsoft 1986"
-PRINT'"Flicker-free planet drawing routines"
-PRINT"and music integration by Mark Moxon"
+PRINT'"Flicker-free routines, bug fixes and"
+PRINT"music integration by Mark Moxon"
 PRINT'"Sound routines by Kieran Connell and"
 PRINT"Simon Morris"
 PRINT'"Original music by Aidan Bell and Julie"

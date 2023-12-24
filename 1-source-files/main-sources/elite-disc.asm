@@ -22,8 +22,8 @@
 \ This source file produces one of the following SSD disc images, depending on
 \ which release is being built:
 \
-\   * elite-m-sng47.ssd
-\   * elite-m-compact.ssd
+\   * elite-compendium-sng47.ssd
+\   * elite-compendium-compact.ssd
 \
 \ This can be loaded into an emulator or a real BBC Master.
 \

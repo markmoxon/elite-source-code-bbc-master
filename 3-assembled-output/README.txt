@@ -1,6 +1,6 @@
 
 ---------------------------------------
-Elite-M
+Acornsoft Elite (compendium version)
 
 For the BBC Master 128
 
@@ -23,6 +23,6 @@
 
 See www.bbcelite.com for details
 
-Build: 2023-12-24 16:27:22
+Build: 2023-12-24 17:01:08
 ---------------------------------------
 
