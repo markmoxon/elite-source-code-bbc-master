@@ -143,7 +143,7 @@
  sohyp   = 10           \ Sound 10 = Hyperspace drive engaged 1
  sohyp2  = 11           \ Sound 11 = Hyperspace drive engaged 2
 
-                        \ --- Mod: Code removed for Trumbles: ----------------->
+                        \ --- Mod: Code removed for Compendium: --------------->
 
 \NRU% = 0               \ The number of planetary systems with extended system
 \                       \ description overrides in the RUTOK table. The value of
@@ -156,7 +156,6 @@
                         \ description overrides in the RUTOK table
 
                         \ --- End of replacement ------------------------------>
-
 
  RE = &23               \ The obfuscation byte used to hide the recursive tokens
                         \ table from crackers viewing the binary code
@@ -11546,13 +11545,27 @@ ENDIF
 
 .ISDK
 
+                        \ --- Mod: Code removed for Compendium: --------------->
+
+\LDA K%+NI%+36          \ 1. Fetch the NEWB flags (byte #36) of the second ship
+\AND #%00000100         \ in the ship data workspace at K%, which is reserved
+\BNE MA62               \ for the sun or the space station (in this case it's
+\                       \ the latter), and if bit 2 is set, meaning the station
+\                       \ is hostile, jump down to MA62 to fail docking (so
+\                       \ trying to dock at a station that we have annoyed does
+\                       \ not end well)
+
+                        \ --- And replaced by: -------------------------------->
+
  LDA K%+NI%+36          \ 1. Fetch the NEWB flags (byte #36) of the second ship
  AND #%00000100         \ in the ship data workspace at K%, which is reserved
- BNE MA62               \ for the sun or the space station (in this case it's
+ BNE MA622              \ for the sun or the space station (in this case it's
                         \ the latter), and if bit 2 is set, meaning the station
-                        \ is hostile, jump down to MA62 to fail docking (so
+                        \ is hostile, jump down to MA622 to fail docking (so
                         \ trying to dock at a station that we have annoyed does
                         \ not end well)
+
+                        \ --- End of replacement ------------------------------>
 
  LDA INWK+14            \ 2. If nosev_z_hi < 214, jump down to MA62 to fail
  CMP #214               \ docking, as the angle of approach is greater than 26
@@ -11590,6 +11603,18 @@ ENDIF
  JMP DOENTRY            \ Go to the docking bay (i.e. show the ship hangar)
 
 .MA62
+
+                        \ --- Mod: Code added for Compendium: ----------------->
+
+ LDA auto               \ If the docking computer is engaged, ensure we dock
+ BNE GOIN               \ successfully even if the approach isn't correct, as
+                        \ the docking computer algorithm isn't perfect (so this
+                        \ fixes the issue in the other versions of Elite where
+                        \ the docking computer can kill you)
+
+.MA622
+
+                        \ --- End of added code ------------------------------->
 
                         \ If we arrive here, docking has just failed
 
@@ -12355,10 +12380,30 @@ ENDIF
  BEQ MA23               \ skip fuel scooping, as we can't scoop without fuel
                         \ scoops
 
+                        \ --- Mod: Code removed for Compendium: --------------->
+
+\LDA DELT4+1            \ We are now successfully fuel scooping, so it's time
+\LSR A                  \ to work out how much fuel we're scooping. Fetch the
+\                       \ high byte of DELT4, which contains our current speed
+\                       \ divided by 4, and halve it to get our current speed
+\                       \ divided by 8 (so it's now a value between 1 and 5, as
+\                       \ our speed is normally between 1 and 40). This gives
+\                       \ us the amount of fuel that's being scooped in A, so
+\                       \ the faster we go, the more fuel we scoop, and because
+\                       \ the fuel levels are stored as 10 * the fuel in light
+\                       \ years, that means we just scooped between 0.1 and 0.5
+\                       \ light years of free fuel
+
+                        \ --- And replaced by: -------------------------------->
+
  LDA DELT4+1            \ We are now successfully fuel scooping, so it's time
- LSR A                  \ to work out how much fuel we're scooping. Fetch the
+ BEQ MA23               \ to work out how much fuel we're scooping. Fetch the
                         \ high byte of DELT4, which contains our current speed
-                        \ divided by 4, and halve it to get our current speed
+                        \ divided by 4, and if it is zero, jump to BA23 to skip
+                        \ skip fuel scooping, as we can't scoop fuel if we are
+                        \ not moving
+
+ LSR A                  \ If we are moving, halve A to get our current speed
                         \ divided by 8 (so it's now a value between 1 and 5, as
                         \ our speed is normally between 1 and 40). This gives
                         \ us the amount of fuel that's being scooped in A, so
@@ -12366,6 +12411,8 @@ ENDIF
                         \ the fuel levels are stored as 10 * the fuel in light
                         \ years, that means we just scooped between 0.1 and 0.5
                         \ light years of free fuel
+
+                        \ --- End of replacement ------------------------------>
 
  ADC QQ14               \ Set A = A + the current fuel level * 10 (from QQ14)
 
@@ -18626,10 +18673,31 @@ ENDIF
  AND #%00000100         \ the ship's NEWB flags is set, and if it is (i.e. the
  BNE TN5                \ station is hostile), jump to TN5 to spawn some cops
 
- LDA MANY+SHU+1         \ The station is not hostile, so check how many
- BNE TA1                \ Transporters there are in the vicinity, and if we
+                        \ --- Mod: Code removed for Compendium: --------------->
+
+\LDA MANY+SHU+1         \ The station is not hostile, so check how many
+\BNE TA1                \ Transporters there are in the vicinity, and if we
+\                       \ already have one, return from the subroutine (as TA1
+\                       \ contains an RTS)
+
+                        \ --- And replaced by: -------------------------------->
+
+ LDA MANY+SHU+1         \ Set A to the number of Transporters in the vicinity
+
+ ORA auto               \ If the docking computer is on then auto is &FF, so
+                        \ this ensures that A is always non-zero when we are
+                        \ auto-docking, so the following jump to TA1 will be
+                        \ taken and no Transporters will be spawned from the
+                        \ space station (unlike in the disc version, where you
+                        \ can get smashed into space dust by a badly timed
+                        \ Transporter launch when using the docking computer)
+
+ BNE TA1                \ The station is not hostile, so check how many
+                        \ Transporters there are in the vicinity, and if we
                         \ already have one, return from the subroutine (as TA1
                         \ contains an RTS)
+
+                        \ --- End of replacement ------------------------------>
 
                         \ If we get here then the station is not hostile, so we
                         \ can consider spawning a Transporter or Shuttle
@@ -39338,7 +39406,7 @@ IF _SNG47
                         \ that it overwrites the filename part of the string,
                         \ i.e. the "E.1234567" part of "DELETE :1.1234567"
 
-                        \ --- Mod: Code removed for Trumbles: ----------------->
+                        \ --- Mod: Code removed for Compendium: --------------->
 
 \LDX #9                 \ Set up a counter in X to count from 9 to 1, so that we
 \                       \ copy the string starting at INWK+4+1 (i.e. INWK+5) to

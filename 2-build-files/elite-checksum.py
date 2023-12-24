@@ -46,14 +46,14 @@ print("Encryption = ", Encrypt)
 
 if release == 1:
     # SNG47
-    f = 0x7F97                  # F%
+    f = 0x7FA1                  # F%
     scramble_from = 0x2CBE      # G%
-    na2_per_cent = 0x3521       # NA2%
+    na2_per_cent = 0x3528       # NA2%
 elif release == 2:
     # Compact
-    f = 0x7F82                  # F%
+    f = 0x7F8C                  # F%
     scramble_from = 0x2CBE      # G%
-    na2_per_cent = 0x3521       # NA2%
+    na2_per_cent = 0x3528       # NA2%
 
 # Configuration variables for BCODE
 
