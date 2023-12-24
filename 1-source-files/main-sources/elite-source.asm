@@ -143,10 +143,20 @@
  sohyp   = 10           \ Sound 10 = Hyperspace drive engaged 1
  sohyp2  = 11           \ Sound 11 = Hyperspace drive engaged 2
 
- NRU% = 0               \ The number of planetary systems with extended system
-                        \ description overrides in the RUTOK table. The value of
-                        \ this variable is 0 in the original source, but this
-                        \ appears to be a bug, as it should really be 26
+                        \ --- Mod: Code removed for Trumbles: ----------------->
+
+\NRU% = 0               \ The number of planetary systems with extended system
+\                       \ description overrides in the RUTOK table. The value of
+\                       \ this variable is 0 in the original source, but this
+\                       \ appears to be a bug, as it should really be 26
+
+                        \ --- And replaced by: -------------------------------->
+
+ NRU% = 26              \ The number of planetary systems with extended system
+                        \ description overrides in the RUTOK table
+
+                        \ --- End of replacement ------------------------------>
+
 
  RE = &23               \ The obfuscation byte used to hide the recursive tokens
                         \ table from crackers viewing the binary code
@@ -39328,17 +39338,27 @@ IF _SNG47
                         \ that it overwrites the filename part of the string,
                         \ i.e. the "E.1234567" part of "DELETE :1.1234567"
 
- LDX #9                 \ Set up a counter in X to count from 9 to 1, so that we
+                        \ --- Mod: Code removed for Trumbles: ----------------->
+
+\LDX #9                 \ Set up a counter in X to count from 9 to 1, so that we
+\                       \ copy the string starting at INWK+4+1 (i.e. INWK+5) to
+\                       \ DELI+9+1 (i.e. DELI+10 onwards, or "1.1234567")
+\                       \
+\                       \ Note that this is a bug - X should be set to 8, as a
+\                       \ value of 9 overwrites the first character of the
+\                       \ "SAVE" command in savosc
+\                       \
+\                       \ This means that if you delete a file, it breaks the
+\                       \ save command, so you can't save a commander file if
+\                       \ you have previously deleted a file
+
+                        \ --- And replaced by: -------------------------------->
+
+ LDX #8                 \ Set up a counter in X to count from 8 to 1, so that we
                         \ copy the string starting at INWK+4+1 (i.e. INWK+5) to
-                        \ DELI+9+1 (i.e. DELI+10 onwards, or "1.1234567")
-                        \
-                        \ Note that this is a bug - X should be set to 8, as a
-                        \ value of 9 overwrites the first character of the
-                        \ "SAVE" command in savosc
-                        \
-                        \ This means that if you delete a file, it breaks the
-                        \ save command, so you can't save a commander file if
-                        \ you have previously deleted a file
+                        \ DELI+8+1 (i.e. DELI+10 onwards, or "1.1234567")
+
+                        \ --- End of replacement ------------------------------>
 
 ELIF _COMPACT
 

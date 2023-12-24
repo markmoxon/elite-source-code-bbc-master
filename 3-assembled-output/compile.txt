@@ -9181,7 +9181,7 @@ S.ELTB &35CD  &3E13  &1300  &35CD
      49F9   D0 38      BNE &4A33
      49FB   A5 86      LDA &86
      49FD   10 34      BPL &4A33
-     49FF   A0 00      LDY #&00
+     49FF   A0 1A      LDY #&1A
 .PDL1
      4A01   B9 47 AF   LDA &AF47,Y
      4A04   C5 81      CMP &81
@@ -13843,7 +13843,7 @@ S.ELTE &58A2  &6314  &1300  &58A2
      6B45   20 99 6A   JSR &6A99
      6B48   98         TYA
      6B49   F0 1A      BEQ &6B65
-     6B4B   A2 09      LDX #&09
+     6B4B   A2 08      LDX #&08
 .DELL1
      6B4D   B5 9F      LDA &9F,X
      6B4F   9D 68 6C   STA &6C68,X
