@@ -10469,9 +10469,12 @@ ENDIF
 
                         \ --- Mod: Code added for Trumbles: ------------------->
 
-\LDA CASH+2             \ ??? Different to NES, what does C64 say?
-\CMP #&C4
-\BCC EN6
+\LDA CASH+2             \ This is the Trumbles code from the Commodore 64
+\CMP #&C4               \ version, which triggers the mission when you reach a
+\BCC EN6                \ cash level of &C400 (or 5017.6 credits)
+                        \
+                        \ Instead, we're going to use the NES code, which offers
+                        \ the mission at 6553.6 credits
 
  LDA CASH+1             \ If the second most significant byte of CASH(0 1 2 3)
  BEQ EN6                \ is zero then the cash amount is less than &010000
@@ -12331,8 +12334,8 @@ ENDIF
  ROR TRIBBLE            \ cabin temperature is high enough to kill them off
                         \ (this will eventually bring the number down to zero)
 
-\LDY #31                \ Call the NOISE routine with Y = 31 to make the sound
-\JSR NOISE              \ of Trumbles being killed off by the heat of the sun
+ LDY #sohyp2            \ Call the NOISE routine with Y = 11 to make the sound
+ JSR NOISE              \ of Trumbles being killed off by the heat of the sun
 
 .nokilltr
 
@@ -37311,26 +37314,25 @@ ENDIF
 
 .game6
 
-\STA T                  \ Set T = A, which will be higher with more Trumbles and
-\                       \ higher temperatures
-\
-\JSR DORND              \ Set A and X to random numbers
-\
-\CMP T                  \ If A >= T then jump to game7 to skip making any noise,
-\BCS game7              \ so there is a higher chance of Trumbles making noise
-\                       \ when there are lots of them or the cabin temperature
-\                       \ is hot enough for the fuel scoops to work
-\
-\AND #3                 \ Set Y to our random number reduced to the range 0 to 3
-\TAY
-\
-\LDA trumbleSounds,Y    \ Set Y to the Y-th sound effect from the trumbleSounds
-\TAY                    \ table, so there's a 75% change of Y being set to 5,
-\                       \ and a 25% chance of Y being set to 6
-\
-\JSR NOISE              \ Call the NOISE routine to make the sound of the
-\                       \ Trumbles in Y, which will be one of 5 or 6, with 5
-\                       \ more likely than 6
+ STA T                  \ Set T = A, which will be higher with more Trumbles and
+                        \ higher temperatures
+ 
+ JSR DORND              \ Set A and X to random numbers
+ 
+ CMP T                  \ If A >= T then jump to game7 to skip making any noise,
+ BCS game7              \ so there is a higher chance of Trumbles making noise
+                        \ when there are lots of them or the cabin temperature
+                        \ is hot enough for the fuel scoops to work
+ 
+ AND #%100              \ Set A to our random number, set to either 0 or 4
+
+ ADC #3                 \ Set Y to our random number, set to either 3 or 7 (we
+ TAY                    \ know the C flag is clear as we just passed through a
+                        \ BCS)
+
+ JSR NOISE              \ Call the NOISE routine to make the sound of the
+                        \ Trumbles in Y, which will be one of 3 or 7, with an
+                        \ equal chance of either
 
 .game7
 
