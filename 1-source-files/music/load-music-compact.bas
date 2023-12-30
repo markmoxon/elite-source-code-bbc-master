@@ -93,4 +93,4 @@ OSCLI "SRLOAD MUSIC 8000 "+STR$(?romNumber)
 PRINT CHR$130;"OK"
 PRINT'"Press any key to play Elite";
 A$=GET$
-*RUN M128Elt
+*RUN MComElt

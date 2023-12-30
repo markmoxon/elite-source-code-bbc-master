@@ -1244,8 +1244,25 @@ ENDIF
 
 .MESS1
 
+                        \ --- Mod: Code removed for Compendium: --------------->
+
+\EQUS "L.BDATA FFFF1300"    \ This is short for "*LOAD BDATA FFFF1300"
+\EQUB 13
+
+                        \ --- And replaced by: -------------------------------->
+
+IF _SNG47
+
  EQUS "L.BDATA FFFF1300"    \ This is short for "*LOAD BDATA FFFF1300"
  EQUB 13
+
+ELIF _COMPACT
+
+ EQUS "L.CDATA FFFF1300"    \ This is short for "*LOAD CDATA FFFF1300"
+ EQUB 13
+
+ENDIF
+                        \ --- End of replacement ------------------------------>
 
 \ ******************************************************************************
 \
@@ -1265,8 +1282,16 @@ IF _SNG47
 
 ELIF _COMPACT
 
- EQUS "L.ELITE FFFF1300"    \ This is short for "*LOAD ELITE FFFF1300"
+                        \ --- Mod: Code removed for Compendium: --------------->
+
+\EQUS "L.ELITE FFFF1300"    \ This is short for "*LOAD ELITE FFFF1300"
+\EQUB 13
+                        \ --- And replaced by: -------------------------------->
+
+ EQUS "L.CCODE FFFF1300"    \ This is short for "*LOAD ELITE FFFF1300"
  EQUB 13
+
+                        \ --- End of replacement ------------------------------>
 
 ENDIF
 
