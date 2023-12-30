@@ -3,7 +3,7 @@ tstaddr = &8008
 values = &90
 unique = &80
 RomSel = &FE30
-romNumber = &0094 : REM Set to address of .musicRomNumber
+romNumber = &008E : REM Set to address of .musicRomNumber
 
 PRINT"Acornsoft Elite... with music!"
 PRINT"=============================="

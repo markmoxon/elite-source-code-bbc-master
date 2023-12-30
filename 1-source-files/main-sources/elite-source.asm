@@ -776,6 +776,28 @@ ENDIF
                         \ The sign bit is also stored in ALP2, while the
                         \ opposite sign is stored in ALP2+1
 
+                        \ --- Mod: Code added for music: ---------------------->
+
+.musicWorkspace
+
+ SKIP 8                 \ Storage for the music player, &0092 to &0099 inclusive
+
+.musicRomNumber
+
+ SKIP 1                 \ The bank number of the sideways ROM slot containing
+                        \ the music player at &009A
+
+.musicStatus
+
+ SKIP 1                 \ A flag to determine whether to play the currently
+                        \ selected music:
+                        \
+                        \   * 0 = do not play the music
+                        \
+                        \   * Non-zero = do play the music
+
+                        \ --- End of added code ------------------------------->
+
 .QQ12
 
  SKIP 1                 \ Our "docked" status
@@ -871,27 +893,7 @@ ENDIF
 \
 \SKIP 4                 \ Temporary storage, used in a number of places
 
-                        \ --- And replaced by: -------------------------------->
-
-.musicWorkspace
-
- SKIP 8                 \ Storage for the music player, &0092 to &0099 inclusive
-
-.musicRomNumber
-
- SKIP 1                 \ The bank number of the sideways ROM slot containing
-                        \ the music player at &009A
-
-.musicStatus
-
- SKIP 1                 \ A flag to determine whether to play the currently
-                        \ selected music:
-                        \
-                        \   * 0 = do not play the music
-                        \
-                        \   * Non-zero = do play the music
-
-                        \ --- End of replacement ------------------------------>
+                        \ --- End of removed code ----------------------------->
 
 .widget
 
