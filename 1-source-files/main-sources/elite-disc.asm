@@ -40,9 +40,9 @@ IF _SNG47
  PUTFILE "3-assembled-output/BCODE.bin", "BCODE", &000000, &000000
  PUTBASIC "1-source-files/music/load-music.bas", "ELITEM"
 ELIF _COMPACT
- PUTFILE "3-assembled-output/M128Elt.bin", "M128Elt", &000E00, &000E43
- PUTFILE "3-assembled-output/BDATA.bin", "BDATA", &001300, &001300
- PUTFILE "3-assembled-output/BCODE.bin", "ELITE", &001300, &002C6C
+ PUTFILE "3-assembled-output/M128Elt.bin", "MComElt", &000E00, &000E43
+ PUTFILE "3-assembled-output/BDATA.bin", "CDATA", &001300, &001300
+ PUTFILE "3-assembled-output/BCODE.bin", "CCODE", &001300, &002C6C
  PUTBASIC "1-source-files/music/load-music-compact.bas", "ELITEM"
 ENDIF
 
