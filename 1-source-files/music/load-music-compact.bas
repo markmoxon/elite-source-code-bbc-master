@@ -3,7 +3,7 @@ tstaddr = &8008
 values = &90
 unique = &80
 RomSel = &FE30
-romNumber = &008E : REM Set to address of .musicRomNumber
+romNumber = &8E : REM Set to address of .musicRomNumber
 
 PRINT"Acornsoft Elite... with music!"
 PRINT"=============================="
@@ -90,6 +90,16 @@ IF ?(&90+?&90) = 6 AND N% > 1 THEN ?(&90+?&90) = ?(&90+?&90+1) : REM Skip bank 6
 ?romNumber=?(&90+?&90):REM STORE RAM BANK USED SOMEWHERE IN ZERO PAGE
 PRINT'"Loading music into RAM bank ";?romNumber;"...";
 OSCLI "SRLOAD MUSIC 8000 "+STR$(?romNumber)
+P%=&70
+[OPT 0
+.addrDNOIZ      EQUW &2C55
+.addrplay1      EQUW &2D71+1
+.addrVOL        EQUW &2C61
+.keyE           EQUB &45
+.keyM           EQUB &4D
+.keyQ           EQUB &51
+]
+OSCLI "SRWRITE 0070+9 800F "+STR$(?romNumber)
 PRINT CHR$130;"OK"
 PRINT'"Press any key to play Elite";
 A$=GET$
