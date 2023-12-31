@@ -40499,55 +40499,76 @@ ENDIF
 
  BNE DKL4               \ If not, loop back to check for the next toggle key
 
- LDA VOL                \ Fetch the current volume setting into A
+                        \ --- Mod: Code removed for music: -------------------->
 
- CPX #'.'               \ If "." is being pressed (i.e. the ">" key) then jump
- BEQ DOVOL1             \ to DOVOL1 to increase the volume
+\LDA VOL                \ Fetch the current volume setting into A
+\
+\CPX #'.'               \ If "." is being pressed (i.e. the ">" key) then jump
+\BEQ DOVOL1             \ to DOVOL1 to increase the volume
+\
+\CPX #','               \ If "," is not being pressed (i.e. the "<" key) then
+\BNE DOVOL4             \ jump to DOVOL4 to skip the following
+\
+\DEC A                  \ The volume down key is being pressed, so decrement the
+\                       \ volume level in A
+\
+\EQUB &24               \ Skip the next instruction by turning it into &24 &1A,
+\                       \ or BIT &001A, which does nothing apart from affect the
+\                       \ flags
+\
+\.DOVOL1
+\
+\INC A                  \ The volume up key is being pressed, so increment the
+\                       \ volume level in A
+\
+\TAY                    \ Copy the new volume level to Y
+\
+\AND #%11111000         \ If any of bits 3-7 are set, skip to DOVOL3 as we have
+\BNE DOVOL3             \ either increased the volume past the maximum volume of
+\                       \ 7, or we have decreased it below 0 to -1, and in
+\                       \ neither case do we want to change the volume as we are
+\                       \ already at the maximum or minimum level
+\
+\STY VOL                \ Store the new volume level in VOL
+\
+\.DOVOL3
+\
+\PHX                    \ Store X on the stack so we can retrieve it below after
+\                       \ making a beep
+\
+\JSR BEEP               \ Call the BEEP subroutine to make a short, high beep at
+\                       \ the new volume level
+\
+\LDY #10                \ Wait for 10/50 of a second (0.2 seconds)
+\JSR DELAY
+\
+\PLX                    \ Restore the value of X we stored above
+\
+\.DOVOL4
 
- CPX #','               \ If "," is not being pressed (i.e. the "<" key) then
- BNE DOVOL4             \ jump to DOVOL4 to skip the following
+                        \ --- And replaced by: -------------------------------->
 
- DEC A                  \ The volume down key is being pressed, so decrement the
-                        \ volume level in A
+ LDA #12                \ Process the "Q" and volume-related options
+ JSR PlayMusic
 
- EQUB &24               \ Skip the next instruction by turning it into &24 &1A,
-                        \ or BIT &001A, which does nothing apart from affect the
-                        \ flags
-
-.DOVOL1
-
- INC A                  \ The volume up key is being pressed, so increment the
-                        \ volume level in A
-
- TAY                    \ Copy the new volume level to Y
-
- AND #%11111000         \ If any of bits 3-7 are set, skip to DOVOL3 as we have
- BNE DOVOL3             \ either increased the volume past the maximum volume of
-                        \ 7, or we have decreased it below 0 to -1, and in
-                        \ neither case do we want to change the volume as we are
-                        \ already at the maximum or minimum level
-
- STY VOL                \ Store the new volume level in VOL
-
-.DOVOL3
+ BVC skipVolumeBeep     \ If the V flag is clear then we didn't change the
+                        \ volume, so skip making a high-pitched beep
 
  PHX                    \ Store X on the stack so we can retrieve it below after
                         \ making a beep
-
+ 
  JSR BEEP               \ Call the BEEP subroutine to make a short, high beep at
                         \ the new volume level
-
+ 
  LDY #10                \ Wait for 10/50 of a second (0.2 seconds)
  JSR DELAY
-
+ 
  PLX                    \ Restore the value of X we stored above
 
-.DOVOL4
+ CLC                    \ Clear the C flag so we don't make both a low and high
+                        \ beep at the same time
 
-                        \ --- Mod: Code added for music: ---------------------->
-
- LDA #12                \ Process the "Q" and music-related options
- JSR PlayMusic
+.skipVolumeBeep
 
  BCC skipMusicToggles   \ If no music-related options were changed, then the C
                         \ flag will be clear, so jump to skipMusicToggles to
