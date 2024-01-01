@@ -3293,10 +3293,21 @@ ENDIF
  LDA #%00001001         \ Clear bits 1 and 2 of the Access Control Register at
  STA VIA+&34            \ SHEILA &34 to switch main memory back into &3000-&7FFF
 
+                        \ --- Mod: Code removed for music: -------------------->
+
+\LDA #6                 \ Set bits 0-3 of the ROM Select latch at SHEILA &30 to
+\STA VIA+&30            \ 6, to switch sideways ROM bank 6 into &8000-&BFFF in
+\                       \ main memory (we already confirmed that this bank
+\                       \ contains RAM rather than ROM in the loader)
+
+                        \ --- And replaced by: -------------------------------->
+
  LDA #6                 \ Set bits 0-3 of the ROM Select latch at SHEILA &30 to
- STA VIA+&30            \ 6, to switch sideways ROM bank 6 into &8000-&BFFF in
-                        \ main memory (we already confirmed that this bank
+ STA &F4                \ 6, to switch sideways ROM bank 6 into &8000-&BFFF in
+ STA VIA+&30            \ main memory (we already confirmed that this bank
                         \ contains RAM rather than ROM in the loader)
+
+                        \ --- End of replacement ------------------------------>
 
  RTS                    \ Return from the subroutine
 
@@ -9601,27 +9612,63 @@ IF _MATCH_ORIGINAL_BINARIES
   EQUB &61, &79, &20, &56, &69, &65, &77, &2E
   EQUB &2E, &2E, &2E, &2E, &2E, &2E, &2E, &2E
   EQUB &2E, &0D, &1A, &FE, &05, &20, &0D, &1B
-  EQUB &08, &11, &2E, &48, &41
+
+                        \ --- Mod: Code removed for music: -------------------->
+
+\ EQUB &08, &11, &2E, &48, &41
+
+                        \ --- And replaced by: -------------------------------->
+
+  EQUB &2E, &48, &41
+
+                        \ --- End of replacement ------------------------------>
 
  ELIF _COMPACT
 
-  EQUB &2B, &26, &33    \ These bytes appear to be unused and just contain
+                        \ --- Mod: Code removed for music: -------------------->
+
+\ EQUB &2B, &26, &33    \ These bytes appear to be unused and just contain
+\                       \ random workspace noise left over from the BBC Micro
+\                       \ assembly process
+
+
+                        \ --- And replaced by: -------------------------------->
+
+  EQUB &33              \ These bytes appear to be unused and just contain
                         \ random workspace noise left over from the BBC Micro
                         \ assembly process
+
+                        \ --- End of replacement ------------------------------>
 
  ENDIF
 
 ELSE
 
+                        \ --- Mod: Code removed for music: -------------------->
+
+\IF _SNG47
+\
+\ SKIP 77               \ These bytes appear to be unused
+\
+\ELIF _COMPACT
+\
+\ SKIP 3                \ These bytes appear to be unused
+\
+\ENDIF
+
+                        \ --- And replaced by: -------------------------------->
+
  IF _SNG47
 
-  SKIP 77               \ These bytes appear to be unused
+  SKIP 75               \ These bytes appear to be unused
 
  ELIF _COMPACT
 
-  SKIP 3                \ These bytes appear to be unused
+  SKIP 1                \ These bytes appear to be unused
 
  ENDIF
+
+                        \ --- End of replacement ------------------------------>
 
 ENDIF
 
