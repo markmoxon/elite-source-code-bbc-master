@@ -40598,25 +40598,6 @@ ENDIF
  LDA #12                \ Process the "Q" and volume-related options
  JSR PlayMusic
 
- BVC skipVolumeBeep     \ If the V flag is clear then we didn't change the
-                        \ volume, so skip making a high-pitched beep
-
- PHX                    \ Store X on the stack so we can retrieve it below after
-                        \ making a beep
- 
- JSR BEEP               \ Call the BEEP subroutine to make a short, high beep at
-                        \ the new volume level
- 
- LDY #10                \ Wait for 10/50 of a second (0.2 seconds)
- JSR DELAY
- 
- PLX                    \ Restore the value of X we stored above
-
- CLC                    \ Clear the C flag so we don't make both a low and high
-                        \ beep at the same time
-
-.skipVolumeBeep
-
  BCC skipMusicToggles   \ If no music-related options were changed, then the C
                         \ flag will be clear, so jump to skipMusicToggles to
                         \ skip the following

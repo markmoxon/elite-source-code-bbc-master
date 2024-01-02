@@ -92,16 +92,20 @@ PRINT'"Loading music into RAM bank ";?romNumber;"...";
 OSCLI "SRLOAD MUSIC 8000 "+STR$(?romNumber)
 P%=&70
 [OPT 0
+.platform       EQUB 128
 .addrDNOIZ      EQUW &2C55
 .addrplay1      EQUW &2D71+1
+.addrBEEP       EQUW &1354
+.addrDELAY      EQUW &1349
 .addrVOL        EQUW &2C61
 .keyE           EQUB &45
 .keyM           EQUB &4D
 .keyQ           EQUB &51
 .keyVolDown     EQUB &2C
 .keyVolUp       EQUB &2E
+.end
 ]
-OSCLI "SRWRITE 0070+B 800F "+STR$(?romNumber)
+OSCLI "SRWRITE 0070+"+STR$~(end-platform)+" 800F "+STR$(?romNumber)
 PRINT CHR$130;"OK"
 PRINT'"Press any key to play Elite";
 A$=GET$
