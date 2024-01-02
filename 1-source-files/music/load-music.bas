@@ -95,8 +95,8 @@ P%=&70
 .platform       EQUB 128
 .addrDNOIZ      EQUW &2C55
 .addrplay1      EQUW &2D71+1
-.addrBEEP       EQUW &1354
 .addrDELAY      EQUW &1349
+.addrBEEP       EQUW &1354
 .addrVOL        EQUW &2C61
 .keyE           EQUB &45
 .keyM           EQUB &4D
