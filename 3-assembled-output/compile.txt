@@ -13122,6 +13122,7 @@ S.ELTE &578E  &621B  &1300  &578E
      65D4   B0 05      BCS &65DB
      65D6   A0 02      LDY #&02
      65D8   20 49 13   JSR &1349
+.plus13
      65DB   20 BE 61   JSR &61BE
 .FRCE
      65DE   20 EB 65   JSR &65EB
