@@ -96,6 +96,7 @@ P%=&70
 .addrDNOIZ      EQUW &2C55
 .addrplay1      EQUW &2D71+1
 .addrDELAY      EQUW &1349
+.addrSFX        EQUW 0
 .addrBEEP       EQUW &1354
 .addrVOL        EQUW &2C61
 .keyE           EQUB &45
