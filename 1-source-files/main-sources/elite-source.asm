@@ -785,6 +785,28 @@ ENDIF
                         \ The sign bit is also stored in ALP2, while the
                         \ opposite sign is stored in ALP2+1
 
+                        \ --- Mod: Code added for music: ---------------------->
+
+.musicWorkspace
+
+ SKIP 8                 \ Storage for the music player, &0092 to &0099 inclusive
+
+.musicRomNumber
+
+ SKIP 1                 \ The bank number of the sideways ROM slot containing
+                        \ the music player at &009A
+
+.musicStatus
+
+ SKIP 1                 \ A flag to determine whether to play the currently
+                        \ selected music:
+                        \
+                        \   * 0 = do not play the music
+                        \
+                        \   * Non-zero = do play the music
+
+                        \ --- End of added code ------------------------------->
+
 .QQ12
 
  SKIP 1                 \ Our "docked" status
@@ -880,27 +902,7 @@ ENDIF
 \
 \SKIP 4                 \ Temporary storage, used in a number of places
 
-                        \ --- And replaced by: -------------------------------->
-
-.musicWorkspace
-
- SKIP 8                 \ Storage for the music player, &0092 to &0099 inclusive
-
-.musicRomNumber
-
- SKIP 1                 \ The bank number of the sideways ROM slot containing
-                        \ the music player at &009A
-
-.musicStatus
-
- SKIP 1                 \ A flag to determine whether to play the currently
-                        \ selected music:
-                        \
-                        \   * 0 = do not play the music
-                        \
-                        \   * Non-zero = do play the music
-
-                        \ --- End of replacement ------------------------------>
+                        \ --- End of removed code ----------------------------->
 
 .widget
 
@@ -3300,10 +3302,21 @@ ENDIF
  LDA #%00001001         \ Clear bits 1 and 2 of the Access Control Register at
  STA VIA+&34            \ SHEILA &34 to switch main memory back into &3000-&7FFF
 
+                        \ --- Mod: Code removed for music: -------------------->
+
+\LDA #6                 \ Set bits 0-3 of the ROM Select latch at SHEILA &30 to
+\STA VIA+&30            \ 6, to switch sideways ROM bank 6 into &8000-&BFFF in
+\                       \ main memory (we already confirmed that this bank
+\                       \ contains RAM rather than ROM in the loader)
+
+                        \ --- And replaced by: -------------------------------->
+
  LDA #6                 \ Set bits 0-3 of the ROM Select latch at SHEILA &30 to
- STA VIA+&30            \ 6, to switch sideways ROM bank 6 into &8000-&BFFF in
-                        \ main memory (we already confirmed that this bank
+ STA &F4                \ 6, to switch sideways ROM bank 6 into &8000-&BFFF in
+ STA VIA+&30            \ main memory (we already confirmed that this bank
                         \ contains RAM rather than ROM in the loader)
+
+                        \ --- End of replacement ------------------------------>
 
  RTS                    \ Return from the subroutine
 
@@ -9608,27 +9621,63 @@ IF _MATCH_ORIGINAL_BINARIES
   EQUB &61, &79, &20, &56, &69, &65, &77, &2E
   EQUB &2E, &2E, &2E, &2E, &2E, &2E, &2E, &2E
   EQUB &2E, &0D, &1A, &FE, &05, &20, &0D, &1B
-  EQUB &08, &11, &2E, &48, &41
+
+                        \ --- Mod: Code removed for music: -------------------->
+
+\ EQUB &08, &11, &2E, &48, &41
+
+                        \ --- And replaced by: -------------------------------->
+
+  EQUB &2E, &48, &41
+
+                        \ --- End of replacement ------------------------------>
 
  ELIF _COMPACT
 
-  EQUB &2B, &26, &33    \ These bytes appear to be unused and just contain
+                        \ --- Mod: Code removed for music: -------------------->
+
+\ EQUB &2B, &26, &33    \ These bytes appear to be unused and just contain
+\                       \ random workspace noise left over from the BBC Micro
+\                       \ assembly process
+
+
+                        \ --- And replaced by: -------------------------------->
+
+  EQUB &33              \ These bytes appear to be unused and just contain
                         \ random workspace noise left over from the BBC Micro
                         \ assembly process
+
+                        \ --- End of replacement ------------------------------>
 
  ENDIF
 
 ELSE
 
+                        \ --- Mod: Code removed for music: -------------------->
+
+\IF _SNG47
+\
+\ SKIP 77               \ These bytes appear to be unused
+\
+\ELIF _COMPACT
+\
+\ SKIP 3                \ These bytes appear to be unused
+\
+\ENDIF
+
+                        \ --- And replaced by: -------------------------------->
+
  IF _SNG47
 
-  SKIP 77               \ These bytes appear to be unused
+  SKIP 75               \ These bytes appear to be unused
 
  ELIF _COMPACT
 
-  SKIP 3                \ These bytes appear to be unused
+  SKIP 1                \ These bytes appear to be unused
 
  ENDIF
+
+                        \ --- End of replacement ------------------------------>
 
 ENDIF
 
@@ -24865,7 +24914,7 @@ ENDIF
 \
 \ So given an existing set of seeds in s0, s1 and s2, we can get the new values
 \ s0´, s1´ and s2´ simply by doing the above sums. And if we want to do the
-\ above in-place without creating three new w´ variables, then we can do the
+\ above in-place without creating three new s´ variables, then we can do the
 \ following:
 \
 \  tmp = s0 + s1
@@ -26584,8 +26633,8 @@ ENDIF
  JSR DETOK
 
  LDA #198               \ Print extended token 198, which is blank, but would
- JSR DETOK              \ presumably contain the word "TRIBBLE" if they were
-                        \ enabled
+ JSR DETOK              \ contain the text "LITTLE TRUMBLE" if the Trumbles
+                        \ mission was enabled
 
  LDA TRIBBLE+1          \ If we have more than 256 Trumbles, skip to DOANS
  BNE DOANS
@@ -37333,15 +37382,17 @@ ENDIF
 
  JSR DIALS              \ Call DIALS to update the dashboard
 
- LDA QQ11               \ If this is a space view, skip the following five
- BEQ P%+13              \ instructions (i.e. jump to JSR TT17 below)
+ LDA QQ11               \ If this is a space view, jump to plus13 to skip the
+ BEQ plus13             \ following five instructions
 
  AND PATG               \ If PATG = &FF (author names are shown on start-up)
  LSR A                  \ and bit 0 of QQ11 is 1 (the current view is type 1),
- BCS P%+7               \ then skip the following two instructions
+ BCS plus13             \ then skip the following two instructions
 
  LDY #2                 \ Wait for 2/50 of a second (0.04 seconds), to slow the
  JSR DELAY              \ main loop down a bit
+
+.plus13
 
                         \ --- Mod: Code added for Trumbles: ------------------->
 
@@ -41124,54 +41175,56 @@ ENDIF
 
  BNE DKL4               \ If not, loop back to check for the next toggle key
 
- LDA VOL                \ Fetch the current volume setting into A
+                        \ --- Mod: Code removed for music: -------------------->
 
- CPX #'.'               \ If "." is being pressed (i.e. the ">" key) then jump
- BEQ DOVOL1             \ to DOVOL1 to increase the volume
+\LDA VOL                \ Fetch the current volume setting into A
+\
+\CPX #'.'               \ If "." is being pressed (i.e. the ">" key) then jump
+\BEQ DOVOL1             \ to DOVOL1 to increase the volume
+\
+\CPX #','               \ If "," is not being pressed (i.e. the "<" key) then
+\BNE DOVOL4             \ jump to DOVOL4 to skip the following
+\
+\DEC A                  \ The volume down key is being pressed, so decrement the
+\                       \ volume level in A
+\
+\EQUB &24               \ Skip the next instruction by turning it into &24 &1A,
+\                       \ or BIT &001A, which does nothing apart from affect the
+\                       \ flags
+\
+\.DOVOL1
+\
+\INC A                  \ The volume up key is being pressed, so increment the
+\                       \ volume level in A
+\
+\TAY                    \ Copy the new volume level to Y
+\
+\AND #%11111000         \ If any of bits 3-7 are set, skip to DOVOL3 as we have
+\BNE DOVOL3             \ either increased the volume past the maximum volume of
+\                       \ 7, or we have decreased it below 0 to -1, and in
+\                       \ neither case do we want to change the volume as we are
+\                       \ already at the maximum or minimum level
+\
+\STY VOL                \ Store the new volume level in VOL
+\
+\.DOVOL3
+\
+\PHX                    \ Store X on the stack so we can retrieve it below after
+\                       \ making a beep
+\
+\JSR BEEP               \ Call the BEEP subroutine to make a short, high beep at
+\                       \ the new volume level
+\
+\LDY #10                \ Wait for 10/50 of a second (0.2 seconds)
+\JSR DELAY
+\
+\PLX                    \ Restore the value of X we stored above
+\
+\.DOVOL4
 
- CPX #','               \ If "," is not being pressed (i.e. the "<" key) then
- BNE DOVOL4             \ jump to DOVOL4 to skip the following
+                        \ --- And replaced by: -------------------------------->
 
- DEC A                  \ The volume down key is being pressed, so decrement the
-                        \ volume level in A
-
- EQUB &24               \ Skip the next instruction by turning it into &24 &1A,
-                        \ or BIT &001A, which does nothing apart from affect the
-                        \ flags
-
-.DOVOL1
-
- INC A                  \ The volume up key is being pressed, so increment the
-                        \ volume level in A
-
- TAY                    \ Copy the new volume level to Y
-
- AND #%11111000         \ If any of bits 3-7 are set, skip to DOVOL3 as we have
- BNE DOVOL3             \ either increased the volume past the maximum volume of
-                        \ 7, or we have decreased it below 0 to -1, and in
-                        \ neither case do we want to change the volume as we are
-                        \ already at the maximum or minimum level
-
- STY VOL                \ Store the new volume level in VOL
-
-.DOVOL3
-
- PHX                    \ Store X on the stack so we can retrieve it below after
-                        \ making a beep
-
- JSR BEEP               \ Call the BEEP subroutine to make a short, high beep at
-                        \ the new volume level
-
- LDY #10                \ Wait for 10/50 of a second (0.2 seconds)
- JSR DELAY
-
- PLX                    \ Restore the value of X we stored above
-
-.DOVOL4
-
-                        \ --- Mod: Code added for music: ---------------------->
-
- LDA #12                \ Process the "Q" and music-related options
+ LDA #12                \ Process the "Q" and volume-related options
  JSR PlayMusic
 
  BCC skipMusicToggles   \ If no music-related options were changed, then the C
@@ -48912,13 +48965,6 @@ ENDIF
 \
 \ Make the two-part explosion sound of us making a laser strike, or of another
 \ ship exploding.
-\
-\ ------------------------------------------------------------------------------
-\
-\ Other entry points:
-\
-\   EXNO-2              Set X = 7 and fall through into EXNO to make the sound
-\                       of a ship exploding
 \
 \ ******************************************************************************
 
