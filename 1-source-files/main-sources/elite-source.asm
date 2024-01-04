@@ -38241,6 +38241,20 @@ ENDIF
  JSR JAMESON            \ Call JAMESON to set the last saved commander to the
                         \ default "JAMESON" commander
 
+                        \ --- Mod: Code added for music: ---------------------->
+
+ LDA #161               \ Call OSBYTE 161 to fetch the configuration option for
+ LDX #16                \ the BELL volume, and if is it set to QUIET, halve the
+ JSR OSBYTE             \ default value of VOL from 7 to 3
+ TYA
+ AND #%00000010
+ BNE begn1
+ LSR VOL
+
+.begn1
+
+                        \ --- End of added code ------------------------------->
+
                         \ Fall through into TT170 to start the game
 
 \ ******************************************************************************
