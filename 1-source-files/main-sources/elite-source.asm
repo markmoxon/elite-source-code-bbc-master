@@ -32734,6 +32734,14 @@ ENDIF
  LDA INWK+34            \ heap (i.e. INWK+33) in SLSP, doing both the high and
  STA SLSP+1             \ low bytes
 
+                        \ --- Mod: Code added for Compendium: ----------------->
+
+ LDY #2                 \ Set the Y2 coordinate of the laser line in the ship
+ LDA #255               \ line heap to 255 so there is no laser line
+ STA (INWK+33),Y
+
+                        \ --- End of added code ------------------------------->
+
 .NW6
 
  LDY #14                \ Fetch ship blueprint byte #14, which contains the
@@ -42936,10 +42944,22 @@ ENDMACRO
                         \            ship that's currently on-screen (or 0 if
                         \            there is no ship currently on-screen)
 
- LDY #1                 \ Set LSNUM = 1, the offset of the first set of line
- STY LSNUM              \ coordinates in the ship line heap
+                        \ --- Mod: Code removed for Compendium: --------------->
 
- DEY                    \ Decrement Y to 0
+\LDY #1                 \ Set LSNUM = 1, the offset of the first set of line
+\STY LSNUM              \ coordinates in the ship line heap
+\
+\DEY                    \ Decrement Y to 0
+
+                        \ --- And replaced by: -------------------------------->
+
+ LDY #5                 \ Set LSNUM = 5, the offset of the first set of line
+ STY LSNUM              \ coordinates in the ship line heap, after the four
+                        \ coordinates for the laser line
+
+ LDY #0                 \ Set Y to 0
+
+                        \ --- End of replacement ------------------------------>
 
  LDA #%00001000         \ If bit 3 of the ship's byte #31 is set, then the ship
  BIT INWK+31            \ is currently being drawn on-screen, so skip the
@@ -44743,6 +44763,66 @@ ENDMACRO
  STY XX17               \
                         \ The STY is commented out in the original source
 
+                        \ --- Mod: Code removed for Compendium: --------------->
+
+\BIT XX1+31             \ If bit 6 of the ship's byte #31 is clear, then the
+\BVC LL170              \ ship is not firing its lasers, so jump to LL170 to
+\                       \ skip the drawing of laser lines
+\
+\                       \ The ship is firing its laser at us, so we need to draw
+\                       \ the laser lines
+
+                        \ --- And replaced by: -------------------------------->
+
+\BIT XX1+31             \ If bit 6 of the ship's byte #31 is clear, then the
+\BVS P%+5               \ ship is not firing its lasers, so jump to LL170 to
+\JMP LL170              \ skip the drawing of laser lines
+\
+\                       \ The ship is firing its laser at us, so we need to draw
+\                       \ the laser lines
+
+                        \ We now need to check whether there is a laser line
+                        \ on-screen, and if so remove it
+
+ LDY #1                 \ Set X1 to the first coordinate on the ship line heap,
+ LDA (XX19),Y           \ which is the start of the laser line
+ STA X1
+
+ INY                    \ Increment the index to point to the Y1 coordinate
+
+ LDA (XX19),Y           \ Set Y1 to the first coordinate on the ship line heap
+ STA Y1                 \ which is the start of the laser line
+
+ CMP #255               \ If the Y1 coordinate is 255 then there is no laser
+ BEQ noLaserLine        \ line currently on-screen, so jump to noLaserLine to
+                        \ skip the removal of the old line
+
+ LDA #255               \ Set the Y2 coordinate of the laser line in the ship
+ STA (XX19),Y           \ line heap to 255 to remove the laser line from the
+                        \ heap
+
+ INY                    \ Increment the index to point to the X2 coordinate
+
+ LDA (XX19),Y           \ Set X2 to the second coordinate on the ship line heap,
+ STA X2                 \ which is the end of the laser line
+
+ INY                    \ Increment the index to point to the Y2 coordinate
+
+ LDA (XX19),Y           \ Set Y2 to the second coordinate on the ship line heap,
+ STA Y2                 \ which is the end of the laser line
+
+ LDA #RED               \ Switch to colour 2, which is red in the space view
+ STA COL
+
+ JSR LOIN               \ Draw the old laser line to remove it from the screen
+
+ LDA #CYAN              \ Switch to colour 3, which is cyan in the space view
+ STA COL
+
+.noLaserLine
+
+                        \ --- End of replacement ------------------------------>
+
  BIT XX1+31             \ If bit 6 of the ship's byte #31 is clear, then the
  BVC LL170              \ ship is not firing its lasers, so jump to LL170 to
                         \ skip the drawing of laser lines
@@ -44823,9 +44903,45 @@ ENDMACRO
                         \ screen, so jump to LL170 so we don't store this line
                         \ in the ship line heap
 
- JSR LSPUT              \ Draw the laser line using flicker-free animation, by
-                        \ first drawing the new laser line and then erasing the
-                        \ corresponding old line from the screen
+                        \ --- Mod: Code removed for Compendium: --------------->
+
+\JSR LSPUT              \ Draw the laser line using flicker-free animation, by
+\                       \ first drawing the new laser line and then erasing the
+\                       \ corresponding old line from the screen
+
+                        \ --- And replaced by: -------------------------------->
+
+                        \ If we get here then there is a laser line, so now we
+                        \ store it and draw it
+
+ LDY #1                 \ Store X1 as the first coordinate on the ship line heap
+ LDA X1
+ STA (XX19),Y
+
+ INY                    \ Increment the index to point to the Y1 coordinate
+
+ LDA Y1                 \ Store Y1 as the first coordinate on the ship line heap
+ STA (XX19),Y
+
+ INY                    \ Increment the index to point to the X2 coordinate
+
+ LDA X2                 \ Store X2 as the second coordinate on the ship line
+ STA (XX19),Y           \ heap
+
+ INY                    \ Increment the index to point to the Y2 coordinate
+
+ LDA Y2                 \ Store Y2 as the second coordinate on the ship line
+ STA (XX19),Y           \ heap
+
+ LDA #RED               \ Switch to colour 2, which is red in the space view
+ STA COL
+
+ JSR LOIN               \ Draw the new laser line
+
+ LDA #CYAN              \ Switch to colour 3, which is cyan in the space view
+ STA COL
+
+                        \ --- End of replacement ------------------------------>
 
 \ ******************************************************************************
 \
@@ -47290,74 +47406,83 @@ ENDMACRO
 \
 \ ******************************************************************************
 
-.MVT6
+                        \ --- Mod: Code removed for Compendium: --------------->
 
- TAY                    \ Store argument A into Y, for later use
+\.MVT6
+\
+\TAY                    \ Store argument A into Y, for later use
+\
+\EOR INWK+2,X           \ Set A = A EOR x_sign
+\
+\BMI MV50               \ If the sign is negative, i.e. A and x_sign have
+\                       \ different signs, jump to MV50
+\
+\                       \ The signs are the same, so we can add the two
+\                       \ arguments and keep the sign to get the result
+\
+\LDA P+1                \ First we add the low bytes:
+\CLC                    \
+\ADC INWK,X             \   P+1 = P+1 + x_lo
+\STA P+1
+\
+\LDA P+2                \ And then the high bytes:
+\ADC INWK+1,X           \
+\STA P+2                \   P+2 = P+2 + x_hi
+\
+\TYA                    \ Restore the original A argument that we stored earlier
+\                       \ so that we keep the original sign
+\
+\RTS                    \ Return from the subroutine
+\
+\.MV50
+\
+\LDA INWK,X             \ First we subtract the low bytes:
+\SEC                    \
+\SBC P+1                \   P+1 = x_lo - P+1
+\STA P+1
+\
+\LDA INWK+1,X           \ And then the high bytes:
+\SBC P+2                \
+\STA P+2                \   P+2 = x_hi - P+2
+\
+\BCC MV51               \ If the last subtraction underflowed, then the C flag
+\                       \ will be clear and x_hi < P+2, so jump to MV51 to
+\                       \ negate the result
+\
+\TYA                    \ Restore the original A argument that we stored earlier
+\EOR #%10000000         \ but flip bit 7, which flips the sign. We do this
+\                       \ because x_hi >= P+2 so we want the result to have the
+\                       \ same sign as x_hi (as it's the dominant side in this
+\                       \ calculation). The sign of x_hi is x_sign, and x_sign
+\                       \ has the opposite sign to A, so we flip the sign in A
+\                       \ to return the correct result
+\
+\RTS                    \ Return from the subroutine
+\
+\.MV51
+\
+\LDA #1                 \ Our subtraction underflowed, so we negate the result
+\SBC P+1                \ using two's complement, first with the low byte:
+\STA P+1                \
+\                       \   P+1 = 1 - P+1
+\
+\LDA #0                 \ And then the high byte:
+\SBC P+2                \
+\STA P+2                \   P+2 = 0 - P+2
+\
+\TYA                    \ Restore the original A argument that we stored earlier
+\                       \ as this is the correct sign for the result. This is
+\                       \ because x_hi < P+2, so we want to return the same sign
+\                       \ as P+2, the dominant side
+\
+\RTS                    \ Return from the subroutine
+\
 
- EOR INWK+2,X           \ Set A = A EOR x_sign
+                        \ --- And replaced by: -------------------------------->
 
- BMI MV50               \ If the sign is negative, i.e. A and x_sign have
-                        \ different signs, jump to MV50
+ MVT6 = &9E15           \ MVT6 has been moved to this address in elite-data.asm
 
-                        \ The signs are the same, so we can add the two
-                        \ arguments and keep the sign to get the result
-
- LDA P+1                \ First we add the low bytes:
- CLC                    \
- ADC INWK,X             \   P+1 = P+1 + x_lo
- STA P+1
-
- LDA P+2                \ And then the high bytes:
- ADC INWK+1,X           \
- STA P+2                \   P+2 = P+2 + x_hi
-
- TYA                    \ Restore the original A argument that we stored earlier
-                        \ so that we keep the original sign
-
- RTS                    \ Return from the subroutine
-
-.MV50
-
- LDA INWK,X             \ First we subtract the low bytes:
- SEC                    \
- SBC P+1                \   P+1 = x_lo - P+1
- STA P+1
-
- LDA INWK+1,X           \ And then the high bytes:
- SBC P+2                \
- STA P+2                \   P+2 = x_hi - P+2
-
- BCC MV51               \ If the last subtraction underflowed, then the C flag
-                        \ will be clear and x_hi < P+2, so jump to MV51 to
-                        \ negate the result
-
- TYA                    \ Restore the original A argument that we stored earlier
- EOR #%10000000         \ but flip bit 7, which flips the sign. We do this
-                        \ because x_hi >= P+2 so we want the result to have the
-                        \ same sign as x_hi (as it's the dominant side in this
-                        \ calculation). The sign of x_hi is x_sign, and x_sign
-                        \ has the opposite sign to A, so we flip the sign in A
-                        \ to return the correct result
-
- RTS                    \ Return from the subroutine
-
-.MV51
-
- LDA #1                 \ Our subtraction underflowed, so we negate the result
- SBC P+1                \ using two's complement, first with the low byte:
- STA P+1                \
-                        \   P+1 = 1 - P+1
-
- LDA #0                 \ And then the high byte:
- SBC P+2                \
- STA P+2                \   P+2 = 0 - P+2
-
- TYA                    \ Restore the original A argument that we stored earlier
-                        \ as this is the correct sign for the result. This is
-                        \ because x_hi < P+2, so we want to return the same sign
-                        \ as P+2, the dominant side
-
- RTS                    \ Return from the subroutine
+                        \ --- End of replacement ------------------------------>
 
 \ ******************************************************************************
 \
@@ -47615,7 +47740,7 @@ ENDMACRO
 
                         \ --- And replaced by: -------------------------------->
 
- MV40 = &9E14           \ MV40 has been moved to this address in elite-data.asm
+ MV40 = &9E4A           \ MV40 has been moved to this address in elite-data.asm
 
                         \ --- End of replacement ------------------------------>
 
