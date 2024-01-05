@@ -24302,8 +24302,6 @@ ENDIF
 \
 \ ------------------------------------------------------------------------------
 \
-\ ------------------------------------------------------------------------------
-\
 \ Arguments:
 \
 \   A                   The text column
@@ -24322,8 +24320,6 @@ ENDIF
 \       Type: Subroutine
 \   Category: Text
 \    Summary: Move the text cursor to a specific row
-\
-\ ------------------------------------------------------------------------------
 \
 \ ------------------------------------------------------------------------------
 \
@@ -37699,8 +37695,6 @@ ENDIF
 \
 \ BRKV is set to point to BR1 by the loading process.
 \
-\ ------------------------------------------------------------------------------
-\
 \ Other entry points:
 \
 \   QU5                 Restart the game using the last saved commander without
@@ -38399,8 +38393,6 @@ ENDIF
 \   Category: Text
 \    Summary: Fetch a line of text from the keyboard
 \  Deep dive: Extended text tokens
-\
-\ ------------------------------------------------------------------------------
 \
 \ ------------------------------------------------------------------------------
 \
@@ -39683,8 +39675,6 @@ ENDIF
 \       Type: Subroutine
 \   Category: Maths (Geometry)
 \    Summary: Calculate the vector to the planet and store it in XX15
-\
-\ ------------------------------------------------------------------------------
 \
 \ ------------------------------------------------------------------------------
 \
@@ -44274,8 +44264,6 @@ ENDMACRO
 \   Category: Drawing ships
 \    Summary: Draw ship: Loop back for the next edge
 \  Deep dive: Drawing ships
-\
-\ ------------------------------------------------------------------------------
 \
 \ ------------------------------------------------------------------------------
 \
