@@ -43653,8 +43653,8 @@ ENDMACRO
                         \
                         \   XX12(1 0) = y-coordinate of the end of the beam
                         \
-                        \ The end of the laser beam will be set positioned to
-                        \ look good, rather than being directly aimed at us, as
+                        \ The end of the laser beam will be positioned to look
+                        \ good, rather than being directly aimed at us, as
                         \ otherwise we would only see a flashing point of light
                         \ as they unleashed their attack
 
@@ -45117,7 +45117,7 @@ ENDMACRO
 
  INY                    \ Increment the index to point to the X2 coordinate
 
- LDA (XX19),Y           \ Set X1 to the Y-th coordinate on the ship line heap,
+ LDA (XX19),Y           \ Set X2 to the Y-th coordinate on the ship line heap,
  STA X2
 
  LDA XX12+2             \ Replace it with the X2 coordinate in XX12+2
