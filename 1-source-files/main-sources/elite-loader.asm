@@ -509,23 +509,6 @@ ENDIF
  JSR OSCLI              \ Call OSCLI to run the OS command in MESS3, which
                         \ changes the disc directory to E
 
-                        \ --- Mod: Code added for Compendium: ----------------->
-
-IF _COMPACT
-
- LDX #LO(MESS4)         \ Set (Y X) to point to MESS4 ("DR.0")
- LDY #HI(MESS4)
-
- JSR OSCLI              \ Call OSCLI to run the OS command in MESS4, which
-                        \ changes the drive to 0
-                        \
-                        \ Note that this will break this version on ADFS, but
-                        \ the Compendium is on DFS, so this is required
-
-ENDIF
-
-                        \ --- End of added code ------------------------------->
-
  LDA #6                 \ Set the RAM copy of the currently selected paged ROM
  STA LATCH              \ to 6, so it matches the paged ROM selection latch at
                         \ SHEILA &30 that we are about to set
@@ -1261,25 +1244,8 @@ ENDIF
 
 .MESS1
 
-                        \ --- Mod: Code removed for Compendium: --------------->
-
-\EQUS "L.BDATA FFFF1300"    \ This is short for "*LOAD BDATA FFFF1300"
-\EQUB 13
-
-                        \ --- And replaced by: -------------------------------->
-
-IF _SNG47
-
  EQUS "L.BDATA FFFF1300"    \ This is short for "*LOAD BDATA FFFF1300"
  EQUB 13
-
-ELIF _COMPACT
-
- EQUS "L.CDATA FFFF1300"    \ This is short for "*LOAD CDATA FFFF1300"
- EQUB 13
-
-ENDIF
-                        \ --- End of replacement ------------------------------>
 
 \ ******************************************************************************
 \
@@ -1299,16 +1265,8 @@ IF _SNG47
 
 ELIF _COMPACT
 
-                        \ --- Mod: Code removed for Compendium: --------------->
-
-\EQUS "L.ELITE FFFF1300"    \ This is short for "*LOAD ELITE FFFF1300"
-\EQUB 13
-                        \ --- And replaced by: -------------------------------->
-
- EQUS "L.CCODE FFFF1300"    \ This is short for "*LOAD ELITE FFFF1300"
+ EQUS "L.ELITE FFFF1300"    \ This is short for "*LOAD ELITE FFFF1300"
  EQUB 13
-
-                        \ --- End of replacement ------------------------------>
 
 ENDIF
 
@@ -1325,28 +1283,6 @@ ENDIF
 
  EQUS "DIR E"
  EQUB 13
-
-\ ******************************************************************************
-\
-\       Name: MESS4
-\       Type: Variable
-\   Category: Loader
-\    Summary: The OS command string for changing the drive to 0
-\
-\ ******************************************************************************
-
-                        \ --- Mod: Code added for Compendium: ----------------->
-
-IF _COMPACT
-
-.MESS4
-
- EQUS "DR.0"
- EQUB 13
-
-ENDIF
-
-                        \ --- End of added code ------------------------------->
 
 \ ******************************************************************************
 \
