@@ -18398,6 +18398,14 @@ ENDIF
  LDA #&0B               \ Set the ship line heap pointer in INWK(34 33) to point
  STA INWK+34            \ to &0B00
 
+                        \ --- Mod: Code added for red enemy lasers: ----------->
+
+ LDY #2                 \ Set the Y2 coordinate of the laser line in the ship
+ LDA #255               \ line heap to 255 so there is no laser line
+ STA (INWK+33),Y
+
+                        \ --- End of added code ------------------------------->
+
  JSR DORND              \ We now perform a random number of small angle (3.6
  STA XSAV               \ degree) rotations to spin the ship on the deck while
                         \ keeping it flat on the deck (a bit like spinning a
