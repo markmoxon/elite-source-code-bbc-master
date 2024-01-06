@@ -143,7 +143,7 @@
  sohyp   = 10           \ Sound 10 = Hyperspace drive engaged 1
  sohyp2  = 11           \ Sound 11 = Hyperspace drive engaged 2
 
-                        \ --- Mod: Code removed for Compendium: --------------->
+                        \ --- Mod: Code removed for bug fixes: ---------------->
 
 \NRU% = 0               \ The number of planetary systems with extended system
 \                       \ description overrides in the RUTOK table. The value of
@@ -1644,7 +1644,7 @@ ENDIF
 
  SKIP 1                 \ The y-coordinate of the tip of the laser line
 
-                        \ --- Mod: Code removed for Compendium: --------------->
+                        \ --- Mod: Code removed for docking fee: -------------->
 
 \.XX24
 \
@@ -3319,7 +3319,7 @@ ENDIF
  LDA #%00001001         \ Clear bits 1 and 2 of the Access Control Register at
  STA VIA+&34            \ SHEILA &34 to switch main memory back into &3000-&7FFF
 
-                        \ --- Mod: Code removed for music: -------------------->
+                        \ --- Mod: Code removed for bug fixes: ---------------->
 
 \LDA #6                 \ Set bits 0-3 of the ROM Select latch at SHEILA &30 to
 \STA VIA+&30            \ 6, to switch sideways ROM bank 6 into &8000-&BFFF in
@@ -9639,7 +9639,7 @@ IF _MATCH_ORIGINAL_BINARIES
   EQUB &2E, &2E, &2E, &2E, &2E, &2E, &2E, &2E
   EQUB &2E, &0D, &1A, &FE, &05, &20, &0D, &1B
 
-                        \ --- Mod: Code removed for music: -------------------->
+                        \ --- Mod: Code removed for Compendium: --------------->
 
 \ EQUB &08, &11, &2E, &48, &41
 
@@ -9651,50 +9651,23 @@ IF _MATCH_ORIGINAL_BINARIES
 
  ELIF _COMPACT
 
-                        \ --- Mod: Code removed for music: -------------------->
-
-\ EQUB &2B, &26, &33    \ These bytes appear to be unused and just contain
-\                       \ random workspace noise left over from the BBC Micro
-\                       \ assembly process
-
-
-                        \ --- And replaced by: -------------------------------->
-
-  EQUB &33              \ These bytes appear to be unused and just contain
+  EQUB &2B, &26, &33    \ These bytes appear to be unused and just contain
                         \ random workspace noise left over from the BBC Micro
                         \ assembly process
-
-                        \ --- End of replacement ------------------------------>
 
  ENDIF
 
 ELSE
 
-                        \ --- Mod: Code removed for music: -------------------->
-
-\IF _SNG47
-\
-\ SKIP 77               \ These bytes appear to be unused
-\
-\ELIF _COMPACT
-\
-\ SKIP 3                \ These bytes appear to be unused
-\
-\ENDIF
-
-                        \ --- And replaced by: -------------------------------->
-
  IF _SNG47
 
-  SKIP 75               \ These bytes appear to be unused
+  SKIP 77               \ These bytes appear to be unused
 
  ELIF _COMPACT
 
-  SKIP 1                \ These bytes appear to be unused
+  SKIP 3                \ These bytes appear to be unused
 
  ENDIF
-
-                        \ --- End of replacement ------------------------------>
 
 ENDIF
 
@@ -10359,7 +10332,7 @@ ENDIF
 
  RTS                    \ Return from the subroutine
 
-                        \ --- Mod: Code removed for Trumbles: ----------------->
+                        \ --- Mod: Code removed for Compendium: --------------->
 
 \EQUB &B7, &AA          \ These bytes appear to be unused, though there is a
 \EQUB &45, &23          \ comment in the original source that says "red
@@ -10588,7 +10561,7 @@ ENDIF
 \EQUB &FF
 \EQUB 0
 
-                        \ --- Mod: Code removed for Trumbles: ----------------->
+                        \ --- Mod: Code removed for Compendium: --------------->
 
 \.SPMASK
 \
@@ -11134,7 +11107,7 @@ ENDIF
  AND DKCMP              \ computer fitted, keep going, otherwise jump down to
  BEQ MA68               \ MA68 to skip the following
 
-                        \ --- Mod: Code added for Compendium: ----------------->
+                        \ --- Mod: Code added for docking fee: ---------------->
 
                         \ We now deduct a docking fee of 5.0 credits for using
                         \ the docking computer
@@ -11659,7 +11632,7 @@ ENDIF
 
 .ISDK
 
-                        \ --- Mod: Code removed for Compendium: --------------->
+                        \ --- Mod: Code removed for better docking computer: -->
 
 \LDA K%+NI%+36          \ 1. Fetch the NEWB flags (byte #36) of the second ship
 \AND #%00000100         \ in the ship data workspace at K%, which is reserved
@@ -11718,7 +11691,7 @@ ENDIF
 
 .MA62
 
-                        \ --- Mod: Code added for Compendium: ----------------->
+                        \ --- Mod: Code added for better docking computer: ---->
 
  LDA auto               \ If the docking computer is engaged, ensure we dock
  BNE GOIN               \ successfully even if the approach isn't correct, as
@@ -12494,7 +12467,7 @@ ENDIF
  BEQ MA23               \ skip fuel scooping, as we can't scoop without fuel
                         \ scoops
 
-                        \ --- Mod: Code removed for Compendium: --------------->
+                        \ --- Mod: Code removed for moving fuel scoops: ------->
 
 \LDA DELT4+1            \ We are now successfully fuel scooping, so it's time
 \LSR A                  \ to work out how much fuel we're scooping. Fetch the
@@ -18787,7 +18760,7 @@ ENDIF
  AND #%00000100         \ the ship's NEWB flags is set, and if it is (i.e. the
  BNE TN5                \ station is hostile), jump to TN5 to spawn some cops
 
-                        \ --- Mod: Code removed for Compendium: --------------->
+                        \ --- Mod: Code removed for better docking computer: -->
 
 \LDA MANY+SHU+1         \ The station is not hostile, so check how many
 \BNE TA1                \ Transporters there are in the vicinity, and if we
@@ -32734,7 +32707,7 @@ ENDIF
  LDA INWK+34            \ heap (i.e. INWK+33) in SLSP, doing both the high and
  STA SLSP+1             \ low bytes
 
-                        \ --- Mod: Code added for Compendium: ----------------->
+                        \ --- Mod: Code added for red enemy lasers: ----------->
 
  LDY #2                 \ Set the Y2 coordinate of the laser line in the ship
  LDA #255               \ line heap to 255 so there is no laser line
@@ -36501,7 +36474,7 @@ ENDIF
 \STA TRIBCT             \ This instruction is commented out in the original
                         \ source
 
-                        \ --- Mod: Code added for Compendium: ----------------->
+                        \ --- Mod: Code added for docking fee: ---------------->
 
  STA chargeDockingFee   \ Set chargeDockingFee to 0 so the docking fee is marked
                         \ as being not already paid
@@ -39543,7 +39516,7 @@ IF _SNG47
                         \ that it overwrites the filename part of the string,
                         \ i.e. the "E.1234567" part of "DELETE :1.1234567"
 
-                        \ --- Mod: Code removed for Compendium: --------------->
+                        \ --- Mod: Code removed for bug fixes: ---------------->
 
 \LDX #9                 \ Set up a counter in X to count from 9 to 1, so that we
 \                       \ copy the string starting at INWK+4+1 (i.e. INWK+5) to
@@ -40663,7 +40636,7 @@ ENDIF
 
 .WARP
 
-                        \ --- Mod: Code added for Compendium: ----------------->
+                        \ --- Mod: Code added for better docking computer: ---->
 
  LDA auto               \ If the docking computer is engaged (auto is non-zero)
  AND SSPR               \ and we are inside the space station safe zone (SSPR
@@ -42944,7 +42917,7 @@ ENDMACRO
                         \            ship that's currently on-screen (or 0 if
                         \            there is no ship currently on-screen)
 
-                        \ --- Mod: Code removed for Compendium: --------------->
+                        \ --- Mod: Code removed for red enemy lasers: --------->
 
 \LDY #1                 \ Set LSNUM = 1, the offset of the first set of line
 \STY LSNUM              \ coordinates in the ship line heap
@@ -44763,7 +44736,7 @@ ENDMACRO
  STY XX17               \
                         \ The STY is commented out in the original source
 
-                        \ --- Mod: Code removed for Compendium: --------------->
+                        \ --- Mod: Code removed for red enemy lasers: --------->
 
 \BIT XX1+31             \ If bit 6 of the ship's byte #31 is clear, then the
 \BVC LL170              \ ship is not firing its lasers, so jump to LL170 to
@@ -44903,7 +44876,7 @@ ENDMACRO
                         \ screen, so jump to LL170 so we don't store this line
                         \ in the ship line heap
 
-                        \ --- Mod: Code removed for Compendium: --------------->
+                        \ --- Mod: Code removed for red enemy lasers: --------->
 
 \JSR LSPUT              \ Draw the laser line using flicker-free animation, by
 \                       \ first drawing the new laser line and then erasing the
@@ -47406,7 +47379,7 @@ ENDMACRO
 \
 \ ******************************************************************************
 
-                        \ --- Mod: Code removed for Compendium: --------------->
+                        \ --- Mod: Code moved for Compendium: ----------------->
 
 \.MVT6
 \
@@ -47507,7 +47480,7 @@ ENDMACRO
 \
 \ ******************************************************************************
 
-                        \ --- Mod: Code removed for Trumbles: ----------------->
+                        \ --- Mod: Code moved for Compendium: ----------------->
 
 \.MV40
 \
@@ -48230,7 +48203,95 @@ ENDMACRO
 \
 \ ******************************************************************************
 
-                        \ --- Mod: Code added for music: ---------------------->
+                        \ --- Mod: Code moved for Compendium: ----------------->
+
+\.TRTB%
+\
+\EQUB &00, &40, &FE     \ MOS code
+\EQUB &A0, &5F, &8C
+\EQUB &43, &FE, &8E
+\EQUB &4F, &FE, &EA
+\EQUB &AE, &4F, &FE
+\EQUB &60
+\
+\                       \ Internal key numbers &10 to &19:
+\                       \
+\EQUB &51, &33          \ Q             3
+\EQUB &34, &35          \ 4             5
+\EQUB &84, &38          \ f4            8
+\EQUB &87, &2D          \ f7            -
+\EQUB &5E, &8C          \ ^             Left arrow
+\
+\EQUB &36, &37, &BC     \ MOS code
+\EQUB &00, &FC, &60
+\
+\                       \ Internal key numbers &20 to &29:
+\                       \
+\EQUB &80, &57          \ f0            W
+\EQUB &45, &54          \ E             T
+\EQUB &37, &49          \ 7             I
+\EQUB &39, &30          \ 9             0
+\EQUB &5F, &8E          \ _             Down arrow
+\
+\EQUB &38, &39, &BC     \ MOS code
+\EQUB &00, &FD, &60
+\
+\                       \ Internal key numbers &30 to &39:
+\                       \
+\EQUB &31, &32          \ 1             2
+\EQUB &44, &52          \ D             R
+\EQUB &36, &55          \ 6             U
+\EQUB &4F, &50          \ O             P
+\EQUB &5B, &8F          \ [             Up arrow
+\
+\EQUB &81, &82, &0D     \ MOS code
+\EQUB &4C, &20, &02
+\
+\                       \ Internal key numbers &40 to &49:
+\                       \
+\EQUB &01, &41          \ CAPS LOCK     A
+\EQUB &58, &46          \ X             F
+\EQUB &59, &4A          \ Y             J
+\EQUB &4B, &40          \ K             @
+\EQUB &3A, &0D          \ :             RETURN
+\
+\EQUB &83, &7F, &AE     \ MOS code
+\EQUB &4C, &FE, &FD
+\
+\                       \ Internal key numbers &50 to &59:
+\                       \
+\EQUB &02, &53          \ SHIFT LOCK    S
+\EQUB &43, &47          \ C             G
+\EQUB &48, &4E          \ H             N
+\EQUB &4C, &3B          \ L             ;
+\EQUB &5D, &7F          \ ]             DELETE
+\
+\EQUB &85, &84, &86     \ MOS code
+\EQUB &4C, &FA, &00
+\
+\                       \ Internal key numbers &60 to &69:
+\                       \
+\EQUB &00, &5A          \ TAB           Z
+\EQUB &20, &56          \ Space         V
+\EQUB &42, &4D          \ B             M
+\EQUB &2C, &2E          \ ,             .
+\EQUB &2F, &8B          \ /             COPY
+\
+\EQUB &30, &31, &33     \ MOS code
+\EQUB &00, &00, &00
+\
+\                       \ Internal key numbers &70 to &79:
+\                       \
+\EQUB &1B, &81          \ ESCAPE        f1
+\EQUB &82, &83          \ f2            f3
+\EQUB &85, &86          \ f5            f6
+\EQUB &88, &89          \ f8            f9
+\EQUB &5C, &8D          \ \             Right arrow
+\
+\EQUB &34, &35, &32     \ MOS code
+\EQUB &2C, &4E, &E3
+
+                        \ --- And replaced by: -------------------------------->
 
  TRTB% = &9D95          \ TRTB% has been moved to this address in elite-data.asm
 

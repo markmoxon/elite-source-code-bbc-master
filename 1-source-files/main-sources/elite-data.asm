@@ -47,7 +47,7 @@
  VE = &57               \ The obfuscation byte used to hide the extended tokens
                         \ table from crackers viewing the binary code
 
-                        \ --- Mod: Code added for Trumbles: ------------------->
+                        \ --- Mod: Code added for Compendium: ----------------->
 
  P     = &000A          \ Labels used in MV40, which is now in elite-data.asm
  K2    = &001C
@@ -3573,7 +3573,7 @@ ENDMACRO
 \
 \ ******************************************************************************
 
-                        \ --- Mod: Code removed for music: -------------------->
+                        \ --- Mod: Code removed for Compendium: --------------->
 
 \IF _MATCH_ORIGINAL_BINARIES
 \
@@ -3838,10 +3838,6 @@ ENDMACRO
  EQUB &34, &35, &32     \ MOS code
  EQUB &2C, &4E, &E3
 
-                        \ --- End of replacement ------------------------------>
-
-                        \ --- Mod: Code moved for Compendium: ----------------->
-
 \ ******************************************************************************
 \
 \       Name: MVT6
@@ -3951,10 +3947,6 @@ ENDMACRO
                         \ as P+2, the dominant side
 
  RTS                    \ Return from the subroutine
-
-                        \ --- End of moved code ------------------------------->
-
-                        \ --- Mod: Code moved for Trumbles: ------------------->
 
 \ ******************************************************************************
 \
@@ -4213,7 +4205,7 @@ ENDMACRO
 
  ORG &A000
 
-                        \ --- End of moved code ------------------------------->
+                        \ --- End of replacement ------------------------------>
 
 \ ******************************************************************************
 \
