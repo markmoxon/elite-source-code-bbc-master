@@ -144,9 +144,17 @@
  sohyp2  = 11           \ Sound 11 = Hyperspace drive engaged 2
 
  NRU% = 0               \ The number of planetary systems with extended system
-                        \ description overrides in the RUTOK table. The value of
-                        \ this variable is 0 in the original source, but this
-                        \ appears to be a bug, as it should really be 26
+                        \ description overrides in the RUTOK table
+                        \
+                        \ NRU% is set to 0 in the original source, but this is a
+                        \ bug, as it should be 26 (as in the other versions of
+                        \ enhanced Elite)
+                        \
+                        \ This bug causes the Data on System screen to crash the
+                        \ game for a small number of systems - for example, the
+                        \ game will freeze if you bring up the Data on System
+                        \ screen after docking at Biarge in the first galaxy
+                        \ during the Constrictor mission
 
  RE = &23               \ The obfuscation byte used to hide the recursive tokens
                         \ table from crackers viewing the binary code
@@ -44008,8 +44016,8 @@ ENDMACRO
                         \
                         \   XX12(1 0) = y-coordinate of the end of the beam
                         \
-                        \ The end of the laser beam will be set positioned to
-                        \ look good, rather than being directly aimed at us, as
+                        \ The end of the laser beam will be positioned to look
+                        \ good, rather than being directly aimed at us, as
                         \ otherwise we would only see a flashing point of light
                         \ as they unleashed their attack
 
@@ -45472,7 +45480,7 @@ ENDMACRO
 
  INY                    \ Increment the index to point to the X2 coordinate
 
- LDA (XX19),Y           \ Set X1 to the Y-th coordinate on the ship line heap,
+ LDA (XX19),Y           \ Set X2 to the Y-th coordinate on the ship line heap,
  STA X2
 
  LDA XX12+2             \ Replace it with the X2 coordinate in XX12+2
