@@ -44752,23 +44752,7 @@ ENDMACRO
  STY XX17               \
                         \ The STY is commented out in the original source
 
-                        \ --- Mod: Code removed for red enemy lasers: --------->
-
-\BIT XX1+31             \ If bit 6 of the ship's byte #31 is clear, then the
-\BVC LL170              \ ship is not firing its lasers, so jump to LL170 to
-\                       \ skip the drawing of laser lines
-\
-\                       \ The ship is firing its laser at us, so we need to draw
-\                       \ the laser lines
-
-                        \ --- And replaced by: -------------------------------->
-
-\BIT XX1+31             \ If bit 6 of the ship's byte #31 is clear, then the
-\BVS P%+5               \ ship is not firing its lasers, so jump to LL170 to
-\JMP LL170              \ skip the drawing of laser lines
-\
-\                       \ The ship is firing its laser at us, so we need to draw
-\                       \ the laser lines
+                        \ --- Mod: Code added for red enemy lasers: ----------->
 
                         \ We now need to check whether there is a laser line
                         \ on-screen, and if so remove it
@@ -44810,7 +44794,7 @@ ENDMACRO
 
 .noLaserLine
 
-                        \ --- End of replacement ------------------------------>
+                        \ --- End of added code ------------------------------->
 
  BIT XX1+31             \ If bit 6 of the ship's byte #31 is clear, then the
  BVC LL170              \ ship is not firing its lasers, so jump to LL170 to
