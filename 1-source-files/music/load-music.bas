@@ -5,8 +5,8 @@ unique = &80
 RomSel = &FE30
 romNumber = &8E : REM Set to address of .musicRomNumber
 
-PRINT"Elite for the BBC Master 128"
-PRINT"============================"
+PRINT"BBC Master Elite (Compendium version)"
+PRINT"====================================="
 PRINT'"Based on the Acornsoft SNG47 release"
 PRINT"of Elite by Ian Bell and David Braben"
 PRINT"Copyright (c) Acornsoft 1986"
