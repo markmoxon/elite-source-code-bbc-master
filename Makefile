@@ -1,32 +1,8 @@
 BEEBASM?=beebasm
 PYTHON?=python
 
-# A make command with no arguments will build the SNG47 variant with
-# encrypted binaries, checksums enabled, the standard commander and
-# crc32 verification of the game binaries
-#
-# Optional arguments for the make command are:
-#
-#   variant=<release>   Build the specified variant:
-#
-#                         sng47 (default)
-#                         compact
-#
-#   commander=max       Start with a maxed-out commander
-#
-#   encrypt=no          Disable encryption and checksum routines
-#
-#   match=no            Do not attempt to match the original game binaries
-#                       (i.e. omit workspace noise)
-#
-#   verify=no           Disable crc32 verification of the game binaries
-#
-# So, for example:
-#
-#   make variant=compact commander=max encrypt=no match=no verify=no
-#
-# will build an unencrypted Master Compact variant with a maxed-out commander,
-# no workspace noise and no crc32 verification
+# Only the Master Compact variant is suited to Econet, as it already
+# contains the NMI release routines and ADFS-compatible disc code
 
 ifeq ($(commander), max)
   max-commander=TRUE
@@ -48,17 +24,10 @@ else
   match-original-binaries=TRUE
 endif
 
-ifeq ($(variant), compact)
-  variant-number=2
-  folder=/compact
-  suffix=-compact
-  boot=-opt 2
-else
-  variant-number=1
-  folder=/sng47
-  suffix=-sng47
-  boot=-boot M128Elt
-endif
+variant-number=2
+folder=/compact
+suffix=-econet
+boot=
 
 .PHONY:all
 all:

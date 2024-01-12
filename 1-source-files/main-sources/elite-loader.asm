@@ -1247,8 +1247,17 @@ IF _SNG47
 
 ELIF _COMPACT
 
- EQUS "L.ELITE FFFF1300"    \ This is short for "*LOAD ELITE FFFF1300"
+                        \ --- Mod: Code removed for Econet: ------------------->
+
+\EQUS "L.ELITE FFFF1300"    \ This is short for "*LOAD ELITE FFFF1300"
+\EQUB 13
+
+                        \ --- And replaced by: -------------------------------->
+
+ EQUS "L.BCODE FFFF1300"    \ This is short for "*LOAD BCODE FFFF1300"
  EQUB 13
+
+                        \ --- End of replacement ------------------------------>
 
 ENDIF
 
@@ -1263,8 +1272,17 @@ ENDIF
 
 .MESS3
 
- EQUS "DIR E"
- EQUB 13
+                        \ --- Mod: Code removed for Econet: ------------------->
+
+\EQUS "DIR E"
+\EQUB 13
+
+                        \ --- And replaced by: -------------------------------->
+
+ EQUS "DIR $.Elite"     \ Change to the Elite folder in the user's home
+ EQUB 13                \ directory on the network
+
+                        \ --- End of replacement ------------------------------>
 
 \ ******************************************************************************
 \
