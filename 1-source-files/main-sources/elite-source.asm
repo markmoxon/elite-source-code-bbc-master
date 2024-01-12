@@ -3061,7 +3061,8 @@ ENDIF
 \       Name: setzp
 \       Type: Subroutine
 \   Category: Utility routines
-\    Summary: Save zero page (&0090 to &00FF) into the buffer at &3000
+\    Summary: Copy the top part of zero page (&0090 to &00FF) into the buffer at
+\             &3000
 \
 \ ******************************************************************************
 
@@ -3069,7 +3070,8 @@ ENDIF
 
 IF _COMPACT
 
- JSR NMICLAIM           \ Claim the NMI workspace (&00A0 to &00A7)
+ JSR NMICLAIM           \ Claim the NMI workspace (&00A0 to &00A7) from the MOS
+                        \ so the game can use it
 
 ENDIF
 
@@ -3099,7 +3101,8 @@ ENDIF
 \       Name: NMIRELEASE
 \       Type: Subroutine
 \   Category: Utility routines
-\    Summary: Release the NMI workspace (&00A0 to &00A7)
+\    Summary: Release the NMI workspace (&00A0 to &00A7) so the MOS can use it
+\             and store the top part of zero page in the the buffer at &3000
 \
 \ ******************************************************************************
 
@@ -3107,9 +3110,10 @@ IF _COMPACT
 
 .NMIRELEASE
 
- JSR getzp+3            \ Call getzp+3 to restore the top part of zero page,
-                        \ but without first claiming the NMI workspace (as it's
-                        \ already been claimed by this point)
+ JSR getzp+3            \ Call getzp+3 to restore the top part of zero page
+                        \ from the buffer at &3000, but without first claiming
+                        \ the NMI workspace (as it's already been claimed by
+                        \ this point)
 
  LDA #143               \ Call OSBYTE 143 to issue a paged ROM service call of
  LDX #&B                \ type &B with Y set to the previous NMI owner's ID.
@@ -3142,7 +3146,8 @@ ENDIF
 
 IF _COMPACT
 
- JSR NMICLAIM           \ Claim the NMI workspace (&00A0 to &00A7)
+ JSR NMICLAIM           \ Claim the NMI workspace (&00A0 to &00A7) from the MOS
+                        \ so the game can use it
 
 ENDIF
 
@@ -3179,7 +3184,8 @@ ENDIF
 \       Name: NMICLAIM
 \       Type: Subroutine
 \   Category: Utility routines
-\    Summary: Claim the NMI workspace (&00A0 to &00A7)
+\    Summary: Claim the NMI workspace (&00A0 to &00A7) back from the MOS so the
+\             game can use it once again
 \
 \ ******************************************************************************
 
@@ -37043,7 +37049,10 @@ ENDIF
  TXS                    \ location stack, so that's back to the value it had
                         \ before we change it in the SVE routine
 
- JSR getzp              \ Call getzp to restore the top part of zero page
+ JSR getzp              \ Call getzp to restore the top part of zero page from
+                        \ the buffer at &3000, as this will have been stored in
+                        \ the buffer before performing the disc access that gave
+                        \ the error we're processsing
 
  STZ CATF               \ Set the CATF flag to 0, so the TT26 routine reverts to
                         \ standard formatting
@@ -38324,7 +38333,10 @@ IF _COMPACT
  BPL DIRL               \ Loop back to DIRL to copy the next character until we
                         \ have copied the whole filename
 
- JSR NMIRELEASE         \ Release the NMI workspace (&00A0 to &00A7)
+ JSR NMIRELEASE         \ Release the NMI workspace (&00A0 to &00A7) so the MOS
+                        \ can use it, and store the top part of zero page in the
+                        \ the buffer at &3000, as it gets corrupted by the MOS
+                        \ during disc access
 
  LDX #LO(DIRI)          \ Set (Y X) to point to DIRI ("DIR <name entered>")
  LDY #HI(DIRI)
@@ -38332,8 +38344,9 @@ IF _COMPACT
  JSR OSCLI              \ Call OSCLI to run the OS command in DIRI, which
                         \ changes the disc directory to the name entered
 
- JMP getzp              \ Call getzp to restore the top part of zero page
-                        \ and return from the subroutine using a tail call
+ JMP getzp              \ Call getzp to restore the top part of zero page from
+                        \ the buffer at &3000 and return from the subroutine
+                        \ using a tail call
 
 ENDIF
 
@@ -38399,11 +38412,16 @@ ENDIF
 
 IF _SNG47
 
- JSR getzp              \ Call getzp to restore the top part of zero page
+ JSR getzp              \ Call getzp to store the top part of zero page in the
+                        \ the buffer at &3000, as it gets corrupted by the MOS
+                        \ during disc access
 
 ELIF _COMPACT
 
- JSR NMIRELEASE         \ Release the NMI workspace (&00A0 to &00A7)
+ JSR NMIRELEASE         \ Release the NMI workspace (&00A0 to &00A7) so the MOS
+                        \ can use it, and store the top part of zero page in the
+                        \ the buffer at &3000, as it gets corrupted by the MOS
+                        \ during disc access
 
 ENDIF
 
@@ -38415,7 +38433,8 @@ ENDIF
  JSR OSCLI              \ Call OSCLI to execute the OS command at (Y X), which
                         \ catalogues the disc
 
- JSR getzp              \ Call getzp to restore the top part of zero page
+ JSR getzp              \ Call getzp to restore the top part of zero page from
+                        \ the buffer at &3000
 
  STZ CATF               \ Set the CATF flag to 0, so the TT26 routine reverts to
                         \ standard formatting
@@ -38517,7 +38536,9 @@ IF _SNG47
  BNE DELL1              \ Loop back to DELL1 to copy the next character until we
                         \ have copied the whole filename
 
- JSR getzp              \ Call getzp to restore the top part of zero page
+ JSR getzp              \ Call getzp to store the top part of zero page in the
+                        \ the buffer at &3000, as it gets corrupted by the MOS
+                        \ during disc access
 
 ELIF _COMPACT
 
@@ -38529,7 +38550,10 @@ ELIF _COMPACT
  BPL DELL1              \ Loop back to DELL1 to copy the next character until we
                         \ have copied the whole filename
 
- JSR NMIRELEASE         \ Release the NMI workspace (&00A0 to &00A7)
+ JSR NMIRELEASE         \ Release the NMI workspace (&00A0 to &00A7) so the MOS
+                        \ can use it, and store the top part of zero page in the
+                        \ the buffer at &3000, as it gets corrupted by the MOS
+                        \ during disc access
 
 ENDIF
 
@@ -38539,7 +38563,8 @@ ENDIF
  JSR OSCLI              \ Call OSCLI to execute the OS command at (Y X), which
                         \ catalogues the disc
 
- JSR getzp              \ Call getzp to restore the top part of zero page
+ JSR getzp              \ Call getzp to restore the top part of zero page from
+                        \ the buffer at &3000
 
  JMP SVE                \ Jump to SVE to display the disc access menu and return
                         \ from the subroutine using a tail call
@@ -39148,12 +39173,16 @@ ENDIF
 
 IF _SNG47
 
- JSR getzp              \ Call getzp to store the top part of zero page, as it
-                        \ gets corrupted by the MOS during the saving process
+ JSR getzp              \ Call getzp to store the top part of zero page in the
+                        \ the buffer at &3000, as it gets corrupted by the MOS
+                        \ during disc access
 
 ELIF _COMPACT
 
- JSR NMIRELEASE         \ Release the NMI workspace (&00A0 to &00A7)
+ JSR NMIRELEASE         \ Release the NMI workspace (&00A0 to &00A7) so the MOS
+                        \ can use it, and store the top part of zero page in the
+                        \ the buffer at &3000, as it gets corrupted by the MOS
+                        \ during disc access
 
 ENDIF
 
@@ -39163,8 +39192,9 @@ ENDIF
  JSR OSCLI              \ Call OSCLI to execute the OS command at (Y X), which
                         \ saves the commander file
 
- JMP getzp              \ Call getzp to restore the top part of zero page
-                        \ and return from the subroutine using a tail call
+ JMP getzp              \ Call getzp to restore the top part of zero page from
+                        \ the buffer at &3000 and return from the subroutine
+                        \ using a tail call
 
 \ ******************************************************************************
 \
@@ -39257,12 +39287,16 @@ ENDIF
 
 IF _SNG47
 
- JSR getzp              \ Call getzp to store the top part of zero page, as it
-                        \ gets corrupted by the MOS during the loading process
+ JSR getzp              \ Call getzp to store the top part of zero page in the
+                        \ the buffer at &3000, as it gets corrupted by the MOS
+                        \ during disc access
 
 ELIF _COMPACT
 
- JSR NMIRELEASE         \ Release the NMI workspace (&00A0 to &00A7)
+ JSR NMIRELEASE         \ Release the NMI workspace (&00A0 to &00A7) so the MOS
+                        \ can use it, and store the top part of zero page in the
+                        \ the buffer at &3000, as it gets corrupted by the MOS
+                        \ during disc access
 
 ENDIF
 
@@ -39273,7 +39307,8 @@ ENDIF
  JSR OSCLI              \ Call OSCLI to execute the OS command at (Y X), which
                         \ loads the commander file
 
- JSR getzp              \ Call getzp to restore the top part of zero page
+ JSR getzp              \ Call getzp to restore the top part of zero page from
+                        \ the buffer at &3000
 
                         \ We now copy the newly loaded commander data block to
                         \ the TAP% staging area, though this has no effect as we
@@ -48042,7 +48077,8 @@ ENDIF
  LDA #HI(CHPR)
  STA WRCHV+1
 
- JSR setzp              \ Call setzp to back up the top part of zero page
+ JSR setzp              \ Call setzp to copy the top part of zero page into
+                        \ the buffer at &3000
 
  JSR SETINTS            \ Call SETINTS to set various vectors, interrupts and
                         \ timers
