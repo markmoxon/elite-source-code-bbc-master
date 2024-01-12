@@ -39,9 +39,11 @@ IF _SNG47
  PUTFILE "3-assembled-output/BDATA.bin", "BDATA", &000000, &000000
  PUTFILE "3-assembled-output/BCODE.bin", "BCODE", &000000, &000000
 ELIF _COMPACT
- PUTFILE "3-assembled-output/M128Elt.bin", "!BOOT", &000E00, &000E43
+ PUTFILE "3-assembled-output/M128Elt.bin", "ELITE", &000E00, &000E43
  PUTFILE "3-assembled-output/BDATA.bin", "BDATA", &001300, &001300
- PUTFILE "3-assembled-output/BCODE.bin", "ELITE", &001300, &002C6C
+ PUTFILE "3-assembled-output/BCODE.bin", "BCODE", &001300, &002C6C
 ENDIF
 
- PUTFILE "3-assembled-output/README.txt", "README", &FFFFFF, &FFFFFF
+
+ PUTFILE "1-source-files/boot-files/$.RunElite.bin", "Run", &FFFFFF, &FFFFFF
+ PUTFILE "3-assembled-output/README.txt", "ReadMe", &FFFFFF, &FFFFFF

@@ -35,7 +35,7 @@
  EQUB 10, 13
  EQUS "---------------------------------------"
  EQUB 10, 13
- EQUS "Acornsoft Elite"
+ EQUS "Acornsoft Elite (for loading on Econet)"
  EQUB 10, 13
  EQUB 10, 13
  EQUS "Version: BBC Master"
@@ -57,6 +57,30 @@ ELIF _COMPACT
 
 ENDIF
 
+ EQUB 10, 13
+ EQUB 10, 13
+ EQUS "Copy ELITE, BDATA, BCODE to $.Library"
+ EQUB 10, 13
+ EQUS "on the server"
+ EQUB 10, 13
+ EQUB 10, 13
+ EQUS "For each user, create a folder $.Elite"
+ EQUB 10, 13
+ EQUS "in their home directory and copy the"
+ EQUB 10, 13
+ EQUS "Run and MAX files in there"
+ EQUB 10, 13
+ EQUB 10, 13
+ EQUS "Then they can play Elite by typing"
+ EQUB 10, 13
+ EQUS "*RUN $.Elite.RunElite"
+ EQUB 10, 13
+ EQUB 10, 13
+ EQUS "Commander files like MAX are saved"
+ EQUB 10, 13
+ EQUS "into the user's $.Elite folder"
+
+ EQUB 10, 13
  EQUB 10, 13
  EQUS "See www.bbcelite.com for details"
  EQUB 10, 13
