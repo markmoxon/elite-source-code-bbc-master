@@ -257,7 +257,21 @@ ENDIF
 
  SKIP 0                 \ The start of the zero page workspace
 
- SKIP 2                 \ These bytes appear to be unused
+                        \ --- Mod: Code removed for Econet: ------------------->
+
+\SKIP 2                 \ These bytes appear to be unused
+
+                        \ --- And replaced by: -------------------------------->
+
+.XX4
+
+ SKIP 1                 \ Temporary storage, used in a number of places
+
+.XX20
+
+ SKIP 1                 \ Temporary storage, used in a number of places
+
+                        \ --- End of replacement ------------------------------>
 
 IF _COMPACT
 
@@ -280,17 +294,31 @@ ENDIF
 
  SKIP 1                 \ Temporary storage, used in a number of places
 
+                        \ --- Mod: Code removed for Econet: ------------------->
+
+\.T2
+\
+\SKIP 1                 \ This byte appears to be unused
+\
+\.T3
+\
+\SKIP 1                 \ This byte appears to be unused
+\
+\.T4
+\
+\SKIP 1                 \ This byte appears to be unused
+
+                        \ --- And replaced by: -------------------------------->
+
+IF _SNG47
+
 .T2
 
  SKIP 1                 \ This byte appears to be unused
 
-.T3
+ENDIF
 
- SKIP 1                 \ This byte appears to be unused
-
-.T4
-
- SKIP 1                 \ This byte appears to be unused
+                        \ --- End of replacement ------------------------------>
 
 .SC
 
@@ -373,10 +401,44 @@ ENDIF
 
  SKIP 0                 \ Temporary storage, used in a number of places
 
+                        \ --- Mod: Code removed for Econet: ------------------->
+
+\.XX2
+\
+\SKIP 14                \ Temporary storage, used to store the visibility of the
+\                       \ ship's faces during the ship-drawing routine at LL9
+
+                        \ --- And replaced by: -------------------------------->
+
 .XX2
 
- SKIP 14                \ Temporary storage, used to store the visibility of the
+ SKIP 8                 \ Temporary storage, used to store the visibility of the
                         \ ship's faces during the ship-drawing routine at LL9
+
+.newzp
+
+ SKIP 1                 \ This is used by the STARS2 routine for storing the
+                        \ stardust particle's delta_x value
+
+.W
+
+ SKIP 1                 \ Temporary storage, used in a number of places
+
+.K2
+
+ SKIP 4                 \ Temporary storage, used in a number of places
+
+.RAT
+
+ SKIP 1                 \ Used to store different signs depending on the current
+                        \ space view, for use in calculating stardust movement
+
+.RAT2
+
+ SKIP 1                 \ Temporary storage, used to store the pitch and roll
+                        \ signs when moving objects and stardust
+
+                        \ --- End of replacement ------------------------------>
 
 .K4
 
@@ -636,25 +698,29 @@ ENDIF
 
  SKIP 1                 \ Temporary storage, used in a number of places
 
-.XSAV
+                        \ --- Mod: Code moved for Econet: --------------------->
 
- SKIP 1                 \ Temporary storage for saving the value of the X
-                        \ register, used in a number of places
+\.XSAV
+\
+\SKIP 1                 \ Temporary storage for saving the value of the X
+\                       \ register, used in a number of places
+\
+\.YSAV
+\
+\SKIP 1                 \ Temporary storage for saving the value of the Y
+\                       \ register, used in a number of places
+\
+\.XX17
+\
+\SKIP 1                 \ Temporary storage, used in BPRNT to store the number
+\                       \ of characters to print, and as the edge counter in the
+\                       \ main ship-drawing routine
+\
+\.W
+\
+\SKIP 1                 \ Temporary storage, used in a number of places
 
-.YSAV
-
- SKIP 1                 \ Temporary storage for saving the value of the Y
-                        \ register, used in a number of places
-
-.XX17
-
- SKIP 1                 \ Temporary storage, used in BPRNT to store the number
-                        \ of characters to print, and as the edge counter in the
-                        \ main ship-drawing routine
-
-.W
-
- SKIP 1                 \ Temporary storage, used in a number of places
+                        \ --- End of moved code ------------------------------->
 
 .QQ11
 
@@ -732,12 +798,16 @@ ENDIF
                         \ for counters when drawing explosion clouds and partial
                         \ circles
 
-.FLAG
+                        \ --- Mod: Code removed for Econet: ------------------->
 
- SKIP 1                 \ A flag that's used to define whether this is the first
-                        \ call to the ball line routine in BLINE, so it knows
-                        \ whether to wait for the second call before storing
-                        \ segment data in the ball line heap
+\.FLAG
+\
+\SKIP 1                 \ A flag that's used to define whether this is the first
+\                       \ call to the ball line routine in BLINE, so it knows
+\                       \ whether to wait for the second call before storing
+\                       \ segment data in the ball line heap
+
+                        \ --- End of removed code ----------------------------->
 
 .CNT
 
@@ -749,6 +819,77 @@ ENDIF
  SKIP 1                 \ Temporary storage, used in the planet-drawing routine
                         \ to store the segment number where the arc of a partial
                         \ circle should start
+
+                        \ --- Mod: Code removed for Econet: ------------------->
+
+\.STP
+\
+\SKIP 1                 \ The step size for drawing circles
+\                       \
+\                       \ Circles in Elite are split up into 64 points, and the
+\                       \ step size determines how many points to skip with each
+\                       \ straight-line segment, so the smaller the step size,
+\                       \ the smoother the circle. The values used are:
+\                       \
+\                       \   * 2 for big planets and the circles on the charts
+\                       \   * 4 for medium planets and the launch tunnel
+\                       \   * 8 for small planets and the hyperspace tunnel
+\                       \
+\                       \ As the step size increases we move from smoother
+\                       \ circles at the top to more polygonal at the bottom.
+\                       \ See the CIRCLE2 routine for more details
+\
+\.XX4
+\
+\SKIP 1                 \ Temporary storage, used in a number of places
+\
+\.XX20
+\
+\SKIP 1                 \ Temporary storage, used in a number of places
+
+                        \ --- End of removed code ----------------------------->
+
+.LSNUM
+
+ SKIP 1                 \ The pointer to the current position in the ship line
+                        \ heap as we work our way through the new ship's edges
+                        \ (and the corresponding old ship's edges) when drawing
+                        \ the ship in the main ship-drawing routine at LL9
+
+.LSNUM2
+
+ SKIP 1                 \ The size of the existing ship line heap for the ship
+                        \ we are drawing in LL9, i.e. the number of lines in the
+                        \ old ship that is currently shown on-screen and which
+                        \ we need to erase
+
+                        \ --- Mod: Code removed for Econet: ------------------->
+
+\.RAT
+\
+\SKIP 1                 \ Used to store different signs depending on the current
+\                       \ space view, for use in calculating stardust movement
+\
+\.RAT2
+\
+\SKIP 1                 \ Temporary storage, used to store the pitch and roll
+\                       \ signs when moving objects and stardust
+\
+\.K2
+\
+\SKIP 4                 \ Temporary storage, used in a number of places
+
+\.widget
+\
+\SKIP 1                 \ Temporary storage, used to store the original argument
+\                       \ in A in the logarithmic FMLTU and LL28 routines
+\
+\.dontclip
+\
+\SKIP 1                 \ This is set to 0 in the RES2 routine, but the value is
+                        \ never actually read
+
+                        \ --- And replaced by: -------------------------------->
 
 .STP
 
@@ -767,69 +908,74 @@ ENDIF
                         \ circles at the top to more polygonal at the bottom.
                         \ See the CIRCLE2 routine for more details
 
-.XX4
+.FLAG
 
- SKIP 1                 \ Temporary storage, used in a number of places
+ SKIP 1                 \ A flag that's used to define whether this is the first
+                        \ call to the ball line routine in BLINE, so it knows
+                        \ whether to wait for the second call before storing
+                        \ segment data in the ball line heap
 
-.XX20
+                        \ --- End of replacement ------------------------------>
 
- SKIP 1                 \ Temporary storage, used in a number of places
+                        \ --- Mod: Code moved for Econet: --------------------->
 
-.LSNUM
+.XSAV
 
- SKIP 1                 \ The pointer to the current position in the ship line
-                        \ heap as we work our way through the new ship's edges
-                        \ (and the corresponding old ship's edges) when drawing
-                        \ the ship in the main ship-drawing routine at LL9
+ SKIP 1                 \ Temporary storage for saving the value of the X
+                        \ register, used in a number of places
 
-.LSNUM2
+.YSAV
 
- SKIP 1                 \ The size of the existing ship line heap for the ship
-                        \ we are drawing in LL9, i.e. the number of lines in the
-                        \ old ship that is currently shown on-screen and which
-                        \ we need to erase
+ SKIP 1                 \ Temporary storage for saving the value of the Y
+                        \ register, used in a number of places
 
-.RAT
+.XX17
 
- SKIP 1                 \ Used to store different signs depending on the current
-                        \ space view, for use in calculating stardust movement
+ SKIP 1                 \ Temporary storage, used in BPRNT to store the number
+                        \ of characters to print, and as the edge counter in the
+                        \ main ship-drawing routine
 
-.RAT2
+.QQ9
 
- SKIP 1                 \ Temporary storage, used to store the pitch and roll
-                        \ signs when moving objects and stardust
+ SKIP 1                 \ The galactic x-coordinate of the crosshairs in the
+                        \ galaxy chart (and, most of the time, the selected
+                        \ system's galactic x-coordinate)
 
-.K2
+.QQ10
 
- SKIP 4                 \ Temporary storage, used in a number of places
+ SKIP 1                 \ The galactic y-coordinate of the crosshairs in the
+                        \ galaxy chart (and, most of the time, the selected
+                        \ system's galactic y-coordinate)
 
-.widget
+                        \ --- End of moved code ------------------------------->
 
- SKIP 1                 \ Temporary storage, used to store the original argument
-                        \ in A in the logarithmic FMLTU and LL28 routines
+                        \ --- Mod: Code added for Econet: --------------------->
 
-.dontclip
+ SKIP 16                \ &90-9F is reserved for Econet
 
- SKIP 1                 \ This is set to 0 in the RES2 routine, but the value is
-                        \ never actually read
+                        \ --- End of added code ------------------------------->
 
-.Yx2M1
+                        \ --- Mod: Code moved for Econet: --------------------->
 
- SKIP 1                 \ This is used to store the number of pixel rows in the
-                        \ space view minus 1, which is also the y-coordinate of
-                        \ the bottom pixel row of the space view (it is set to
-                        \ 191 in the RES2 routine)
+\.Yx2M1
+\
+\SKIP 1                 \ This is used to store the number of pixel rows in the
+\                       \ space view minus 1, which is also the y-coordinate of
+\                       \ the bottom pixel row of the space view (it is set to
+\                       \ 191 in the RES2 routine)
+\
+\.messXC
+\
+\SKIP 1                 \ Temporary storage, used to store the text column
+\                       \ of the in-flight message in MESS, so it can be erased
+\                       \ from the screen at the correct time
+\
+\.newzp
+\
+\SKIP 1                 \ This is used by the STARS2 routine for storing the
+\                       \ stardust particle's delta_x value
 
-.messXC
-
- SKIP 1                 \ Temporary storage, used to store the text column
-                        \ of the in-flight message in MESS, so it can be erased
-                        \ from the screen at the correct time
-
-.newzp
-
- SKIP 1                 \ This is used by the STARS2 routine for storing the
-                        \ stardust particle's delta_x value
+                        \ --- End of moved code ------------------------------->
 
 .XX1
 
@@ -1143,23 +1289,27 @@ ENDIF
                         \ calculations in routine TT111 for details), which
                         \ equates to 1024 x 512 in terms of QQ8
 
-.QQ9
+                        \ --- Mod: Code moved for Econet: --------------------->
 
- SKIP 1                 \ The galactic x-coordinate of the crosshairs in the
-                        \ galaxy chart (and, most of the time, the selected
-                        \ system's galactic x-coordinate)
+\.QQ9
+\
+\SKIP 1                 \ The galactic x-coordinate of the crosshairs in the
+\                       \ galaxy chart (and, most of the time, the selected
+\                       \ system's galactic x-coordinate)
+\
+\.QQ10
+\
+\SKIP 1                 \ The galactic y-coordinate of the crosshairs in the
+\                       \ galaxy chart (and, most of the time, the selected
+\                       \ system's galactic y-coordinate)
 
-.QQ10
+\.NOSTM
+\
+\SKIP 1                 \ The number of stardust particles shown on screen,
+\                       \ which is 20 (#NOST) for normal space, and 3 for
+\                       \ witchspace
 
- SKIP 1                 \ The galactic y-coordinate of the crosshairs in the
-                        \ galaxy chart (and, most of the time, the selected
-                        \ system's galactic y-coordinate)
-
-.NOSTM
-
- SKIP 1                 \ The number of stardust particles shown on screen,
-                        \ which is 20 (#NOST) for normal space, and 3 for
-                        \ witchspace
+                        \ --- End of moved code ------------------------------->
 
  PRINT "Zero page variables from ", ~ZP, " to ", ~P%
 
@@ -1537,21 +1687,51 @@ ENDIF
                         \ LL145 (the flag is used in places like BLINE to swap
                         \ them back)
 
-.XP
+                        \ --- Mod: Code removed for Econet: ------------------->
 
- SKIP 1                 \ This byte appears to be unused
+\.XP
+\
+\SKIP 1                 \ This byte appears to be unused
+\
+\.YP
+\
+\SKIP 1                 \ This byte appears to be unused
+\
+\.YS
+\
+\SKIP 1                 \ This byte appears to be unused
+\
+\.BALI
+\
+\SKIP 1                 \ This byte appears to be unused
 
-.YP
+                        \ --- And replaced by: -------------------------------->
 
- SKIP 1                 \ This byte appears to be unused
+.Yx2M1
 
-.YS
+ SKIP 1                 \ This is used to store the number of pixel rows in the
+                        \ space view minus 1, which is also the y-coordinate of
+                        \ the bottom pixel row of the space view (it is set to
+                        \ 191 in the RES2 routine)
 
- SKIP 1                 \ This byte appears to be unused
+.messXC
 
-.BALI
+ SKIP 1                 \ Temporary storage, used to store the text column
+                        \ of the in-flight message in MESS, so it can be erased
+                        \ from the screen at the correct time
 
- SKIP 1                 \ This byte appears to be unused
+.widget
+
+ SKIP 1                 \ Temporary storage, used to store the original argument
+                        \ in A in the logarithmic FMLTU and LL28 routines
+
+.NOSTM
+
+ SKIP 1                 \ The number of stardust particles shown on screen,
+                        \ which is 20 (#NOST) for normal space, and 3 for
+                        \ witchspace
+
+                        \ --- End of replacement ------------------------------>
 
 .UPO
 
@@ -17627,8 +17807,17 @@ ENDIF
  STA RAT2               \ Set RAT2 = %10000000, so the yaw calls in HAL5 below
                         \ are negative
 
- LDA #&0B               \ Set the ship line heap pointer in INWK(34 33) to point
- STA INWK+34            \ to &0B00
+                        \ --- Mod: Code removed for Econet: ------------------->
+
+\LDA #&0B               \ Set the ship line heap pointer in INWK(34 33) to point
+\STA INWK+34            \ to &0B00
+
+                        \ --- And replaced by: -------------------------------->
+
+ LDA #&09               \ Set the ship line heap pointer in INWK(34 33) to point
+ STA INWK+34            \ to &0900 (as &0B00-&0BFF is used by Econet)
+
+                        \ --- End of replacement ------------------------------>
 
  JSR DORND              \ We now perform a random number of small angle (3.6
  STA XSAV               \ degree) rotations to spin the ship on the deck while
@@ -35587,8 +35776,12 @@ ENDIF
 \LDA #&10               \ These instructions are commented out in the original
 \STA COL2               \ source
 
- LDA #0                 \ Set dontclip to 0 (though this variable is never used,
- STA dontclip           \ so this has no effect)
+                        \ --- Mod: Code removed for Econet: ------------------->
+
+\LDA #0                 \ Set dontclip to 0 (though this variable is never used,
+\STA dontclip           \ so this has no effect)
+
+                        \ --- End of removed code ----------------------------->
 
  LDA #191               \ Set Yx2M1 to 191, the number of pixel lines in the
  STA Yx2M1              \ space view
@@ -38396,8 +38589,12 @@ IF _SNG47
 
 ELIF _COMPACT
 
- JSR GTDIR              \ Get a directory name from the keyboard and change to
-                        \ that directory
+                        \ --- Mod: Code removed for Econet: ------------------->
+
+\JSR GTDIR              \ Get a directory name from the keyboard and change to
+\                       \ that directory
+
+                        \ --- End of removed code ----------------------------->
 
 ENDIF
 
@@ -40571,8 +40768,17 @@ ENDIF
                         \ E.C.M., fuel scoops, energy bomb, energy unit and
                         \ docking computer, all of which can be destroyed
 
+                        \ --- Mod: Code removed for Econet: ------------------->
+
+\LDA DLY                \ If there is already an in-flight message on-screen,
+\BNE out                \ return from the subroutine (as out contains an RTS)
+
+                        \ --- And replaced by: -------------------------------->
+
  LDA DLY                \ If there is already an in-flight message on-screen,
- BNE out                \ return from the subroutine (as out contains an RTS)
+ BEQ P%+5               \ return from the subroutine (as out contains an RTS)
+ JMP out
+                        \ --- End of replacement ------------------------------>
 
  LDY #3                 \ Set bit 1 of de, the equipment destruction flag, so
  STY de                 \ that when we call MESS below, " DESTROYED" is appended
