@@ -44,6 +44,7 @@ ELIF _COMPACT
  PUTFILE "3-assembled-output/BCODE.bin", "BCODE", &001300, &002C6C
 ENDIF
 
+ PUTFILE "1-source-files/other-files/E.MAX.bin", "MAX", &000000, &000000
 
  PUTFILE "1-source-files/boot-files/$.RunElite.bin", "Run", &FFFFFF, &FFFFFF
  PUTFILE "3-assembled-output/README.txt", "ReadMe", &FFFFFF, &FFFFFF
