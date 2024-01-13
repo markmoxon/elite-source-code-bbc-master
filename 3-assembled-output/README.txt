@@ -1,24 +1,23 @@
 
 ---------------------------------------
-Acornsoft Elite (for loading on Econet)
+Acornsoft Elite (Econet version)
 
 Version: BBC Master
 Variant: Master Compact release
 Product: Superior Software
 
+Teletext conversion by Mark Moxon
 
-Copy ELITE, BDATA, BCODE to $.Library
+Copy ELITE, ELITE2, BDATA & BCODE into
+the $.LIBRARY directory on the server
 
-For each user, create a folder $.Elite
-in their home directory and copy the
-RunElite and MAX files in there
+Create a directory called $.Elite in
+the user's home directory, and copy
+the MAX file in there
 
-Then they can play Elite by typing:
-  *RUN $.Elite.RunElite
-
-Commander files are saved into the
-user's $.Elite folder, like MAX
+Users can play Elite by typing *ELITE
+and commander files will be saved
+into the user's $.Elite folder
 
 See www.bbcelite.com for details
 ---------------------------------------
-
