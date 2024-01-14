@@ -46,5 +46,5 @@ ENDIF
 
  PUTFILE "1-source-files/other-files/E.MAX.bin", "MAX", &000000, &000000
 
- PUTFILE "1-source-files/boot-files/ELITE.bin", "ELITE", &FFFFFF, &FFFFFF
+ PUTFILE "3-assembled-output/ELITE.bin", "ELITE", &FF2000, &FF2000
  PUTFILE "3-assembled-output/README.txt", "README", &FFFFFF, &FFFFFF
