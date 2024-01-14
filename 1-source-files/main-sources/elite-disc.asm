@@ -39,9 +39,9 @@ IF _SNG47
  PUTFILE "3-assembled-output/BDATA.bin", "BDATA", &000000, &000000
  PUTFILE "3-assembled-output/BCODE.bin", "BCODE", &000000, &000000
 ELIF _COMPACT
- PUTFILE "3-assembled-output/M128Elt.bin", "ELITE2", &000E00, &000E43
- PUTFILE "3-assembled-output/BDATA.bin", "BDATA", &001300, &001300
- PUTFILE "3-assembled-output/BCODE.bin", "BCODE", &001300, &002C6C
+ PUTFILE "3-assembled-output/M128Elt.bin", "ELTMC", &000E00, &000E43
+ PUTFILE "3-assembled-output/BDATA.bin", "ELTBD", &001300, &001300
+ PUTFILE "3-assembled-output/BCODE.bin", "ELTBC", &001300, &002C6C
 ENDIF
 
  PUTFILE "1-source-files/other-files/E.MAX.bin", "MAX", &000000, &000000

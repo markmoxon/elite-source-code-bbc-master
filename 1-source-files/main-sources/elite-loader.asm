@@ -491,6 +491,16 @@ ENDIF
  JSR OSCLI              \ Call OSCLI to run the OS command in MESS3, which
                         \ changes the disc directory to E
 
+                        \ --- Mod: Code added for Econet: --------------------->
+
+ LDX #LO(MESS4)         \ Set (Y X) to point to MESS4 ("DIR ELITE")
+ LDY #HI(MESS4)
+
+ JSR OSCLI              \ Call OSCLI to run the OS command in MESS4, which
+                        \ changes the directory to ELITE
+
+                        \ --- End of added code ------------------------------->
+
  LDA #6                 \ Set the RAM copy of the currently selected paged ROM
  STA LATCH              \ to 6, so it matches the paged ROM selection latch at
                         \ SHEILA &30 that we are about to set
@@ -1226,8 +1236,17 @@ ENDIF
 
 .MESS1
 
- EQUS "L.BDATA FFFF1300"    \ This is short for "*LOAD BDATA FFFF1300"
+                        \ --- Mod: Code removed for Econet: ------------------->
+
+\EQUS "L.BDATA FFFF1300"    \ This is short for "*LOAD BDATA FFFF1300"
+\EQUB 13
+
+                        \ --- And replaced by: -------------------------------->
+
+ EQUS "L.ELTBD FFFF1300"    \ This is short for "*LOAD ELTBD FFFF1300"
  EQUB 13
+
+                        \ --- End of replacement ------------------------------>
 
 \ ******************************************************************************
 \
@@ -1254,7 +1273,7 @@ ELIF _COMPACT
 
                         \ --- And replaced by: -------------------------------->
 
- EQUS "L.BCODE FFFF1300"    \ This is short for "*LOAD BCODE FFFF1300"
+ EQUS "L.ELTBC FFFF1300"    \ This is short for "*LOAD ELTBC FFFF1300"
  EQUB 13
 
                         \ --- End of replacement ------------------------------>
@@ -1266,7 +1285,8 @@ ENDIF
 \       Name: MESS3
 \       Type: Variable
 \   Category: Loader
-\    Summary: The OS command string for changing the disc directory to E
+\    Summary: The OS command string for changing the directory to the user's
+\             main directory
 \
 \ ******************************************************************************
 
@@ -1279,10 +1299,28 @@ ENDIF
 
                         \ --- And replaced by: -------------------------------->
 
- EQUS "DIR $.Elite"     \ Change to the Elite folder in the user's home
- EQUB 13                \ directory on the network
+ EQUS "DIR"             \ Change to the user's main directory on the network
+ EQUB 13
 
                         \ --- End of replacement ------------------------------>
+
+\ ******************************************************************************
+\
+\       Name: MESS4
+\       Type: Variable
+\   Category: Loader
+\    Summary: The OS command string for changing the disc directory to ELITE
+\
+\ ******************************************************************************
+
+.MESS4
+
+                        \ --- Mod: Code added for Econet: --------------------->
+
+ EQUS "DIR ELITE"       \ Change to the ELITE folder in the user's main
+ EQUB 13                \ directory on the network
+
+                        \ --- End of added code ------------------------------->
 
 \ ******************************************************************************
 \

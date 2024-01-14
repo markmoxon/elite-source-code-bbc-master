@@ -1,12 +1,11 @@
-
----------------------------------------
+---------------------------------------
 Acornsoft Elite (Econet version)
 
 Version: BBC Master
 Variant: Master Compact release
 Product: Superior Software
 
-Teletext conversion by Mark Moxon
+Econet conversion by Mark Moxon
 
 Copy ELITE, ELITE2, BDATA & BCODE into
 the $.LIBRARY directory on the server
