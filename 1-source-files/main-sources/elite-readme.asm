@@ -58,25 +58,6 @@ ENDIF
 
  EQUB 10, 13
  EQUS "Econet conversion by Mark Moxon"
- EQUB 10, 13
- EQUB 10, 13
- EQUS "Copy ELITE, ELITE2, BDATA & BCODE into"
- EQUB 10, 13
- EQUS "the $.LIBRARY directory on the server"
- EQUB 10, 13
- EQUB 10, 13
- EQUS "Create a directory called $.Elite in"
- EQUB 10, 13
- EQUS "the user's home directory, and copy"
- EQUB 10, 13
- EQUS "the MAX file in there"
- EQUB 10, 13
- EQUB 10, 13
- EQUS "Users can play Elite by typing *ELITE"
- EQUB 10, 13
- EQUS "and commander files will be saved"
- EQUB 10, 13
- EQUS "into the user's $.Elite folder"
 
  EQUB 10, 13
  EQUB 10, 13
