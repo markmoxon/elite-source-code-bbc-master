@@ -3394,7 +3394,7 @@ IF _COMPACT
                         \   * Bit 7 of IRA will be read from the keyboard
 
  STA VIA+&4F            \ Set 6522 System VIA output register ORA (SHEILA &4F)
-                        \ to X, the key we want to scan for; bits 0-6 will be
+                        \ to A, the key we want to scan for; bits 0-6 will be
                         \ sent to the keyboard, of which bits 0-3 determine the
                         \ keyboard column, and bits 4-6 the keyboard row
 
@@ -47371,7 +47371,7 @@ IF _SNG47
                         \   * Bit 7 of IRA will be read from the keyboard
 
  STA VIA+&4F            \ Set 6522 System VIA output register ORA (SHEILA &4F)
-                        \ to X, the key we want to scan for; bits 0-6 will be
+                        \ to A, the key we want to scan for; bits 0-6 will be
                         \ sent to the keyboard, of which bits 0-3 determine the
                         \ keyboard column, and bits 4-6 the keyboard row
 
