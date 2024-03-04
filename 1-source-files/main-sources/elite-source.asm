@@ -53,27 +53,49 @@
  NTY = 33               \ The number of different ship types
 
  MSL = 1                \ Ship type for a missile
+
  SST = 2                \ Ship type for a Coriolis space station
+
  ESC = 3                \ Ship type for an escape pod
+
  PLT = 4                \ Ship type for an alloy plate
+
  OIL = 5                \ Ship type for a cargo canister
+
  AST = 7                \ Ship type for an asteroid
+
  SPL = 8                \ Ship type for a splinter
+
  SHU = 9                \ Ship type for a Shuttle
+
  CYL = 11               \ Ship type for a Cobra Mk III
+
  ANA = 14               \ Ship type for an Anaconda
+
  HER = 15               \ Ship type for a rock hermit (asteroid)
+
  COPS = 16              \ Ship type for a Viper
+
  SH3 = 17               \ Ship type for a Sidewinder
+
  KRA = 19               \ Ship type for a Krait
+
  ADA = 20               \ Ship type for an Adder
+
  WRM = 23               \ Ship type for a Worm
+
  CYL2 = 24              \ Ship type for a Cobra Mk III (pirate)
+
  ASP = 25               \ Ship type for an Asp Mk II
+
  THG = 29               \ Ship type for a Thargoid
+
  TGL = 30               \ Ship type for a Thargon
+
  CON = 31               \ Ship type for a Constrictor
+
  COU = 32               \ Ship type for a Cougar
+
  DOD = 33               \ Ship type for a Dodecahedron ("Dodo") space station
 
  JL = ESC               \ Junk is defined as starting from the escape pod
@@ -99,48 +121,84 @@
                         \ stored in INWK and K%)
 
  X = 128                \ The centre x-coordinate of the 256 x 192 space view
+
  Y = 96                 \ The centre y-coordinate of the 256 x 192 space view
 
  f0 = &80               \ Internal key number for red key f0 (Launch, Front)
+
  f1 = &81               \ Internal key number for red key f1 (Buy Cargo, Rear)
+
  f2 = &82               \ Internal key number for red key f2 (Sell Cargo, Left)
+
  f3 = &83               \ Internal key number for red key f3 (Equip Ship, Right)
+
  f4 = &84               \ Internal key number for red key f4 (Long-range Chart)
+
  f5 = &85               \ Internal key number for red key f5 (Short-range Chart)
+
  f6 = &86               \ Internal key number for red key f6 (Data on System)
+
  f7 = &87               \ Internal key number for red key f7 (Market Price)
+
  f8 = &88               \ Internal key number for red key f8 (Status Mode)
+
  f9 = &89               \ Internal key number for red key f9 (Inventory)
 
  YELLOW  = %00001111    \ Four mode 1 pixels of colour 1 (yellow)
+
  RED     = %11110000    \ Four mode 1 pixels of colour 2 (red, magenta or white)
+
  CYAN    = %11111111    \ Four mode 1 pixels of colour 3 (cyan or white)
+
  GREEN   = %10101111    \ Four mode 1 pixels of colour 3, 1, 3, 1 (cyan/yellow)
+
  WHITE   = %11111010    \ Four mode 1 pixels of colour 3, 2, 3, 2 (cyan/red)
+
  MAGENTA = RED          \ Four mode 1 pixels of colour 2 (red, magenta or white)
+
  DUST    = WHITE        \ Four mode 1 pixels of colour 3, 2, 3, 2 (cyan/red)
 
  RED2    = %00000011    \ Two mode 2 pixels of colour 1    (red)
+
  GREEN2  = %00001100    \ Two mode 2 pixels of colour 2    (green)
+
  YELLOW2 = %00001111    \ Two mode 2 pixels of colour 3    (yellow)
+
  BLUE2   = %00110000    \ Two mode 2 pixels of colour 4    (blue)
+
  MAG2    = %00110011    \ Two mode 2 pixels of colour 5    (magenta)
+
  CYAN2   = %00111100    \ Two mode 2 pixels of colour 6    (cyan)
+
  WHITE2  = %00111111    \ Two mode 2 pixels of colour 7    (white)
+
  STRIPE  = %00100011    \ Two mode 2 pixels of colour 5, 1 (magenta/red)
 
  soboop  = 0            \ Sound 0  = Long, low beep
+
  sobeep  = 1            \ Sound 1  = Short, high beep
+
  soclick = 2            \ Sound 2  = This sound is not defined or used
+
  solaser = 3            \ Sound 3  = Lasers fired by us 1
+
  soexpl  = 4            \ Sound 4  = We died / Collision / Being hit by lasers 2
+
  solas2  = 5            \ Sound 5  = Lasers fired by us 2
+
  sohit   = 6            \ Sound 6  = We made a hit/kill / Other ship exploding
+
  sobomb  = 6            \ Sound 6  = Energy bomb
+
  soecm   = 7            \ Sound 7  = E.C.M. on
+
  solaun  = 8            \ Sound 8  = Missile launched / Ship launch
-                        \ Sound 9  = Being hit by lasers 1 (no variable defined)
+
+                        \ Sound 9  = Being hit by lasers 1 (no variable defined
+                        \            in original source code)
+
  sohyp   = 10           \ Sound 10 = Hyperspace drive engaged 1
+
  sohyp2  = 11           \ Sound 11 = Hyperspace drive engaged 2
 
  NRU% = 0               \ The number of planetary systems with extended system
@@ -238,6 +296,7 @@ ENDIF
                         \ known as SHEILA)
 
  OSBYTE = &FFF4         \ The address for the OSBYTE routine
+
  OSCLI = &FFF7          \ The address for the OSCLI routine
 
 \ ******************************************************************************
