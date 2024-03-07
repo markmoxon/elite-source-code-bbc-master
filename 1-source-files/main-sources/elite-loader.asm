@@ -12,7 +12,7 @@
 \ in the documentation are entirely my fault
 \
 \ The terminology and notations used in this commentary are explained at
-\ https://www.bbcelite.com/about_site/terminology_used_in_this_commentary.html
+\ https://www.bbcelite.com/terminology
 \
 \ The deep dive articles referred to in this commentary can be found at
 \ https://www.bbcelite.com/deep_dives
@@ -41,6 +41,10 @@
 \
 \ ******************************************************************************
 
+ CODE% = &0E00          \ The address where the code will be run
+
+ LOAD% = &0E00          \ The address where the code will be loaded
+
  N% = 67                \ N% is set to the number of bytes in the VDU table, so
                         \ we can loop through them below
 
@@ -52,7 +56,9 @@
                         \ known as SHEILA)
 
  OSWRCH = &FFEE         \ The address for the OSWRCH routine
+
  OSBYTE = &FFF4         \ The address for the OSBYTE routine
+
  OSCLI = &FFF7          \ The address for the OSCLI routine
 
 \ ******************************************************************************
@@ -113,9 +119,6 @@ ENDIF
 \ ELITE LOADER
 \
 \ ******************************************************************************
-
- CODE% = &0E00
- LOAD% = &0E00
 
  ORG CODE%
 
@@ -1260,7 +1263,7 @@ ENDIF
 
 IF _SNG47
 
- EQUS "L.BCODE FFFF1300"    \ This is short for "*LOAD BDATA FFFF1300"
+ EQUS "L.BCODE FFFF1300"    \ This is short for "*LOAD BCODE FFFF1300"
  EQUB 13
 
 ELIF _COMPACT
