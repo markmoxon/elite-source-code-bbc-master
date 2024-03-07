@@ -41,6 +41,10 @@
 \
 \ ******************************************************************************
 
+ CODE% = &7000          \ The address where the code will be run
+
+ LOAD% = &1300          \ The address where the code will be loaded
+
  RE = &23               \ The obfuscation byte used to hide the recursive tokens
                         \ table from crackers viewing the binary code
 
@@ -52,9 +56,6 @@
 \ ELITE GAME DATA FILE
 \
 \ ******************************************************************************
-
- CODE% = &7000
- LOAD% = &1300
 
  ORG CODE%
 
