@@ -300,7 +300,7 @@ or this on a Mac or Linux:
 make variant=sng47
 ```
 
-This will produce a file called `elite-master-sng47.NES` in the `5-compiled-game-discs` folder that contains the SNG47 variant.
+This will produce a file called `elite-master-sng47.ssd` in the `5-compiled-game-discs` folder that contains the SNG47 variant.
 
 The verification checksums for this version are as follows:
 
