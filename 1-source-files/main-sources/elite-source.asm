@@ -48359,6 +48359,31 @@ IF _SNG47
 
 ENDIF
 
+.oswordBlock
+
+ SKIP 12                \ The OSWORD block to use for network calls
+
+.transmitBuffer
+
+ SKIP 16                \ A buffer to hold the data we want to transmit to the
+                        \ scoreboard machine in the format:
+                        \
+                        \   * Bytes #0-7 = commander's name, terminated by a
+                        \                  carriage return
+                        \
+                        \   * Byte #8 = commander's Econet network number
+                        \
+                        \   * Byte #9 = commander's Econet station number
+                        \
+                        \   * Bytes #10-11 = commander's combat rank
+                        \
+                        \   * Bytes #12-15 = commander's cash pot
+                        \
+                        \ Combat rank and cash pot are stored with the low byte
+                        \ first (unlike the way that cash is stored in the game)
+
+.endBuffer
+
 \ ******************************************************************************
 \
 \       Name: SendOverEconet
@@ -48493,31 +48518,6 @@ ENDIF
  SKIP 1                 \ The Econet network number of the commander's machine
                         \ (i.e. this machine)
 
-.oswordBlock
-
- SKIP 12                \ The OSWORD block to use for network calls
-
-.transmitBuffer
-
- SKIP 16                \ A buffer to hold the data we want to transmit to the
-                        \ scoreboard machine in the format:
-                        \
-                        \   * Bytes #0-7 = commander's name, terminated by a
-                        \                  carriage return
-                        \
-                        \   * Byte #8 = commander's Econet network number
-                        \
-                        \   * Byte #9 = commander's Econet station number
-                        \
-                        \   * Bytes #10-11 = commander's combat rank
-                        \
-                        \   * Bytes #12-15 = commander's cash pot
-                        \
-                        \ Combat rank and cash pot are stored with the low byte
-                        \ first (unlike the way that cash is stored in the game)
-
-.endBuffer
-
 \ ******************************************************************************
 \
 \       Name: GetCmdrNetwork
@@ -48538,10 +48538,10 @@ ENDIF
  JSR SendOverEconet     \ read the Econet station number of this machine and
                         \ store it in the first two bytes of the parameter block
 
- LDA oswordBlock        \ Copy the Econet station number to cmdrStation
+ LDA oswordBlock+1      \ Copy the Econet station number to cmdrStation
  STA cmdrStation
 
- LDA oswordBlock+1      \ Copy the Econet network number to cmdrNetwork
+ LDA oswordBlock+2      \ Copy the Econet network number to cmdrNetwork
  STA cmdrNetwork
 
  RTS                    \ Return from the subroutine
@@ -48560,7 +48560,7 @@ ENDIF
 
  PHP                    \ Store the flags on the stack
 
- LDA scorePort          \ If the network is configured then the port will ne
+ LDA scorePort          \ If the network is configured then the port will be
  BNE tran1              \ non-zero, so skip the following to move on to the
                         \ data transmission
 

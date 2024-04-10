@@ -51,7 +51,7 @@ if release == 1:
     na2_per_cent = 0x34CD       # NA2%
 elif release == 2:
     # Compact
-    f = 0x7F9C                  # F%
+    f = 0x7FB8                  # F%
     scramble_from = 0x2CC1      # G%
     na2_per_cent = 0x34CD       # NA2%
 
