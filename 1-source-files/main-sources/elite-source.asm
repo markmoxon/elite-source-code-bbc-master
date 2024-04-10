@@ -48361,6 +48361,34 @@ ENDIF
 
 \ ******************************************************************************
 \
+\       Name: SendOverEconet
+\       Type: Subroutine
+\   Category: Econet
+\    Summary: Send data over the Econet
+\
+\ ******************************************************************************
+
+.SendOverEconet
+
+ PHA                    \ Store the OSWORD command number on the stack
+
+ JSR NMIRELEASE         \ Release the NMI workspace (&00A0 to &00A7) so the MOS
+                        \ can use it, and store the top part of zero page in the
+                        \ the buffer at &3000, as it gets corrupted by the MOS
+                        \ during disc access
+
+ LDX #LO(oswordBlock)   \ Set (Y X) to the address of the OSWORD parameter block
+ LDY #HI(oswordBlock)
+
+ PLA                    \ Call OSWORD with the command number from the stack
+ JSR OSWORD
+
+ JMP getzp              \ Call getzp to restore the top part of zero page from
+                        \ the buffer at &3000, returning from the subroutine
+                        \ using a tail call
+
+\ ******************************************************************************
+\
 \       Name: F%
 \       Type: Variable
 \   Category: Utility routines
@@ -48502,15 +48530,12 @@ ENDIF
 
 .GetCmdrNetwork
 
- LDX #LO(oswordBlock)   \ Set (Y X) to the address of the OSWORD parameter block
- LDY #HI(oswordBlock)
-
  LDA #8                 \ Set the function number for the OSWORD call to 8 in
  STA oswordBlock        \ the first byte of the OSWORD parameter block (this
                         \ function reads the local station number on Econet)
 
- LDA #19                \ Call OSWORD with A = 9 and a function number of 8 to
- JSR OSWORD             \ read the Econet station number of this machine and
+ LDA #19                \ Call OSWORD with A = 19 and a function number of 8 to
+ JSR SendOverEconet     \ read the Econet station number of this machine and
                         \ store it in the first two bytes of the parameter block
 
  LDA oswordBlock        \ Copy the Econet station number to cmdrStation
@@ -48533,9 +48558,17 @@ ENDIF
 
 .TransmitCmdrData
 
- LDA scorePort          \ If the network is not configured then the port will,
- BEQ tran1              \ be zero, so jump to tran1 to abort the transmission
+ PHP                    \ Store the flags on the stack
 
+ LDA scorePort          \ If the network is configured then the port will ne
+ BNE tran1              \ non-zero, so skip the following to move on to the
+                        \ data transmission
+
+ PLP                    \ Retrieve the flags from the stack
+
+ RTS                    \ Return from the subroutine
+
+.tran1
                         \ Copy the commander's name from NA% to transmitBuffer+0
                         \ to transmitBuffer+7
 
@@ -48613,14 +48646,10 @@ ENDIF
  LDA HI(endBuffer)
  STA oswordBlock+9
 
- LDX #LO(oswordBlock)   \ Set (Y X) to the address of the OSWORD parameter block
- LDY #HI(oswordBlock)
-
  LDA #16                \ Call OSWORD with A = 16 to transmit the contents of
- JSR OSWORD             \ the transmit buffer to the scoreboard machine, without
-                        \ waiting for confirmation
+ JSR SendOverEconet     \ the transmit buffer to the scoreboard machine
 
-.tran1
+ PLP                    \ Retrieve the flags from the stack
 
  RTS                    \ Return from the subroutine
 
