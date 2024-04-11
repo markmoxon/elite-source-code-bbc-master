@@ -40502,8 +40502,9 @@ ENDIF
  CPX #'N'               \ If "N" is not being pressed, skip to skipNetwork
  BNE skipNetwork
 
- JSR GetNetworkDetails  \ Get the network and station numbers for the scoreboard
-                        \ server
+ JMP GetNetworkDetails  \ Get the network and station numbers for the scoreboard
+                        \ server, returning from the subroutine using a tail
+                        \ call
 
 .skipNetwork
 
@@ -48631,9 +48632,9 @@ ENDIF
  LDA scoreNetwork       \ Copy the scoreboard machine's Econet network number
  STA oswordBlock+3      \ from scoreNetwork to byte #3 of the parameter block
 
- LDA LO(transmitBuffer) \ Put the address of the transmit buffer into bytes #4-7
- STA oswordBlock+4      \ of the parameter block
- LDA HI(transmitBuffer)
+ LDA #LO(transmitBuffer)    \ Put the address of the transmit buffer into bytes
+ STA oswordBlock+4          \ #4-7 of the parameter block
+ LDA #HI(transmitBuffer)
  STA oswordBlock+5
  LDA #0
  STA oswordBlock+6
@@ -48641,9 +48642,9 @@ ENDIF
 
  STA oswordBlock+10     \ Put the address of the transmit buffer into bytes
  STA oswordBlock+11     \ #8-11 of the parameter block
- LDA LO(endBuffer)
+ LDA #LO(endBuffer)
  STA oswordBlock+8
- LDA HI(endBuffer)
+ LDA #HI(endBuffer)
  STA oswordBlock+9
 
  LDA #16                \ Call OSWORD with A = 16 to transmit the contents of
@@ -48665,14 +48666,11 @@ ENDIF
 
 .GetNetworkDetails
 
- LDA QQ11               \ Store the current view type on the stack
- PHA
-
  LDA #8                 \ Clear the top part of the screen, draw a white border,
  JSR TRADEMODE          \ and set up a printable trading screen with a view type
                         \ in QQ11 of 8 (Status Mode screen)
 
- LDA #10                \ Move the text cursor to column 10
+ LDA #14                \ Move the text cursor to column 14
  JSR DOXC
 
  LDA #'N'               \ Print "NET{cr}{cr}")
@@ -48695,6 +48693,15 @@ ENDIF
 
  JSR TT67               \ Print a newline
 
+ LDA #'N'               \ Print "Net "
+ JSR CHPR
+ LDA #'e'
+ JSR CHPR
+ LDA #'t'
+ JSR CHPR
+ LDA #' '
+ JSR CHPR
+
  LDX scoreNetwork       \ Get the current scoreboard network number from
                         \ scoreNetwork
 
@@ -48710,11 +48717,20 @@ ENDIF
  BEQ gnet1              \ If no number was entered, skip the following to leave
                         \ this value alone
 
- STA scoreNetwork     \ Store the network number in scoreNetwork
+ STA scoreNetwork       \ Store the network number in scoreNetwork
 
 .gnet1
 
  JSR TT67               \ Print a newline
+
+ LDA #'S'               \ Print "Stn "
+ JSR CHPR
+ LDA #'t'
+ JSR CHPR
+ LDA #'n'
+ JSR CHPR
+ LDA #' '
+ JSR CHPR
 
  LDX scoreStation       \ Get the current scoreboard station number from the low
                         \ byte of scoreStation
@@ -48737,6 +48753,17 @@ ENDIF
 .gnet2
 
  JSR TT67               \ Print a newline
+
+ LDA #'P'               \ Print "Port "
+ JSR CHPR
+ LDA #'o'
+ JSR CHPR
+ LDA #'r'
+ JSR CHPR
+ LDA #'t'
+ JSR CHPR
+ LDA #' '
+ JSR CHPR
 
  LDX scorePort          \ Get the current scoreboard port number from scorePort
 
@@ -48766,10 +48793,23 @@ ENDIF
                         \ we want to transmit to the scoreboard machine, and
                         \ then transmit it
 
- PLA                    \ Switch the view back to the previous view type that we
- JSR TT66               \ stored on the stack
+ JSR TT67               \ Print a newline
 
- RTS                    \ Return from the subroutine
+ LDA #'O'               \ Print "OK"
+ JSR CHPR
+ LDA #'K'
+ JSR CHPR
+
+ LDX #&FF               \ Set the stack pointer to &01FF, which is the standard
+ TXS                    \ location for the 6502 stack, so this instruction
+                        \ effectively resets the stack
+
+ LDY #44                \ Wait for 44/50 of a second (0.88 seconds)
+ JSR DELAY
+
+ LDA #f8                \ Jump into the main loop at FRCE, setting the key
+ JMP FRCE               \ "pressed" to red key f8 (so we show the Status Mode
+                        \ screen)
 
  SAVE "3-assembled-output/ECONET.unprot.bin", CODE_ECONET%, P%, LOAD_ECONET%
 

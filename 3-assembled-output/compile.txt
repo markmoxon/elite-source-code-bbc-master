@@ -14073,7 +14073,7 @@ S.ELTE &5760  &61F5  &1300  &5760
      6D71   20 71 7E   JSR &7E71
      6D74   E0 4E      CPX #&4E
      6D76   D0 03      BNE &6D7B
-     6D78   20 B4 9E   JSR &9EB4
+     6D78   4C B4 9E   JMP &9EB4
 .skipNetwork
      6D7B   E0 51      CPX #&51
      6D7D   D0 07      BNE &6D86
@@ -16819,80 +16819,112 @@ NA2% = &34CD
      9E82   8D 8F 7F   STA &7F8F
      9E85   AD 17 9E   LDA &9E17
      9E88   8D 90 7F   STA &7F90
-     9E8B   A5 99      LDA &99
+     9E8B   A9 99      LDA #&99
      9E8D   8D 91 7F   STA &7F91
-     9E90   A5 7F      LDA &7F
+     9E90   A9 7F      LDA #&7F
      9E92   8D 92 7F   STA &7F92
      9E95   A9 00      LDA #&00
      9E97   8D 93 7F   STA &7F93
      9E9A   8D 94 7F   STA &7F94
      9E9D   8D 97 7F   STA &7F97
      9EA0   8D 98 7F   STA &7F98
-     9EA3   A5 A9      LDA &A9
+     9EA3   A9 A9      LDA #&A9
      9EA5   8D 95 7F   STA &7F95
-     9EA8   A5 7F      LDA &7F
+     9EA8   A9 7F      LDA #&7F
      9EAA   8D 96 7F   STA &7F96
      9EAD   A9 10      LDA #&10
      9EAF   20 A9 7F   JSR &7FA9
      9EB2   28         PLP
      9EB3   60         RTS
 .GetNetworkDetails
-     9EB4   A5 7D      LDA &7D
-     9EB6   48         PHA
-     9EB7   A9 08      LDA #&08
-     9EB9   20 8D 4A   JSR &4A8D
-     9EBC   A9 0A      LDA #&0A
-     9EBE   20 84 4A   JSR &4A84
-     9EC1   A9 4E      LDA #&4E
-     9EC3   20 C3 20   JSR &20C3
-     9EC6   A9 45      LDA #&45
-     9EC8   20 C3 20   JSR &20C3
-     9ECB   A9 54      LDA #&54
-     9ECD   20 C3 20   JSR &20C3
+     9EB4   A9 08      LDA #&08
+     9EB6   20 8D 4A   JSR &4A8D
+     9EB9   A9 0E      LDA #&0E
+     9EBB   20 84 4A   JSR &4A84
+     9EBE   A9 4E      LDA #&4E
+     9EC0   20 C3 20   JSR &20C3
+     9EC3   A9 45      LDA #&45
+     9EC5   20 C3 20   JSR &20C3
+     9EC8   A9 54      LDA #&54
+     9ECA   20 C3 20   JSR &20C3
+     9ECD   20 EB 4A   JSR &4AEB
      9ED0   20 EB 4A   JSR &4AEB
-     9ED3   20 EB 4A   JSR &4AEB
-     9ED6   20 97 35   JSR &3597
-     9ED9   A0 FF      LDY #&FF
-     9EDB   8C 94 12   STY &1294
-     9EDE   A9 60      LDA #&60
-     9EE0   8D 29 4E   STA &4E29
-     9EE3   20 EB 4A   JSR &4AEB
-     9EE6   AE 17 9E   LDX &9E17
-     9EE9   18         CLC
-     9EEA   20 A6 3A   JSR &3AA6
-     9EED   20 CD 52   JSR &52CD
-     9EF0   20 52 53   JSR &5352
-     9EF3   20 2E 4E   JSR &4E2E
-     9EF6   F0 03      BEQ &9EFB
-     9EF8   8D 17 9E   STA &9E17
+     9ED3   20 97 35   JSR &3597
+     9ED6   A0 FF      LDY #&FF
+     9ED8   8C 94 12   STY &1294
+     9EDB   A9 60      LDA #&60
+     9EDD   8D 29 4E   STA &4E29
+     9EE0   20 EB 4A   JSR &4AEB
+     9EE3   A9 4E      LDA #&4E
+     9EE5   20 C3 20   JSR &20C3
+     9EE8   A9 65      LDA #&65
+     9EEA   20 C3 20   JSR &20C3
+     9EED   A9 74      LDA #&74
+     9EEF   20 C3 20   JSR &20C3
+     9EF2   A9 20      LDA #&20
+     9EF4   20 C3 20   JSR &20C3
+     9EF7   AE 17 9E   LDX &9E17
+     9EFA   18         CLC
+     9EFB   20 A6 3A   JSR &3AA6
+     9EFE   20 CD 52   JSR &52CD
+     9F01   20 52 53   JSR &5352
+     9F04   20 2E 4E   JSR &4E2E
+     9F07   F0 03      BEQ &9F0C
+     9F09   8D 17 9E   STA &9E17
 .gnet1
-     9EFB   20 EB 4A   JSR &4AEB
-     9EFE   AE 16 9E   LDX &9E16
-     9F01   18         CLC
-     9F02   20 A6 3A   JSR &3AA6
-     9F05   20 CD 52   JSR &52CD
-     9F08   20 52 53   JSR &5352
-     9F0B   20 2E 4E   JSR &4E2E
-     9F0E   F0 03      BEQ &9F13
-     9F10   8D 16 9E   STA &9E16
+     9F0C   20 EB 4A   JSR &4AEB
+     9F0F   A9 53      LDA #&53
+     9F11   20 C3 20   JSR &20C3
+     9F14   A9 74      LDA #&74
+     9F16   20 C3 20   JSR &20C3
+     9F19   A9 6E      LDA #&6E
+     9F1B   20 C3 20   JSR &20C3
+     9F1E   A9 20      LDA #&20
+     9F20   20 C3 20   JSR &20C3
+     9F23   AE 16 9E   LDX &9E16
+     9F26   18         CLC
+     9F27   20 A6 3A   JSR &3AA6
+     9F2A   20 CD 52   JSR &52CD
+     9F2D   20 52 53   JSR &5352
+     9F30   20 2E 4E   JSR &4E2E
+     9F33   F0 03      BEQ &9F38
+     9F35   8D 16 9E   STA &9E16
 .gnet2
-     9F13   20 EB 4A   JSR &4AEB
-     9F16   AE 15 9E   LDX &9E15
-     9F19   18         CLC
-     9F1A   20 A6 3A   JSR &3AA6
-     9F1D   20 CD 52   JSR &52CD
-     9F20   20 52 53   JSR &5352
-     9F23   20 2E 4E   JSR &4E2E
-     9F26   F0 03      BEQ &9F2B
-     9F28   8D 15 9E   STA &9E15
+     9F38   20 EB 4A   JSR &4AEB
+     9F3B   A9 50      LDA #&50
+     9F3D   20 C3 20   JSR &20C3
+     9F40   A9 6F      LDA #&6F
+     9F42   20 C3 20   JSR &20C3
+     9F45   A9 72      LDA #&72
+     9F47   20 C3 20   JSR &20C3
+     9F4A   A9 74      LDA #&74
+     9F4C   20 C3 20   JSR &20C3
+     9F4F   A9 20      LDA #&20
+     9F51   20 C3 20   JSR &20C3
+     9F54   AE 15 9E   LDX &9E15
+     9F57   18         CLC
+     9F58   20 A6 3A   JSR &3AA6
+     9F5B   20 CD 52   JSR &52CD
+     9F5E   20 52 53   JSR &5352
+     9F61   20 2E 4E   JSR &4E2E
+     9F64   F0 03      BEQ &9F69
+     9F66   8D 15 9E   STA &9E15
 .gnet3
-     9F2B   A9 A9      LDA #&A9
-     9F2D   8D 29 4E   STA &4E29
-     9F30   20 1A 9E   JSR &9E1A
-     9F33   20 31 9E   JSR &9E31
-     9F36   68         PLA
-     9F37   20 C7 7D   JSR &7DC7
-     9F3A   60         RTS
+     9F69   A9 A9      LDA #&A9
+     9F6B   8D 29 4E   STA &4E29
+     9F6E   20 1A 9E   JSR &9E1A
+     9F71   20 31 9E   JSR &9E31
+     9F74   20 EB 4A   JSR &4AEB
+     9F77   A9 4F      LDA #&4F
+     9F79   20 C3 20   JSR &20C3
+     9F7C   A9 4B      LDA #&4B
+     9F7E   20 C3 20   JSR &20C3
+     9F81   A2 FF      LDX #&FF
+     9F83   9A         TXS
+     9F84   A0 2C      LDY #&2C
+     9F86   20 49 13   JSR &1349
+     9F89   A9 88      LDA #&88
+     9F8B   4C C0 65   JMP &65C0
 Saving file '3-assembled-output/ECONET.unprot.bin'
 .DIALS
      7E00
