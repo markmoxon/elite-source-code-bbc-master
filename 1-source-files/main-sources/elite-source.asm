@@ -48379,7 +48379,7 @@ ENDIF
 
 .transmitBuffer
 
- SKIP 16                \ A buffer to hold the data we want to transmit to the
+ SKIP 17                \ A buffer to hold the data we want to transmit to the
                         \ scoreboard machine in the format:
                         \
                         \   * Bytes #0-7 = commander's name, terminated by a
@@ -48392,6 +48392,9 @@ ENDIF
                         \   * Bytes #10-11 = commander's combat rank
                         \
                         \   * Bytes #12-15 = commander's cash pot
+                        \
+                        \   * Byte #16 = machine type
+                        \                1 = Master, 2 = 6502SP, 3 = BBC Micro
                         \
                         \ Combat rank and cash pot are stored with the low byte
                         \ first (unlike the way that cash is stored in the game)
@@ -48554,8 +48557,9 @@ ENDIF
  STA oswordBlock        \ the first byte of the OSWORD parameter block (this
                         \ function reads the local station number on Econet)
 
- LDA #0                 \ Reset the return data byte for the station number
+ LDA #0                 \ Reset the return data bytes for the station number
  STA oswordBlock+1
+ STA oswordBlock+2
 
  LDA #19                \ Call OSWORD with A = 19 and a function number of 8 to
  JSR SendOverEconet     \ read the Econet station number of this machine and
@@ -48628,6 +48632,9 @@ ENDIF
  STA transmitBuffer+13
  LDA CASH+3
  STA transmitBuffer+12
+
+ LDA #1                 \ Set machine type to 1 (Master)
+ STA transmitBuffer+16
 
                         \ Fall through into TransmitData to transmit the data
 
