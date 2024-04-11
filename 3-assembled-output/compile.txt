@@ -4965,7 +4965,7 @@ WP workspace from  &E41  to &12AB
      2C7B   A9 2C      LDA #&2C
      2C7D   8D 42 0E   STA &0E42
      2C80   A9 7F      LDA #&7F
-     2C82   A0 C3      LDY #&C3
+     2C82   A0 C6      LDY #&C6
      2C84   A2 19      LDX #&19
      2C86   20 99 2C   JSR &2C99
      2C89   A9 FF      LDA #&FF
@@ -16725,18 +16725,15 @@ S.ELTG &700E  &796C  &1300  &700E
      7FA4
 .endBuffer
 .SendOverEconet
-     7FB5   48         PHA
-     7FB6   20 5C 15   JSR &155C
-     7FB9   A2 98      LDX #&98
-     7FBB   A0 7F      LDY #&7F
-     7FBD   68         PLA
-     7FBE   20 F1 FF   JSR &FFF1
-     7FC1   4C 69 15   JMP &1569
+     7FB8   48         PHA
+     7FB9   20 5C 15   JSR &155C
+     7FBC   A2 98      LDX #&98
+     7FBE   A0 7F      LDY #&7F
+     7FC0   68         PLA
+     7FC1   20 F1 FF   JSR &FFF1
+     7FC4   4C 69 15   JMP &1569
 .F%
-     7FC4
-     7FC4   F8
-     7FC5   F8
-     7FC6   F8
+     7FC7
      7FC7   F8
      7FC8   F8
      7FC9   F8
@@ -16753,17 +16750,20 @@ S.ELTG &700E  &796C  &1300  &700E
      7FD4   F8
      7FD5   F8
      7FD6   F8
+     7FD7   F8
+     7FD8   F8
+     7FD9   F8
 ELITE H
 Assembled at &796C 
-Ends at &7FD7 
-Code size is &66B 
+Ends at &7FDA 
+Code size is &66E 
 Execute at &1300 
 Reload at &796C 
-S.ELTH &796C  &7FD7  &1300  &796C 
-S.BCODE &1300  &7FD7  &1300  &1300 
+S.ELTH &796C  &7FDA  &1300  &796C 
+S.BCODE &1300  &7FDA  &1300  &1300 
 Saving file '3-assembled-output/BCODE.unprot.bin'
 Addresses for the scramble routines in elite-checksum.py
-F% = &7FC4 
+F% = &7FC7 
 G% = &2CC1 
 NA2% = &34CD 
 .scorePort
@@ -16785,7 +16785,7 @@ NA2% = &34CD
      9E23   8D 99 7F   STA &7F99
      9E26   8D 9A 7F   STA &7F9A
      9E29   A9 13      LDA #&13
-     9E2B   20 B5 7F   JSR &7FB5
+     9E2B   20 B8 7F   JSR &7FB8
      9E2E   AD 99 7F   LDA &7F99
      9E31   8D 18 9E   STA &9E18
      9E34   AD 9A 7F   LDA &7F9A
@@ -16840,12 +16840,12 @@ NA2% = &34CD
      9EA9   8D 9F 7F   STA &7F9F
      9EAC   8D A2 7F   STA &7FA2
      9EAF   8D A3 7F   STA &7FA3
-     9EB2   A9 B5      LDA #&B5
+     9EB2   A9 B8      LDA #&B8
      9EB4   8D A0 7F   STA &7FA0
      9EB7   A9 7F      LDA #&7F
      9EB9   8D A1 7F   STA &7FA1
      9EBC   A9 10      LDA #&10
-     9EBE   20 B5 7F   JSR &7FB5
+     9EBE   20 B8 7F   JSR &7FB8
      9EC1   28         PLP
      9EC2   60         RTS
 .GetNetworkDetails

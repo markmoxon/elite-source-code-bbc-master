@@ -48379,7 +48379,7 @@ ENDIF
 
 .transmitBuffer
 
- SKIP 17                \ A buffer to hold the data we want to transmit to the
+ SKIP 20                \ A buffer to hold the data we want to transmit to the
                         \ scoreboard machine in the format:
                         \
                         \   * Bytes #0-7 = commander's name, terminated by a
