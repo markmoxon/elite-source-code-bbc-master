@@ -8162,7 +8162,7 @@ S.ELTB &3579  &3CE4  &1300  &3579
      434A   9C 7A 0E   STZ &0E7A
      434D   60         RTS
 .LAUN
-     434E   20 3B 9E   JSR &9E3B
+     434E   20 1A 9E   JSR &9E1A
      4351   A0 08      LDY #&08
      4353   20 9F 13   JSR &139F
      4356   A9 08      LDA #&08
@@ -10678,7 +10678,7 @@ S.ELTC &3CE4  &4A4D  &1300  &3CE4
      5522   8D 3E 12   STA &123E
      5525   18         CLC
 .TT113
-     5526   20 3B 9E   JSR &9E3B
+     5526   20 1A 9E   JSR &9E1A
      5529   60         RTS
 .GCASH
      552A   20 4E 45   JSR &454E
@@ -12894,7 +12894,7 @@ S.ELTE &5760  &61F5  &1300  &5760
      6469   F0 03      BEQ &646E
 .ytq
      646B   4C 97 65   JMP &6597
-     646E   20 3B 9E   JSR &9E3B
+     646E   20 1A 9E   JSR &9E1A
      6471   AD 73 0E   LDA &0E73
      6474   D0 F5      BNE &646B
      6476   20 1C 64   JSR &641C
@@ -14074,7 +14074,7 @@ S.ELTE &5760  &61F5  &1300  &5760
      6D74   20 74 7E   JSR &7E74
      6D77   E0 4E      CPX #&4E
      6D79   D0 03      BNE &6D7E
-     6D7B   4C C3 9E   JMP &9EC3
+     6D7B   4C B6 9E   JMP &9EB6
 .skipNetwork
      6D7E   E0 51      CPX #&51
      6D80   D0 07      BNE &6D89
@@ -16696,11 +16696,11 @@ S.ELTG &700E  &796C  &1300  &700E
      7F61   A9 65      LDA #&65
      7F63   20 06 6E   JSR &6E06
 .davidscockup
-     7F66   EE 1A 9E   INC &9E1A
+     7F66   EE 18 9E   INC &9E18
      7F69   D0 03      BNE &7F6E
-     7F6B   EE 1B 9E   INC &9E1B
+     7F6B   EE 19 9E   INC &9E19
 .taly1
-     7F6E   20 3B 9E   JSR &9E3B
+     7F6E   20 1A 9E   JSR &9E1A
 .EXNO3
      7F71   A0 04      LDY #&04
      7F73   4C 9F 13   JMP &139F
@@ -16772,328 +16772,322 @@ NA2% = &34CD
      9E16
 .scoreNetwork
      9E17
-.cmdrStation
-     9E18
-.cmdrNetwork
-     9E19
 .netTally
-     9E1A
-.GetCmdrNetwork
-     9E1C   A9 08      LDA #&08
-     9E1E   8D 98 7F   STA &7F98
-     9E21   A9 00      LDA #&00
-     9E23   8D 99 7F   STA &7F99
-     9E26   8D 9A 7F   STA &7F9A
-     9E29   A9 13      LDA #&13
-     9E2B   20 B8 7F   JSR &7FB8
-     9E2E   AD 99 7F   LDA &7F99
-     9E31   8D 18 9E   STA &9E18
-     9E34   AD 9A 7F   LDA &7F9A
-     9E37   8D 19 9E   STA &9E19
-     9E3A   60         RTS
+     9E18
 .TransmitCmdrData
-     9E3B   08         PHP
-     9E3C   AD 15 9E   LDA &9E15
-     9E3F   D0 02      BNE &9E43
-     9E41   28         PLP
-     9E42   60         RTS
+     9E1A   08         PHP
+     9E1B   AD 15 9E   LDA &9E15
+     9E1E   D0 02      BNE &9E22
+     9E20   28         PLP
+     9E21   60         RTS
 .tran1
-     9E43   A2 07      LDX #&07
+     9E22   A2 07      LDX #&07
 .trcm1
-     9E45   BD 68 34   LDA &3468,X
-     9E48   9D A4 7F   STA &7FA4,X
-     9E4B   CA         DEX
-     9E4C   10 F7      BPL &9E45
-     9E4E   AD 18 9E   LDA &9E18
-     9E51   8D AC 7F   STA &7FAC
-     9E54   AD 19 9E   LDA &9E19
-     9E57   8D AD 7F   STA &7FAD
-     9E5A   AD 1A 9E   LDA &9E1A
-     9E5D   8D AE 7F   STA &7FAE
-     9E60   AD 1B 9E   LDA &9E1B
-     9E63   8D AF 7F   STA &7FAF
-     9E66   AD 3E 12   LDA &123E
-     9E69   8D B3 7F   STA &7FB3
-     9E6C   AD 3F 12   LDA &123F
-     9E6F   8D B2 7F   STA &7FB2
-     9E72   AD 40 12   LDA &1240
-     9E75   8D B1 7F   STA &7FB1
-     9E78   AD 41 12   LDA &1241
-     9E7B   8D B0 7F   STA &7FB0
-     9E7E   A9 01      LDA #&01
-     9E80   8D B4 7F   STA &7FB4
+     9E24   BD 68 34   LDA &3468,X
+     9E27   9D A4 7F   STA &7FA4,X
+     9E2A   CA         DEX
+     9E2B   10 F7      BPL &9E24
+     9E2D   AD 69 12   LDA &1269
+     9E30   8D AC 7F   STA &7FAC
+     9E33   A2 00      LDX #&00
+     9E35   A4 83      LDY &83
+     9E37   D0 11      BNE &9E4A
+     9E39   E8         INX
+     9E3A   AC 70 0E   LDY &0E70
+     9E3D   B9 43 0E   LDA &0E43,Y
+     9E40   F0 08      BEQ &9E4A
+     9E42   E8         INX
+     9E43   A4 DB      LDY &DB
+     9E45   C0 80      CPY #&80
+     9E47   B0 01      BCS &9E4A
+     9E49   E8         INX
+.trcm2
+     9E4A   8E AD 7F   STX &7FAD
+     9E4D   AD 18 9E   LDA &9E18
+     9E50   8D AE 7F   STA &7FAE
+     9E53   AD 19 9E   LDA &9E19
+     9E56   8D AF 7F   STA &7FAF
+     9E59   AD 3E 12   LDA &123E
+     9E5C   8D B3 7F   STA &7FB3
+     9E5F   AD 3F 12   LDA &123F
+     9E62   8D B2 7F   STA &7FB2
+     9E65   AD 40 12   LDA &1240
+     9E68   8D B1 7F   STA &7FB1
+     9E6B   AD 41 12   LDA &1241
+     9E6E   8D B0 7F   STA &7FB0
+     9E71   A9 01      LDA #&01
+     9E73   8D B4 7F   STA &7FB4
 .TransmitData
-     9E83   A9 80      LDA #&80
-     9E85   8D 98 7F   STA &7F98
-     9E88   AD 15 9E   LDA &9E15
-     9E8B   8D 99 7F   STA &7F99
-     9E8E   AD 16 9E   LDA &9E16
-     9E91   8D 9A 7F   STA &7F9A
-     9E94   AD 17 9E   LDA &9E17
-     9E97   8D 9B 7F   STA &7F9B
-     9E9A   A9 A4      LDA #&A4
-     9E9C   8D 9C 7F   STA &7F9C
-     9E9F   A9 7F      LDA #&7F
-     9EA1   8D 9D 7F   STA &7F9D
-     9EA4   A9 00      LDA #&00
-     9EA6   8D 9E 7F   STA &7F9E
-     9EA9   8D 9F 7F   STA &7F9F
-     9EAC   8D A2 7F   STA &7FA2
-     9EAF   8D A3 7F   STA &7FA3
-     9EB2   A9 B8      LDA #&B8
-     9EB4   8D A0 7F   STA &7FA0
-     9EB7   A9 7F      LDA #&7F
-     9EB9   8D A1 7F   STA &7FA1
-     9EBC   A9 10      LDA #&10
-     9EBE   20 B8 7F   JSR &7FB8
-     9EC1   28         PLP
-     9EC2   60         RTS
+     9E76   A9 80      LDA #&80
+     9E78   8D 98 7F   STA &7F98
+     9E7B   AD 15 9E   LDA &9E15
+     9E7E   8D 99 7F   STA &7F99
+     9E81   AD 16 9E   LDA &9E16
+     9E84   8D 9A 7F   STA &7F9A
+     9E87   AD 17 9E   LDA &9E17
+     9E8A   8D 9B 7F   STA &7F9B
+     9E8D   A9 A4      LDA #&A4
+     9E8F   8D 9C 7F   STA &7F9C
+     9E92   A9 7F      LDA #&7F
+     9E94   8D 9D 7F   STA &7F9D
+     9E97   A9 00      LDA #&00
+     9E99   8D 9E 7F   STA &7F9E
+     9E9C   8D 9F 7F   STA &7F9F
+     9E9F   8D A2 7F   STA &7FA2
+     9EA2   8D A3 7F   STA &7FA3
+     9EA5   A9 B8      LDA #&B8
+     9EA7   8D A0 7F   STA &7FA0
+     9EAA   A9 7F      LDA #&7F
+     9EAC   8D A1 7F   STA &7FA1
+     9EAF   A9 10      LDA #&10
+     9EB1   20 B8 7F   JSR &7FB8
+     9EB4   28         PLP
+     9EB5   60         RTS
 .GetNetworkDetails
-     9EC3   A9 08      LDA #&08
-     9EC5   20 8D 4A   JSR &4A8D
-     9EC8   A9 0A      LDA #&0A
-     9ECA   20 84 4A   JSR &4A84
-     9ECD   A9 05      LDA #&05
-     9ECF   20 B9 9F   JSR &9FB9
-     9ED2   A9 04      LDA #&04
-     9ED4   20 B9 9F   JSR &9FB9
-     9ED7   20 97 35   JSR &3597
-     9EDA   A0 FF      LDY #&FF
-     9EDC   8C 94 12   STY &1294
-     9EDF   A9 60      LDA #&60
-     9EE1   8D 29 4E   STA &4E29
-     9EE4   A9 05      LDA #&05
-     9EE6   20 B9 9F   JSR &9FB9
-     9EE9   A9 03      LDA #&03
-     9EEB   20 B9 9F   JSR &9FB9
-     9EEE   AE 17 9E   LDX &9E17
-     9EF1   18         CLC
-     9EF2   20 A6 3A   JSR &3AA6
-     9EF5   A9 07      LDA #&07
-     9EF7   20 B9 9F   JSR &9FB9
-     9EFA   20 CD 52   JSR &52CD
-     9EFD   20 52 53   JSR &5352
-     9F00   20 2E 4E   JSR &4E2E
-     9F03   A6 07      LDX &07
-     9F05   E0 0C      CPX #&0C
-     9F07   F0 03      BEQ &9F0C
-     9F09   8D 17 9E   STA &9E17
+     9EB6   A9 08      LDA #&08
+     9EB8   20 8D 4A   JSR &4A8D
+     9EBB   A9 0A      LDA #&0A
+     9EBD   20 84 4A   JSR &4A84
+     9EC0   A9 05      LDA #&05
+     9EC2   20 A9 9F   JSR &9FA9
+     9EC5   A9 04      LDA #&04
+     9EC7   20 A9 9F   JSR &9FA9
+     9ECA   20 97 35   JSR &3597
+     9ECD   A0 FF      LDY #&FF
+     9ECF   8C 94 12   STY &1294
+     9ED2   A9 60      LDA #&60
+     9ED4   8D 29 4E   STA &4E29
+     9ED7   A9 05      LDA #&05
+     9ED9   20 A9 9F   JSR &9FA9
+     9EDC   A9 03      LDA #&03
+     9EDE   20 A9 9F   JSR &9FA9
+     9EE1   AE 17 9E   LDX &9E17
+     9EE4   18         CLC
+     9EE5   20 A6 3A   JSR &3AA6
+     9EE8   A9 07      LDA #&07
+     9EEA   20 A9 9F   JSR &9FA9
+     9EED   20 CD 52   JSR &52CD
+     9EF0   20 52 53   JSR &5352
+     9EF3   20 2E 4E   JSR &4E2E
+     9EF6   A6 07      LDX &07
+     9EF8   E0 0C      CPX #&0C
+     9EFA   F0 03      BEQ &9EFF
+     9EFC   8D 17 9E   STA &9E17
 .gnet1
-     9F0C   20 EB 4A   JSR &4AEB
-     9F0F   20 EB 4A   JSR &4AEB
-     9F12   A9 01      LDA #&01
-     9F14   20 B9 9F   JSR &9FB9
-     9F17   A9 03      LDA #&03
-     9F19   20 B9 9F   JSR &9FB9
-     9F1C   AE 16 9E   LDX &9E16
-     9F1F   18         CLC
-     9F20   20 A6 3A   JSR &3AA6
-     9F23   A9 07      LDA #&07
-     9F25   20 B9 9F   JSR &9FB9
-     9F28   20 CD 52   JSR &52CD
-     9F2B   20 52 53   JSR &5352
-     9F2E   20 2E 4E   JSR &4E2E
-     9F31   A6 07      LDX &07
-     9F33   E0 0C      CPX #&0C
-     9F35   F0 03      BEQ &9F3A
-     9F37   8D 16 9E   STA &9E16
+     9EFF   20 EB 4A   JSR &4AEB
+     9F02   20 EB 4A   JSR &4AEB
+     9F05   A9 01      LDA #&01
+     9F07   20 A9 9F   JSR &9FA9
+     9F0A   A9 03      LDA #&03
+     9F0C   20 A9 9F   JSR &9FA9
+     9F0F   AE 16 9E   LDX &9E16
+     9F12   18         CLC
+     9F13   20 A6 3A   JSR &3AA6
+     9F16   A9 07      LDA #&07
+     9F18   20 A9 9F   JSR &9FA9
+     9F1B   20 CD 52   JSR &52CD
+     9F1E   20 52 53   JSR &5352
+     9F21   20 2E 4E   JSR &4E2E
+     9F24   A6 07      LDX &07
+     9F26   E0 0C      CPX #&0C
+     9F28   F0 03      BEQ &9F2D
+     9F2A   8D 16 9E   STA &9E16
 .gnet2
-     9F3A   20 EB 4A   JSR &4AEB
-     9F3D   20 EB 4A   JSR &4AEB
-     9F40   A9 02      LDA #&02
-     9F42   20 B9 9F   JSR &9FB9
-     9F45   A9 03      LDA #&03
-     9F47   20 B9 9F   JSR &9FB9
-     9F4A   A9 07      LDA #&07
-     9F4C   20 B9 9F   JSR &9FB9
-     9F4F   AE 15 9E   LDX &9E15
-     9F52   18         CLC
-     9F53   20 A6 3A   JSR &3AA6
-     9F56   A9 07      LDA #&07
-     9F58   20 B9 9F   JSR &9FB9
-     9F5B   20 CD 52   JSR &52CD
-     9F5E   20 52 53   JSR &5352
-     9F61   20 2E 4E   JSR &4E2E
-     9F64   A6 07      LDX &07
-     9F66   E0 0C      CPX #&0C
-     9F68   F0 03      BEQ &9F6D
-     9F6A   8D 15 9E   STA &9E15
+     9F2D   20 EB 4A   JSR &4AEB
+     9F30   20 EB 4A   JSR &4AEB
+     9F33   A9 02      LDA #&02
+     9F35   20 A9 9F   JSR &9FA9
+     9F38   A9 03      LDA #&03
+     9F3A   20 A9 9F   JSR &9FA9
+     9F3D   A9 07      LDA #&07
+     9F3F   20 A9 9F   JSR &9FA9
+     9F42   AE 15 9E   LDX &9E15
+     9F45   18         CLC
+     9F46   20 A6 3A   JSR &3AA6
+     9F49   A9 07      LDA #&07
+     9F4B   20 A9 9F   JSR &9FA9
+     9F4E   20 CD 52   JSR &52CD
+     9F51   20 52 53   JSR &5352
+     9F54   20 2E 4E   JSR &4E2E
+     9F57   A6 07      LDX &07
+     9F59   E0 0C      CPX #&0C
+     9F5B   F0 03      BEQ &9F60
+     9F5D   8D 15 9E   STA &9E15
 .gnet3
-     9F6D   20 EB 4A   JSR &4AEB
-     9F70   20 EB 4A   JSR &4AEB
-     9F73   A9 08      LDA #&08
-     9F75   20 B9 9F   JSR &9FB9
-     9F78   AE 1A 9E   LDX &9E1A
-     9F7B   AC 1B 9E   LDY &9E1B
-     9F7E   A9 09      LDA #&09
-     9F80   18         CLC
-     9F81   20 AA 3A   JSR &3AAA
-     9F84   A9 07      LDA #&07
-     9F86   20 B9 9F   JSR &9FB9
-     9F89   20 A4 4F   JSR &4FA4
-     9F8C   90 08      BCC &9F96
-     9F8E   A9 00      LDA #&00
-     9F90   8D 1A 9E   STA &9E1A
-     9F93   8D 1B 9E   STA &9E1B
+     9F60   20 EB 4A   JSR &4AEB
+     9F63   20 EB 4A   JSR &4AEB
+     9F66   A9 08      LDA #&08
+     9F68   20 A9 9F   JSR &9FA9
+     9F6B   AE 18 9E   LDX &9E18
+     9F6E   AC 19 9E   LDY &9E19
+     9F71   A9 09      LDA #&09
+     9F73   18         CLC
+     9F74   20 AA 3A   JSR &3AAA
+     9F77   A9 07      LDA #&07
+     9F79   20 A9 9F   JSR &9FA9
+     9F7C   20 A4 4F   JSR &4FA4
+     9F7F   90 08      BCC &9F89
+     9F81   A9 00      LDA #&00
+     9F83   8D 18 9E   STA &9E18
+     9F86   8D 19 9E   STA &9E19
 .gnet4
-     9F96   A9 A9      LDA #&A9
-     9F98   8D 29 4E   STA &4E29
-     9F9B   20 1C 9E   JSR &9E1C
-     9F9E   20 3B 9E   JSR &9E3B
-     9FA1   20 EB 4A   JSR &4AEB
-     9FA4   20 EB 4A   JSR &4AEB
-     9FA7   A9 06      LDA #&06
-     9FA9   20 B9 9F   JSR &9FB9
-     9FAC   A0 64      LDY #&64
-     9FAE   20 49 13   JSR &1349
-     9FB1   A2 FF      LDX #&FF
-     9FB3   9A         TXS
-     9FB4   A9 88      LDA #&88
-     9FB6   4C C3 65   JMP &65C3
+     9F89   A9 A9      LDA #&A9
+     9F8B   8D 29 4E   STA &4E29
+     9F8E   20 1A 9E   JSR &9E1A
+     9F91   20 EB 4A   JSR &4AEB
+     9F94   20 EB 4A   JSR &4AEB
+     9F97   A9 06      LDA #&06
+     9F99   20 A9 9F   JSR &9FA9
+     9F9C   A0 64      LDY #&64
+     9F9E   20 49 13   JSR &1349
+     9FA1   A2 FF      LDX #&FF
+     9FA3   9A         TXS
+     9FA4   A9 88      LDA #&88
+     9FA6   4C C3 65   JMP &65C3
 .PrintToken
-     9FB9   48         PHA
-     9FBA   AA         TAX
-     9FBB   98         TYA
-     9FBC   48         PHA
-     9FBD   A5 3A      LDA &3A
-     9FBF   48         PHA
-     9FC0   A5 3B      LDA &3B
-     9FC2   48         PHA
-     9FC3   20 AB 33   JSR &33AB
-     9FC6   A9 CF      LDA #&CF
-     9FC8   85 3A      STA &3A
-     9FCA   A9 9F      LDA #&9F
-     9FCC   4C 5F 32   JMP &325F
+     9FA9   48         PHA
+     9FAA   AA         TAX
+     9FAB   98         TYA
+     9FAC   48         PHA
+     9FAD   A5 3A      LDA &3A
+     9FAF   48         PHA
+     9FB0   A5 3B      LDA &3B
+     9FB2   48         PHA
+     9FB3   20 AB 33   JSR &33AB
+     9FB6   A9 BF      LDA #&BF
+     9FB8   85 3A      STA &3A
+     9FBA   A9 9F      LDA #&9F
+     9FBC   4C 5F 32   JMP &325F
 .EconetToken
-     9FCF   57
+     9FBF   57
 Macro ETWO:
-     9FD0   89
+     9FC0   89
 End macro ETWO
 Macro ETWO:
-     9FD1   A2
-End macro ETWO
-Macro ECHR:
-     9FD2   1E
-End macro ECHR
-Macro ETWO:
-     9FD3   88
-End macro ETWO
-     9FD4   57
-Macro ECHR:
-     9FD5   07
-End macro ECHR
-Macro ETWO:
-     9FD6   AA
+     9FC1   A2
 End macro ETWO
 Macro ECHR:
-     9FD7   03
+     9FC2   1E
 End macro ECHR
+Macro ETWO:
+     9FC3   88
+End macro ETWO
+     9FC4   57
+Macro ECHR:
+     9FC5   07
+End macro ECHR
+Macro ETWO:
+     9FC6   AA
+End macro ETWO
+Macro ECHR:
+     9FC7   03
+End macro ECHR
+     9FC8   57
+Macro ECHR:
+     9FC9   77
+End macro ECHR
+Macro ETWO:
+     9FCA   B6
+End macro ETWO
+Macro ECHR:
+     9FCB   1A
+End macro ECHR
+Macro ECHR:
+     9FCC   15
+End macro ECHR
+Macro ETWO:
+     9FCD   A3
+End macro ETWO
+Macro ECHR:
+     9FCE   77
+End macro ECHR
+Macro ECHR:
+     9FCF   77
+End macro ECHR
+Macro ECHR:
+     9FD0   77
+End macro ECHR
+     9FD1   57
+Macro ECHR:
+     9FD2   77
+End macro ECHR
+Macro ECHR:
+     9FD3   1A
+End macro ECHR
+Macro ECHR:
+     9FD4   12
+End macro ECHR
+Macro ETWO:
+     9FD5   B6
+End macro ETWO
+Macro ETWO:
+     9FD6   80
+End macro ETWO
+Macro ETWO:
+     9FD7   80
+End macro ETWO
      9FD8   57
 Macro ECHR:
-     9FD9   77
+     9FD9   19
 End macro ECHR
 Macro ETWO:
-     9FDA   B6
+     9FDA   8A
 End macro ETWO
 Macro ECHR:
-     9FDB   1A
-End macro ECHR
-Macro ECHR:
-     9FDC   15
+     9FDB   00
 End macro ECHR
 Macro ETWO:
-     9FDD   A3
+     9FDC   AA
 End macro ETWO
 Macro ECHR:
-     9FDE   77
+     9FDD   1C
 End macro ECHR
-Macro ECHR:
-     9FDF   77
-End macro ECHR
-Macro ECHR:
-     9FE0   77
-End macro ECHR
-     9FE1   57
-Macro ECHR:
-     9FE2   77
-End macro ECHR
-Macro ECHR:
-     9FE3   1A
-End macro ECHR
-Macro ECHR:
-     9FE4   12
-End macro ECHR
-Macro ETWO:
-     9FE5   B6
-End macro ETWO
-Macro ETWO:
-     9FE6   80
-End macro ETWO
-Macro ETWO:
-     9FE7   80
-End macro ETWO
-     9FE8   57
-Macro ECHR:
-     9FE9   19
-End macro ECHR
-Macro ETWO:
-     9FEA   8A
-End macro ETWO
-Macro ECHR:
-     9FEB   00
-End macro ECHR
-Macro ETWO:
-     9FEC   AA
-End macro ETWO
-Macro ECHR:
-     9FED   1C
-End macro ECHR
-     9FEE   57
+     9FDE   57
 Macro EJMP:
-     9FEF   56
+     9FDF   56
 End macro EJMP
 Macro ECHR:
-     9FF0   18
+     9FE0   18
 End macro ECHR
 Macro ECHR:
-     9FF1   1C
+     9FE1   1C
 End macro ECHR
-     9FF2   57
+     9FE2   57
 Macro ECHR:
-     9FF3   77
-End macro ECHR
-Macro ECHR:
-     9FF4   77
+     9FE3   77
 End macro ECHR
 Macro ECHR:
-     9FF5   77
+     9FE4   77
 End macro ECHR
-     9FF6   57
+Macro ECHR:
+     9FE5   77
+End macro ECHR
+     9FE6   57
 Macro ETWO:
-     9FF7   A5
+     9FE7   A5
 End macro ETWO
 Macro ETWO:
-     9FF8   8D
+     9FE8   8D
 End macro ETWO
 Macro ECHR:
-     9FF9   03
+     9FE9   03
 End macro ECHR
 Macro ECHR:
-     9FFA   77
+     9FEA   77
 End macro ECHR
 Macro ECHR:
-     9FFB   04
+     9FEB   04
 End macro ECHR
 Macro ECHR:
-     9FFC   14
+     9FEC   14
 End macro ECHR
 Macro ETWO:
-     9FFD   AA
+     9FED   AA
 End macro ETWO
 Macro ECHR:
-     9FFE   12
+     9FEE   12
 End macro ECHR
-     9FFF   57
+     9FEF   57
 Saving file '3-assembled-output/ECONET.unprot.bin'
 .DIALS
      7E00
