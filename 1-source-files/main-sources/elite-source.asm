@@ -48378,7 +48378,7 @@ ENDIF
 \       Name: Econet variables
 \       Type: Workspace
 \   Category: Econet
-\    Summary: Variables used in Econet Elite
+\    Summary: Variables used in Elite over Econet
 \
 \ ******************************************************************************
 
@@ -48521,14 +48521,18 @@ ENDIF
 
  ORG CODE_ECONET%
 
+                        \ --- End of added code ------------------------------->
+
 \ ******************************************************************************
 \
 \       Name: Econet variables
 \       Type: Workspace
 \   Category: Econet
-\    Summary: Variables used in Econet Elite
+\    Summary: Variables used in Elite over Econet
 \
 \ ******************************************************************************
+
+                        \ --- Mod: Code added for Scoreboard: ----------------->
 
 .scorePort
 
@@ -48552,6 +48556,8 @@ ENDIF
                         \ scoreboard (so all platforms have the same point
                         \ system)
 
+                        \ --- End of added code ------------------------------->
+
 \ ******************************************************************************
 \
 \       Name: TransmitCmdrData
@@ -48561,6 +48567,8 @@ ENDIF
 \             transmit to the scoreboard machine, and then transmit it
 \
 \ ******************************************************************************
+
+                        \ --- Mod: Code added for Scoreboard: ----------------->
 
 .TransmitCmdrData
 
@@ -48648,6 +48656,8 @@ ENDIF
 
                         \ Fall through into TransmitData to transmit the data
 
+                        \ --- End of added code ------------------------------->
+
 \ ******************************************************************************
 \
 \       Name: TransmitData
@@ -48656,6 +48666,8 @@ ENDIF
 \    Summary: Send the commander data to the scoreboard machine
 \
 \ ******************************************************************************
+
+                        \ --- Mod: Code added for Scoreboard: ----------------->
 
 .TransmitData
 
@@ -48693,6 +48705,8 @@ ENDIF
 
  RTS                    \ Return from the subroutine
 
+                        \ --- End of added code ------------------------------->
+
 \ ******************************************************************************
 \
 \       Name: GetNetworkDetails
@@ -48702,6 +48716,8 @@ ENDIF
 \             in that order
 \
 \ ******************************************************************************
+
+                        \ --- Mod: Code added for Scoreboard: ----------------->
 
 .GetNetworkDetails
 
@@ -48873,6 +48889,8 @@ ENDIF
  JMP FRCE               \ "pressed" to red key f8 (so we show the Status Mode
                         \ screen)
 
+                        \ --- End of added code ------------------------------->
+
 \ ******************************************************************************
 \
 \       Name: PrintToken
@@ -48897,6 +48915,8 @@ ENDIF
 \   V(1 0)              V(1 0) is preserved
 \
 \ ******************************************************************************
+
+                        \ --- Mod: Code added for Scoreboard: ----------------->
 
 .PrintToken
 
@@ -48925,6 +48945,8 @@ ENDIF
                         \ V(1 0) from the stack, returning from the subroutine
                         \ using a tail call
 
+                        \ --- End of added code ------------------------------->
+
 \ ******************************************************************************
 \
 \       Name: EJMP
@@ -48950,11 +48972,15 @@ ENDIF
 \
 \ ******************************************************************************
 
+                        \ --- Mod: Code added for Scoreboard: ----------------->
+
 MACRO EJMP n
 
  EQUB n EOR VE
 
 ENDMACRO
+
+                        \ --- End of added code ------------------------------->
 
 \ ******************************************************************************
 \
@@ -48983,6 +49009,8 @@ ENDMACRO
 \
 \ ******************************************************************************
 
+                        \ --- Mod: Code added for Scoreboard: ----------------->
+
 MACRO ECHR x
 
  IF x = '`'
@@ -48992,6 +49020,8 @@ MACRO ECHR x
  ENDIF
 
 ENDMACRO
+
+                        \ --- End of added code ------------------------------->
 
 \ ******************************************************************************
 \
@@ -49019,11 +49049,15 @@ ENDMACRO
 \
 \ ******************************************************************************
 
+                        \ --- Mod: Code added for Scoreboard: ----------------->
+
 MACRO ETOK n
 
  EQUB n EOR VE
 
 ENDMACRO
+
+                        \ --- End of added code ------------------------------->
 
 \ ******************************************************************************
 \
@@ -49055,6 +49089,8 @@ ENDMACRO
 \                       the table
 \
 \ ******************************************************************************
+
+                        \ --- Mod: Code added for Scoreboard: ----------------->
 
 MACRO ETWO t, k
 
@@ -49103,6 +49139,8 @@ MACRO ETWO t, k
 
 ENDMACRO
 
+                        \ --- End of added code ------------------------------->
+
 \ ******************************************************************************
 \
 \       Name: ERND
@@ -49131,11 +49169,15 @@ ENDMACRO
 \
 \ ******************************************************************************
 
+                        \ --- Mod: Code added for Scoreboard: ----------------->
+
 MACRO ERND n
 
  EQUB (n + 91) EOR VE
 
 ENDMACRO
+
+                        \ --- End of added code ------------------------------->
 
 \ ******************************************************************************
 \
@@ -49145,6 +49187,8 @@ ENDMACRO
 \    Summary: Extended recursive token table for the Econet configuration page
 \
 \ ******************************************************************************
+
+                        \ --- Mod: Code added for Scoreboard: ----------------->
 
 .EconetToken
 
