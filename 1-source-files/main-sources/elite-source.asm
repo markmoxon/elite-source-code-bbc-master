@@ -48402,6 +48402,28 @@ ENDIF
 
                         \ --- Mod: Code added for Scoreboard: ----------------->
 
+.scorePort
+
+ SKIP 1                 \ The Econet port on which to talk to the scoreboard
+                        \ machine
+                        \
+                        \ If this is zero, the network is disabled and no
+                        \ commander data is transmitted
+
+.scoreStation
+
+ SKIP 1                 \ The Econet station number of the scoreboard machine
+
+.scoreNetwork
+
+ SKIP 1                 \ The Econet network number of the scoreboard machine
+
+.netTally
+
+ SKIP 2                 \ Stores a one-point-per-kill combat score for the
+                        \ scoreboard (so all platforms have the same point
+                        \ system)
+
 .oswordBlock
 
  SKIP 12                \ The OSWORD block to use for network calls
@@ -48468,6 +48490,62 @@ ENDIF
 
 \ ******************************************************************************
 \
+\       Name: PrintToken
+\       Type: Subroutine
+\   Category: Text
+\    Summary: Print an extended recursive token from the EconetToken table
+\
+\ ------------------------------------------------------------------------------
+\
+\ Arguments:
+\
+\   A                   The recursive token to be printed, in the range 0-255
+\
+\ ------------------------------------------------------------------------------
+\
+\ Returns:
+\
+\   A                   A is preserved
+\
+\   Y                   Y is preserved
+\
+\   V(1 0)              V(1 0) is preserved
+\
+\ ******************************************************************************
+
+                        \ --- Mod: Code added for Scoreboard: ----------------->
+
+.PrintToken
+
+ PHA                    \ Store A on the stack, so we can retrieve it later
+
+ TAX                    \ Copy the token number from A into X
+
+ TYA                    \ Store Y on the stack
+ PHA
+
+ LDA V                  \ Store V(1 0) on the stack
+ PHA
+ LDA V+1
+ PHA
+
+ JSR MT19               \ Call MT19 to capitalise the next letter (i.e. set
+                        \ Sentence Case for this word only)
+
+ LDA #LO(EconetToken)   \ Set V to the low byte of EconetToken
+ STA V
+
+ LDA #HI(EconetToken)   \ Set A to the high byte of EconetToken
+
+ JMP DTEN               \ Call DTEN to print token number X from the
+                        \ UniverseToken table and restore the values of A, Y and
+                        \ V(1 0) from the stack, returning from the subroutine
+                        \ using a tail call
+
+                        \ --- End of added code ------------------------------->
+
+\ ******************************************************************************
+\
 \       Name: F%
 \       Type: Variable
 \   Category: Utility routines
@@ -48479,20 +48557,24 @@ ENDIF
 
  SKIP 0
 
-IF _COMPACT
+                        \ --- Mod: Code removed for Econet: ------------------->
 
- EQUB &F8, &F8          \ These bytes appear to be unused
- EQUB &F8, &F8
- EQUB &F8, &F8
- EQUB &F8, &F8
- EQUB &F8, &F8
- EQUB &F8, &F8
- EQUB &F8, &F8
- EQUB &F8, &F8
- EQUB &F8, &F8
- EQUB &F8
+\IF _COMPACT
+\
+\EQUB &F8, &F8          \ These bytes appear to be unused
+\EQUB &F8, &F8
+\EQUB &F8, &F8
+\EQUB &F8, &F8
+\EQUB &F8, &F8
+\EQUB &F8, &F8
+\EQUB &F8, &F8
+\EQUB &F8, &F8
+\EQUB &F8, &F8
+\EQUB &F8
+\
+\ENDIF
 
-ENDIF
+                        \ --- End of removed code ----------------------------->
 
 \ ******************************************************************************
 \
@@ -48552,27 +48634,6 @@ ENDIF
 
                         \ --- Mod: Code added for Scoreboard: ----------------->
 
-.scorePort
-
- SKIP 1                 \ The Econet port on which to talk to the scoreboard
-                        \ machine
-                        \
-                        \ If this is zero, the network is disabled and no
-                        \ commander data is transmitted
-
-.scoreStation
-
- SKIP 1                 \ The Econet station number of the scoreboard machine
-
-.scoreNetwork
-
- SKIP 1                 \ The Econet network number of the scoreboard machine
-
-.netTally
-
- SKIP 2                 \ Stores a one-point-per-kill combat score for the
-                        \ scoreboard (so all platforms have the same point
-                        \ system)
 
                         \ --- End of added code ------------------------------->
 
@@ -48874,13 +48935,13 @@ ENDIF
  JSR TT67               \ Print two newlines
  JSR TT67
 
- LDA #8                 \ Print extended token 8 ("RESET SCORE")
+ LDA #8                 \ Print extended token 8 ("RESET SCORES")
  JSR PrintToken
 
  LDX netTally           \ Get the current combat score from scorePort
  LDY netTally+1
 
- LDA #9                 \ Print the 16-bit number in (Y X) to 9 digits, without
+ LDA #8                 \ Print the 16-bit number in (Y X) to 8 digits, without
  CLC                    \ a decimal point
  JSR TT11
 
@@ -48894,6 +48955,13 @@ ENDIF
  LDA #0                 \ The answer was yes, so reset the combat score
  STA netTally
  STA netTally+1
+
+ STA CASH               \ And set the credit level to 100 Cr
+ STA CASH+1
+ LDA #&03
+ STA CASH+2
+ LDA #&E8
+ STA CASH+3
 
 .gnet4
 
@@ -48920,62 +48988,6 @@ ENDIF
  LDA #f8                \ Jump into the main loop at FRCE, setting the key
  JMP FRCE               \ "pressed" to red key f8 (so we show the Status Mode
                         \ screen)
-
-                        \ --- End of added code ------------------------------->
-
-\ ******************************************************************************
-\
-\       Name: PrintToken
-\       Type: Subroutine
-\   Category: Text
-\    Summary: Print an extended recursive token from the EconetToken table
-\
-\ ------------------------------------------------------------------------------
-\
-\ Arguments:
-\
-\   A                   The recursive token to be printed, in the range 0-255
-\
-\ ------------------------------------------------------------------------------
-\
-\ Returns:
-\
-\   A                   A is preserved
-\
-\   Y                   Y is preserved
-\
-\   V(1 0)              V(1 0) is preserved
-\
-\ ******************************************************************************
-
-                        \ --- Mod: Code added for Scoreboard: ----------------->
-
-.PrintToken
-
- PHA                    \ Store A on the stack, so we can retrieve it later
-
- TAX                    \ Copy the token number from A into X
-
- TYA                    \ Store Y on the stack
- PHA
-
- LDA V                  \ Store V(1 0) on the stack
- PHA
- LDA V+1
- PHA
-
- JSR MT19               \ Call MT19 to capitalise the next letter (i.e. set
-                        \ Sentence Case for this word only)
-
- LDA #LO(EconetToken)   \ Set V to the low byte of EconetToken
- STA V
-
- LDA #HI(EconetToken)   \ Set A to the high byte of EconetToken
-
- JMP DTEN               \ Call DTEN to print token number X from the
-                        \ UniverseToken table and restore the values of A, Y and
-                        \ V(1 0) from the stack, returning from the subroutine
-                        \ using a tail call
 
                         \ --- End of added code ------------------------------->
 
@@ -49274,14 +49286,14 @@ ENDMACRO
  ECHR ' '
  EQUB VE
 
- ETWO 'R', 'E'          \ Token 8:    "RESET SCORE"
+ ETWO 'R', 'E'          \ Token 8:    "RESET SCORES"
  ETWO 'S', 'E'
  ECHR 'T'
  ECHR ' '
  ECHR 'S'
  ECHR 'C'
  ETWO 'O', 'R'
- ECHR 'E'
+ ETWO 'E', 'S'
  EQUB VE
 
  SAVE "3-assembled-output/ECONET.unprot.bin", CODE_ECONET%, P%, LOAD_ECONET%
