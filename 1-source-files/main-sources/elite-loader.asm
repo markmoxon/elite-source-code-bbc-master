@@ -1246,7 +1246,7 @@ ENDIF
 
                         \ --- And replaced by: -------------------------------->
 
- EQUS "L.ELTBD FFFF1300"    \ This is short for "*LOAD ELTBD FFFF1300"
+ EQUS "L.ELTMD FFFF1300"    \ This is short for "*LOAD ELTMD FFFF1300"
  EQUB 13
 
                         \ --- End of replacement ------------------------------>
@@ -1276,7 +1276,7 @@ ELIF _COMPACT
 
                         \ --- And replaced by: -------------------------------->
 
- EQUS "L.ELTBC FFFF1300"    \ This is short for "*LOAD ELTBC FFFF1300"
+ EQUS "L.ELTMC FFFF1300"    \ This is short for "*LOAD ELTMC FFFF1300"
  EQUB 13
 
                         \ --- End of replacement ------------------------------>
