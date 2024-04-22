@@ -429,8 +429,8 @@
      10E8   0D
 .MESS4
      10E9   44 49 52 ...
-     10F2   0D
-S.M128Elt &E00  &10F3  &E00  &E00 
+     10F7   0D
+S.M128Elt &E00  &10F8  &E00  &E00 
 Saving file '3-assembled-output/M128Elt.bin'
 .ZP
      0000
