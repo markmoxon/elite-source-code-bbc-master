@@ -48625,20 +48625,6 @@ ENDIF
 
 \ ******************************************************************************
 \
-\       Name: Econet variables
-\       Type: Workspace
-\   Category: Econet
-\    Summary: Variables used in Elite over Econet
-\
-\ ******************************************************************************
-
-                        \ --- Mod: Code added for Scoreboard: ----------------->
-
-
-                        \ --- End of added code ------------------------------->
-
-\ ******************************************************************************
-\
 \       Name: TransmitCmdrData
 \       Type: Subroutine
 \   Category: Econet
