@@ -21784,13 +21784,17 @@ ENDIF
 
 .MUT3
 
- LDX ALP1               \ Set P = ALP1, though this gets overwritten by the
- STX P                  \ following, so this has no effect
+                        \ --- Mod: Code removed for Econet: ------------------->
+
+\LDX ALP1               \ Set P = ALP1, though this gets overwritten by the
+\STX P                  \ following, so this has no effect
 
                         \ Fall through into MUT2 to do the following:
                         \
                         \   (S R) = XX(1 0)
                         \   (A P) = Q * A
+
+                        \ --- End of removed code ----------------------------->
 
 \ ******************************************************************************
 \
@@ -35745,35 +35749,39 @@ ENDIF
 \
 \ ******************************************************************************
 
-.NUMBOR
+                        \ --- Mod: Code removed for Econet: ------------------->
 
- PHA                    \ Store A on the stack so we can grab the low nibble
-                        \ from it later
+\.NUMBOR
+\
+\PHA                    \ Store A on the stack so we can grab the low nibble
+\                       \ from it later
+\
+\LSR A                  \ Shift A right so that it contains the high nibble
+\LSR A                  \ of the original argument
+\LSR A
+\LSR A
+\
+\JSR DIDGIT             \ Call DIDGIT below to print 0-F for the high nibble
+\
+\PLA                    \ Restore A from the stack
+\
+\AND #%00001111         \ Extract the low nibble and fall through into DIDGIT
+\                       \ to print 0-F for the low nibble
+\
+\.DIDGIT
+\
+\CMP #10                \ If A >= 10, skip the next three instructions
+\BCS P%+7
+\
+\ADC #'0'               \ A < 10, so print the number in A as a digit 0-9 and
+\JMP CHPR               \ return from the subroutine using a tail call
+\
+\.DIDGIT2
+\
+\ADC #'6'               \ A >= 10, so print the number in A as a digit A-F and
+\JMP CHPR               \ return from the subroutine using a tail call
 
- LSR A                  \ Shift A right so that it contains the high nibble
- LSR A                  \ of the original argument
- LSR A
- LSR A
-
- JSR DIDGIT             \ Call DIDGIT below to print 0-F for the high nibble
-
- PLA                    \ Restore A from the stack
-
- AND #%00001111         \ Extract the low nibble and fall through into DIDGIT
-                        \ to print 0-F for the low nibble
-
-.DIDGIT
-
- CMP #10                \ If A >= 10, skip the next three instructions
- BCS P%+7
-
- ADC #'0'               \ A < 10, so print the number in A as a digit 0-9 and
- JMP CHPR               \ return from the subroutine using a tail call
-
-.DIDGIT2
-
- ADC #'6'               \ A >= 10, so print the number in A as a digit A-F and
- JMP CHPR               \ return from the subroutine using a tail call
+                        \ --- End of removed code ----------------------------->
 
 \ ******************************************************************************
 \
@@ -37667,6 +37675,13 @@ ENDIF
  TXS                    \ location for the 6502 stack, so this instruction
                         \ effectively resets the stack
 
+                        \ --- Mod: Code added for Scoreboard: ----------------->
+
+ STX netDeaths          \ Set the death count to -1 so it gets incremented to
+                        \ zero in DEATH2
+
+                        \ --- End of added code ------------------------------->
+
  JSR RESET              \ Call RESET to initialise most of the game variables
 
                         \ Fall through into DEATH2 to start the game
@@ -37694,6 +37709,15 @@ ENDIF
  JSR RES2               \ Reset a number of flight variables and workspaces
                         \ and fall through into the entry code for the game
                         \ to restart from the title screen
+
+                        \ --- Mod: Code added for Scoreboard: ----------------->
+
+ INC netDeaths          \ Increment the death count
+
+ JSR TransmitCmdrData   \ Transmit commander data to the scoreboard machine, if
+                        \ configured
+
+                        \ --- End of added code ------------------------------->
 
 \ ******************************************************************************
 \
@@ -39259,6 +39283,15 @@ ENDIF
  DEY                    \ Decrement the loop counter
 
  BPL copyme             \ Loop back until we have copied all NT% bytes
+
+                        \ --- Mod: Code added for Scoreboard: ----------------->
+
+ LDA #0                 \ Zero scorePort, netTally and netDeaths to reset the
+ STA scorePort          \ scores and stop transmissions to the scoreboard
+ STA netTally
+ STA netDeaths
+
+                        \ --- End of added code ------------------------------->
 
 .LOR
 
@@ -48314,9 +48347,9 @@ ENDIF
 
                         \ --- Mod: Code added for Scoreboard: ----------------->
 
- INC netTally           \ Increment the kill count in netTally
- BNE taly1
- INC netTally+1
+ INC netTally           \ Increment the kill count in netTally, up to a maximum
+ BNE taly1              \ of 256
+ DEC netTally
 
 .taly1
 
@@ -48440,9 +48473,13 @@ ENDIF
 
 .netTally
 
- SKIP 2                 \ Stores a one-point-per-kill combat score for the
+ SKIP 1                 \ Stores a one-point-per-kill combat score for the
                         \ scoreboard (so all platforms have the same point
                         \ system)
+
+.netDeaths
+
+ SKIP 1                 \ Counts the number of deaths
 
 .oswordBlock
 
@@ -48737,10 +48774,11 @@ ENDIF
 
  STX transmitBuffer+9   \ Store the commander's condition in transmitBuffer+9
 
- LDA netTally           \ Copy the commander's combat score from netTally(1 0)
- STA transmitBuffer+10  \ to transmitBuffer(11 10)
- LDA netTally+1
- STA transmitBuffer+11
+ LDA netTally           \ Copy the commander's combat score from netTally to
+ STA transmitBuffer+10  \ transmitBuffer+10
+
+ LDA netDeaths          \ Copy the commander's death count from netDeaths to
+ STA transmitBuffer+11  \ transmitBuffer+11
 
  LDA CASH               \ Copy the cash levels from CASH(0 1 2 3) to
  STA transmitBuffer+15  \ transmitBuffer(15 14 13 12)
@@ -48942,15 +48980,22 @@ ENDIF
  JSR TT67               \ Print two newlines
  JSR TT67
 
- LDA #8                 \ Print extended token 8 ("RESET SCORES")
+ LDA #8                 \ Print extended token 8 ("RESET SCORES ")
  JSR PrintToken
 
- LDX netTally           \ Get the current combat score from scorePort
- LDY netTally+1
+ LDX netTally           \ Get the current combat score from netTally
 
- LDA #8                 \ Print the 16-bit number in (Y X) to 8 digits, without
- CLC                    \ a decimal point
- JSR TT11
+ CLC                    \ Call pr2 to print the score level as a 3-digit
+ JSR pr2                \ number without a decimal point (by clearing the C
+                        \ flag)
+
+ JSR TT162              \ Print a space
+
+ LDX netDeaths          \ Get the current death count from netDeaths
+
+ CLC                    \ Call pr2 to print the death count as a 3-digit
+ JSR pr2                \ number without a decimal point (by clearing the C
+                        \ flag)
 
  LDA #7                 \ Print extended token 7 ("   ")
  JSR PrintToken
@@ -48959,9 +49004,9 @@ ENDIF
 
  BCC gnet4              \ If the answer was not "yes", jump to gnet4
 
- LDA #0                 \ The answer was yes, so reset the combat score
- STA netTally
- STA netTally+1
+ LDA #0                 \ The answer was yes, so reset the combat score and
+ STA netTally           \ death count
+ STA netDeaths
 
  STA CASH               \ And set the credit level to 100 Cr
  STA CASH+1
@@ -49293,7 +49338,7 @@ ENDMACRO
  ECHR ' '
  EQUB VE
 
- ETWO 'R', 'E'          \ Token 8:    "RESET SCORES"
+ ETWO 'R', 'E'          \ Token 8:    "RESET SCORES "
  ETWO 'S', 'E'
  ECHR 'T'
  ECHR ' '
@@ -49301,6 +49346,7 @@ ENDMACRO
  ECHR 'C'
  ETWO 'O', 'R'
  ETWO 'E', 'S'
+ ECHR ' '
  EQUB VE
 
  SAVE "3-assembled-output/ECONET.unprot.bin", CODE_ECONET%, P%, LOAD_ECONET%
