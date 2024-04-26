@@ -48467,7 +48467,8 @@ ENDIF
                         \   * Bytes #12-15 = commander's credits
                         \
                         \   * Byte #16 = machine type
-                        \                0 = BBC Micro, 1 = Master, 2 = 6502SP
+                        \                0 = BBC Micro SRAM, 1 = Master,
+                        \                2 = 6502SP, 3 = BBC Micro standard
                         \
                         \ Score and credits are stored with the low byte first
                         \ (unlike the way that credits are stored in the game)
