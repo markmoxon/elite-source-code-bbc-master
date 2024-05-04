@@ -27526,7 +27526,7 @@ End macro FACE
      9F08   85 9C      STA &9C
      9F0A   A5 59      LDA &59
      9F0C   85 9D      STA &9D
-     9F0E   4C 63 7C   JMP &7C63
+     9F0E   4C 6A 7C   JMP &7C6A
 .QQ18
 Macro RTOK:
      A000   4C

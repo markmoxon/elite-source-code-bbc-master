@@ -312,6 +312,15 @@ ENDIF
 
  OSCLI = &FFF7          \ The address for the OSCLI routine
 
+                        \ --- Mod: Code added for Compendium: ----------------->
+
+ TRTB% = &9D95          \ Labels that are now in elite-data.asm
+ MVT6 = &9E15
+ MV40 = &9E4A
+
+                        \ --- End of added code ------------------------------->
+
+
 \ ******************************************************************************
 \
 \       Name: ZP
@@ -47594,11 +47603,7 @@ ENDMACRO
 \RTS                    \ Return from the subroutine
 \
 
-                        \ --- And replaced by: -------------------------------->
-
- MVT6 = &9E15           \ MVT6 has been moved to this address in elite-data.asm
-
-                        \ --- End of replacement ------------------------------>
+                        \ --- End of moved code ------------------------------->
 
 \ ******************************************************************************
 \
@@ -47854,11 +47859,7 @@ ENDMACRO
 \                       \ our pitch and roll, so jump back into the MVEIT
 \                       \ routine at MV45 to apply all the other movements
 
-                        \ --- And replaced by: -------------------------------->
-
- MV40 = &9E4A           \ MV40 has been moved to this address in elite-data.asm
-
-                        \ --- End of replacement ------------------------------>
+                        \ --- End of moved code ------------------------------->
 
 \ ******************************************************************************
 \
@@ -48434,11 +48435,7 @@ ENDMACRO
 \EQUB &34, &35, &32     \ MOS code
 \EQUB &2C, &4E, &E3
 
-                        \ --- And replaced by: -------------------------------->
-
- TRTB% = &9D95          \ TRTB% has been moved to this address in elite-data.asm
-
-                        \ --- End of added code ------------------------------->
+                        \ --- End of moved code ------------------------------->
 
 \ ******************************************************************************
 \
