@@ -45049,7 +45049,8 @@ ENDMACRO
 
  JSR LOIN               \ Draw the new laser line
 
- LDA #CYAN              \ Switch to colour 3, which is cyan in the space view
+ LDX TYPE               \ Switch back to the ship colour for this ship 
+ LDA shpcol,X
  STA COL
 
                         \ --- End of replacement ------------------------------>
@@ -46426,7 +46427,8 @@ ENDMACRO
 
  JSR LOIN               \ Draw the old laser line to remove it from the screen
 
- LDA #CYAN              \ Switch to colour 3, which is cyan in the space view
+ LDX TYPE               \ Switch back to the ship colour for this ship 
+ LDA shpcol,X
  STA COL
 
 .noLaserLine
