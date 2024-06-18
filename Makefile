@@ -27,6 +27,31 @@ PYTHON?=python
 #
 # will build an unencrypted Master Compact variant with a maxed-out commander,
 # no workspace noise and no crc32 verification
+#
+# The following variables are written into elite-build-options.asm depending on
+# the above arguments, so they can be passed to BeebAsm:
+#
+# _VERSION
+#   4 = BBC Master
+#
+# _VARIANT
+#   1 = SNG47 (default)
+#   2 = Master Compact
+#
+# _MAX_COMMANDER
+#   TRUE  = Maxed-out commander
+#   FALSE = Standard commander
+#
+# _REMOVE_CHECKSUMS
+#   TRUE  = Disable checksum routines
+#   FALSE = Enable checksum routines
+#
+# _MATCH_ORIGINAL_BINARIES
+#   TRUE  = Match binaries to released version (i.e. fill workspaces with noise)
+#   FALSE = Zero-fill workspaces
+#
+# The encrypt and verify arguments are passed to the elite-checksum.py and
+# crc32.py scripts, rather than BeebAsm
 
 ifeq ($(commander), max)
   max-commander=TRUE
