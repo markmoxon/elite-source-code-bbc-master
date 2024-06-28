@@ -37339,7 +37339,7 @@ ENDIF
  AND #3                 \ Set A = random number in the range 0-3, which we
                         \ will now use to determine the type of ship
 
-                        \ --- Mod: Code added for Compendium: ----------------->
+                        \ --- Mod: Code added for Moray bug fix: -------------->
 
  LSR A                  \ Set the C flag randomly, so we sometimes spawn a Moray
                         \ (see below)
