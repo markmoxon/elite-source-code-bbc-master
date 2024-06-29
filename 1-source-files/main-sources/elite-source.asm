@@ -47257,7 +47257,7 @@ ENDMACRO
  EQUB &8F EOR &FF       \ ESCAPE    KYTB+15   KY9      Launch escape pod
 
  EQUB &F0               \ This value just has to be higher than &80 to act as a
-                        \ terminator for the KYTB matching process in DKS1
+                        \ terminator for the IKNS matching process in FILLKL
 
 \ ******************************************************************************
 \
@@ -47734,8 +47734,8 @@ IF _COMPACT
                         \ button is pressed, otherwise it is set, so AND'ing
                         \ the value of IRB with %10000 extracts this bit
 
- BNE P%+6               \ If the joystick fire button is not being pressed,
-                        \ jump to DK4 to scan for other keys
+ BNE P%+6               \ If the joystick fire button is not being pressed, skip
+                        \ the following to return from the subroutine
 
  LDA #&FF               \ Update the key logger at KY7 to "press" the "A" (fire)
  STA KY7                \ button
