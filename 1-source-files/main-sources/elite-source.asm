@@ -857,7 +857,7 @@ ENDIF
 
 .musicWorkspace
 
- SKIP 8                 \ Storage for the music player, &0092 to &0099 inclusive
+ SKIP 8                 \ Storage for the music player, &0086 to &008F inclusive
 
 .musicRomNumber
 
