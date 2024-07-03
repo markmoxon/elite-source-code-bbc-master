@@ -37670,8 +37670,6 @@ ENDIF
 
                         \ --- End of added code ------------------------------->
 
-
-
  JSR TT17               \ Scan the keyboard for the cursor keys or joystick,
                         \ returning the cursor's delta values in X and Y and
                         \ the key pressed in A
