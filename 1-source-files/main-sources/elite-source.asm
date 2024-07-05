@@ -25891,8 +25891,8 @@ ENDIF
                         \ item)
 
  LDA QQ11               \ If the current view type in QQ11 is not 4 (Sell Cargo
- CMP #4                 \ screen), skip the next two instructions and just
- BNE P%+8               \ return from the subroutine
+ CMP #4                 \ screen), skip the next two instructions and move on to
+ BNE P%+8               \ printing the number of Trumbles
 
  JSR dn2                \ This is the Sell Cargo screen, so call dn2 to make a
                         \ short, high beep and delay for 1 second
