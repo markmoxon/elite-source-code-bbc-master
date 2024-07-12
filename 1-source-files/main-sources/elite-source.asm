@@ -953,7 +953,7 @@ ENDIF
 \.K2
 \
 \SKIP 4                 \ Temporary storage, used in a number of places
-
+\
 \.widget
 \
 \SKIP 1                 \ Temporary storage, used to store the original argument
@@ -1377,7 +1377,7 @@ ENDIF
 \SKIP 1                 \ The galactic y-coordinate of the crosshairs in the
 \                       \ galaxy chart (and, most of the time, the selected
 \                       \ system's galactic y-coordinate)
-
+\
 \.NOSTM
 \
 \SKIP 1                 \ The number of stardust particles shown on screen,
