@@ -26731,8 +26731,8 @@ ENDIF
                         \ item)
 
  LDA QQ11               \ If the current view type in QQ11 is not 4 (Sell Cargo
- CMP #4                 \ screen), skip the next two instructions and just
- BNE P%+8               \ return from the subroutine
+ CMP #4                 \ screen), skip the next two instructions and move on to
+ BNE P%+8               \ printing the number of Trumbles
 
  JSR dn2                \ This is the Sell Cargo screen, so call dn2 to make a
                         \ short, high beep and delay for 1 second
@@ -48520,7 +48520,7 @@ ENDMACRO
  EQUB &8F EOR &FF       \ ESCAPE    KYTB+15   KY9      Launch escape pod
 
  EQUB &F0               \ This value just has to be higher than &80 to act as a
-                        \ terminator for the KYTB matching process in DKS1
+                        \ terminator for the IKNS matching process in FILLKL
 
 \ ******************************************************************************
 \
@@ -48997,8 +48997,8 @@ IF _COMPACT
                         \ button is pressed, otherwise it is set, so AND'ing
                         \ the value of IRB with %10000 extracts this bit
 
- BNE P%+6               \ If the joystick fire button is not being pressed,
-                        \ jump to DK4 to scan for other keys
+ BNE P%+6               \ If the joystick fire button is not being pressed, skip
+                        \ the following to return from the subroutine
 
  LDA #&FF               \ Update the key logger at KY7 to "press" the "A" (fire)
  STA KY7                \ button
