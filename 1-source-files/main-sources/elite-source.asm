@@ -43993,7 +43993,7 @@ ENDMACRO
  STA XX12               \ from the XX3 heap into XX12
 
  LDA XX3+3,X            \ Fetch the y_hi coordinate of the edge's end vertex
- STA XX12+1             \ from the XX3 heap into XX11+1
+ STA XX12+1             \ from the XX3 heap into XX12+1
 
  LDA XX3+1,X            \ Fetch the x_hi coordinate of the edge's end vertex
  STA XX15+5             \ from the XX3 heap into XX15+5
@@ -45263,7 +45263,7 @@ ENDMACRO
  JSR LOIN               \ Draw a line from (X1, Y1) to (X2, Y2)
 
  LDA (XX19),Y           \ Set X1 to the Y-th coordinate on the ship line heap,
- STA X1                 \ i.e. one we are replacing in the heap
+ STA X1                 \ i.e. the one we are replacing in the heap
 
  LDA XX12               \ Replace it with the X1 coordinate in XX12
  STA (XX19),Y
@@ -45271,7 +45271,7 @@ ENDMACRO
  INY                    \ Increment the index to point to the Y1 coordinate
 
  LDA (XX19),Y           \ Set Y1 to the Y-th coordinate on the ship line heap,
- STA Y1                 \ i.e. one we are replacing in the heap
+ STA Y1                 \ i.e. the one we are replacing in the heap
 
  LDA XX12+1             \ Replace it with the Y1 coordinate in XX12+1
  STA (XX19),Y
@@ -45279,7 +45279,7 @@ ENDMACRO
  INY                    \ Increment the index to point to the X2 coordinate
 
  LDA (XX19),Y           \ Set X2 to the Y-th coordinate on the ship line heap,
- STA X2
+ STA X2                 \ i.e. the one we are replacing in the heap
 
  LDA XX12+2             \ Replace it with the X2 coordinate in XX12+2
  STA (XX19),Y
@@ -45287,7 +45287,7 @@ ENDMACRO
  INY                    \ Increment the index to point to the Y2 coordinate
 
  LDA (XX19),Y           \ Set Y2 to the Y-th coordinate on the ship line heap,
- STA Y2
+ STA Y2                 \ i.e. the one we are replacing in the heap
 
  LDA XX12+3             \ Replace it with the Y2 coordinate in XX12+3
  STA (XX19),Y
