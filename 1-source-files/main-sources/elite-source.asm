@@ -44726,10 +44726,10 @@ ENDMACRO
 .LL146
 
                         \ If we get here then we have clipped our line to the
-                        \ (if we had to clip it at all), so we move the low
-                        \ bytes from (x1, y1) and (x2, y2) into (X1, Y1) and
-                        \ (X2, Y2), remembering that they share locations with
-                        \ XX15:
+                        \ screen edge (if we had to clip it at all), so we move
+                        \ the low bytes from (x1, y1) and (x2, y2) into (X1, Y1)
+                        \ and (X2, Y2), remembering that they share locations
+                        \ with XX15:
                         \
                         \   X1 = XX15
                         \   Y1 = XX15+1
