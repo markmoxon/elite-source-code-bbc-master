@@ -7809,7 +7809,7 @@ ENDIF
  ECHR 'O'               \                {commander name}.{cr}
  ECHR 'O'               \                 {single cap}I{lower case} AM {single
  ECHR 'D'               \                cap}AGENT{single cap}BLAKE OF {single
- ECHR ' '               \                cap}NAVAL {single cap}INTELLEGENCE.{cr}
+ ECHR ' '               \                cap}NAVAL {single cap}INTELLIGENCE.{cr}
  ECHR 'D'               \                 {single cap}AS YOU KNOW, THE {single
  ECHR 'A'               \                cap}NAVY HAVE BEEN KEEPING THE {single
  ECHR 'Y'               \                cap}THARGOIDS OFF YOUR ASS OUT IN DEEP
