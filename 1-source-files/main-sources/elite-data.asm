@@ -58,13 +58,23 @@
  BETA  = &0042
  K     = &0056
  Q     = &0079
+ R     = &007A
+ S     = &007B
  T     = &007C
  ALPHA = &0085
  INWK  = &009B
+ KL    = &00C2
 
+ VIEW  = &0E77
  MVT3  = &3AF9
  MULT3 = &4606
- MV45  = &7C71
+ MAD   = &47C9
+ MV45  = &7C92
+ LOOK1 = &7E10
+
+ VIA = &FE00            \ Memory-mapped space for accessing internal hardware,
+                        \ such as the video ULA, 6845 CRTC and 6522 VIAs (also
+                        \ known as SHEILA)
 
                         \ --- End of added code ------------------------------->
 
@@ -3841,6 +3851,127 @@ ENDMACRO
 
 \ ******************************************************************************
 \
+\       Name: MVS4
+\       Type: Subroutine
+\   Category: Moving
+\    Summary: Apply pitch and roll to an orientation vector
+\  Deep dive: Orientation vectors
+\             Pitching and rolling
+\
+\ ------------------------------------------------------------------------------
+\
+\ Apply pitch and roll angles alpha and beta to the orientation vector in Y.
+\
+\ Specifically, this routine rotates a point (x, y, z) around the origin by
+\ pitch alpha and roll beta, using the small angle approximation to make the
+\ maths easier, and incorporating the Minsky circle algorithm to make the
+\ rotation more stable (though more elliptic).
+\
+\ If that paragraph makes sense to you, then you should probably be writing
+\ this commentary! For the rest of us, there's a detailed explanation of all
+\ this in the deep dive on "Pitching and rolling".
+\
+\ ------------------------------------------------------------------------------
+\
+\ Arguments:
+\
+\   Y                   Determines which of the INWK orientation vectors to
+\                       transform:
+\
+\                         * Y = 9 rotates nosev: (nosev_x, nosev_y, nosev_z)
+\
+\                         * Y = 15 rotates roofv: (roofv_x, roofv_y, roofv_z)
+\
+\                         * Y = 21 rotates sidev: (sidev_x, sidev_y, sidev_z)
+\
+\ ******************************************************************************
+
+.MVS4
+
+ LDA ALPHA              \ Set Q = alpha (the roll angle to rotate through)
+ STA Q
+
+ LDX INWK+2,Y           \ Set (S R) = nosev_y
+ STX R
+ LDX INWK+3,Y
+ STX S
+
+ LDX INWK,Y             \ These instructions have no effect as MAD overwrites
+ STX P                  \ X and P when called, but they set X = P = nosev_x_lo
+
+ LDA INWK+1,Y           \ Set A = -nosev_x_hi
+ EOR #%10000000
+
+ JSR MAD                \ Set (A X) = Q * A + (S R)
+ STA INWK+3,Y           \           = alpha * -nosev_x_hi + nosev_y
+ STX INWK+2,Y           \
+                        \ and store (A X) in nosev_y, so this does:
+                        \
+                        \ nosev_y = nosev_y - alpha * nosev_x_hi
+
+ STX P                  \ This instruction has no effect as MAD overwrites P,
+                        \ but it sets P = nosev_y_lo
+
+ LDX INWK,Y             \ Set (S R) = nosev_x
+ STX R
+ LDX INWK+1,Y
+ STX S
+
+ LDA INWK+3,Y           \ Set A = nosev_y_hi
+
+ JSR MAD                \ Set (A X) = Q * A + (S R)
+ STA INWK+1,Y           \           = alpha * nosev_y_hi + nosev_x
+ STX INWK,Y             \
+                        \ and store (A X) in nosev_x, so this does:
+                        \
+                        \ nosev_x = nosev_x + alpha * nosev_y_hi
+
+ STX P                  \ This instruction has no effect as MAD overwrites P,
+                        \ but it sets P = nosev_x_lo
+
+ LDA BETA               \ Set Q = beta (the pitch angle to rotate through)
+ STA Q
+
+ LDX INWK+2,Y           \ Set (S R) = nosev_y
+ STX R
+ LDX INWK+3,Y
+ STX S
+ LDX INWK+4,Y
+
+ STX P                  \ This instruction has no effect as MAD overwrites P,
+                        \ but it sets P = nosev_y
+
+ LDA INWK+5,Y           \ Set A = -nosev_z_hi
+ EOR #%10000000
+
+ JSR MAD                \ Set (A X) = Q * A + (S R)
+ STA INWK+3,Y           \           = beta * -nosev_z_hi + nosev_y
+ STX INWK+2,Y           \
+                        \ and store (A X) in nosev_y, so this does:
+                        \
+                        \ nosev_y = nosev_y - beta * nosev_z_hi
+
+ STX P                  \ This instruction has no effect as MAD overwrites P,
+                        \ but it sets P = nosev_y_lo
+
+ LDX INWK+4,Y           \ Set (S R) = nosev_z
+ STX R
+ LDX INWK+5,Y
+ STX S
+
+ LDA INWK+3,Y           \ Set A = nosev_y_hi
+
+ JSR MAD                \ Set (A X) = Q * A + (S R)
+ STA INWK+5,Y           \           = beta * nosev_y_hi + nosev_z
+ STX INWK+4,Y           \
+                        \ and store (A X) in nosev_z, so this does:
+                        \
+                        \ nosev_z = nosev_z + beta * nosev_y_hi
+
+ RTS                    \ Return from the subroutine
+
+\ ******************************************************************************
+\
 \       Name: MVT6
 \       Type: Subroutine
 \   Category: Moving
@@ -4201,12 +4332,261 @@ ENDMACRO
                         \ our pitch and roll, so jump back into the MVEIT
                         \ routine at MV45 to apply all the other movements
 
-\SKIP 491               \ These bytes appear to be unused
+                        \ --- End of replacement ------------------------------>
 
+\ ******************************************************************************
+\
+\       Name: b_table
+\       Type: Variable
+\   Category: Keyboard
+\    Summary: Lookup table for Delta 14B joystick buttons
+\  Deep dive: Delta 14B joystick support
+\
+\ ------------------------------------------------------------------------------
+\
+\ In the following table, which maps buttons on the Delta 14B to the flight
+\ controls, the high nibble of the value gives the column:
+\
+\   &6 = %110 = left column
+\   &5 = %101 = middle column
+\   &3 = %011 = right column
+\
+\ while the low nibble gives the row:
+\
+\   &1 = %0001 = top row
+\   &2 = %0010 = second row
+\   &4 = %0100 = third row
+\   &8 = %1000 = bottom row
+\
+\ This results in the following mapping (as the top two fire buttons are treated
+\ the same as the top button in the middle row):
+\
+\   Fire laser                                    Fire laser
+\
+\   Slow down              Fire laser             Speed up
+\   Unarm Missile          Fire Missile           Target missile
+\   Hyperspace Unit        E.C.M.                 Escape pod
+\   Docking computer on    In-system jump         Docking computer off
+\
+\ ******************************************************************************
+
+                        \ --- Mod: Code added for Delta 14B: ------------------>
+
+.b_table
+
+ EQUB &54               \ Middle column  Third row    KL+1    E.C.M.
+ EQUB &32               \ Right column   Second row   KL+2    Arm missile
+ EQUB &62               \ Left column    Second row   KL+3    Unarm missile
+ EQUB &68               \ Left column    Bottom row   KL+4    Cancel docking
+ EQUB &51               \ Middle column  Top row      KL+5    Fire lasers
+ EQUB &80               \ -                           KL+6    Pitch up
+ EQUB &58               \ Middle column  Bottom row   KL+7    In-system jump
+ EQUB &80               \ -                           KL+8    Pitch down
+ EQUB &38               \ Right column   Bottom row   KL+9    Docking computer
+ EQUB &64               \ Left column    Third row    -       Front view
+ EQUB &31               \ Right column   Top row      KL+11   Speed up
+ EQUB &52               \ Middle column  Second row   KL+12   Fire missile
+ EQUB &80               \ -                           KL+13   Roll left
+ EQUB &80               \ -                           KL+14   Roll right
+ EQUB &61               \ Left column    Top row      KL+15   Slow down
+ EQUB &34               \ Right column   Third row    -       Rear view
+\EQUB &34               \ Right column   Third row    KL+16   Escape pod
+
+                        \ --- End of added code ------------------------------->
+
+\ ******************************************************************************
+\
+\       Name: b_14
+\       Type: Subroutine
+\   Category: Keyboard
+\    Summary: Scan the Delta 14B joystick buttons
+\  Deep dive: Delta 14B joystick support
+\
+\ ------------------------------------------------------------------------------
+\
+\ Scan the Delta 14B for the flight key given in register Y, where Y is the
+\ offset into the KYTB table above (so this is the same approach as in DKS1).
+\
+\ The keys on the Delta 14B are laid out as follows (the top two fire buttons
+\ are treated the same as the top button in the middle row):
+\
+\   Fire laser                                    Fire laser
+\
+\   Slow down              Fire laser             Speed up
+\   Unarm Missile          Fire Missile           Target missile
+\   Hyperspace Unit        E.C.M.                 Escape pod
+\   Docking computer on    In-system jump         Docking computer off
+\
+\ ------------------------------------------------------------------------------
+\
+\ Arguments:
+\
+\   Y                   The offset into the KYTB table of the key that we want
+\                       to scan on the Delta 14B
+\
+\ ******************************************************************************
+
+                        \ --- Mod: Code added for Delta 14B: ------------------>
+
+.b_13
+
+ LDA #0                 \ Set A = 0 for the second pass through the following,
+                        \ so we can check the joystick plugged into the rear
+                        \ socket of the Delta 14B adaptor
+
+.b_14
+
+                        \ This is the entry point for the routine, which is
+                        \ called with A = 128 (the value of BSTK when the Delta
+                        \ 14b is enabled), and if the key we are checking has a
+                        \ corresponding button on the Delta 14B, it is run a
+                        \ second time with A = 0
+
+ TAX                    \ Store A in X so we can restore it below
+
+ EOR b_table-1,Y        \ We now EOR the value in A with the Y-th entry in
+ BEQ b_quit             \ b_table, and jump to b_quit to return from the
+                        \ subroutine if the table entry is 128 (&80) - in other
+                        \ words, we quit if Y is the offset for the roll and
+                        \ pitch controls
+
+                        \ If we get here, then the offset in Y points to a
+                        \ control with a corresponding button on the Delta 14B,
+                        \ and we pass through the following twice, once with a
+                        \ starting value of A = 128, and again with a starting
+                        \ value of A = 0
+                        \
+                        \ On the first pass, the EOR will set A to the value
+                        \ from b_table but with bit 7 set, which means we scan
+                        \ the joystick plugged into the side socket of the
+                        \ Delta 14B adaptor
+                        \
+                        \ On the second pass, the EOR will set A to the value
+                        \ from b_table (i.e. with bit 7 clear), which means we
+                        \ scan the joystick plugged into the rear socket of the
+                        \ Delta 14B adaptor
+
+ STA VIA+&60            \ Set 6522 User VIA output register ORB (SHEILA &60) to
+                        \ the value in A, which tells the Delta 14B adaptor box
+                        \ that we want to read the buttons specified in PB4 to
+                        \ PB7 (i.e. bits 4-7), as follows:
+                        \
+                        \ On the side socket joystick (bit 7 set):
+                        \
+                        \   %1110 = read buttons in left column   (bit 4 clear)
+                        \   %1101 = read buttons in middle column (bit 5 clear)
+                        \   %1011 = read buttons in right column  (bit 6 clear)
+                        \
+                        \ On the rear socket joystick (bit 7 clear):
+                        \
+                        \   %0110 = read buttons in left column   (bit 4 clear)
+                        \   %0101 = read buttons in middle column (bit 5 clear)
+                        \   %0011 = read buttons in right column  (bit 6 clear)
+
+ AND #%00001111         \ We now read the 6522 User VIA to fetch PB0 to PB3 from
+ AND VIA+&60            \ the user port (PB0 = bit 0 to PB3 = bit 3), which
+                        \ tells us whether any buttons in the specified column
+                        \ are being pressed, and if they are, in which row. The
+                        \ values read are as follows:
+                        \
+                        \   %1111 = no button is being pressed in this column
+                        \   %1110 = button pressed in top row    (bit 0 clear)
+                        \   %1101 = button pressed in second row (bit 1 clear)
+                        \   %1011 = button pressed in third row  (bit 2 clear)
+                        \   %0111 = button pressed in bottom row (bit 3 clear)
+                        \
+                        \ In other words, if a button is being pressed in the
+                        \ top row in the previously specified column, then PB0
+                        \ (bit 0) will go low in the value we read from the user
+                        \ port
+
+ BEQ b_pressed          \ In the above we AND'd the result from the user port
+                        \ with the bottom four bits of the table value (the
+                        \ low nibble). The low nibble in b_table contains
+                        \ a 1 in the relevant position for that row that
+                        \ corresponds with the clear bit in the response from
+                        \ the user port, so if we AND the two together and get
+                        \ a zero, that means that button is being pressed, in
+                        \ which case we jump to b_pressed to update the key
+                        \ logger for that button
+                        \
+                        \ For example, take the b_table entry for the escape pod
+                        \ button, in the right column and third row. The value
+                        \ in b_table is &34. The high nibble denotes the column,
+                        \ which is &3 = %011, which means in the STA VIA+&60
+                        \ above, we write %1011 in the first pass (when A = 128)
+                        \ to set the right column for the side socket joystick,
+                        \ and we write %0011 in the first pass (when A = 0) to
+                        \ set the right column for the rear socket joystick
+                        \
+                        \ Now for the row. The low nibble of the &34 value
+                        \ from b_table contains the row, so that's &4 = %0100.
+                        \ When we read the user port, then we will fetch %1011
+                        \ from VIA+&60 if the button in the third row is being
+                        \ pressed, so when we AND the two together, we get:
+                        \
+                        \   %0100 AND %1011 = 0
+                        \
+                        \ which will indicate the button is being pressed. If
+                        \ any other button is being pressed, or no buttons at
+                        \ all, then the result will be non-zero and we move on
+                        \ to the next button
+
+ TXA                    \ Restore the original value of A that we stored in X
+
+ BMI b_13               \ If we just did the above with A = 128, then loop back
+                        \ to b_13 to do it again with A = 0
+
+.b_quit
+
+ RTS                    \ Return from the subroutine
+
+.b_pressed
+
+ CPY #10                \ If this is the front view button, jump to b_front to
+ BEQ b_front            \ process it
+
+ CPY #16                \ If this is the front view button, jump to b_rear to
+ BEQ b_rear             \ process it
+
+ LDA #&FF               \ Store &FF in the Y-th byte of the key logger at KL
+ STA KL,Y
+
+ RTS                    \ Return from the subroutine
+
+.b_front
+
+ LDX VIEW               \ If we are already on the front view, do nothing
+ BEQ b_quit
+
+ LDX #&20               \ Set the key "pressed" to f1 (internal key &20)
+
+ BNE b_return           \ Jump to b_return to "press" this key (this BNE is
+                        \ effectively a JMP as X is never zero)
+
+.b_rear
+
+ LDX VIEW               \ If we are already on the rear view, do nothing
+ CPX #1
+ BEQ b_quit
+
+ LDX #&71               \ Set the key "pressed" to f0 (internal key &71)
+
+.b_return
+
+ STX KL                 \ Set the key "pressed" to the internal key in X
+
+ CLD                    \ Clear the D flag to return to binary mode (for cases
+                        \ where this routine is called in BCD mode)
+
+ PLA                    \ Remove the return address from the top of the stack,
+ PLA                    \ so the RTS returns to the caller of FILLKL (i.e. back
+                        \ to RDKEY)
+
+ RTS                    \ Return from the subroutine
 
  ORG &A000
-
-                        \ --- End of replacement ------------------------------>
+                        \ --- End of added code ------------------------------->
 
 \ ******************************************************************************
 \

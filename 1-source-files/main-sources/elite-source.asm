@@ -315,8 +315,10 @@ ENDIF
                         \ --- Mod: Code added for Compendium: ----------------->
 
  TRTB% = &9D95          \ Labels that are now in elite-data.asm
- MVT6 = &9E15
- MV40 = &9E4A
+ MVS4 = &9E15
+ MVT6 = &9E7C
+ MV40 = &9EB1
+ b_14 = &9F8A
 
                         \ --- End of added code ------------------------------->
 
@@ -10256,7 +10258,24 @@ ENDIF
                         \ Toggled by pressing "B" when paused, see the DKS3
                         \ routine for details
 
- SKIP 1                 \ This byte appears to be unused
+                        \ --- Mod: Code removed for Delta 14B: ---------------->
+
+\SKIP 1                 \ This byte appears to be unused
+
+                        \ --- And replaced by: -------------------------------->
+
+.delta14b
+
+ SKIP 1                 \ Delta 14B configuration setting
+                        \
+                        \   * 0 = keyboard or joystick (default)
+                        \
+                        \   * &FF = Delta 14B
+                        \
+                        \ Toggled by pressing "D" when paused, see the DK4
+                        \ routine for details
+
+                        \ --- End of replacement ------------------------------>
 
 .VOL
 
@@ -38939,6 +38958,15 @@ ENDIF
 
 IF _SNG47
 
+                        \ --- Mod: Code added for Delta 14B: ------------------>
+
+ LDA #&51               \ Set 6522 User VIA output register ORB (SHEILA &60) to
+ STA VIA+&60            \ the Delta 14B joystick button in the middle column
+                        \ (high nibble &5) and top row (low nibble &1), which
+                        \ corresponds to the fire button
+
+                        \ --- End of added code ------------------------------->
+
  LDA VIA+&40            \ Read 6522 System VIA input register IRB (SHEILA &40)
 
  AND #%00010000         \ Bit 4 of IRB (PB4) is clear if joystick 1's fire
@@ -41277,6 +41305,15 @@ IF _SNG47
 
  STA JSTY               \ Store the resulting joystick Y value in JSTY
 
+                        \ --- Mod: Code added for Delta 14B: ------------------>
+
+ LDA #&51               \ Set 6522 User VIA output register ORB (SHEILA &60) to
+ STA VIA+&60            \ the Delta 14B joystick button in the middle column
+                        \ (high nibble &5) and top row (low nibble &1), which
+                        \ corresponds to the fire button
+
+                        \ --- End of added code ------------------------------->
+
  LDA VIA+&40            \ Read 6522 System VIA input register IRB (SHEILA &40)
 
  AND #%00010000         \ Bit 4 of IRB (PB4) is clear if joystick 1's fire
@@ -41496,6 +41533,20 @@ ENDIF
 
 .skipMusicToggles
 
+ CPX #'D'               \ If "D" is not being pressed, skip to bitstick
+ BNE delt1
+
+ LDA delta14b           \ Toggle the value of delta14b between 0 and &FF
+ EOR #&FF
+ STA delta14b
+
+ STA JSTK               \ Configure JSTK to the same value, so when the Bitstik
+                        \ is enabled, so is the joystick
+
+ JMP delt2              \ Jump to delt2 to make a beep, if appropriate
+
+.delt1
+
                         \ --- End of added code ------------------------------->
 
  CPX #'B'               \ If "B" is not being pressed, skip to DOVOL2
@@ -41512,11 +41563,33 @@ ENDIF
                         \ is enabled, the joystick is configured with reversed
                         \ channels
 
+                        \ --- Mod: Code added for Delta 14B: ------------------>
+
+.delt2
+
+                        \ --- End of added code ------------------------------->
+
  BPL P%+5               \ If we just toggled the Bitstik off (i.e. to 0, which
-                        \ is positive), then skip the following two instructions
+                        \ is positive), then skip the first of these two
+                        \ instructions, so we get two beeps for on and one beep
+                        \ for off
 
  JSR BELL               \ We just enabled the Bitstik, so give two standard
- JSR BELL               \ system beeps
+                        \ system beeps (this being the first)
+
+ JSR BELL               \ Make another system beep
+
+                        \ --- Mod: Code added for Delta 14B: ------------------>
+
+ JSR DELAY              \ Wait for Y vertical syncs (Y is between 64 and 70, so
+                        \ this is always a bit longer than a second)
+
+ LDX #&51               \ Set X to &51, which is the internal key for "S" on the
+                        \ BBC Micro. This is set to ensure that X has the same
+                        \ value at this point as the BBC Micro version of this
+                        \ routine would
+
+                        \ --- End of added code ------------------------------->
 
 .DOVOL2
 
@@ -47445,89 +47518,93 @@ ENDMACRO
 \
 \ ******************************************************************************
 
-.MVS4
+                        \ --- Mod: Code moved for Compendium: ----------------->
 
- LDA ALPHA              \ Set Q = alpha (the roll angle to rotate through)
- STA Q
+\.MVS4
+\
+\LDA ALPHA              \ Set Q = alpha (the roll angle to rotate through)
+\STA Q
+\
+\LDX INWK+2,Y           \ Set (S R) = nosev_y
+\STX R
+\LDX INWK+3,Y
+\STX S
+\
+\LDX INWK,Y             \ These instructions have no effect as MAD overwrites
+\STX P                  \ X and P when called, but they set X = P = nosev_x_lo
+\
+\LDA INWK+1,Y           \ Set A = -nosev_x_hi
+\EOR #%10000000
+\
+\JSR MAD                \ Set (A X) = Q * A + (S R)
+\STA INWK+3,Y           \           = alpha * -nosev_x_hi + nosev_y
+\STX INWK+2,Y           \
+\                       \ and store (A X) in nosev_y, so this does:
+\                       \
+\                       \ nosev_y = nosev_y - alpha * nosev_x_hi
+\
+\STX P                  \ This instruction has no effect as MAD overwrites P,
+\                       \ but it sets P = nosev_y_lo
+\
+\LDX INWK,Y             \ Set (S R) = nosev_x
+\STX R
+\LDX INWK+1,Y
+\STX S
+\
+\LDA INWK+3,Y           \ Set A = nosev_y_hi
+\
+\JSR MAD                \ Set (A X) = Q * A + (S R)
+\STA INWK+1,Y           \           = alpha * nosev_y_hi + nosev_x
+\STX INWK,Y             \
+\                       \ and store (A X) in nosev_x, so this does:
+\                       \
+\                       \ nosev_x = nosev_x + alpha * nosev_y_hi
+\
+\STX P                  \ This instruction has no effect as MAD overwrites P,
+\                       \ but it sets P = nosev_x_lo
+\
+\LDA BETA               \ Set Q = beta (the pitch angle to rotate through)
+\STA Q
+\
+\LDX INWK+2,Y           \ Set (S R) = nosev_y
+\STX R
+\LDX INWK+3,Y
+\STX S
+\LDX INWK+4,Y
+\
+\STX P                  \ This instruction has no effect as MAD overwrites P,
+\                       \ but it sets P = nosev_y
+\
+\LDA INWK+5,Y           \ Set A = -nosev_z_hi
+\EOR #%10000000
+\
+\JSR MAD                \ Set (A X) = Q * A + (S R)
+\STA INWK+3,Y           \           = beta * -nosev_z_hi + nosev_y
+\STX INWK+2,Y           \
+\                       \ and store (A X) in nosev_y, so this does:
+\                       \
+\                       \ nosev_y = nosev_y - beta * nosev_z_hi
+\
+\STX P                  \ This instruction has no effect as MAD overwrites P,
+\                       \ but it sets P = nosev_y_lo
+\
+\LDX INWK+4,Y           \ Set (S R) = nosev_z
+\STX R
+\LDX INWK+5,Y
+\STX S
+\
+\LDA INWK+3,Y           \ Set A = nosev_y_hi
+\
+\JSR MAD                \ Set (A X) = Q * A + (S R)
+\STA INWK+5,Y           \           = beta * nosev_y_hi + nosev_z
+\STX INWK+4,Y           \
+\                       \ and store (A X) in nosev_z, so this does:
+\                       \
+\                       \ nosev_z = nosev_z + beta * nosev_y_hi
+\
+\RTS                    \ Return from the subroutine
 
- LDX INWK+2,Y           \ Set (S R) = nosev_y
- STX R
- LDX INWK+3,Y
- STX S
-
- LDX INWK,Y             \ These instructions have no effect as MAD overwrites
- STX P                  \ X and P when called, but they set X = P = nosev_x_lo
-
- LDA INWK+1,Y           \ Set A = -nosev_x_hi
- EOR #%10000000
-
- JSR MAD                \ Set (A X) = Q * A + (S R)
- STA INWK+3,Y           \           = alpha * -nosev_x_hi + nosev_y
- STX INWK+2,Y           \
-                        \ and store (A X) in nosev_y, so this does:
-                        \
-                        \ nosev_y = nosev_y - alpha * nosev_x_hi
-
- STX P                  \ This instruction has no effect as MAD overwrites P,
-                        \ but it sets P = nosev_y_lo
-
- LDX INWK,Y             \ Set (S R) = nosev_x
- STX R
- LDX INWK+1,Y
- STX S
-
- LDA INWK+3,Y           \ Set A = nosev_y_hi
-
- JSR MAD                \ Set (A X) = Q * A + (S R)
- STA INWK+1,Y           \           = alpha * nosev_y_hi + nosev_x
- STX INWK,Y             \
-                        \ and store (A X) in nosev_x, so this does:
-                        \
-                        \ nosev_x = nosev_x + alpha * nosev_y_hi
-
- STX P                  \ This instruction has no effect as MAD overwrites P,
-                        \ but it sets P = nosev_x_lo
-
- LDA BETA               \ Set Q = beta (the pitch angle to rotate through)
- STA Q
-
- LDX INWK+2,Y           \ Set (S R) = nosev_y
- STX R
- LDX INWK+3,Y
- STX S
- LDX INWK+4,Y
-
- STX P                  \ This instruction has no effect as MAD overwrites P,
-                        \ but it sets P = nosev_y
-
- LDA INWK+5,Y           \ Set A = -nosev_z_hi
- EOR #%10000000
-
- JSR MAD                \ Set (A X) = Q * A + (S R)
- STA INWK+3,Y           \           = beta * -nosev_z_hi + nosev_y
- STX INWK+2,Y           \
-                        \ and store (A X) in nosev_y, so this does:
-                        \
-                        \ nosev_y = nosev_y - beta * nosev_z_hi
-
- STX P                  \ This instruction has no effect as MAD overwrites P,
-                        \ but it sets P = nosev_y_lo
-
- LDX INWK+4,Y           \ Set (S R) = nosev_z
- STX R
- LDX INWK+5,Y
- STX S
-
- LDA INWK+3,Y           \ Set A = nosev_y_hi
-
- JSR MAD                \ Set (A X) = Q * A + (S R)
- STA INWK+5,Y           \           = beta * nosev_y_hi + nosev_z
- STX INWK+4,Y           \
-                        \ and store (A X) in nosev_z, so this does:
-                        \
-                        \ nosev_z = nosev_z + beta * nosev_y_hi
-
- RTS                    \ Return from the subroutine
+                        \ --- End of moved code ------------------------------->
 
 \ ******************************************************************************
 \
@@ -48539,6 +48616,37 @@ ENDMACRO
  JSR ZEKTRAN            \ Call ZEKTRAN to clear the key logger, which also sets
                         \ X to 0 (so we can use X as an index for working our
                         \ way through the flight keys in Rd2 below)
+
+                        \ --- Mod: Code added for Delta 14B: ------------------>
+
+IF _SNG47
+
+ LDA delta14b           \ If delta14b is zero, then the Delta 14B joystick
+ BEQ fill2              \ is not configured, so jump to fill2 to skip the
+                        \ following
+
+ LDY #16                \ So set a decreasing counter in Y to work through the
+                        \ Delta 14B buttons
+
+.fill1
+
+ LDA #%10000000         \ Strip bits 0 to 6 of A, as that's what the b_14
+                        \ routine expects (i.e. A = 128)
+
+ JSR b_14               \ Call b_14 to check the Delta 14B joystick buttons and
+                        \ populate the key logger
+
+ DEY                    \ Decrement the loop counter
+
+ BNE fill1              \ If not, loop back to process the next key
+
+ LDX #0                 \ Set an index in X to work through the keyboard
+
+.fill2
+
+ENDIF
+
+                        \ --- End of added code ------------------------------->
 
  LDA #16                \ Start the scan with internal key number 16 ("Q")
 
