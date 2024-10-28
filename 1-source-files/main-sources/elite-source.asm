@@ -40345,10 +40345,14 @@ ENDIF
                         \ channels
 
  BPL P%+5               \ If we just toggled the Bitstik off (i.e. to 0, which
-                        \ is positive), then skip the following two instructions
+                        \ is positive), then skip the first of these two
+                        \ instructions, so we get two beeps for on and one beep
+                        \ for off
 
  JSR BELL               \ We just enabled the Bitstik, so give two standard
- JSR BELL               \ system beeps
+                        \ system beeps (this being the first)
+
+ JSR BELL               \ Make another system beep
 
 .DOVOL2
 
