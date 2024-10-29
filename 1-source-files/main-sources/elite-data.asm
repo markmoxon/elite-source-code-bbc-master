@@ -4365,7 +4365,7 @@ ENDMACRO
 \
 \   Slow down              Fire laser             Speed up
 \   Unarm Missile          Fire Missile           Target missile
-\   Hyperspace Unit        E.C.M.                 Escape pod
+\   Front view             E.C.M.                 Rear view
 \   Docking computer on    In-system jump         Docking computer off
 \
 \ ******************************************************************************
@@ -4414,7 +4414,7 @@ ENDMACRO
 \
 \   Slow down              Fire laser             Speed up
 \   Unarm Missile          Fire Missile           Target missile
-\   Hyperspace Unit        E.C.M.                 Escape pod
+\   Front view             E.C.M.                 Rear view
 \   Docking computer on    In-system jump         Docking computer off
 \
 \ ------------------------------------------------------------------------------
@@ -4559,7 +4559,7 @@ ENDMACRO
  LDX VIEW               \ If we are already on the front view, do nothing
  BEQ b_quit
 
- LDX #&20               \ Set the key "pressed" to f1 (internal key &20)
+ LDX #&20               \ Set the key "pressed" to f0 (internal key &20)
 
  BNE b_return           \ Jump to b_return to "press" this key (this BNE is
                         \ effectively a JMP as X is never zero)
@@ -4570,7 +4570,7 @@ ENDMACRO
  CPX #1
  BEQ b_quit
 
- LDX #&71               \ Set the key "pressed" to f0 (internal key &71)
+ LDX #&71               \ Set the key "pressed" to f1 (internal key &71)
 
 .b_return
 
