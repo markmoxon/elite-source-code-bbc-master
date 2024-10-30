@@ -14351,7 +14351,7 @@ S.ELTE &58D2  &634A  &1300  &58D2
      6F52   20 49 13   JSR &1349
      6F55   A2 51      LDX #&51
 .skipMusicToggles
-     6F57   E0 44      CPX #&44
+     6F57   E0 4C      CPX #&4C
      6F59   D0 0E      BNE &6F69
      6F5B   AD 60 2C   LDA &2C60
      6F5E   49 FF      EOR #&FF
