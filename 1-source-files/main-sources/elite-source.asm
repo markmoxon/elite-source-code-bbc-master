@@ -41544,7 +41544,7 @@ ENDIF
 
 .skipMusicToggles
 
- CPX #'L'               \ If "L" is not being pressed, skip to bitstick
+ CPX #'L'               \ If "L" is not being pressed, skip to delt1
  BNE delt1
 
  LDA delta14b           \ Toggle the value of delta14b between 0 and &FF
