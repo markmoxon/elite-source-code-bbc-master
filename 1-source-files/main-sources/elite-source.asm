@@ -10272,7 +10272,7 @@ ENDIF
                         \
                         \   * &FF = Delta 14B
                         \
-                        \ Toggled by pressing "D" when paused, see the DK4
+                        \ Toggled by pressing "D" when paused, see the DKS3
                         \ routine for details
 
                         \ --- End of replacement ------------------------------>
