@@ -41533,15 +41533,15 @@ ENDIF
 
 .skipMusicToggles
 
- CPX #'D'               \ If "D" is not being pressed, skip to bitstick
+ CPX #'L'               \ If "L" is not being pressed, skip to bitstick
  BNE delt1
 
  LDA delta14b           \ Toggle the value of delta14b between 0 and &FF
  EOR #&FF
  STA delta14b
 
- STA JSTK               \ Configure JSTK to the same value, so when the Bitstik
-                        \ is enabled, so is the joystick
+ STA JSTK               \ Configure JSTK to the same value, so when the Delta
+                        \ 14B is enabled, so is the joystick
 
  JMP delt2              \ Jump to delt2 to make a beep, if appropriate
 
