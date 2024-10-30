@@ -38437,9 +38437,20 @@ ENDIF
 
 .BEGIN
 
- LDX #(DISK-COMC)       \ We start by zeroing all the configuration variables
-                        \ between COMC and DISK, to set them to their default
-                        \ values, so set a counter in X for DISK - COMC bytes
+                        \ --- Mod: Code removed for Delta 14B: ---------------->
+
+\LDX #(DISK-COMC)       \ We start by zeroing all the configuration variables
+\                       \ between COMC and DISK, to set them to their default
+\                       \ values, so set a counter in X for DISK - COMC bytes
+
+                        \ --- And replaced by: -------------------------------->
+
+ LDX #(delta14b-COMC)   \ We start by zeroing all the configuration variables
+                        \ between COMC and delta14b, to set them to their
+                        \ default values, so set a counter in X for
+                        \ delta14b - COMC bytes
+
+                        \ --- End of replacement ------------------------------>
 
  LDA #0                 \ Set A = 0 so we can zero the variables
 

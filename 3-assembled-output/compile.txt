@@ -13542,7 +13542,7 @@ S.ELTE &58D2  &634A  &1300  &58D2
 .spasto
      6907   88 88
 .BEGIN
-     6909   A2 1E      LDX #&1E
+     6909   A2 20      LDX #&20
      690B   A9 00      LDA #&00
 .BEL1
      690D   9D 40 2C   STA &2C40,X
