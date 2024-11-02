@@ -4362,7 +4362,6 @@ ENDMACRO
 \ the same as the top button in the middle row):
 \
 \   Fire laser                                    Fire laser
-\
 \   Slow down              Fire laser             Speed up
 \   Unarm Missile          Fire Missile           Target missile
 \   Front view             E.C.M.                 Rear view
@@ -4411,7 +4410,6 @@ ENDMACRO
 \ are treated the same as the top button in the middle row):
 \
 \   Fire laser                                    Fire laser
-\
 \   Slow down              Fire laser             Speed up
 \   Unarm Missile          Fire Missile           Target missile
 \   Front view             E.C.M.                 Rear view
