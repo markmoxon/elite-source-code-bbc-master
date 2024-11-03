@@ -21333,9 +21333,9 @@ ENDIF
 \
 \   A = A * Q / 256
 \
-\ The Master and 6502 Second Processor versions use logarithms to speed up the
-\ multiplication process. See the deep dive on "Multiplication using logarithms"
-\ for more details.
+\ The advanced versions of Elite use logarithms to speed up the multiplication
+\ process. See the deep dive on "Multiplication using logarithms" for more
+\ details.
 \
 \ ------------------------------------------------------------------------------
 \
@@ -23768,10 +23768,9 @@ ENDIF
 \ ------------------------------------------------------------------------------
 \
 \ This routine (and the related SCALEY2 and SCALEX routines) are called from
-\ various places in the code to scale the value in A. This scaling can be
-\ changed by changing these routines (for example, by changing an RTS to an LSR
-\ A). This code is left over from the conversion to other platforms, where
-\ the scale factor might need to be different.
+\ various places in the code to scale the value in A. This code is different in
+\ the Apple II and BBC Master versions, and allows coordinates to be scaled
+\ correctly on different platforms.
 \
 \ The original source contains the comment "SCALE Scans by 3/4 to fit in".
 \
@@ -23791,10 +23790,9 @@ ENDIF
 \ ------------------------------------------------------------------------------
 \
 \ This routine (and the related SCALEY and SCALEX routines) are called from
-\ various places in the code to scale the value in A. This scaling can be
-\ changed by changing these routines (for example, by changing an RTS to an LSR
-\ A). This code is left over from the conversion to other platforms, where
-\ the scale factor might need to be different.
+\ various places in the code to scale the value in A. This code is different in
+\ the Apple II and BBC Master versions, and allows coordinates to be scaled
+\ correctly on different platforms.
 \
 \ ******************************************************************************
 
@@ -23812,10 +23810,9 @@ ENDIF
 \ ------------------------------------------------------------------------------
 \
 \ This routine (and the related SCALEY and SCALEY2 routines) are called from
-\ various places in the code to scale the value in A. This scaling can be
-\ changed by changing these routines (for example, by changing an RTS to an LSR
-\ A). This code is left over from the conversion to other platforms, where
-\ the scale factor might need to be different.
+\ various places in the code to scale the value in A. This code is different in
+\ the Apple II and BBC Master versions, and allows coordinates to be scaled
+\ correctly on different platforms.
 \
 \ ******************************************************************************
 
@@ -23828,17 +23825,18 @@ ENDIF
 \       Name: DVLOIN
 \       Type: Subroutine
 \   Category: Drawing lines
-\    Summary: Draw a horizontal line from (A, 24) to (A, 152)
+\    Summary: Draw a vertical line from (A, 24) to (A, 152)
 \
 \ ------------------------------------------------------------------------------
 \
-\ This routine is not used in this version of Elite.
+\ This routine is from the Apple II version of Elite and is not used in the BBC
+\ Master version.
 \
 \ ******************************************************************************
 
 .DVLOIN
 
- STA X1                 \ Draw a horizontal line from (A, 24) to (A, 152)
+ STA X1                 \ Draw a vertical line from (A, 24) to (A, 152)
  STA X2
  LDA #24
  STA Y1
