@@ -128,6 +128,10 @@
 
  Y = 96                 \ The centre y-coordinate of the 256 x 192 space view
 
+ GCYT = 24              \ The y-coordinate of the top of the galaxy chart
+
+ GCYB = GCYT + 128      \ The y-coordinate of the bottom of the galaxy chart
+
  f0 = &80               \ Internal key number for red key f0 (Launch, Front)
 
  f1 = &81               \ Internal key number for red key f1 (Buy Cargo, Rear)
@@ -23825,7 +23829,7 @@ ENDIF
 \       Name: DVLOIN
 \       Type: Subroutine
 \   Category: Drawing lines
-\    Summary: Draw a vertical line from (A, 24) to (A, 152)
+\    Summary: Draw a vertical line from (A, GCYT) to (A, GCYB)
 \
 \ ------------------------------------------------------------------------------
 \
@@ -23836,11 +23840,11 @@ ENDIF
 
 .DVLOIN
 
- STA X1                 \ Draw a vertical line from (A, 24) to (A, 152)
+ STA X1                 \ Draw a vertical line from (A, GCYT) to (A, GCYB)
  STA X2
- LDA #24
+ LDA #GCYT
  STA Y1
- LDA #152
+ LDA #GCYB
  STA Y2
  JMP LOIN
 
@@ -24848,10 +24852,11 @@ ENDIF
                         \ title and act as the top frame of the chart, and move
                         \ the text cursor down one line
 
- LDA #153               \ Move the text cursor down one line and draw a
- JSR NLIN5              \ screen-wide horizontal line at pixel row 153 for the
-                        \ bottom edge of the chart, so the chart itself is 128
-                        \ pixels high, starting on row 24 and ending on row 153
+ LDA #GCYB+1            \ Move the text cursor down one line and draw a
+ JSR NLIN5              \ screen-wide horizontal line at pixel row GCYB+1 (153)
+                        \ for the bottom edge of the chart, so the chart itself
+                        \ is 128 pixels high, starting on row 24 and ending on
+                        \ row 153
 
  JSR TT14               \ Call TT14 to draw a circle with crosshairs at the
                         \ current system's galactic coordinates
@@ -24892,9 +24897,9 @@ ENDIF
                         \ This code is left over from the Apple II version,
                         \ where the scale factor is different
 
- CLC                    \ Add 24 to the halved y-coordinate in A (as the top of
- ADC #24                \ the chart is on pixel row 24, just below the line we
-                        \ drew on row 23 above)
+ CLC                    \ Add GCYT to the halved y-coordinate in A (so the top
+ ADC #GCYT              \ of the chart is on pixel row GCYT, just below the line
+                        \ we drew on row 23 above)
 
  JSR PIXEL              \ Call PIXEL to draw a point at (X, A), with the size of
                         \ the point dependent on the distance specified in ZZ
@@ -24967,7 +24972,7 @@ ENDIF
 
 .TT15
 
- LDA #24                \ Set A to 24, which we will use as the minimum
+ LDA #GCYT              \ Set A to GCYT, which we will use as the minimum
                         \ screen indent for the crosshairs (i.e. the minimum
                         \ distance from the top-left corner of the screen)
 
