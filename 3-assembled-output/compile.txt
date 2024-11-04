@@ -10154,7 +10154,7 @@ S.ELTC &3CE1  &4A42  &1300  &3CE1
      50F5   D0 33      BNE &512A
      50F7   A5 DF      LDA &DF
      50F9   C9 46      CMP #&46
-.TT187S
+.TT187s
      50FB   B0 2D      BCS &512A
      50FD   A9 FF      LDA #&FF
      50FF   99 9C 00   STA &009C,Y

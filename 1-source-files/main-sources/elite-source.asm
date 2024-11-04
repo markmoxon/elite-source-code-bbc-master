@@ -26376,9 +26376,9 @@ ENDIF
 .TT184
 
  CMP #29                \ If the horizontal distance in A is >= 29, then this
- BCS TT187S             \ system is too far away from the current system to
+ BCS TT187s             \ system is too far away from the current system to
                         \ appear in the Short-range Chart, so jump to TT187 via
-                        \ TT187S to move on to the next system
+                        \ TT187s to move on to the next system
 
  LDA QQ15+1             \ Set A = s0_hi - QQ1, the vertical distance between
  SEC                    \ (s1_hi, s0_hi) and (QQ0, QQ1)
@@ -26394,9 +26394,9 @@ ENDIF
 .TT186
 
  CMP #40                \ If the vertical distance in A is >= 40, then this
- BCS TT187S             \ system is too far away from the current system to
+ BCS TT187s             \ system is too far away from the current system to
                         \ appear in the Short-range Chart, so jump to TT187 via
-                        \ TT187S to move on to the next system
+                        \ TT187s to move on to the next system
 
                         \ This system should be shown on the Short-range Chart,
                         \ so now we need to work out where the label should go,
@@ -26519,14 +26519,14 @@ ENDIF
  CMP #70                \ jump to TT187 to skip showing the system as it is too
                         \ far away from the current system
 
-.TT187S
+.TT187s
 
  BCS TT187              \ If we get here from the instruction above, we jump to
                         \ TT187 if QQ8(1 0) >= 70, so we only show systems that
                         \ are within distance 70 (i.e. 7 light years) of the
                         \ current system
                         \
-                        \ If we jump here from elsewhere with a BCS TT187S, we
+                        \ If we jump here from elsewhere with a BCS TT187s, we
                         \ jump straight on to TT187
 
  LDA #&FF               \ Store &FF in INWK+Y, to denote that this row is now
