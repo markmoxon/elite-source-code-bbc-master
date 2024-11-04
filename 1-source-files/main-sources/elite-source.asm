@@ -128,9 +128,9 @@
 
  Y = 96                 \ The centre y-coordinate of the 256 x 192 space view
 
- GCYT = 24              \ The y-coordinate of the top of the galaxy chart
+ GCYT = 24              \ The y-coordinate of the top of the Long-range Chart
 
- GCYB = GCYT + 128      \ The y-coordinate of the bottom of the galaxy chart
+ GCYB = GCYT + 128      \ The y-coordinate of the bottom of the Long-range chart
 
  f0 = &80               \ Internal key number for red key f0 (Launch, Front)
 
@@ -25063,7 +25063,7 @@ ENDIF
  ADC QQ19+2             \ of the indented crosshairs
  ADC QQ19+5
 
- CMP #152               \ If A < 152 then skip the following, as the crosshairs
+ CMP #GCYB              \ If A < GCYB then skip the following, as the crosshairs
  BCC TT87               \ won't spill out of the bottom of the screen
 
  LDX QQ11               \ A >= 152, so we need to check whether this will fit in
@@ -25072,8 +25072,8 @@ ENDIF
  BMI TT87               \ If this is the Short-range Chart then the y-coordinate
                         \ is fine, so skip to TT87
 
- LDA #152               \ Otherwise this is the Long-range Chart, so we need to
-                        \ clip the crosshairs at a maximum y-coordinate of 152
+ LDA #GCYB              \ Otherwise this is the Long-range Chart, so we need to
+                        \ clip the crosshairs at a maximum y-coordinate of GCYB
 
 .TT87
 
@@ -25186,9 +25186,9 @@ ENDIF
  JSR TT15               \ Draw the set of crosshairs defined in QQ19, which will
                         \ be drawn 24 pixels to the right of QQ19+1
 
- LDA QQ19+1             \ Add 24 to the y-coordinate of the crosshairs in QQ19+1
- CLC                    \ so that the centre of the circle matches the centre
- ADC #24                \ of the crosshairs
+ LDA QQ19+1             \ Add GCYT to the y-coordinate of the crosshairs in
+ CLC                    \ QQ19+1 so that the centre of the circle matches the
+ ADC #GCYT              \ centre of the crosshairs
  STA QQ19+1
 
                         \ Fall through into TT128 to draw a circle with the
