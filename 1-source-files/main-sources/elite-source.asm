@@ -30338,7 +30338,7 @@ ENDIF
 \       Name: SWAPPZERO
 \       Type: Subroutine
 \   Category: Utility routines
-\    Summary: An unused routine that swaps bytes in zero page
+\    Summary: An unused routine that swaps bytes in and out of zero page
 \
 \ ******************************************************************************
 
@@ -30358,10 +30358,10 @@ ENDIF
 
 .SWPZL
 
- LDA ZP,X               \ These instructions have no effect, though they look
- LDY ZP,X               \ like they may have been used to swap two sets of bytes
- STA ZP,X               \ within zero page
- STY ZP,X
+ LDA ZP,X               \ These instructions have no effect and are left over
+ LDY ZP,X               \ from the Commodore 64 and Apple versions of Elite,
+ STA ZP,X               \ where the middle two instructions point to different
+ STY ZP,X               \ addresses
 
  INX                    \ Increment the loop counter
 
@@ -30818,8 +30818,8 @@ ENDIF
 
 .exlook
 
- EQUB 0                 \ These bytes appear to be unused
- EQUB 2
+ EQUB 0                 \ These bytes appear to be unused, and are left over
+ EQUB 2                 \ from the Commodore 64 version of Elite
 
 \ ******************************************************************************
 \
@@ -35615,7 +35615,8 @@ ENDIF
  STA MCNT               \ Reset MCNT (the main loop counter) to 0
 
 \STA TRIBCT             \ This instruction is commented out in the original
-                        \ source
+                        \ source; it is left over from the Commodore 64 version
+                        \ of Elite and would reset the number of Trumbles
 
  LDA #3                 \ Reset DELTA (speed) to 3
  STA DELTA
@@ -35630,8 +35631,8 @@ ENDIF
  LDA #0                 \ Set dontclip to 0 (though this variable is never used,
  STA dontclip           \ so this has no effect)
 
- LDA #191               \ Set Yx2M1 to 191, the number of pixel lines in the
- STA Yx2M1              \ space view
+ LDA #2*Y-1             \ Set Yx2M1 to the number of pixel lines in the space
+ STA Yx2M1              \ view
 
  LDA SSPR               \ Fetch the "space station present" flag, and if we are
  BEQ P%+5               \ not inside the safe zone, skip the next instruction
@@ -36599,7 +36600,7 @@ ENDIF
 
  AND PATG               \ If PATG = &FF (author names are shown on start-up)
  LSR A                  \ and bit 0 of QQ11 is 1 (the current view is type 1),
- BCS P%+7               \ then skip the following two instructions
+ BCS plus13             \ then skip the following two instructions
 
  LDY #2                 \ Wait for 2/50 of a second (0.04 seconds), to slow the
  JSR DELAY              \ main loop down a bit
