@@ -30359,7 +30359,7 @@ ENDIF
 .SWPZL
 
  LDA ZP,X               \ These instructions have no effect and are left over
- LDY ZP,X               \ from the Commodore 64 and Apple versions of Elite,
+ LDY ZP,X               \ from the Commodore 64 and Apple II versions of Elite,
  STA ZP,X               \ where the middle two instructions point to different
  STY ZP,X               \ addresses
 
@@ -36771,10 +36771,10 @@ ENDIF
 
 .INSP
 
- CMP #f1                \ If red key f1 was pressed, jump to BVIEW
+ CMP #f1                \ If red key f1 was pressed, jump to chview1
  BEQ chview1
 
- CMP #f2                \ If red key f2 was pressed, jump to LVIEW
+ CMP #f2                \ If red key f2 was pressed, jump to chview2
  BEQ chview2
 
  CMP #f3                \ If red key f3 was not pressed, jump to LABEL_3 to keep
@@ -36817,10 +36817,10 @@ ENDIF
 
 .NWDAV5
 
- CMP #&44               \ If "D" was pressed, jump to T95 to print the distance
+ CMP #'D'               \ If "D" was pressed, jump to T95 to print the distance
  BEQ T95                \ to a system (if we are in one of the chart screens)
 
- CMP #&46               \ If "F" was not pressed, jump down to HME1, otherwise
+ CMP #'F'               \ If "F" was not pressed, jump down to HME1, otherwise
  BNE HME1               \ keep going to process searching for systems
 
  LDA QQ12               \ If QQ12 = 0 (we are not docked), we can't search for
@@ -36849,7 +36849,7 @@ ENDIF
  LDA T1                 \ Restore the original value of A (the key that's been
                         \ pressed) from T1
 
- CMP #&4F               \ If "O" was pressed, do the following three jumps,
+ CMP #'O'               \ If "O" was pressed, do the following three jumps,
  BNE ee2                \ otherwise skip to ee2 to continue
 
  JSR TT103              \ Draw small crosshairs at coordinates (QQ9, QQ10),
@@ -37660,7 +37660,8 @@ ENDIF
 .tZ
 
  ORA #%00001000         \ Set bit 3 of A to denote that this is the Master
-                        \ version
+                        \ version (which is the same flag as the Apple II
+                        \ version)
 
  STA COK                \ Store the updated competition flags in COK
 
@@ -37927,11 +37928,21 @@ ENDIF
 
  RTS                    \ Return from the subroutine
 
+\ ******************************************************************************
+\
+\       Name: CHECK2
+\       Type: Subroutine
+\   Category: Save and load
+\    Summary: Calculate the second checksum for the last saved commander data
+\             block (Commodore 64 and Apple II versions onlt)
+\
+\ ******************************************************************************
+
 .CHECK2
 
 \LDX #NT%-3             \ These instructions are commented out in the original
-\CLC                    \ source
-\TXA
+\CLC                    \ source (they are left over from the Commodore 64 and
+\TXA					\ Apple II versions, which have a second checksum)
 \.QU2L2
 \STX T
 \EOR T
@@ -37953,9 +37964,10 @@ ENDIF
 
 .JAMESON
 
- LDY #96                \ We are going to copy the default commander at NA2%
+ LDY #(NAEND%-NA2%)     \ We are going to copy the default commander at NA2%
                         \ over the top of the last saved commander at NA%, so
-                        \ set a counter to copy 97 bytes
+                        \ set a counter to copy all the bytes between NA2% and
+                        \ NAEND%
 
 .JAMEL1
 
