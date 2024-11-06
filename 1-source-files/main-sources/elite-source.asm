@@ -237,9 +237,8 @@
  IRQ1V = &0204          \ The IRQ1V vector that we intercept to implement the
                         \ split-screen mode
 
- WRCHV = &020E          \ The WRCHV vector that we intercept to implement our
-                        \ own custom OSWRCH commands for communicating over the
-                        \ Tube
+ WRCHV = &020E          \ The WRCHV vector that we intercept with our custom
+                        \ text printing routine
 
  LS% = &0800            \ The start of the descending ship line heap
 
@@ -311,7 +310,7 @@ ENDIF
 \
 \       Name: ZP
 \       Type: Workspace
-\    Address: &0000 to &00B0
+\    Address: &0000 to &00E3
 \   Category: Workspaces
 \    Summary: Lots of important variables are stored in the zero page workspace
 \             as it is quicker and more space-efficient to access memory here
@@ -30358,10 +30357,10 @@ ENDIF
 
 .SWPZL
 
- LDA ZP,X               \ These instructions have no effect and are left over
- LDY ZP,X               \ from the Commodore 64 and Apple II versions of Elite,
- STA ZP,X               \ where the middle two instructions point to different
- STY ZP,X               \ addresses
+ LDA ZP,X               \ These instructions have no effect, as they simply swap
+ LDY ZP,X               \ a byte with itself
+ STA ZP,X
+ STY ZP,X
 
  INX                    \ Increment the loop counter
 
@@ -36750,7 +36749,7 @@ ENDIF
  BNE P%+5               \ Buy Cargo screen, returning from the subroutine using
  JMP TT219              \ a tail call
 
- CMP #&40               \ If "@" was not pressed, skip to nosave
+ CMP #'@'               \ If "@" was not pressed, skip to nosave
  BNE nosave
 
  JSR SVE                \ "@" was pressed, so call SVE to show the disc access
@@ -37942,7 +37941,7 @@ ENDIF
 
 \LDX #NT%-3             \ These instructions are commented out in the original
 \CLC                    \ source (they are left over from the Commodore 64 and
-\TXA					\ Apple II versions, which have a second checksum)
+\TXA                    \ Apple II versions, which have a second checksum)
 \.QU2L2
 \STX T
 \EOR T
@@ -38658,7 +38657,7 @@ ENDIF
 \       Name: SVE
 \       Type: Subroutine
 \   Category: Save and load
-\    Summary: Display the disc access menu and process saving of commander files
+\    Summary: Display the disk access menu and process saving of commander files
 \  Deep dive: Commander save files
 \             The competition code
 \
@@ -38843,7 +38842,7 @@ ENDIF
                         \ We now copy the current commander data block into the
                         \ TAP% staging area, though this has no effect as we
                         \ then ignore the result (this code is left over from
-                        \ the Commodore 64 version)
+                        \ the Apple II version)
 
  LDY #NT%               \ Set a counter in X to copy the NT% bytes in the
                         \ commander data block
@@ -39022,14 +39021,35 @@ ENDIF
  JMP SVE                \ Jump to SVE to display the disc access menu and return
                         \ from the subroutine using a tail call
 
+\ ******************************************************************************
+\
+\       Name: backtonormal
+\       Type: Subroutine
+\   Category: Utility routines
+\    Summary: Do nothing
+\
+\ ******************************************************************************
+
 .backtonormal
 
- RTS                    \ Return from the subroutine
+ RTS                    \ Return from the subroutine, as backtonormal does
+                        \ nothing in this version of Elite (it is left over from
+                        \ the 6502 Second Processor version)
+
+\ ******************************************************************************
+\
+\       Name: CLDELAY
+\       Type: Subroutine
+\   Category: Utility routines
+\    Summary: Do nothing
+\
+\ ******************************************************************************
 
 .CLDELAY
 
- RTS                    \ This instruction has no effect as we already returned
-                        \ from the subroutine
+ RTS                    \ Return from the subroutine, as CLDELAY does nothing in
+                        \ this version of Elite (it is left over from the 6502
+                        \ Second Processor version)
 
 \ ******************************************************************************
 \
@@ -39993,7 +40013,7 @@ ENDIF
  LDA #&FF               \ Set A = &FF, which we can insert into the key logger
                         \ to "fake" the docking computer working the keyboard
 
- LDX #15                \ Set X = 0, so we "press" KY+15, i.e. KY1, below
+ LDX #15                \ Set X = 15, so we "press" KY+15, i.e. KY1, below
                         \ ("?", slow down)
 
  LDY INWK+28            \ If the updated acceleration in byte #28 is zero, skip
@@ -40272,10 +40292,8 @@ ENDIF
  LDX #&FF               \ "Q" is being pressed, so set DNOIZ to &FF to turn the
  STX DNOIZ              \ sound off
 
- LDX #&51               \ Set X to &51, which is the internal key for "S" on the
-                        \ BBC Micro. This is set to ensure that X has the same
-                        \ value at this point as the BBC Micro version of this
-                        \ routine would
+ LDX #'Q'               \ Set X to the ASCII for "Q" once again, so it doesn't
+                        \ get changed by the above
 
 .DK6
 
@@ -41252,51 +41270,8 @@ ENDMACRO
 \       Name: KTRAN
 \       Type: Variable
 \   Category: Keyboard
-\    Summary: The key logger buffer that gets updated by the OSWORD 240 command
-\
-\ ------------------------------------------------------------------------------
-\
-\ KTRAN is a buffer that is filled with key logger information by the KEYBOARD
-\ routine in the I/O processor, which is run when the parasite sends an OSWORD
-\ &F0 command to the I/O processor. The buffer contains details of keys being
-\ pressed, with KTRAN being filled with bytes #2 to #14 from the KEYBOARD
-\ routine (because KEYBOARD is called with OSSC pointing to buf, and buf is
-\ equal to KTRAN - 2).
-\
-\ The key logger buffer is filled as follows:
-\
-\   KTRAN + 0           Internal key number of any non-primary flight control
-\                       key that is being pressed
-\
-\   KTRAN + 1           "?" is being pressed (0 = no, &FF = yes)
-\
-\   KTRAN + 2           Space is being pressed (0 = no, &FF = yes)
-\
-\   KTRAN + 3           "<" is being pressed (0 = no, &FF = yes)
-\
-\   KTRAN + 4           ">" is being pressed (0 = no, &FF = yes)
-\
-\   KTRAN + 5           "X" is being pressed (0 = no, &FF = yes)
-\
-\   KTRAN + 6           "S" is being pressed (0 = no, &FF = yes)
-\
-\   KTRAN + 7           "A" is being pressed (0 = no, &FF = yes)
-\
-\   KTRAN + 8           Joystick X value (high byte)
-\
-\   KTRAN + 9           Joystick Y value (high byte)
-\
-\   KTRAN + 10          Bitstik rotation value (high byte)
-\
-\   KTRAN + 12          Joystick 1 fire button is being pressed (Bit 4 set = no,
-\                       Bit 4 clear = yes)
-\
-\ ------------------------------------------------------------------------------
-\
-\ Other entry points:
-\
-\   buf                 The two OSWORD size bytes for transmitting the key
-\                       logger from the I/O processor to the parasite
+\    Summary: An unused key logger buffer that's left over from the 6502 Second
+\             Procsessor version of Elite
 \
 \ ******************************************************************************
 
@@ -47202,30 +47177,26 @@ ENDMACRO
 \ Keyboard table for in-flight controls. This table contains the internal key
 \ codes for the flight keys, EOR'd with &FF to invert each bit.
 \
-\ The pitch, roll, speed and laser keys (i.e. the seven primary flight
-\ control keys) have bit 7 set, so they have 128 added to their internal
-\ values. This doesn't appear to be used anywhere.
-\
 \ ******************************************************************************
 
 .IKNS
 
- EQUB &DD EOR &FF       \ E         KYTB+0    KY13     E.C.M.
- EQUB &DC EOR &FF       \ T         KYTB+1    KY10     Arm missile
- EQUB &CA EOR &FF       \ U         KYTB+2    KY11     Unarm missile
- EQUB &C8 EOR &FF       \ P         KYTB+3    KY16     Cancel docking computer
- EQUB &BE EOR &FF       \ A         KYTB+4    KY7      Fire lasers
- EQUB &BD EOR &FF       \ X         KYTB+5    KY5      Pitch up
- EQUB &BA EOR &FF       \ J         KYTB+6    KY14     In-system jump
- EQUB &AE EOR &FF       \ S         KYTB+7    KY6      Pitch down
- EQUB &AD EOR &FF       \ C         KYTB+8    KY15     Docking computer
- EQUB &9F EOR &FF       \ TAB       KYTB+9    KY8      Energy bomb
- EQUB &9D EOR &FF       \ Space     KYTB+10   KY2      Speed up
- EQUB &9A EOR &FF       \ M         KYTB+11   KY12     Fire missile
- EQUB &99 EOR &FF       \ <         KYTB+12   KY3      Roll left
- EQUB &98 EOR &FF       \ >         KYTB+13   KY4      Roll right
- EQUB &97 EOR &FF       \ ?         KYTB+14   KY1      Slow down
- EQUB &8F EOR &FF       \ ESCAPE    KYTB+15   KY9      Launch escape pod
+ EQUB &DD EOR &FF       \ E         IKNS+0    KY13     E.C.M.
+ EQUB &DC EOR &FF       \ T         IKNS+1    KY10     Arm missile
+ EQUB &CA EOR &FF       \ U         IKNS+2    KY11     Unarm missile
+ EQUB &C8 EOR &FF       \ P         IKNS+3    KY16     Cancel docking computer
+ EQUB &BE EOR &FF       \ A         IKNS+4    KY7      Fire lasers
+ EQUB &BD EOR &FF       \ X         IKNS+5    KY5      Pitch up
+ EQUB &BA EOR &FF       \ J         IKNS+6    KY14     In-system jump
+ EQUB &AE EOR &FF       \ S         IKNS+7    KY6      Pitch down
+ EQUB &AD EOR &FF       \ C         IKNS+8    KY15     Docking computer
+ EQUB &9F EOR &FF       \ TAB       IKNS+9    KY8      Energy bomb
+ EQUB &9D EOR &FF       \ Space     IKNS+10   KY2      Speed up
+ EQUB &9A EOR &FF       \ M         IKNS+11   KY12     Fire missile
+ EQUB &99 EOR &FF       \ <         IKNS+12   KY3      Roll left
+ EQUB &98 EOR &FF       \ >         IKNS+13   KY4      Roll right
+ EQUB &97 EOR &FF       \ ?         IKNS+14   KY1      Slow down
+ EQUB &8F EOR &FF       \ ESCAPE    IKNS+15   KY9      Launch escape pod
 
  EQUB &F0               \ This value just has to be higher than &80 to act as a
                         \ terminator for the IKNS matching process in FILLKL
@@ -47406,7 +47377,7 @@ IF _SNG47
 .CTRL
 
  LDA #1                 \ Set A to the internal key number for CTRL and fall
-                        \ through to DKS5 to scan the keyboard
+                        \ through into DKS5 to scan the keyboard
 
 ENDIF
 
@@ -47492,16 +47463,13 @@ ENDIF
 \
 \ Returns:
 \
-\   A                   A is set to 0
-\
 \   X                   X is set to 0
 \
 \ ******************************************************************************
 
 .ZEKTRAN
 
- LDA #0                 \ Set A to 0, as this means "key not pressed" in the
-                        \ key logger at KL
+ LDA #0                 \ We want to zero the key logger buffer, so set A % 0
 
  LDX #17                \ We want to clear the 17 key logger locations from
                         \ KL to KY20, so set a counter in X
