@@ -651,11 +651,12 @@ Saving file '3-assembled-output/M128Elt.bin'
      00E2
 .NOSTM
      00E3
-Zero page variables from &0  to &E4 
+ZP workspace from &0 to &E3 inclusive
 .XX3
      0100
 .K%
      0400
+K% workspace from &400 to &5BB inclusive
 .WP
      0E41
 .FRIN
@@ -830,7 +831,7 @@ Zero page variables from &0  to &E4
      12A7
      12A8
      12A9
-WP workspace from  &E41  to &12AA 
+WP workspace from &E41 to &12A9 inclusive
 .TVT3
      1300   00
      1301   34
@@ -4942,6 +4943,8 @@ WP workspace from  &E41  to &12AA
      2C3D   FD
      2C3E   FE
      2C3F   FF
+.UP
+     2C40
 .COMC
      2C40
 .dials
@@ -4980,6 +4983,7 @@ WP workspace from  &E41  to &12AA
      2C60
 .VOL
      2C61   07
+UP workspace from &2C40 to &2C61 inclusive
 .TGINT
      2C62   01
      2C63   41 58 46 ...

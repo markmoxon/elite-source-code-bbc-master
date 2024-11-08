@@ -1227,7 +1227,7 @@ ENDIF
                         \ which is 20 (#NOST) for normal space, and 3 for
                         \ witchspace
 
- PRINT "Zero page variables from ", ~ZP, " to ", ~P%
+ PRINT "ZP workspace from ", ~ZP, "to ", ~P%-1, "inclusive"
 
 \ ******************************************************************************
 \
@@ -1255,7 +1255,7 @@ ENDIF
 \
 \       Name: K%
 \       Type: Workspace
-\    Address: &0400 to &05BA
+\    Address: &0400 to &05BB
 \   Category: Workspaces
 \    Summary: Ship data blocks and ship line heaps
 \  Deep dive: Ship data blocks
@@ -1281,6 +1281,8 @@ ENDIF
 .K%
 
  SKIP NOSH * NI%        \ Ship data blocks and ship line heap
+
+ PRINT "K% workspace from ", ~K%, "to ", ~P%-1, "inclusive"
 
 \ ******************************************************************************
 \
@@ -2089,7 +2091,7 @@ ENDIF
                         \ channel 3 (the Bitstik rotation value), which gets
                         \ updated regularly by the IRQ1 interrupt handler
 
- PRINT "WP workspace from  ", ~WP," to ", ~P%
+ PRINT "WP workspace from ", ~WP, "to ", ~P%-1, "inclusive"
 
 \ ******************************************************************************
 \
@@ -9866,10 +9868,15 @@ ENDIF
 \
 \       Name: UP
 \       Type: Workspace
+\    Address: &2C40 to &2C61
 \   Category: Workspaces
 \    Summary: Configuration variables
 \
 \ ******************************************************************************
+
+.UP
+
+ SKIP 0                 \ The start of the UP workspace
 
 .COMC
 
@@ -10040,6 +10047,8 @@ ENDIF
                         \
                         \ This is controlled by the "<" and ">" keys while the
                         \ game is paused, and the default level is 7
+
+ PRINT "UP workspace from ", ~UP, "to ", ~P%-1, "inclusive"
 
 \ ******************************************************************************
 \
