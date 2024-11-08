@@ -228,6 +228,12 @@
  VE = &57               \ The obfuscation byte used to hide the extended tokens
                         \ table from crackers viewing the binary code
 
+ KEY1 = &19             \ The seed for encrypting the game code from DOENTRY to
+                        \ F%
+
+ KEY2 = &62             \ The seed for encrypting the game data from XX21 to
+                        \ &BBFF
+
  LL = 30                \ The length of lines (in characters) of justified text
                         \ in the extended tokens system
 
@@ -10110,7 +10116,7 @@ ENDIF
 \
 \ The main game code and data are encrypted. This routine decrypts the game code
 \ in two parts: the main game code between DOENTRY and F%, and the game data
-\ between XX21 and the end of the game data at &BFFF.
+\ between XX21 and the end of the game data at &B1FF.
 \
 \ In the BeebAsm version, the encryption is done by elite-checksum.py, but in
 \ the original this would have been done by the BBC BASIC build scripts.
@@ -10128,7 +10134,7 @@ ENDIF
  LDY #LO(F%-1)          \ block, so we decrypt to the end of the main game code
                         \ at F%
 
- LDX #&19               \ Set X = &19 as the decryption seed (the value used to
+ LDX #KEY1              \ Set X = KEY1 as the decryption seed (the value used to
                         \ encrypt the code, which is done in elite-checksum.py)
 
  JSR DEEORS             \ Call DEEORS to decrypt between DOENTRY and F%
@@ -10141,7 +10147,7 @@ ENDIF
  LDA #&B1               \ Set (A Y) = &B1FF as the high address of the
  LDY #&FF               \ decryption block
 
- LDX #&62               \ Set X = &62 as the decryption seed (the value used to
+ LDX #KEY2              \ Set X = KEY2 as the decryption seed (the value used to
                         \ encrypt the code, which is done in elite-checksum.py)
 
                         \ Fall through into DEEORS to decrypt between XX21 and
