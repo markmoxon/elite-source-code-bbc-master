@@ -9882,6 +9882,11 @@ ENDIF
 
  SKIP 1                 \ The colour of the dot on the compass
                         \
+                        \   * #WHITE2 = the object in the compass is in front of
+                        \     us, so the dot is white
+                        \
+                        \   * #GREEN2 = the object in the compass is behind us,
+                        \     so the dot is green
 
 .dials
 
@@ -9963,8 +9968,8 @@ ENDIF
                         \
                         \ This needs to be turned on for manual mis-jumps to be
                         \ possible. To do a manual mis-jump, first toggle the
-                        \ author display by pausing the game (COPY) and pressing
-                        \ "X", and during the next hyperspace, hold down CTRL to
+                        \ author display by pausing the game and pressing "X",
+                        \ and during the next hyperspace, hold down CTRL to
                         \ force a mis-jump. See routine ee5 for the "AND PATG"
                         \ instruction that implements this logic
 
