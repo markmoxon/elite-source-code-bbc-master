@@ -10115,8 +10115,8 @@ ENDIF
 \ ------------------------------------------------------------------------------
 \
 \ The main game code and data are encrypted. This routine decrypts the game code
-\ in two parts: the main game code between DOENTRY and F%, and the game data
-\ between XX21 and the end of the game data at &B1FF.
+\ in two parts: the main game code between G% and F%, and the game data between
+\ XX21 and the end of the game data at &B1FF.
 \
 \ In the BeebAsm version, the encryption is done by elite-checksum.py, but in
 \ the original this would have been done by the BBC BASIC build scripts.
@@ -10125,9 +10125,9 @@ ENDIF
 
 .DEEOR
 
- LDA #LO(DOENTRY-1)     \ Set FRIN(1 0) = DEEORS-1 as the low address of the
- STA FRIN               \ decryption block, so we decrypt from just after the
- LDA #HI(DOENTRY-1)     \ DEEORS routine
+ LDA #LO(G%-1)          \ Set FRIN(1 0) = G%-1 as the low address of the
+ STA FRIN               \ decryption block, so we decrypt from the start of the
+ LDA #HI(G%-1)          \ DOENTRY routine
  STA FRIN+1
 
  LDA #HI(F%-1)          \ Set (A Y) to F% as the high address of the decryption
