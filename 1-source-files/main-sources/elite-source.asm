@@ -10378,32 +10378,55 @@ ENDIF
                         \ so jump to BAY to go to the docking bay (i.e. show the
                         \ Status Mode screen)
 
+\ ******************************************************************************
+\
+\       Name: TRIBDIR
+\       Type: Variable
+\   Category: Missions
+\    Summary: ???
+\
+\ ******************************************************************************
+
 \.TRIBDIR               \ These instructions are commented out in the original
 \                       \ source
 \EQUB 0
 \EQUB 1
 \EQUB &FF
 \EQUB 0
+
+\ ******************************************************************************
 \
-\.TRIBDIRH
+\       Name: TRIBDIRH
+\       Type: Variable
+\   Category: Missions
+\    Summary: ???
 \
-\EQUB 0
+\ ******************************************************************************
+
+\.TRIBDIRH              \ These instructions are commented out in the original
+\                       \ source
+\EQUB 0 
 \EQUB 0
 \EQUB &FF
 \EQUB 0
 
+\ ******************************************************************************
+\
+\       Name: SPMASK
+\       Type: Variable
+\   Category: Sprites
+\    Summary: ???
+\
+\ ******************************************************************************
+
 .SPMASK
 
- EQUW &04FB             \ These bytes appear to be unused
- EQUW &08F7
+ EQUW &04FB             \ These bytes are unused and are left over from the
+ EQUW &08F7             \ Commodore 64 version
  EQUW &10EF
  EQUW &20DF
  EQUW &40BF
  EQUW &807F
-
-\.MVTRIBS               \ These instructions are commented out in the original
-\.MVTR1                 \ source
-\.nominus
 
 \ ******************************************************************************
 \
@@ -10818,6 +10841,7 @@ ENDIF
 \BEQ MA68               \ source
 \STA auto
 \JSR startbd
+\kill phantom Cs
 
 .MA68
 
@@ -48178,7 +48202,7 @@ ENDIF
 \       Name: F%
 \       Type: Variable
 \   Category: Utility routines
-\    Summary: Denotes the end of the main game code, from Elite A to Elite H
+\    Summary: Denotes the end of the main game code, from ELITE A to ELITE H
 \
 \ ******************************************************************************
 
