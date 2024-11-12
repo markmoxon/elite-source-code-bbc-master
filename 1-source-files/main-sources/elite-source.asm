@@ -6556,7 +6556,7 @@ ENDIF
  LDA Y1                 \ Fetch the y-coordinate offset into A and clear the
  AND #%01111111         \ sign bit, so A = |Y1|
 
- CMP #96                \ If |Y1| >= 96 then it's off the screen (as 96 is half
+ CMP #Y                 \ If |Y1| >= #Y then it's off the screen (as #Y is half
  BCS PXR1               \ the screen height), so return from the subroutine (as
                         \ PXR1 contains an RTS)
 
@@ -6571,10 +6571,10 @@ ENDIF
 
 .PX22
 
- STA T                  \ Set A = 97 - Y1
- LDA #97                \
- SBC T                  \ So if Y is positive we display the point up from the
-                        \ centre at y-coordinate 97, while a negative Y means
+ STA T                  \ Set A = #Y + 1 - Y1
+ LDA #Y+1               \
+ SBC T                  \ So if Y1 is positive we display the point up from the
+                        \ centre at y-coordinate 97, while a negative Y1 means
                         \ down from the centre
 
                         \ Fall through into PIXEL to draw the stardust at the
@@ -10414,7 +10414,7 @@ ENDIF
 \
 \       Name: SPMASK
 \       Type: Variable
-\   Category: Sprites
+\   Category: Missions
 \    Summary: ???
 \
 \ ******************************************************************************
@@ -13503,6 +13503,11 @@ ENDIF
 \ Two-letter token lookup table for tokens 128-159. See the deep dive on
 \ "Printing text tokens" for details of how the two-letter token system works.
 \
+\ These two-letter tokens can also be used in the extended text token system, by
+\ adding 100 to the token number. So the extended two-letter token 228 is "AL",
+\ the same as the standard two-letter token 128. In this system, the last four
+\ tokens are not available, as they would have numbers greater than 255.
+\
 \ ******************************************************************************
 
 .QQ16
@@ -13607,7 +13612,7 @@ ENDIF
 
 .CHK2
 
- EQUB 0
+ EQUB 0                 \ Placeholder for the checksum in byte #74
 
 \ ******************************************************************************
 \
@@ -13630,7 +13635,7 @@ ENDIF
 
 .CHK
 
- EQUB 0
+ EQUB 0                 \ Placeholder for the checksum in byte #75
 
 \.CHK3                  \ These instructions are commented out in the original
 \EQUB 0                 \ source
@@ -13688,9 +13693,9 @@ ENDIF
 
  EQUS "JAMESON"         \ The current commander name, which defaults to JAMESON
  EQUB 13                \
-                        \ The commander name can be up to 7 characters (the DFS
-                        \ limit for filenames), and is terminated by a carriage
-                        \ return
+                        \ The commander name can be up to seven characters (the
+                        \ DFS limit for filenames), and is terminated by a
+                        \ carriage return
 
                         \ NA%+8 is the start of the commander data block
                         \
@@ -13812,12 +13817,13 @@ ENDIF
 
  EQUB &AA               \ The CHK2 checksum value for the default commander
 
+\.CHK3                  \ These instructions are commented out in the original
+\                       \ source
+\EQUB CH3X%
+
 \.CHK                   \ This label is commented out in the original source
 
  EQUB &03               \ The CHK checksum value for the default commander
-
-\.CHK3                  \ These instructions are commented out in the original
-\EQUB CH3X%             \ source
 
  SKIP 12                \ These bytes appear to be unused, though the first byte
                         \ in this block is included in the commander file (it
@@ -13889,7 +13895,7 @@ ENDIF
 
 .scacol
 
- EQUB 0
+ EQUB 0                 \ This byte appears to be unused
 
  EQUB YELLOW2           \ Missile
  EQUB GREEN2            \ Coriolis space station
@@ -13924,9 +13930,8 @@ ENDIF
  EQUB CYAN2             \ Constrictor
  EQUB 0                 \ Cougar
 
- EQUB CYAN2             \ This byte appears to be unused
-
- EQUD 0                 \ These bytes appear to be unused
+ EQUB CYAN2             \ These bytes appear to be unused
+ EQUD 0
 
 \ ******************************************************************************
 \
@@ -16080,7 +16085,7 @@ ENDIF
 \ so the biggest number we can print is 99,999,999,999. This maximum number
 \ plus 1 is 100,000,000,000, which in hexadecimal is:
 \
-\   & 17 48 76 E8 00
+\   17 48 76 E8 00
 \
 \ The TENS variable contains the lowest four bytes in this number, with the
 \ most significant byte first, i.e. 48 76 E8 00. This value is used in the
@@ -37976,7 +37981,7 @@ ENDIF
 \       Name: CHECK2
 \       Type: Subroutine
 \   Category: Save and load
-\    Summary: Calculate the second checksum for the last saved commander data
+\    Summary: Calculate the third checksum for the last saved commander data
 \             block (Commodore 64 and Apple II versions onlt)
 \
 \ ******************************************************************************
@@ -37985,7 +37990,7 @@ ENDIF
 
 \LDX #NT%-3             \ These instructions are commented out in the original
 \CLC                    \ source (they are left over from the Commodore 64 and
-\TXA                    \ Apple II versions, which have a second checksum)
+\TXA                    \ Apple II versions, which have a third checksum)
 \.QU2L2
 \STX T
 \EOR T
