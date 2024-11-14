@@ -48001,9 +48001,9 @@ ENDIF
 \ a branch instruction.
 \
 \ It also contains the DEMON label, which implements the demo in the 6502
-\ Second Processor version, so this presumably acted as a stub for the JSR DEMON
-\ call during conversion of the 6502 Second Processor version into the later
-\ BBC Master version.
+\ Second Processor version, so this acts as a stub for the JSR DEMON call during
+\ conversion of the 6502 Second Processor version into the later Commodore 64,
+\ Apple II and BBC Master versions.
 \
 \ ------------------------------------------------------------------------------
 \
@@ -48074,14 +48074,15 @@ ENDIF
 IF _SNG47
 
  BCC yetanotherrts      \ The C flag will be set if the call to SFS1-2 was a
-                        \ success, so if it's clear, jump to KYTB to return from
-                        \ the subroutine (as yetanotherrts contains an RTS)
+                        \ success, so if it's clear, jump to yetanotherrts to
+                        \ return from the subroutine (as yetanotherrts contains
+                        \ an RTS)
 
 ELIF _COMPACT
 
  BCC TT17X-1            \ The C flag will be set if the call to SFS1-2 was a
-                        \ success, so if it's clear, jump to KYTB to return from
-                        \ the subroutine (as TT17X-1 contains an RTS)
+                        \ success, so if it's clear, jump to TT17X-1 to return
+                        \ from the subroutine (as TT17X-1 contains an RTS)
 
 ENDIF
 
@@ -48220,6 +48221,15 @@ ENDIF
 
  JMP SOFLUSH            \ Call SOFLUSH to reset the sound buffers and return
                         \ from the subroutine using a tail call
+
+\ ******************************************************************************
+\
+\       Name: NMIpissoff
+\       Type: Subroutine
+\   Category: Loader
+\    Summary: Acknowledge NMI interrupts and ignore tham
+\
+\ ******************************************************************************
 
 IF _SNG47
 
