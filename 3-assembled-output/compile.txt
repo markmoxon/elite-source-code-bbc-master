@@ -16457,7 +16457,7 @@ S.ELTG &6FD9  &7935  &1300  &6FD9
      7D84   A9 0A      LDA #&0A
      7D86   85 6F      STA &6F
      7D88   4C AE 4C   JMP &4CAE
-.SIGHTCOL
+.sightcol
      7D8B   0F
      7D8C   FF
      7D8D   FF

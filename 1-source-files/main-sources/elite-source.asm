@@ -14730,10 +14730,10 @@ ENDIF
                         \ which is result 7 above
 
  LDA YY                 \ Set (S R) = YY(1 0) = y
- STA R
- LDA YY+1
-\JSR MAD                \ These instructions are commented out in the original
-\STA S                  \ source
+ STA R                  \
+ LDA YY+1               \ The call to MAD and the two store instructions are
+\JSR MAD                \ commented out in the original source
+\STA S
 \STX R
  STA S
 
@@ -37989,9 +37989,11 @@ ENDIF
 .CHECK2
 
 \LDX #NT%-3             \ These instructions are commented out in the original
-\CLC                    \ source (they are left over from the Commodore 64 and
-\TXA                    \ Apple II versions, which have a third checksum)
+\CLC                    \ source
+\TXA
+\
 \.QU2L2
+\
 \STX T
 \EOR T
 \ROR A
@@ -46841,8 +46843,7 @@ ENDMACRO
 
  LDA #0                 \ Set A = 0, the type number of a space view
 
- JSR DOVDU19            \ Send a #SETVDU19 0 command to the I/O processor to
-                        \ switch to the mode 1 palette for the space view,
+ JSR DOVDU19            \ Switch to the mode 1 palette for the space view,
                         \ which is yellow (colour 1), red (colour 2) and cyan
                         \ (colour 3)
 
@@ -46911,7 +46912,7 @@ ENDMACRO
 
 .SIG1
 
- LDA SIGHTCOL,Y         \ Set the colour from the SIGHTCOL table
+ LDA sightcol,Y         \ Set the colour from the sightcol table
  STA COL
 
  LDA #128               \ Set QQ19 to the x-coordinate of the centre of the
@@ -46937,14 +46938,14 @@ ENDMACRO
 
 \ ******************************************************************************
 \
-\       Name: SIGHTCOL
+\       Name: sightcol
 \       Type: Variable
 \   Category: Drawing lines
 \    Summary: Colours for the crosshair sights on the different laser types
 \
 \ ******************************************************************************
 
-.SIGHTCOL
+.sightcol
 
  EQUB YELLOW            \ Pulse lasers have yellow sights
 
@@ -46954,6 +46955,15 @@ ENDMACRO
 
  EQUB YELLOW            \ Mining lasers have yellow sights
 
+\ ******************************************************************************
+\
+\       Name: beamcol
+\       Type: Variable
+\   Category: Drawing lines
+\    Summary: Colours for ???
+\
+\ ******************************************************************************
+
 .beamcol
 
  EQUB WHITE             \ These bytes appear to be unused - perhaps they were
@@ -46961,8 +46971,17 @@ ENDMACRO
  EQUB WHITE             \ beam for the different lasers?
  EQUB WHITE
 
-\.TRIBTA                \ This data is commented out in the original source
+\ ******************************************************************************
 \
+\       Name: TRIBTA
+\       Type: Variable
+\   Category: Missions
+\    Summary: ???
+\
+\ ******************************************************************************
+
+\.TRIBTA                \ These instructions are commented out in the original
+\                       \ source
 \EQUB 0
 \EQUB 1
 \EQUB 2
@@ -46971,9 +46990,18 @@ ENDMACRO
 \EQUB 5
 \EQUB 6
 \EQUB 6
+
+\ ******************************************************************************
 \
-\.TRIBMA
+\       Name: TRIBMA
+\       Type: Variable
+\   Category: Missions
+\    Summary: ???
 \
+\ ******************************************************************************
+
+\.TRIBMA                \ These instructions are commented out in the original
+\                       \ source
 \EQUB 0
 \EQUB 4
 \EQUB &C
