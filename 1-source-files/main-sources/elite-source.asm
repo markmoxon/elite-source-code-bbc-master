@@ -2723,8 +2723,8 @@ ENDIF
 
 \ ******************************************************************************
 \
-\       Name: SOFLG
-\       Type: Variable
+\       Name: Sound variables
+\       Type: Workspace
 \   Category: Sound
 \    Summary: The sound buffer where the data to be sent to the sound chip is
 \             processed
@@ -9600,7 +9600,7 @@ ENDIF
 \
 \ ******************************************************************************
 
- FONT% = P% DIV 256
+ FONT% = HI(P%)
 
  INCBIN "1-source-files/fonts/P.FONT.bin"
 
@@ -9674,9 +9674,7 @@ ELSE
 
  FOR I%, 1, 255
 
-  B% = INT(&2000 * LOG(I%) / LOG(2) + 0.5)
-
-  EQUB B% DIV 256
+  EQUB HI(INT(&2000 * LOG(I%) / LOG(2) + 0.5))
 
  NEXT
 
@@ -9754,9 +9752,7 @@ ELSE
 
  FOR I%, 1, 255
 
-  B% = INT(&2000 * LOG(I%) / LOG(2) + 0.5)
-
-  EQUB B% MOD 256
+  EQUB LO(INT(&2000 * LOG(I%) / LOG(2) + 0.5))
 
  NEXT
 
@@ -9785,7 +9781,7 @@ ENDIF
 
  FOR I%, 0, 255
 
-  EQUB INT(2^((I% / 2 + 128) / 16) + 0.5) DIV 256
+  EQUB HI(INT(2^((I% / 2 + 128) / 16) + 0.5))
 
  NEXT
 
@@ -35951,7 +35947,7 @@ ENDIF
  LDA RAND               \ Calculate the next two values f2 and f3 in the feeder
  ROL A                  \ sequence:
  TAX                    \
- ADC RAND+2             \   * f2 = (f1 << 1) mod 256 + C flag on entry
+ ADC RAND+2             \   * f2 = (f1 << 1) MOD 256 + C flag on entry
  STA RAND               \   * f3 = f0 + f2 + (1 if bit 7 of f1 is set)
  STX RAND+2             \   * C flag is set according to the f3 calculation
 
