@@ -9541,10 +9541,10 @@ IF _MATCH_ORIGINAL_BINARIES
 
  IF _SNG47
 
-  EQUB &41, &23, &6D, &65, &6D, &3A, &53, &54  \ These bytes appear to be
-  EQUB &41, &6C, &61, &74, &63, &68, &3A, &52  \ unused and just contain random
-  EQUB &54, &53, &0D, &13, &74, &09, &5C, &2E  \ workspace noise left over from
-  EQUB &2E, &2E, &2E, &0D, &18, &60, &05, &20  \ the BBC Micro assembly process
+  EQUB &41, &23, &6D, &65, &6D, &3A, &53, &54   \ These bytes appear to be
+  EQUB &41, &6C, &61, &74, &63, &68, &3A, &52   \ unused and just contain random
+  EQUB &54, &53, &0D, &13, &74, &09, &5C, &2E   \ workspace noise left over from
+  EQUB &2E, &2E, &2E, &0D, &18, &60, &05, &20   \ the BBC Micro assembly process
   EQUB &0D, &1A, &F4, &21, &5C, &2E, &2E, &2E
   EQUB &2E, &2E, &2E, &2E, &2E, &2E, &2E, &42
   EQUB &61, &79, &20, &56, &69, &65, &77, &2E
@@ -9787,10 +9787,10 @@ ENDIF
 
 IF _MATCH_ORIGINAL_BINARIES
 
- EQUB &01, &02, &03, &04, &05, &06, &00, &01   \ These bytes appear to be
- EQUB &02, &03, &04, &05, &06, &00, &01, &02   \ unused and just contain random
- EQUB &03, &04, &05, &06, &00, &01, &02, &03   \ workspace noise left over from
- EQUB &04, &05, &06, &00, &01, &02, &03, &04   \ the BBC Micro assembly process
+ EQUB &01, &02, &03, &04, &05, &06, &00, &01    \ These bytes appear to be
+ EQUB &02, &03, &04, &05, &06, &00, &01, &02    \ unused and just contain random
+ EQUB &03, &04, &05, &06, &00, &01, &02, &03    \ workspace noise left over from
+ EQUB &04, &05, &06, &00, &01, &02, &03, &04    \ the BBC Micro assembly process
  EQUB &05, &06, &00, &01, &02, &03, &04, &05
  EQUB &06, &00, &01, &02, &03, &04, &05, &06
  EQUB &00, &01, &02, &03, &04, &05, &06, &00
@@ -48223,7 +48223,7 @@ ENDIF
 \       Name: NMIpissoff
 \       Type: Subroutine
 \   Category: Loader
-\    Summary: Acknowledge NMI interrupts and ignore tham
+\    Summary: Acknowledge NMI interrupts and ignore them
 \
 \ ******************************************************************************
 
