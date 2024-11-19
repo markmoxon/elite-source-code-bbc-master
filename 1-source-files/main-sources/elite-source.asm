@@ -2733,31 +2733,45 @@ ENDIF
 
 .SOFLG
 
- SKIP 3
+ EQUB 0                 \ Sound buffer for channel control flags
+ EQUB 0
+ EQUB 0
 
 .SOCNT
 
- SKIP 3
+ EQUB 0                 \ Sound buffer for SFXBT values
+ EQUB 0
+ EQUB 0
 
 .SOVOL
 
- SKIP 3
+ EQUB 0                 \ Sound buffer for SFXPR values (bits 1-3)
+ EQUB 0
+ EQUB 0
 
 .SOVCH
 
- SKIP 3
+ EQUB 0                 \ Sound buffer for SFXVC values
+ EQUB 0
+ EQUB 0
 
 .SOPR
 
- SKIP 3
+ EQUB 0                 \ Sound buffer for SFXPR values
+ EQUB 0
+ EQUB 0
 
 .SOFRCH
 
- SKIP 3
+ EQUB 0                 \ Sound buffer for SFXBT values
+ EQUB 0
+ EQUB 0
 
 .SOFRQ
 
- SKIP 3
+ EQUB 0                 \ Sound buffer for SFXFQ values
+ EQUB 0
+ EQUB 0
 
 \ ******************************************************************************
 \
