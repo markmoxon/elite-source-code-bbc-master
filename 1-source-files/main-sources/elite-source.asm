@@ -881,7 +881,8 @@ ENDIF
 .dontclip
 
  SKIP 1                 \ This is set to 0 in the RES2 routine, but the value is
-                        \ never actually read
+                        \ never actually read (this is left over from the
+                        \ Commodore 64 version of Elite)
 
 .Yx2M1
 
@@ -10400,7 +10401,8 @@ ENDIF
 \       Name: TRIBDIR
 \       Type: Variable
 \   Category: Missions
-\    Summary: ???
+\    Summary: The low byte of the four 16-bit directions in which Trumble
+\             sprites can move
 \
 \ ******************************************************************************
 
@@ -10416,7 +10418,8 @@ ENDIF
 \       Name: TRIBDIRH
 \       Type: Variable
 \   Category: Missions
-\    Summary: ???
+\    Summary: The high byte of the four 16-bit directions in which Trumble
+\             sprites can move
 \
 \ ******************************************************************************
 
@@ -10432,7 +10435,8 @@ ENDIF
 \       Name: SPMASK
 \       Type: Variable
 \   Category: Missions
-\    Summary: ???
+\    Summary: Masks for updating sprite bits in VIC+&10 for the top bit of the
+\             9-bit x-coordinates of the Trumble sprites
 \
 \ ******************************************************************************
 
@@ -35693,7 +35697,8 @@ ENDIF
 \STA COL2               \ source
 
  LDA #0                 \ Set dontclip to 0 (though this variable is never used,
- STA dontclip           \ so this has no effect)
+ STA dontclip           \ so this has no effect; it is left over from the
+                        \ Commodore 64 version)
 
  LDA #2*Y-1             \ Set Yx2M1 to the number of pixel lines in the space
  STA Yx2M1              \ view
