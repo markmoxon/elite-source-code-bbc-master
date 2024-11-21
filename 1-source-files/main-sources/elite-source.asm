@@ -327,8 +327,6 @@ ENDIF
 
 .ZP
 
- SKIP 0                 \ The start of the zero page workspace
-
  SKIP 2                 \ These bytes appear to be unused
 
 IF _COMPACT
@@ -2399,7 +2397,7 @@ ENDIF
 \       Name: SOFLUSH
 \       Type: Subroutine
 \   Category: Sound
-\    Summary: Reset the sound buffer and turn off all sound channels
+\    Summary: Reset the sound buffers and turn off all sound channels
 \
 \ ******************************************************************************
 
@@ -9935,7 +9933,7 @@ ENDIF
 
 .DFLAG
 
- EQUB 0                 \ This byte appears to be unused
+ SKIP 1                 \ This byte appears to be unused
 
 .DNOIZ
 
@@ -10223,9 +10221,18 @@ ENDIF
                         \ herring", so this would appear to be a red herring
                         \ aimed at confusing any crackers
 
+\ ******************************************************************************
+\
+\       Name: G%
+\       Type: Variable
+\   Category: Utility routines
+\    Summary: Denotes the start of the main game code, from ELITE A to ELITE H
+\
+\ ******************************************************************************
+
 .G%
 
-                        \ The game code is scrambled from here to F% (or, as the
+ SKIP 0                 \ The game code is scrambled from here to F% (or, as the
                         \ original source code puts it, "mutilated")
 
 \ ******************************************************************************
@@ -10855,8 +10862,6 @@ ENDIF
 
 .MA68
 
-\kill phantom Cs        \ This comment appears in the original source
-
  LDA #0                 \ Set LAS = 0, to switch the laser off while we do the
  STA LAS                \ following logic
 
@@ -11345,10 +11350,10 @@ ENDIF
 
 .GOIN
 
+                        \ If we arrive here, we just docked successfully
+
 \JSR stopbd             \ This instruction is commented out in the original
                         \ source
-
-                        \ If we arrive here, we just docked successfully
 
  JMP DOENTRY            \ Go to the docking bay (i.e. show the ship hangar)
 
@@ -12108,6 +12113,7 @@ ENDIF
 \JSR SETL1
 \LSR TRIBBLE+1
 \ROR TRIBBLE
+\
 \.nokilltr
 
  LDA BST                \ If we don't have fuel scoops fitted, jump to BA23 to
@@ -35961,7 +35967,7 @@ ENDIF
  LDA RAND               \ Calculate the next two values f2 and f3 in the feeder
  ROL A                  \ sequence:
  TAX                    \
- ADC RAND+2             \   * f2 = (f1 << 1) MOD 256 + C flag on entry
+ ADC RAND+2             \   * f2 = (f1 << 1) mod 256 + C flag on entry
  STA RAND               \   * f3 = f0 + f2 + (1 if bit 7 of f1 is set)
  STX RAND+2             \   * C flag is set according to the f3 calculation
 
@@ -46986,7 +46992,8 @@ ENDMACRO
 \       Name: TRIBTA
 \       Type: Variable
 \   Category: Missions
-\    Summary: ???
+\    Summary: A table for converting the number of Trumbles in the hold into a
+\             number of sprites in the range 0 to 6
 \
 \ ******************************************************************************
 
@@ -47006,7 +47013,8 @@ ENDMACRO
 \       Name: TRIBMA
 \       Type: Variable
 \   Category: Missions
-\    Summary: ???
+\    Summary: A table for converting the number of Trumbles in the hold into a
+\             sprite-enable flag to use with VIC register &15
 \
 \ ******************************************************************************
 

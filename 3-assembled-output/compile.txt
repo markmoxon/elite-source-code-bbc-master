@@ -417,7 +417,6 @@ S.M128Elt &E00  &10D1  &E00  &E00
 Saving file '3-assembled-output/M128Elt.bin'
 .ZP
      0000
-     0000
 .RAND
      0002
 .T1
@@ -4971,7 +4970,7 @@ WP workspace from &E41 to &12A9 inclusive
 .CATF
      2C53
 .DFLAG
-     2C54   00
+     2C54
 .DNOIZ
      2C55
 .DAMP
@@ -5049,6 +5048,7 @@ UP workspace from &2C40 to &2C61 inclusive
      2CBF   45
      2CC0   23
 .G%
+     2CC1
 .DOENTRY
      2CC1   20 49 63   JSR &6349
      2CC4   20 4B 43   JSR &434B
