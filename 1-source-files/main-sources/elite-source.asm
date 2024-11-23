@@ -994,7 +994,7 @@ ENDIF
 
 .KY17
 
- SKIP 1                 \ "E" is being pressed
+ SKIP 1                 \ "E" is being pressed (activate E.C.M.)
                         \
                         \   * 0 = no
                         \
@@ -1002,7 +1002,7 @@ ENDIF
 
 .KY14
 
- SKIP 1                 \ "T" is being pressed
+ SKIP 1                 \ "T" is being pressed (target missile)
                         \
                         \   * 0 = no
                         \
@@ -1010,7 +1010,7 @@ ENDIF
 
 .KY15
 
- SKIP 1                 \ "U" is being pressed
+ SKIP 1                 \ "U" is being pressed (unarm missile)
                         \
                         \   * 0 = no
                         \
@@ -1018,7 +1018,7 @@ ENDIF
 
 .KY20
 
- SKIP 1                 \ "P" is being pressed
+ SKIP 1                 \ "P" is being pressed (deactivate docking computer)
                         \
                         \   * 0 = no
                         \
@@ -1026,7 +1026,7 @@ ENDIF
 
 .KY7
 
- SKIP 1                 \ "A" is being pressed
+ SKIP 1                 \ "A" is being pressed (fire lasers)
                         \
                         \   * 0 = no
                         \
@@ -1037,7 +1037,7 @@ ENDIF
 
 .KY5
 
- SKIP 1                 \ "X" is being pressed
+ SKIP 1                 \ "X" is being pressed (pull up)
                         \
                         \   * 0 = no
                         \
@@ -1045,7 +1045,7 @@ ENDIF
 
 .KY18
 
- SKIP 1                 \ "J" is being pressed
+ SKIP 1                 \ "J" is being pressed (in-system jump)
                         \
                         \   * 0 = no
                         \
@@ -1053,7 +1053,7 @@ ENDIF
 
 .KY6
 
- SKIP 1                 \ "S" is being pressed
+ SKIP 1                 \ "S" is being pressed (pitch down)
                         \
                         \   * 0 = no
                         \
@@ -1061,7 +1061,7 @@ ENDIF
 
 .KY19
 
- SKIP 1                 \ "C" is being pressed
+ SKIP 1                 \ "C" is being pressed (activate docking computer)
                         \
                         \   * 0 = no
                         \
@@ -1069,7 +1069,7 @@ ENDIF
 
 .KY12
 
- SKIP 1                 \ TAB is being pressed
+ SKIP 1                 \ TAB is being pressed (energy bomb)
                         \
                         \   * 0 = no
                         \
@@ -1077,7 +1077,7 @@ ENDIF
 
 .KY2
 
- SKIP 1                 \ Space is being pressed
+ SKIP 1                 \ Space is being pressed (speed up)
                         \
                         \   * 0 = no
                         \
@@ -1085,7 +1085,7 @@ ENDIF
 
 .KY16
 
- SKIP 1                 \ "M" is being pressed
+ SKIP 1                 \ "M" is being pressed (fire missile)
                         \
                         \   * 0 = no
                         \
@@ -1093,7 +1093,7 @@ ENDIF
 
 .KY3
 
- SKIP 1                 \ "<" is being pressed
+ SKIP 1                 \ "<" is being pressed (roll left)
                         \
                         \   * 0 = no
                         \
@@ -1101,7 +1101,7 @@ ENDIF
 
 .KY4
 
- SKIP 1                 \ ">" is being pressed
+ SKIP 1                 \ ">" is being pressed (roll right)
                         \
                         \   * 0 = no
                         \
@@ -1109,7 +1109,7 @@ ENDIF
 
 .KY1
 
- SKIP 1                 \ "?" is being pressed
+ SKIP 1                 \ "?" is being pressed (slow down)
                         \
                         \   * 0 = no
                         \
@@ -1117,7 +1117,7 @@ ENDIF
 
 .KY13
 
- SKIP 1                 \ ESCAPE is being pressed
+ SKIP 1                 \ ESCAPE is being pressed (launch escape pod)
                         \
                         \   * 0 = no
                         \
@@ -30879,13 +30879,17 @@ ENDIF
 \       Type: Variable
 \   Category: Drawing ships
 \    Summary: An unused block of explosion data
+\    Summary: A table to shift X left by one place when X is 0 or 1
 \
 \ ******************************************************************************
 
 .exlook
 
- EQUB 0                 \ These bytes appear to be unused, and are left over
- EQUB 2                 \ from the Commodore 64 version of Elite
+ EQUB %00               \ Looking up exlook,X will return X shifted left by one
+ EQUB %10               \ place, where X is 0 or 1
+                        \
+                        \ This is not used in this version of Elite; it is left
+                        \ over from the Commodore 64 version of Elite
 
 \ ******************************************************************************
 \
@@ -34725,7 +34729,7 @@ ENDIF
 .TT17
 
  LDA QQ11               \ If this not the space view, skip the following three
- BNE TT17afterall       \ instructions to move onto the SHIFT key logic
+ BNE TT17afterall       \ instructions to move onto the cursor key logic
 
  JSR DOKEY              \ This is the space view, so scan the keyboard for
                         \ flight controls and pause keys, (or the equivalent on
@@ -47284,7 +47288,7 @@ ENDMACRO
  EQUB &CA EOR &FF       \ U         IKNS+2    KY11     Unarm missile
  EQUB &C8 EOR &FF       \ P         IKNS+3    KY16     Cancel docking computer
  EQUB &BE EOR &FF       \ A         IKNS+4    KY7      Fire lasers
- EQUB &BD EOR &FF       \ X         IKNS+5    KY5      Pitch up
+ EQUB &BD EOR &FF       \ X         IKNS+5    KY5      Pull up
  EQUB &BA EOR &FF       \ J         IKNS+6    KY14     In-system jump
  EQUB &AE EOR &FF       \ S         IKNS+7    KY6      Pitch down
  EQUB &AD EOR &FF       \ C         IKNS+8    KY15     Docking computer
@@ -47811,18 +47815,18 @@ IF _COMPACT
  BCS P%+4               \ following
 
  STX KY6                \ Update the key logger at KY6 to "press" the "S" (pitch
-                        \ forward) button
+                        \ down) button
                         \
                         \ Note that this is the opposite key press to the stick
                         \ direction, as in the default configuration, we want to
-                        \ pitch up when we pull the joystick back (i.e. when the
+                        \ pull up when we pull the joystick back (i.e. when the
                         \ stick is down). To fix this, we flip this result below
 
  LSR A                  \ If PB3 from the User VIA is set (up), skip the
  BCS P%+4               \ following
 
- STX KY5                \ Update the key logger at KY5 to "press" the "X" (pitch
-                        \ back) button
+ STX KY5                \ Update the key logger at KY5 to "press" the "X" (pull
+                        \ up) button
                         \
                         \ Note that this is the opposite key press to the stick
                         \ direction, as in the default configuration, we want to
