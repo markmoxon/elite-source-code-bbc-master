@@ -11539,9 +11539,7 @@ ENDIF
 
  CMP #(Armlas AND 127)  \ If the laser is not a military laser, jump to MA14+2
  BNE MA14+2             \ to skip the following, as only military lasers have
-                        \ any effect on the Constrictor or Cougar (or the Elite
-                        \ logo, should you ever bump into one of those out there
-                        \ in the black...)
+                        \ any effect on the Constrictor or Cougar
 
  LSR LAS                \ Divide the laser power of the current view by 4, so
  LSR LAS                \ the damage inflicted on the super-ship is a quarter of
@@ -17257,7 +17255,7 @@ ENDIF
 \ORA #1                 \ pod (so using an escape pod is not a solution to the
 \STA TRIBBLE            \ trouble with Trumbles)
 \LDA #0                 \
-\STA TRIBBLE+1          \ The Master version does not contains the Trumble
+\STA TRIBBLE+1          \ This version of Elite does not contain the Trumble
 \.nosurviv              \ mission, so the code is disabled
 
  LDA #70                \ Our replacement ship is delivered with a full tank of
@@ -30766,7 +30764,7 @@ ENDIF
                         \           = x +/- random * cloud size
 
  BNE EX4                \ If A is non-zero, the particle is off-screen as the
-                        \ coordinate is bigger than 255), so jump to EX11 to do
+                        \ coordinate is bigger than 255), so jump to EX4 to do
                         \ the next particle
 
                         \ Otherwise X contains a random x-coordinate within the
