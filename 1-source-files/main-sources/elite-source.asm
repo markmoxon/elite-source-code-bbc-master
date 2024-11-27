@@ -186,7 +186,7 @@
 
  sobeep  = 1            \ Sound 1  = Short, high beep
 
- soclick = 2            \ Sound 2  = This sound is not defined or used
+ soclick = 2            \ Sound 2  = This sound is not used
 
  solaser = 3            \ Sound 3  = Lasers fired by us 1
 
@@ -2732,45 +2732,78 @@ ENDIF
 
 .SOFLG
 
- EQUB 0                 \ Sound buffer for channel control flags
- EQUB 0
- EQUB 0
+ EQUB 0                 \ Sound buffer for sound effect flags
+ EQUB 0                 \
+ EQUB 0                 \ SOFLG,Y contains the following:
+                        \
+                        \   * Bits 0-5: sound effect number + 1 of the sound
+                        \               currently being made on voice Y
+                        \
+                        \   * Bit 7 is set if this is a new sound being made,
+                        \     rather than one that is in progress
 
 .SOCNT
 
- EQUB 0                 \ Sound buffer for SFXBT values
- EQUB 0
- EQUB 0
+ EQUB 0                 \ Sound buffer for sound effect counters
+ EQUB 0                 \
+ EQUB 0                 \ SOCNT,Y contains the counter of the sound currently
+                        \ being made on voice Y
+                        \
+                        \ The counter decrements each frame, and when it reaches
+                        \ zero, the sound effect has finished
+                        \
+                        \ These values come from the SFXCNT table
 
 .SOVOL
 
- EQUB 0                 \ Sound buffer for SFXPR values (bits 1-3)
- EQUB 0
- EQUB 0
+ EQUB 0                 \ Sound buffer for volume levels
+ EQUB 0                 \
+ EQUB 0                 \ SOVOL,Y contains the volume of the sound currently
+                        \ being made on voice Y
+                        \
+                        \ These values come from bits 1-3 of the SFXPR table
 
 .SOVCH
 
- EQUB 0                 \ Sound buffer for SFXVC values
- EQUB 0
- EQUB 0
+ EQUB 0                 \ Sound buffer for the volume change rate
+ EQUB 0                 \
+ EQUB 0                 \ SOVCH,Y contains the volumen change rate of the sound
+                        \ currently being made on voice Y
+                        \
+                        \ The sound's volume gets reduced by one every SOVCH,Y
+                        \ frames
+                        \
+                        \ These values come from the SFXVCH table
 
 .SOPR
 
- EQUB 0                 \ Sound buffer for SFXPR values
- EQUB 0
- EQUB 0
+ EQUB 0                 \ Sound buffer for SOPR values
+ EQUB 0                 \
+ EQUB 0                 \ SOPR,Y contains the priority of the sound currently
+                        \ being made on voice Y
+                        \
+                        \ These values come from the SFXPR table
 
 .SOFRCH
 
- EQUB 0                 \ Sound buffer for SFXBT values
- EQUB 0
- EQUB 0
+ EQUB 0                 \ Sound buffer for frequency change values
+ EQUB 0                 \
+ EQUB 0                 \ SOFRCH,Y contains the frequency change to be applied
+                        \ to the sound currently being made on voice Y in each
+                        \ frame
+                        \
+                        \ These values come from the SFXFRCH table
 
 .SOFRQ
 
  EQUB 0                 \ Sound buffer for SFXFQ values
- EQUB 0
- EQUB 0
+ EQUB 0                 \
+ EQUB 0                 \ SOFRQ,Y contains the frequency of the sound currently
+                        \ being made on voice Y
+                        \
+                        \ These values come from the SFXFQ table, and have the
+                        \ frequency change from the SFXFRCH table applied in
+                        \ each frame
 
 \ ******************************************************************************
 \
@@ -46983,7 +47016,7 @@ ENDMACRO
 \       Name: beamcol
 \       Type: Variable
 \   Category: Drawing lines
-\    Summary: Colours for ???
+\    Summary: An unused table of laser colours
 \
 \ ******************************************************************************
 
@@ -48025,16 +48058,9 @@ ENDIF
 \ This routine contains an RTS so we can return from the SFRMIS subroutine with
 \ a branch instruction.
 \
-\ It also contains the DEMON label, which implements the demo in the 6502
-\ Second Processor version, so this acts as a stub for the JSR DEMON call during
-\ conversion of the 6502 Second Processor version into the later Commodore 64,
-\ Apple II and BBC Master versions.
-\
-\ ------------------------------------------------------------------------------
-\
-\ Other entry points:
-\
-\   DEMON               Contains an RTS
+\ It also contains the DEMON label, which is left over from the 6502 Second
+\ Processor version, where it implements the demo (there is no demo in this
+\ version of Elite).
 \
 \ ******************************************************************************
 
