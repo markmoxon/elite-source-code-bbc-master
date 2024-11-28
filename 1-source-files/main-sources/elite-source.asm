@@ -4587,6 +4587,11 @@ ENDIF
                         \ character block with a simple BEQ rather than checking
                         \ whether it's reached 8, so this appears to be a code
                         \ optimisation
+                        \
+                        \ If it helps, you can think of Y as being a negative
+                        \ number that we are incrementing towards zero as we
+                        \ move along the line - we just need to alter the value
+                        \ of SC so that SC(1 0) + Y points to the right address
 
                         \ We now work our way along the line from left to right,
                         \ using X as a decreasing counter, and at each count we
@@ -5591,7 +5596,9 @@ ENDIF
 
  TYA                    \ Fetch bits 0-2 of the y-coordinate, so Y contains the
  AND #7                 \ y-coordinate mod 8
- TAY
+ TAY                    \
+                        \ So Y is the pixel row within the character block where
+                        \ we want to start drawing
 
  BNE P%+5               \ If Y = 0, jump to LI407+8 to start plotting from the
  JMP LI407+8            \ pixel above the top row of this character block
@@ -5642,7 +5649,9 @@ ENDIF
 
  TYA                    \ Fetch bits 0-2 of the y-coordinate, so Y contains the
  AND #7                 \ y-coordinate mod 8
- TAY
+ TAY                    \
+                        \ So Y is the pixel row within the character block where
+                        \ we want to start drawing
 
  BNE P%+5               \ If Y = 0, jump to LI407 to start plotting from row 0
  JMP LI407              \ of this character block
@@ -6925,9 +6934,9 @@ ENDIF
 
  CLC                    \ Clear the C flag
 
- TYA                    \ Set Y to just bits 0-2 of the y-coordinate, which will
- AND #%00000111         \ be the number of the pixel row we need to draw into
- TAY                    \ within the character block
+ TYA                    \ Set Y to the y-coordinate mod 8, which will be the
+ AND #7                 \ number of the pixel row we need to draw within the
+ TAY                    \ character block
 
  LDA X1                 \ Copy bit 1 of X1 to bit 1 of X. X will now be either
  AND #%00000010         \ 0 or 2, and will be double the pixel number in the
@@ -7455,7 +7464,7 @@ ENDIF
 
  STA R                  \ Also store the page number in R
 
- LDA P                  \ Set the low byte of SC(1 0) to the y-coordinate mod 7,
+ LDA P                  \ Set the low byte of SC(1 0) to the y-coordinate mod 8,
  AND #7                 \ which determines the pixel row in the character block
  STA SC                 \ we need to draw in (as each character row is 8 pixels
                         \ high), so SC(1 0) now points to the address of the
@@ -11789,7 +11798,7 @@ ENDIF
 
 .MA77
 
- LDA MCNT               \ Fetch the main loop counter and calculate MCNT mod 7,
+ LDA MCNT               \ Fetch the main loop counter and calculate MCNT mod 8,
  AND #7                 \ jumping to MA22 if it is non-zero (so the following
  BNE MA22               \ code only runs every 8 iterations of the main loop)
 
