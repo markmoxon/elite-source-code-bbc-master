@@ -385,7 +385,7 @@ ENDIF
                         \
                         \ A value of 0 denotes the leftmost column and 32 the
                         \ rightmost column, but because the top part of the
-                        \ screen (the space view) has a white border that
+                        \ screen (the space view) has a border box that
                         \ clashes with columns 0 and 32, text is only shown
                         \ in columns 1-31
 
@@ -406,7 +406,7 @@ ENDIF
                         \ just before the screen splits
                         \
                         \ A value of 0 denotes the top row, but because the
-                        \ top part of the screen has a white border that clashes
+                        \ top part of the screen has a border box that clashes
                         \ with row 0, text is always shown at row 1 or greater
 
 .QQ17
@@ -731,10 +731,9 @@ ENDIF
  SKIP 1                 \ The type of the current view:
                         \
                         \   0   = Space view
-                        \   1   = Title screen
+                        \   1   = Data on System screen (red key f6)
                         \         Get commander name ("@", save/load commander)
                         \         In-system jump just arrived ("J")
-                        \         Data on System screen (red key f6)
                         \   2   = Buy Cargo screen (red key f1)
                         \   3   = Mis-jump just arrived (witchspace)
                         \   4   = Sell Cargo screen (red key f2)
@@ -1271,8 +1270,8 @@ ENDIF
 \ Contains ship data for all the ships, planets, suns and space stations in our
 \ local bubble of universe.
 \
-\ The blocks are pointed to by the lookup table at location UNIV. The first 720
-\ bytes of the K% workspace hold ship data on up to 20 ships, with 37 (NI%)
+\ The blocks are pointed to by the lookup table at location UNIV. The first 444
+\ bytes of the K% workspace hold ship data on up to 12 ships, with 37 (NI%)
 \ bytes per ship.
 \
 \ See the deep dive on "Ship data blocks" for details on ship data blocks, and
@@ -7923,14 +7922,14 @@ ENDIF
 \       Name: cls
 \       Type: Subroutine
 \   Category: Drawing the screen
-\    Summary: Clear the top part of the screen and draw a white border
+\    Summary: Clear the top part of the screen and draw a border box
 \
 \ ******************************************************************************
 
 .cls
 
  JSR TTX66              \ Call TTX66 to clear the top part of the screen and
-                        \ draw a white border
+                        \ draw a border box
 
  JMP RR4                \ Jump to RR4 to restore X and Y from the stack and A
                         \ from K3, and return from the subroutine using a tail
@@ -8031,7 +8030,7 @@ ENDIF
                         \ flags
 
  CPY #255               \ If QQ17 = 255 then printing is disabled, so jump to
- BEQ RR4S               \ RR4S (via the JMP in RR4S) to restore the registers
+ BEQ RR4S               \ RR4 (via the JMP in RR4S) to restore the registers
                         \ and return from the subroutine using a tail call
 
 IF _COMPACT
@@ -8326,7 +8325,7 @@ ENDIF
 IF _SNG47
 
  JSR TTX66              \ Otherwise we are off the bottom of the screen, so
-                        \ clear the screen and draw a white border
+                        \ clear the screen and draw a border box
 
  LDA #%00001111         \ Set bits 1 and 2 of the Access Control Register at
  STA VIA+&34            \ SHEILA &34 to switch screen memory into &3000-&7FFF
@@ -8508,18 +8507,18 @@ ENDIF
 \       Name: TTX66
 \       Type: Subroutine
 \   Category: Drawing the screen
-\    Summary: Clear the top part of the screen and draw a white border
+\    Summary: Clear the top part of the screen and draw a border box
 \
 \ ------------------------------------------------------------------------------
 \
-\ Clear the top part of the screen (the space view) and draw a white border
+\ Clear the top part of the screen (the space view) and draw a border box
 \ along the top and sides.
 \
 \ ------------------------------------------------------------------------------
 \
 \ Other entry points:
 \
-\   BOX                 Just draw the white border along the top and sides
+\   BOX                 Just draw the border box along the top and sides
 \
 \ ******************************************************************************
 
@@ -8715,7 +8714,7 @@ ENDIF
 \       Name: CLYNS
 \       Type: Subroutine
 \   Category: Drawing the screen
-\    Summary: Clear the bottom three text rows of the mode 4 screen
+\    Summary: Clear the bottom three text rows of the space view
 \
 \ ******************************************************************************
 
@@ -14149,7 +14148,7 @@ ENDIF
 \ ------------------------------------------------------------------------------
 \
 \ This draws a line from (2, A) to (254, A), which is almost screen-wide and
-\ fits in nicely between the white borders without clashing with it.
+\ fits in nicely between the border boxes without clashing with it.
 \
 \ ------------------------------------------------------------------------------
 \
@@ -15527,7 +15526,7 @@ ENDIF
 
 .STATUS
 
- LDA #8                 \ Clear the top part of the screen, draw a white border,
+ LDA #8                 \ Clear the top part of the screen, draw a border box,
  JSR TRADEMODE          \ and set up a printable trading screen with a view type
                         \ in QQ11 of 8 (Status Mode screen)
 
@@ -17580,7 +17579,7 @@ ENDIF
  JSR DOVDU19            \ which is yellow (colour 1), red (colour 2) and cyan
                         \ (colour 3)
 
- LDA #0                 \ Clear the top part of the screen, draw a white border,
+ LDA #0                 \ Clear the top part of the screen, draw a border box,
  JSR TT66               \ and set the current view type in QQ11 to 0 (space
                         \ view)
 
@@ -20399,7 +20398,7 @@ ENDIF
  LDA QQ11               \ Store the current view type in QQ11 on the stack
  PHA
 
- LDA #0                 \ Clear the top part of the screen, draw a white border,
+ LDA #0                 \ Clear the top part of the screen, draw a border box,
  JSR TT66               \ and set the current view type in QQ11 to 0 (the space
                         \ view)
 
@@ -23443,7 +23442,7 @@ ENDIF
  STA INWK+7             \ Set z_hi = 1, the distance at which we show the
                         \ rotating ship
 
- LDA #13                \ Clear the top part of the screen, draw a white border,
+ LDA #13                \ Clear the top part of the screen, draw a border box,
  JSR TT66               \ and set the current view type in QQ11 to 13 (rotating
                         \ ship view)
 
@@ -23578,7 +23577,7 @@ ENDIF
  LDA #0                 \ Set the ship's AI flag to 0 (no AI) so it doesn't get
  STA INWK+31            \ any ideas of its own
 
- LDA #1                 \ Clear the top part of the screen, draw a white border,
+ LDA #1                 \ Clear the top part of the screen, draw a border box,
  JSR TT66               \ and set the current view type in QQ11 to 1
 
  JSR LL9                \ Draw the ship on screen to redisplay it
@@ -23618,15 +23617,6 @@ ENDIF
 \    Summary: Move to row 6, switch to white text, and switch to lower case when
 \             printing extended tokens
 \  Deep dive: Extended text tokens
-\
-\ ------------------------------------------------------------------------------
-\
-\ This routine sets the following:
-\
-\   * YC = 6 (move to row 6)
-\
-\ Then it calls WHITETEXT to switch to white text, before jumping to MT13 to
-\ switch to lower case when printing extended tokens.
 \
 \ ******************************************************************************
 
@@ -24192,7 +24182,7 @@ ENDIF
 \
 \ ------------------------------------------------------------------------------
 \
-\ Clear the top part of the screen, draw a white border, set the palette for
+\ Clear the top part of the screen, draw a border box, set the palette for
 \ trading screens, and set the current view type in QQ11 to A.
 \
 \ ------------------------------------------------------------------------------
@@ -24213,7 +24203,7 @@ ENDIF
 
 .TRADEMODE
 
- JSR TT66               \ Clear the top part of the screen, draw a white border,
+ JSR TT66               \ Clear the top part of the screen, draw a border box,
                         \ and set the current view type in QQ11 to A
 
  JSR FLKB               \ Call FLKB to flush the keyboard buffer
@@ -24522,7 +24512,7 @@ ENDIF
 
 .TT25
 
- LDA #1                 \ Clear the top part of the screen, draw a white border,
+ LDA #1                 \ Clear the top part of the screen, draw a border box,
  JSR TRADEMODE          \ and set up a printable trading screen with a view type
                         \ in QQ11 of 1
 
@@ -24936,7 +24926,7 @@ ENDIF
 
 .TT22
 
- LDA #64                \ Clear the top part of the screen, draw a white border,
+ LDA #64                \ Clear the top part of the screen, draw a border box,
  JSR TT66               \ and set the current view type in QQ11 to 32 (Long-
                         \ range Chart)
 
@@ -25371,7 +25361,7 @@ ENDIF
 
 .TT219
 
- LDA #2                 \ Clear the top part of the screen, draw a white border,
+ LDA #2                 \ Clear the top part of the screen, draw a border box,
  JSR TRADEMODE          \ and set up a printable trading screen with a view type
                         \ in QQ11 of 2 (Buy Cargo screen)
 
@@ -25417,8 +25407,7 @@ ENDIF
 .TT224
 
  JSR CLYNS              \ Clear the bottom three text rows of the upper screen,
-                        \ and move the text cursor to column 1 on row 21, i.e.
-                        \ the start of the top row of the three bottom rows
+                        \ and move the text cursor to the first cleared row
 
  LDA #204               \ Print recursive token 44 ("QUANTITY OF ")
  JSR TT27
@@ -25771,7 +25760,7 @@ ENDIF
 
 .TT208
 
- LDA #4                 \ Clear the top part of the screen, draw a white border,
+ LDA #4                 \ Clear the top part of the screen, draw a border box,
  JSR TRADEMODE          \ and set up a printable trading screen with a view type
                         \ in QQ11 of 4 (Sell Cargo screen)
 
@@ -26016,7 +26005,7 @@ ENDIF
 
 .TT213
 
- LDA #8                 \ Clear the top part of the screen, draw a white border,
+ LDA #8                 \ Clear the top part of the screen, draw a border box,
  JSR TRADEMODE          \ and set up a printable trading screen with a view type
                         \ in QQ11 of 4 (Inventory screen)
 
@@ -26405,7 +26394,7 @@ ENDIF
 
 .TT23
 
- LDA #128               \ Clear the top part of the screen, draw a white border,
+ LDA #128               \ Clear the top part of the screen, draw a border box,
  JSR TT66               \ and set the current view type in QQ11 to 128 (Short-
                         \ range Chart)
 
@@ -27062,8 +27051,7 @@ ENDIF
 .dockEd
 
  JSR CLYNS              \ Clear the bottom three text rows of the upper screen,
-                        \ and move the text cursor to column 1 on row 21, i.e.
-                        \ the start of the top row of the three bottom rows
+                        \ and move the text cursor to the first cleared row
 
  LDA #15                \ Move the text cursor to column 15 (the middle of the
  STA XC                 \ screen), setting A to 15 at the same time for the
@@ -27886,7 +27874,7 @@ ENDIF
 
 .TT167
 
- LDA #16                \ Clear the top part of the screen, draw a white border,
+ LDA #16                \ Clear the top part of the screen, draw a border box,
  JSR TRADEMODE          \ and set up a printable trading screen with a view type
                         \ in QQ11 of 32 (Market Price screen)
 
@@ -28247,7 +28235,7 @@ ENDIF
 \JSR CATLOD             \ This instruction is commented out in the original
                         \ source
 
- LDA #3                 \ Clear the top part of the screen, draw a white border,
+ LDA #3                 \ Clear the top part of the screen, draw a border box,
  JSR TT66               \ and set the current view type in QQ11 to 3
 
  JSR LL164              \ Call LL164 to show the hyperspace tunnel and make the
@@ -28318,7 +28306,7 @@ ENDIF
  LDA QQ11               \ If the current view is not a space view, jump to ee5
  BNE ee5                \ to skip the following
 
- JSR TT66               \ Clear the top part of the screen, draw a white border,
+ JSR TT66               \ Clear the top part of the screen, draw a border box,
                         \ and set the current view type in QQ11 to 0 (space
                         \ view)
 
@@ -28377,7 +28365,7 @@ ENDIF
  AND #%00111111         \ one of the charts (64 or 128), return from the
  BNE RTS111             \ subroutine (as RTS111 contains an RTS)
 
- JSR TTX66              \ Otherwise clear the screen and draw a white border
+ JSR TTX66              \ Otherwise clear the screen and draw a border box
 
  LDA QQ11               \ If the current view is one of the charts, jump to
  BNE TT114              \ TT114 (from which we jump to the correct routine to
@@ -28677,7 +28665,7 @@ ENDIF
 
 .EQSHP
 
- LDA #32                \ Clear the top part of the screen, draw a white border,
+ LDA #32                \ Clear the top part of the screen, draw a border box,
  JSR TRADEMODE          \ and set up a printable trading screen with a view type
                         \ in QQ11 of 32 (Equip Ship screen)
 
@@ -28768,8 +28756,7 @@ ENDIF
  BCC EQL1               \ list of equipment available at this station
 
  JSR CLYNS              \ Clear the bottom three text rows of the upper screen,
-                        \ and move the text cursor to column 1 on row 21, i.e.
-                        \ the start of the top row of the three bottom rows
+                        \ and move the text cursor to the first cleared row
 
  LDA #127               \ Print recursive token 127 ("ITEM") followed by a
  JSR prq                \ question mark
@@ -29234,7 +29221,7 @@ ENDIF
  BCC P%+7               \ screen to prevent the view menu from clashing with the
                         \ longer equipment menu available in higher tech systems
 
- LDA #32                \ Clear the top part of the screen, draw a white border,
+ LDA #32                \ Clear the top part of the screen, draw a border box,
  JSR TT66               \ and set the current view type in QQ11 to 32 (Equip
                         \ Ship screen)
 
@@ -29267,8 +29254,7 @@ ENDIF
  BCC qv1                \ view in the menu
 
  JSR CLYNS              \ Clear the bottom three text rows of the upper screen,
-                        \ and move the text cursor to column 1 on row 21, i.e.
-                        \ the start of the top row of the three bottom rows
+                        \ and move the text cursor to the first cleared row
 
 .qv2
 
@@ -29325,8 +29311,7 @@ ENDIF
                         \ system
 
  JMP CLYNS              \ Clear the bottom three text rows of the upper screen,
-                        \ and move the text cursor to column 1 on row 21, i.e.
-                        \ the start of the top row of the three bottom rows
+                        \ and move the text cursor to the first cleared row
 
                         \ Return from the subroutine using a tail call
 
@@ -35908,8 +35893,7 @@ ENDIF
 .clynsneed
 
  JSR CLYNS              \ Clear the bottom three text rows of the upper screen,
-                        \ and move the text cursor to column 1 on row 21, i.e.
-                        \ the start of the top row of the three bottom rows
+                        \ and move the text cursor to the first cleared row
 
  JMP me3                \ Jump back into the main spawning loop at me3
 
@@ -37297,7 +37281,7 @@ ENDIF
  LDX #24                \ Set the screen to only show 24 text rows, which hides
  JSR DET1               \ the dashboard, setting A to 6 in the process
 
- LDA #13                \ Clear the top part of the screen, draw a white border,
+ LDA #13                \ Clear the top part of the screen, draw a border box,
  JSR TT66               \ and set the current view type in QQ11 to 13 (which
                         \ is not a space view, though I'm not quite sure why
                         \ this value is chosen, as it gets overwritten by the
@@ -37306,7 +37290,7 @@ ENDIF
  STZ QQ11               \ Set QQ11 to 0, so from here on we are using a space
                         \ view
 
- JSR BOX                \ Call BOX to redraw the same white border (BOX is part
+ JSR BOX                \ Call BOX to redraw the same border box (BOX is part
                         \ of TT66), which removes the border as it is drawn
                         \ using EOR logic
 
@@ -37837,7 +37821,7 @@ ENDIF
  LDA #32                \ Set the mode 1 palette to yellow (colour 1), white
  JSR DOVDU19            \ (colour 2) and cyan (colour 3)
 
- LDA #13                \ Clear the top part of the screen, draw a white border,
+ LDA #13                \ Clear the top part of the screen, draw a border box,
  JSR TT66               \ and set the current view type in QQ11 to 13 (rotating
                         \ ship view)
 
@@ -40655,8 +40639,7 @@ ENDIF
  BEQ infrontvw          \ instruction
 
  JSR CLYNS              \ Clear the bottom three text rows of the upper screen,
-                        \ and move the text cursor to column 1 on row 21, i.e.
-                        \ the start of the top row of the three bottom rows
+                        \ and move the text cursor to the first cleared row
 
 .infrontvw
 
@@ -46888,7 +46871,7 @@ ENDMACRO
 
  STX VIEW               \ Set the current space view to X
 
- JSR TT66               \ Clear the top part of the screen, draw a white border,
+ JSR TT66               \ Clear the top part of the screen, draw a border box,
                         \ and set the current view type in QQ11 to 0 (space
                         \ view)
 
@@ -46920,7 +46903,7 @@ ENDMACRO
 
  STX VIEW               \ Change the current space view to X
 
- JSR TT66               \ Clear the top part of the screen, draw a white border,
+ JSR TT66               \ Clear the top part of the screen, draw a border box,
                         \ and set the current view type in QQ11 to 0 (space
                         \ view)
 
@@ -47087,7 +47070,7 @@ ENDMACRO
 \
 \ ------------------------------------------------------------------------------
 \
-\ Clear the top part of the screen, draw a white border, and set the current
+\ Clear the top part of the screen, draw a border box, and set the current
 \ view type in QQ11 to A.
 \
 \ ------------------------------------------------------------------------------
@@ -47104,18 +47087,18 @@ ENDMACRO
  STA QQ11               \ Set the current view type in QQ11 to A
 
                         \ Fall through into TTX66K to clear the screen and draw
-                        \ a white border
+                        \ a border box
 
 \ ******************************************************************************
 \
 \       Name: TTX66K
 \       Type: Subroutine
 \   Category: Drawing the screen
-\    Summary: Clear the top part of the screen and draw a white border
+\    Summary: Clear the top part of the screen and draw a border box
 \
 \ ------------------------------------------------------------------------------
 \
-\ Clear the top part of the screen (the space view) and draw a white border
+\ Clear the top part of the screen (the space view) and draw a border box
 \ along the top and sides.
 \
 \ ******************************************************************************
@@ -47123,7 +47106,7 @@ ENDMACRO
 .TTX66K
 
  JSR TTX66              \ Call TTX66 to clear the top part of the screen and
-                        \ draw a white border
+                        \ draw a border box
 
  JSR MT2                \ Switch to Sentence Case when printing extended tokens
 
