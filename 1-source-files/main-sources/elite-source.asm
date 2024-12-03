@@ -10466,7 +10466,7 @@ ENDIF
 
 \.TRIBDIRH              \ These instructions are commented out in the original
 \                       \ source
-\EQUB 0 
+\EQUB 0
 \EQUB 0
 \EQUB &FF
 \EQUB 0
@@ -21749,7 +21749,7 @@ ENDIF
 
 \.MUL4                  \ These instructions are commented out in the original
 \                       \ source. They contain the original loop version of the
-\BCC P%+4               \ code that's used in the disc and cassette versions
+\BCC P%+4               \ code that's used in the cassette and disc versions
 \ADC T1
 \ROR A
 \ROR P
@@ -38390,7 +38390,7 @@ ENDIF
 \       Name: FILEPR
 \       Type: Subroutine
 \   Category: Save and load
-\    Summary: Display the currently selected media (disc or tape)
+\    Summary: Display the currently selected media (disk or tape)
 \  Deep dive: Extended text tokens
 \
 \ ******************************************************************************
@@ -38410,7 +38410,7 @@ ENDIF
 \       Name: OTHERFILEPR
 \       Type: Subroutine
 \   Category: Save and load
-\    Summary: Display the non-selected media (disc or tape)
+\    Summary: Display the non-selected media (disk or tape)
 \  Deep dive: Extended text tokens
 \
 \ ******************************************************************************
