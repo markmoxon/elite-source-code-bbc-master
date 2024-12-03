@@ -4012,11 +4012,11 @@ ENDIF
 
  JMP HLOIN3             \ This instruction doesn't appear to be used anywhere
 
-                        \ In the cassette and disc versions of Elite, LL30 and
-                        \ LOIN are synonyms for the same routine, presumably
-                        \ because the two developers each had their own line
-                        \ routines to start with, and then chose one of them for
-                        \ the final game
+                        \ In the BBC Micro cassette and disc versions of Elite,
+                        \ LL30 and LOIN are synonyms for the same routine,
+                        \ presumably because the two developers each had their
+                        \ own line routines to start with, and then chose one of
+                        \ them for the final game
                         \
                         \ In the BBC Master version, there are two different
                         \ routines: LOINQ draws a one-segment line, while LOIN
@@ -4255,8 +4255,8 @@ ENDIF
 \     first pixel
 \
 \ This routine looks complex, but that's because the loop that's used in the
-\ cassette and disc versions has been unrolled to speed it up. The algorithm is
-\ unchanged, it's just a lot longer.
+\ BBC Micro cassette and disc versions has been unrolled to speed it up. The
+\ algorithm is unchanged, it's just a lot longer.
 \
 \ ******************************************************************************
 
@@ -4536,8 +4536,8 @@ ENDIF
 \     first pixel
 \
 \ This routine looks complex, but that's because the loop that's used in the
-\ cassette and disc versions has been unrolled to speed it up. The algorithm is
-\ unchanged, it's just a lot longer.
+\ BBC Micro cassette and disc versions has been unrolled to speed it up. The
+\ algorithm is unchanged, it's just a lot longer.
 \
 \ ******************************************************************************
 
@@ -5007,8 +5007,8 @@ ENDIF
 \     first pixel
 \
 \ This routine looks complex, but that's because the loop that's used in the
-\ cassette and disc versions has been unrolled to speed it up. The algorithm is
-\ unchanged, it's just a lot longer.
+\ BBC Micro cassette and disc versions has been unrolled to speed it up. The
+\ algorithm is unchanged, it's just a lot longer.
 \
 \ ******************************************************************************
 
@@ -5583,8 +5583,8 @@ ENDIF
 \     first pixel
 \
 \ This routine looks complex, but that's because the loop that's used in the
-\ cassette and disc versions has been unrolled to speed it up. The algorithm is
-\ unchanged, it's just a lot longer.
+\ BBC Micro cassette and disc versions has been unrolled to speed it up. The
+\ algorithm is unchanged, it's just a lot longer.
 \
 \ ******************************************************************************
 
@@ -21313,8 +21313,10 @@ ENDIF
 
  TAX                    \ Copy A into X. There is a comment in the original
                         \ source here that says "just in case", which refers to
-                        \ the MU11 routine in the cassette and disc versions,
-                        \ which set X to 0 (as they use X as a loop counter).
+                        \ the MU11 routine in the BBC Micro cassette and disc
+                        \ versions, which set X to 0 (as they use X as a loop
+                        \ counter)
+                        \
                         \ The version here doesn't use a loop, but this
                         \ instruction makes sure the unrolled version returns
                         \ the same results as the loop versions, just in case
@@ -21324,12 +21326,12 @@ ENDIF
                         \ and C flag = bit 0 of P
 
                         \ We now repeat the following four instruction block
-                        \ eight times, one for each bit in P. In the cassette
-                        \ and disc versions of Elite the following is done with
-                        \ a loop, but it is marginally faster to unroll the loop
-                        \ and have eight copies of the code, though it does take
-                        \ up a bit more memory (though that isn't a concern when
-                        \ you have a 6502 Second Processor)
+                        \ eight times, one for each bit in P. In the BBC Micro
+                        \ cassette and disc versions of Elite the following is
+                        \ done with a loop, but it is marginally faster to
+                        \ unroll the loop and have eight copies of the code,
+                        \ though it does take up a bit more memory (though that
+                        \ isn't a concern when you have a 6502 Second Processor)
 
  BCC P%+4               \ If C (i.e. bit 0 of P) is set, do the
  ADC T                  \ addition for this bit of P:
@@ -21740,8 +21742,10 @@ ENDIF
 
  TAX                    \ Copy A into X. There is a comment in the original
                         \ source here that says "just in case", which refers to
-                        \ the MULT1 routine in the cassette and disc versions,
-                        \ which set X to 0 (as they use X as a loop counter).
+                        \ the MULT1 routine in the BBC Micro cassette and disc
+                        \ versions, which set X to 0 (as they use X as a loop
+                        \ counter)
+                        \
                         \ The version here doesn't use a loop, but this
                         \ instruction makes sure the unrolled version returns
                         \ the same results as the loop versions, just in case
@@ -21749,8 +21753,8 @@ ENDIF
 
 \.MUL4                  \ These instructions are commented out in the original
 \                       \ source. They contain the original loop version of the
-\BCC P%+4               \ code that's used in the cassette and disc versions
-\ADC T1
+\BCC P%+4               \ code that's used in the BBC Micro cassette and disc
+\ADC T1                 \ versions
 \ROR A
 \ROR P
 \DEX
@@ -21766,10 +21770,10 @@ ENDIF
 
                         \ We now repeat the following four instruction block
                         \ seven times, one for each remaining bit in P. In the
-                        \ cassette and disc versions of Elite the following is
-                        \ done with a loop, but it is marginally faster to
-                        \ unroll the loop and have seven copies of the code,
-                        \ though it does take up a bit more memory
+                        \ BBC Micro cassette and disc versions of Elite the
+                        \ following is done with a loop, but it is marginally
+                        \ faster to unroll the loop and have seven copies of
+                        \ the code, though it does take up a bit more memory
 
  BCC P%+4               \ If C (i.e. the next bit from P) is set, do the
  ADC T1                 \ addition for this bit of P:
@@ -22279,12 +22283,13 @@ ENDIF
 \.DVL4                  \ This label is commented out in the original source
 
                         \ We now repeat the following five instruction block
-                        \ eight times, one for each bit in P. In the cassette
-                        \ and disc versions of Elite the following is done with
-                        \ a loop, but it is marginally faster to unroll the loop
-                        \ and have eight copies of the code, though it does take
-                        \ up a bit more memory (though that isn't a concern when
-                        \ you have a 6502 Second Processor)
+                        \ eight times, one for each bit in P. In the BBC Micro
+                        \ cassette and disc versions of Elite the following is
+                        \ done with a loop, but it is marginally faster to
+                        \ unroll the loop and have eight copies of the code,
+                        \ though it does take up a bit more memory (though that
+                        \ isn't a big concern when you have a 6502 Second
+                        \ Processor)
 
  ROL A                  \ Shift A to the left
 
