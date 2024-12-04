@@ -19,6 +19,10 @@
 \
 \ ------------------------------------------------------------------------------
 \
+\ This source file contains the loader for BBC Master Elite.
+\
+\ ------------------------------------------------------------------------------
+\
 \ This source file produces the following binary file:
 \
 \   * M128Elt.bin

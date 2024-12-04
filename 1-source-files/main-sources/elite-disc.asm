@@ -19,6 +19,10 @@
 \
 \ ------------------------------------------------------------------------------
 \
+\ This source file produces an SSD disc image for BBC Master Elite.
+\
+\ ------------------------------------------------------------------------------
+\
 \ This source file produces one of the following SSD disc images, depending on
 \ which release is being built:
 \

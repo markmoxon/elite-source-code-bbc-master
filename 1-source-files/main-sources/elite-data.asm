@@ -19,6 +19,11 @@
 \
 \ ------------------------------------------------------------------------------
 \
+\ This source file contains the game data for BBC Master Elite, which includes
+\ the ship blueprints and game text.
+\
+\ ------------------------------------------------------------------------------
+\
 \ This source file produces the following binary file:
 \
 \   * BDATA.bin
