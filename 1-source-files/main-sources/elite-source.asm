@@ -10187,7 +10187,17 @@ ENDIF
  LDX #KEY1              \ Set X = KEY1 as the decryption seed (the value used to
                         \ encrypt the code, which is done in elite-checksum.py)
 
+IF _REMOVE_CHECKSUMS
+
+ NOP                    \ If we have disabled checksums, skip the call to DEEORS
+ NOP                    \ and return from the subroutine to skip the second call
+ RTS                    \ below
+
+ELSE
+
  JSR DEEORS             \ Call DEEORS to decrypt between DOENTRY and F%
+
+ENDIF
 
  LDA #LO(XX21-1)        \ Set FRIN(1 0) = XX21-1 as the low address of the
  STA FRIN               \ decryption block
