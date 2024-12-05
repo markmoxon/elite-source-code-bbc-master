@@ -1,6 +1,6 @@
 \ ******************************************************************************
 \
-\ BBC MASTER ELITE LOADER SOURCE
+\ BBC MASTER ELITE GAME LOADER SOURCE
 \
 \ BBC Master Elite was written by Ian Bell and David Braben and is copyright
 \ Acornsoft 1986

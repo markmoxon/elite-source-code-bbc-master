@@ -1,6 +1,6 @@
 \ ******************************************************************************
 \
-\ BBC MASTER ELITE GAME DATA FILE SOURCE
+\ BBC MASTER ELITE GAME DATA SOURCE
 \
 \ BBC Master Elite was written by Ian Bell and David Braben and is copyright
 \ Acornsoft 1986
@@ -19,8 +19,8 @@
 \
 \ ------------------------------------------------------------------------------
 \
-\ This source file contains the game data for BBC Master Elite, which includes
-\ the ship blueprints and game text.
+\ This source file contains the game data for BBC Master Elite, including the
+\ ship blueprints and game text.
 \
 \ ------------------------------------------------------------------------------
 \

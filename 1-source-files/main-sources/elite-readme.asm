@@ -1,6 +1,6 @@
 \ ******************************************************************************
 \
-\ BBC MASTER ELITE README
+\ BBC MASTER ELITE README SOURCE
 \
 \ BBC Master Elite was written by Ian Bell and David Braben and is copyright
 \ Acornsoft 1986

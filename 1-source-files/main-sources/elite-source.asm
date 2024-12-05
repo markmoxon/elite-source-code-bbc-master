@@ -1,6 +1,6 @@
 \ ******************************************************************************
 \
-\ BBC MASTER ELITE GAME SOURCE
+\ BBC MASTER ELITE MAIN GAME SOURCE
 \
 \ BBC Master Elite was written by Ian Bell and David Braben and is copyright
 \ Acornsoft 1986
