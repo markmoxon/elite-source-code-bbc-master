@@ -30540,6 +30540,7 @@ End macro CHAR
      A3FD   1E
      A3FE   1F
      A3FF   1F
+.IANTOK
 .TKN1
      A400   57
 Macro EJMP:

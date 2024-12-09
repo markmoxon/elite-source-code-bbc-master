@@ -2727,6 +2727,7 @@ ENDIF
 \
 \       Name: Sound variables
 \       Type: Workspace
+\    Address: &144D to &1491
 \   Category: Sound
 \    Summary: The sound buffer where the data to be sent to the sound chip is
 \             processed
