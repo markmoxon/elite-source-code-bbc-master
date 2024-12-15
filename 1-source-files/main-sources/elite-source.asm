@@ -7957,7 +7957,7 @@ ENDIF
                         \
                         \ In the original source, this version also has the name
                         \ TT67, but because BeebAsm doesn't allow us to redefine
-                        \ labels, I gave renamed this this one to TT67K
+                        \ labels, I have renamed this one to TT67K
 
  LDA #12                \ Set A to a carriage return character
 
