@@ -3064,7 +3064,7 @@ WP workspace from &E41 to &12A9 inclusive
 .cls
      207D   20 57 21   JSR &2157
      2080   4C 46 21   JMP &2146
-.TT67X
+.TT67K
      2083   A9 0C      LDA #&0C
 .CHPR
      2085   85 14      STA &14
@@ -9851,7 +9851,7 @@ S.ELTC &3CE1  &4A42  &1300  &3CE1
      4E90   20 92 56   JSR &5692
      4E93   AC 95 12   LDY &1295
      4E96   4C BD 4E   JMP &4EBD
-.OUTX
+.OUTK
      4E99   A5 79      LDA &79
      4E9B   20 72 3B   JSR &3B72
      4E9E   38         SEC

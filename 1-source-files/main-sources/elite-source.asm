@@ -7942,14 +7942,14 @@ ENDIF
 
 \ ******************************************************************************
 \
-\       Name: TT67X
+\       Name: TT67K
 \       Type: Subroutine
 \   Category: Text
 \    Summary: Print a newline
 \
 \ ******************************************************************************
 
-.TT67X
+.TT67K
 
                         \ This does the same as the existing TT67 routine, which
                         \ is also present in this source, so it isn't clear why
@@ -7957,7 +7957,7 @@ ENDIF
                         \
                         \ In the original source, this version also has the name
                         \ TT67, but because BeebAsm doesn't allow us to redefine
-                        \ labels, this one has been renamed TT67X
+                        \ labels, I gave renamed this this one to TT67K
 
  LDA #12                \ Set A to a carriage return character
 
@@ -8741,7 +8741,7 @@ ENDIF
  LDA #20                \ Move the text cursor to row 20, near the bottom of
  STA YC                 \ the screen
 
- JSR TT67X              \ Print a newline
+ JSR TT67K              \ Print a newline
 
  LDA #%00001111         \ Set bits 1 and 2 of the Access Control Register at
  STA VIA+&34            \ SHEILA &34 to switch screen memory into &3000-&7FFF
@@ -15561,7 +15561,7 @@ ENDIF
  LDA #205               \ Print extended token 205 ("DOCKED") and return from
  JSR DETOK              \ the subroutine using a tail call
 
- JSR TT67X              \ Print a newline
+ JSR TT67K              \ Print a newline
 
  JMP st6+3              \ Jump down to st6+3, to print recursive token 125 and
                         \ continue to the rest of the Status Mode screen
@@ -25671,7 +25671,7 @@ ENDIF
 \
 \ Other entry points:
 \
-\   OUT                 The OUTX routine jumps back here after printing the key
+\   OUT                 The OUTK routine jumps back here after printing the key
 \                       that was just pressed
 \
 \ ******************************************************************************
@@ -25725,8 +25725,8 @@ ENDIF
                         \ source, and has a comment "tribs"
 
  CMP #26                \ If A >= 26, where A is the number entered so far, then
- BCS OUTX               \ adding a further digit will make it bigger than 256,
-                        \ so jump to OUTX to print the key that was just pressed
+ BCS OUTK               \ adding a further digit will make it bigger than 256,
+                        \ so jump to OUTK to print the key that was just pressed
                         \ before jumping to OUT below with the C flag still set
 
  ASL A                  \ Set A = (A * 2) + (A * 8) = A * 10
@@ -25737,7 +25737,7 @@ ENDIF
 
  ADC S                  \ Add the pressed digit to A
 
- BCS OUTX               \ If the addition overflowed, then jump to OUTX to print
+ BCS OUTK               \ If the addition overflowed, then jump to OUTK to print
                         \ the key that was just pressed before jumping to OUT
                         \ below with the C flag still set
 
@@ -25750,7 +25750,7 @@ ENDIF
                         \ BEQ is needed because the BCS below would jump to OUT
                         \ if R >= QQ25, which we don't want)
 
- BCS OUTX               \ If the result in R > QQ25, jump to OUTX to print
+ BCS OUTK               \ If the result in R > QQ25, jump to OUTK to print
                         \ the key that was just pressed before jumping to OUT
                         \ below with the C flag still set
 
@@ -25819,14 +25819,14 @@ ENDIF
 
 \ ******************************************************************************
 \
-\       Name: OUTX
+\       Name: OUTK
 \       Type: Subroutine
 \   Category: Text
 \    Summary: Print the character in Q before returning to gnum
 \
 \ ******************************************************************************
 
-.OUTX
+.OUTK
 
  LDA Q                  \ Print the character in Q, which is the key that was
  JSR DASC               \ just pressed in the gnum routine
