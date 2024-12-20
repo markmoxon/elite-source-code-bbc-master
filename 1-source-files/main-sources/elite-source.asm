@@ -2781,7 +2781,7 @@ ENDIF
 
 .SOPR
 
- EQUB 0                 \ Sound buffer for SOPR values
+ EQUB 0                 \ Sound buffer for sound effect priorities
  EQUB 0                 \
  EQUB 0                 \ SOPR,Y contains the priority of the sound currently
                         \ being made on voice Y
@@ -2800,7 +2800,7 @@ ENDIF
 
 .SOFRQ
 
- EQUB 0                 \ Sound buffer for SFXFQ values
+ EQUB 0                 \ Sound buffer for sound effect frequencies
  EQUB 0                 \
  EQUB 0                 \ SOFRQ,Y contains the frequency of the sound currently
                         \ being made on voice Y
