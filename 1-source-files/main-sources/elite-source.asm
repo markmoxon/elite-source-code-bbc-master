@@ -7240,7 +7240,7 @@ ENDIF
  STA SCH                \ that contains the missile indicators (i.e. the bottom
                         \ row of the screen)
 
- TYA                    \ Set A to the correct colour, which is a 2-pixel wide
+ TYA                    \ Set A to the correct colour, which is a two-pixel wide
                         \ mode 2 character row byte in the specified colour
 
  LDY #5                 \ We now want to draw this line five times to do the
@@ -8533,9 +8533,9 @@ ENDIF
                         \   (255, 0) to (255, 191)
                         \   (254, 0) to (254, 191)
                         \
-                        \ So that's a 2-pixel wide vertical border along the
+                        \ So that's a two-pixel wide vertical border along the
                         \ left edge of the upper part of the screen, and a
-                        \ 2-pixel wide vertical border along the right edge
+                        \ two-pixel wide vertical border along the right edge
  LDA COL                \ Set locations &4000 &41F8 to %00001111, as otherwise
  STA &4000              \ the top-left and top-right corners will be black (as
  STA &41F8              \ the lines overlap at the corners, and the EOR logic
@@ -9249,7 +9249,7 @@ ENDIF
  BCC DL2                \ indicator, which is less than a full character's
                         \ width, so jump down to DL2 to do this
 
- SBC #2                 \ Otherwise we can draw a 2-pixel wide block, so
+ SBC #2                 \ Otherwise we can draw a two-pixel wide block, so
  STA Q                  \ subtract 2 from Q so it contains the amount of the
                         \ indicator that's left to draw after this character
 
@@ -41454,7 +41454,7 @@ ENDMACRO
                         \ first row of the dot (i.e. a four-pixel dash)
 
  LDA K4                 \ Set A = y-coordinate of dot + 1 (so this is the second
- CLC                    \ row of the two-pixel-high dot)
+ CLC                    \ row of the two-pixel high dot)
  ADC #1
 
  JSR Shpt               \ Call Shpt to draw a horizontal 4-pixel dash for the
