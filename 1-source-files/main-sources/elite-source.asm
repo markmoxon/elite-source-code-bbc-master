@@ -2481,14 +2481,22 @@ ENDIF
  INX                    \ SOPR+1 >= SOPR+2, so increment X to 2
 
 \JSR SOUS4              \ These instructions are commented out in the original
-\BCC SOUR1              \ source
+\                       \ source
+\BCC SOUR1
+\
 \DEX
-\BIT SOUR1 \SEV!!
+\
+\BIT SOUR1
+\
 \LDA SFXPR,Y
 \AND #&10
 \BEQ SOUS9
+\
 \RTS
-\fall into SOUS4 since this facility not needed
+\
+\fall into SOUS4 since
+\this facility not
+\needed
 
 .SOUS4
 
@@ -10440,10 +10448,13 @@ ENDIF
 \LDA CASH+2             \ These instructions are commented out in the original
 \CMP #&C4               \ source
 \BCC EN6
+\
 \LDA TP
 \AND #&10
 \BNE EN6
+\
 \JMP TBRIEF
+\
 \.EN6
 
  JMP BAY                \ If we get here them we didn't start or any missions,
@@ -10913,8 +10924,11 @@ ENDIF
 
 \EOR KLO+&29            \ These instructions are commented out in the original
 \BEQ MA68               \ source
+\
 \STA auto
+\
 \JSR startbd
+\
 \kill phantom Cs
 
 .MA68
@@ -12156,13 +12170,17 @@ ENDIF
 
 \CMP #&F0               \ These instructions are commented out in the original
 \BCC nokilltr           \ source
+\
 \LDA #5
 \JSR SETL1
+\
 \LDA VIC+&15
 \AND #&3
 \STA VIC+&15
+\
 \LDA #4
 \JSR SETL1
+\
 \LSR TRIBBLE+1
 \ROR TRIBBLE
 \
@@ -13705,7 +13723,8 @@ ENDIF
  EQUB 0                 \ Placeholder for the checksum in byte #75
 
 \.CHK3                  \ These instructions are commented out in the original
-\EQUB 0                 \ source
+\                       \ source
+\EQUB 0
 
  SKIP 12                \ These bytes appear to be unused, though the first byte
                         \ in this block is included in the commander file (it
@@ -17294,13 +17313,15 @@ ENDIF
 \LDA TRIBBLE            \ These instructions are commented out in the original
 \ORA TRIBBLE+1          \ source
 \BEQ nosurviv           \
-\JSR DORND              \ They ensure that in games with the Trumble mission,
-\AND #7                 \ at least one Trumble will hitch a ride in the escape
-\ORA #1                 \ pod (so using an escape pod is not a solution to the
-\STA TRIBBLE            \ trouble with Trumbles)
-\LDA #0                 \
-\STA TRIBBLE+1          \ This version of Elite does not contain the Trumble
-\.nosurviv              \ mission, so the code is disabled
+\                       \ They ensure that in games with the Trumble mission,
+\JSR DORND              \ at least one Trumble will hitch a ride in the escape
+\AND #7                 \ pod (so using an escape pod is not a solution to the
+\ORA #1                 \ trouble with Trumbles)
+\STA TRIBBLE            \
+\LDA #0                 \ This version of Elite does not contain the Trumble
+\STA TRIBBLE+1          \ mission, so the code is disabled
+\
+\.nosurviv
 
  LDA #70                \ Our replacement ship is delivered with a full tank of
  STA QQ14               \ fuel, so set the current fuel level in QQ14 to 70, or
@@ -21757,17 +21778,25 @@ ENDIF
 \                       \ source. They contain the original loop version of the
 \BCC P%+4               \ code that's used in the BBC Micro cassette and disc
 \ADC T1                 \ versions
+\
 \ROR A
 \ROR P
+\
 \DEX
+\
 \BNE MUL4
+\
 \LSR A
 \ROR P
+\
 \ORA T
+\
 \RTS
 \
 \.mu10
+\
 \STA P
+\
 \RTS
 
                         \ We now repeat the following four instruction block
@@ -23386,17 +23415,24 @@ ENDIF
 \ ******************************************************************************
 
 \.TBRIEF                \ These instructions are commented out in the original
-\LDA TP                 \ source
-\ORA #&10
+\                       \ source (they are the checks for the Trumble mission,
+\LDA TP                 \ which is not present in the Master version)
+\ORA #%00010000
 \STA TP
+\
 \LDA #199
 \JSR DETOK
+\
 \JSR YESNO
+\
 \BCC BAYSTEP
+\
 \LDY #HI(50000)
 \LDX #LO(50000)
 \JSR LCASH
+\
 \INC TRIBBLE
+\
 \JMP BAY
 
 \ ******************************************************************************
@@ -26064,7 +26100,8 @@ ENDIF
 .TT214
 
 \.TT214                 \ These instructions are commented out in the original
-\PHA                    \ source
+\                       \ source
+\PHA
 \JSR TT162
 \PLA
 
@@ -26699,6 +26736,7 @@ ENDIF
 
 \LDA #0                 \ These instructions are commented out in the original
 \STA dontclip           \ source
+\
 \LDA #2*Y-1
 \STA Yx2M1
 
@@ -28365,7 +28403,8 @@ ENDIF
                         \ sun
 
 \JSR CATLOD             \ These instructions are commented out in the original
-\JSR LOMOD              \ source
+\                       \ source
+\JSR LOMOD
 
  LDA QQ11               \ If the current view in QQ11 is not a space view (0) or
  AND #%00111111         \ one of the charts (64 or 128), return from the
@@ -29347,11 +29386,11 @@ ENDIF
 \ ******************************************************************************
 
 \.ref2                  \ These instructions are commented out in the original
-\LDY #187               \ source, but they would jump to pres in the EQSHP
-\JMP pres               \ routine with Y = 187, which would show the error:
-\Belgium                \ "LASER PRESENT" (this code was part of the refund
-                        \ bug in the disc version of Elite, which is why it is
-                        \ commented out)
+\                       \ source, but they would jump to pres in the EQSHP
+\LDY #187               \ routine with Y = 187, which would show the error:
+\JMP pres               \ "LASER PRESENT" (this code was part of the refund
+\                       \ bug in the disc version of Elite, which is why it is
+\Belgium                \ commented out)
                         \
                         \ There is also a comment in the original source - the
                         \ solitary word "Belgium"
@@ -37765,7 +37804,8 @@ ENDIF
  STA COK                \ Store the updated competition flags in COK
 
 \JSR CHECK2             \ These instructions are commented out in the original
-\CMP CHK3               \ source
+\                       \ source
+\CMP CHK3
 \BNE doitagain
 
  RTS                    \ Return from the subroutine
@@ -38040,7 +38080,9 @@ ENDIF
 .CHECK2
 
 \LDX #NT%-3             \ These instructions are commented out in the original
-\CLC                    \ source
+\                       \ source (they are from the Commodore 64 and Apple II
+\CLC                    \ versions, and implement the third commander checksum
+\                       \ which the Master version doesn't have)
 \TXA
 \
 \.QU2L2
@@ -38048,10 +38090,15 @@ ENDIF
 \STX T
 \EOR T
 \ROR A
+\
 \ADC NA%+7,X
+\
 \EOR NA%+8,X
+\
 \DEX
+\
 \BNE QU2L2
+\
 \RTS
 
 \ ******************************************************************************
@@ -38907,7 +38954,8 @@ ENDIF
                         \ commander data block
 
 \JSR CHECK2             \ These instructions are commented out in the original
-\STA CHK3               \ source
+\                       \ source
+\STA CHK3
 
  JSR CHECK              \ Call CHECK to calculate the checksum for the last
                         \ saved commander and return it in A
