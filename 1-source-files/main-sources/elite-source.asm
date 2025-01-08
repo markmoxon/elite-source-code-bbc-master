@@ -4209,23 +4209,23 @@ ENDIF
 
  LDA #%10001000         \ Modify the value in the LDA instruction at LI100 below
  AND COL                \ to contain a pixel mask for the first pixel in the
- STA LI100+1            \ 4-pixel byte, in the colour COL, so that it draws in
-                        \ the correct colour
+ STA LI100+1            \ four-pixel byte, in the colour COL, so that it draws
+                        \ in the correct colour
 
  LDA #%01000100         \ Modify the value in the LDA instruction at LI110 below
  AND COL                \ to contain a pixel mask for the second pixel in the
- STA LI110+1            \ 4-pixel byte, in the colour COL, so that it draws in
-                        \ the correct colour
+ STA LI110+1            \ four-pixel byte, in the colour COL, so that it draws
+                        \ in the correct colour
 
  LDA #%00100010         \ Modify the value in the LDA instruction at LI120 below
  AND COL                \ to contain a pixel mask for the third pixel in the
- STA LI120+1            \ 4-pixel byte, in the colour COL, so that it draws in
-                        \ the correct colour
+ STA LI120+1            \ four-pixel byte, in the colour COL, so that it draws
+                        \ in the correct colour
 
  LDA #%00010001         \ Modify the value in the LDA instruction at LI130 below
  AND COL                \ to contain a pixel mask for the fourth pixel in the
- STA LI130+1            \ 4-pixel byte, in the colour COL, so that it draws in
-                        \ the correct colour
+ STA LI130+1            \ four-pixel byte, in the colour COL, so that it draws
+                        \ in the correct colour
 
                         \ We now work our way along the line from left to right,
                         \ using X as a decreasing counter, and at each count we
@@ -4285,10 +4285,10 @@ ENDIF
 
 .LI100
 
- LDA #%10001000         \ Set a mask in A to the first pixel in the 4-pixel byte
-                        \ (note that this value is modified by the code at the
-                        \ start of this section to be a bit mask for the colour
-                        \ in COL)
+ LDA #%10001000         \ Set a mask in A to the first pixel in the four-pixel
+                        \ byte (note that this value is modified by the code at
+                        \ the start of this section to be a bit mask for the
+                        \ colour in COL)
 
  EOR (SC),Y             \ Store A into screen memory at SC(1 0), using EOR
  STA (SC),Y             \ logic so it merges with whatever is already on-screen
@@ -4315,7 +4315,7 @@ ENDIF
 
 .LI110
 
- LDA #%01000100         \ Set a mask in A to the second pixel in the 4-pixel
+ LDA #%01000100         \ Set a mask in A to the second pixel in the four-pixel
                         \ byte (note that this value is modified by the code at
                         \ the start of this section to be a bit mask for the
                         \ colour in COL)
@@ -4343,10 +4343,10 @@ ENDIF
 
 .LI120
 
- LDA #%00100010         \ Set a mask in A to the third pixel in the 4-pixel byte
-                        \ (note that this value is modified by the code at the
-                        \ start of this section to be a bit mask for the colour
-                        \ in COL)
+ LDA #%00100010         \ Set a mask in A to the third pixel in the four-pixel
+                        \ byte (note that this value is modified by the code at
+                        \ the start of this section to be a bit mask for the
+                        \ colour in COL)
 
  EOR (SC),Y             \ Store A into screen memory at SC(1 0), using EOR
  STA (SC),Y             \ logic so it merges with whatever is already on-screen
@@ -4371,7 +4371,7 @@ ENDIF
 
 .LI130
 
- LDA #%00010001         \ Set a mask in A to the fourth pixel in the 4-pixel
+ LDA #%00010001         \ Set a mask in A to the fourth pixel in the four-pixel
                         \ byte (note that this value is modified by the code at
                         \ the start of this section to be a bit mask for the
                         \ colour in COL)
@@ -4492,23 +4492,23 @@ ENDIF
 
  LDA #%10001000         \ Modify the value in the LDA instruction at LI200 below
  AND COL                \ to contain a pixel mask for the first pixel in the
- STA LI200+1            \ 4-pixel byte, in the colour COL, so that it draws in
-                        \ the correct colour
+ STA LI200+1            \ four-pixel byte, in the colour COL, so that it draws
+                        \ in the correct colour
 
  LDA #%01000100         \ Modify the value in the LDA instruction at LI210 below
  AND COL                \ to contain a pixel mask for the second pixel in the
- STA LI210+1            \ 4-pixel byte, in the colour COL, so that it draws in
-                        \ the correct colour
+ STA LI210+1            \ four-pixel byte, in the colour COL, so that it draws
+                        \ in the correct colour
 
  LDA #%00100010         \ Modify the value in the LDA instruction at LI220 below
  AND COL                \ to contain a pixel mask for the third pixel in the
- STA LI220+1            \ 4-pixel byte, in the colour COL, so that it draws in
-                        \ the correct colour
+ STA LI220+1            \ four-pixel byte, in the colour COL, so that it draws
+                        \ in the correct colour
 
  LDA #%00010001         \ Modify the value in the LDA instruction at LI230 below
  AND COL                \ to contain a pixel mask for the fourth pixel in the
- STA LI230+1            \ 4-pixel byte, in the colour COL, so that it draws in
-                        \ the correct colour
+ STA LI230+1            \ four-pixel byte, in the colour COL, so that it draws
+                        \ in the correct colour
 
  LDA SC                 \ Set SC(1 0) = SC(1 0) - 248
  SBC #248
@@ -4599,10 +4599,10 @@ ENDIF
 
 .LI200
 
- LDA #%10001000         \ Set a mask in A to the first pixel in the 4-pixel byte
-                        \ (note that this value is modified by the code at the
-                        \ start of this section to be a bit mask for the colour
-                        \ in COL)
+ LDA #%10001000         \ Set a mask in A to the first pixel in the four-pixel
+                        \ byte (note that this value is modified by the code at
+                        \ the start of this section to be a bit mask for the
+                        \ colour in COL)
 
  EOR (SC),Y             \ Store A into screen memory at SC(1 0), using EOR
  STA (SC),Y             \ logic so it merges with whatever is already on-screen
@@ -4627,7 +4627,7 @@ ENDIF
 
 .LI210
 
- LDA #%01000100         \ Set a mask in A to the second pixel in the 4-pixel
+ LDA #%01000100         \ Set a mask in A to the second pixel in the four-pixel
                         \ byte (note that this value is modified by the code at
                         \ the start of this section to be a bit mask for the
                         \ colour in COL)
@@ -4655,10 +4655,10 @@ ENDIF
 
 .LI220
 
- LDA #%00100010         \ Set a mask in A to the third pixel in the 4-pixel byte
-                        \ (note that this value is modified by the code at the
-                        \ start of this section to be a bit mask for the colour
-                        \ in COL)
+ LDA #%00100010         \ Set a mask in A to the third pixel in the four-pixel
+                        \ byte (note that this value is modified by the code at
+                        \ the start of this section to be a bit mask for the
+                        \ colour in COL)
 
  EOR (SC),Y             \ Store A into screen memory at SC(1 0), using EOR
  STA (SC),Y             \ logic so it merges with whatever is already on-screen
@@ -4683,7 +4683,7 @@ ENDIF
 
 .LI230
 
- LDA #%00010001         \ Set a mask in A to the fourth pixel in the 4-pixel
+ LDA #%00010001         \ Set a mask in A to the fourth pixel in the four-pixel
                         \ byte (note that this value is modified by the code at
                         \ the start of this section to be a bit mask for the
                         \ colour in COL)
@@ -4852,7 +4852,7 @@ ENDIF
  TAX                    \ each pixel line in the character block is 4 pixels
                         \ wide)
 
- LDA TWOS,X             \ Fetch a 1-pixel byte from TWOS where pixel X is set,
+ LDA TWOS,X             \ Fetch a one-pixel byte from TWOS where pixel X is set,
  STA R                  \ and store it in R
 
                         \ The following section calculates:
@@ -5062,8 +5062,8 @@ ENDIF
                         \ into the C flag, then jump to LI301 to plot the pixel
                         \ on the next character row up
 
- LDA #%10001000         \ Set a mask in R to the first pixel in the 4-pixel byte
- STA R
+ LDA #%10001000         \ Set a mask in R to the first pixel in the four-pixel
+ STA R                  \ byte
 
  LDA SC                 \ Add 8 to SC, so SC(1 0) now points to the next
  ADC #7                 \ character along to the right (the C flag is set as we
@@ -5094,8 +5094,8 @@ ENDIF
                         \ into the C flag, then jump to LI302 to plot the pixel
                         \ on the next character row up
 
- LDA #%10001000         \ Set a mask in R to the first pixel in the 4-pixel byte
- STA R
+ LDA #%10001000         \ Set a mask in R to the first pixel in the four-pixel
+ STA R                  \ byte
 
  LDA SC                 \ Add 8 to SC, so SC(1 0) now points to the next
  ADC #7                 \ character along to the right (the C flag is set as we
@@ -5126,8 +5126,8 @@ ENDIF
                         \ into the C flag, then jump to LI303 to plot the pixel
                         \ on the next character row up
 
- LDA #%10001000         \ Set a mask in R to the first pixel in the 4-pixel byte
- STA R
+ LDA #%10001000         \ Set a mask in R to the first pixel in the four-pixel
+ STA R                  \ byte
 
  LDA SC                 \ Add 8 to SC, so SC(1 0) now points to the next
  ADC #7                 \ character along to the right (the C flag is set as we
@@ -5158,8 +5158,8 @@ ENDIF
                         \ into the C flag, then jump to LI304 to plot the pixel
                         \ on the next character row up
 
- LDA #%10001000         \ Set a mask in R to the first pixel in the 4-pixel byte
- STA R
+ LDA #%10001000         \ Set a mask in R to the first pixel in the four-pixel
+ STA R                  \ byte
 
  LDA SC                 \ Add 8 to SC, so SC(1 0) now points to the next
  ADC #7                 \ character along to the right (the C flag is set as we
@@ -5397,7 +5397,7 @@ ENDIF
 
  LDA #%10001000         \ Otherwise we need to move over to the next character
  STA R                  \ along, so set a mask in R to the first pixel in the
-                        \ 4-pixel byte
+                        \ four-pixel byte
 
  LDA SC                 \ Add 8 to SC, so SC(1 0) now points to the next
  ADC #7                 \ character along to the right (the C flag is set as we
@@ -5430,8 +5430,8 @@ ENDIF
                         \ into the C flag, then jump to LI305 to plot the pixel
                         \ on the next character row up
 
- LDA #%10001000         \ Set a mask in R to the first pixel in the 4-pixel byte
- STA R
+ LDA #%10001000         \ Set a mask in R to the first pixel in the four-pixel
+ STA R                  \ byte
 
  LDA SC                 \ Add 8 to SC, so SC(1 0) now points to the next
  ADC #7                 \ character along to the right (the C flag is set as we
@@ -5460,8 +5460,8 @@ ENDIF
                         \ into the C flag, then jump to LI306 to plot the pixel
                         \ on the next character row up
 
- LDA #%10001000         \ Set a mask in R to the first pixel in the 4-pixel byte
- STA R
+ LDA #%10001000         \ Set a mask in R to the first pixel in the four-pixel
+ STA R                  \ byte
 
  LDA SC                 \ Add 8 to SC, so SC(1 0) now points to the next
  ADC #7                 \ character along to the right (the C flag is set as we
@@ -5490,8 +5490,8 @@ ENDIF
                         \ into the C flag, then jump to LI307 to plot the pixel
                         \ on the next character row up
 
- LDA #%10001000         \ Set a mask in R to the first pixel in the 4-pixel byte
- STA R
+ LDA #%10001000         \ Set a mask in R to the first pixel in the four-pixel
+ STA R                  \ byte
 
  LDA SC                 \ Add 8 to SC, so SC(1 0) now points to the next
  ADC #7                 \ character along to the right (the C flag is set as we
@@ -5646,7 +5646,7 @@ ENDIF
 
  LDA #%00010001         \ Otherwise we need to move over to the next character
  STA R                  \ block to the left, so set a mask in R to the fourth
-                        \ pixel in the 4-pixel byte
+                        \ pixel in the four-pixel byte
 
  LDA SC                 \ Subtract 8 from SC, so SC(1 0) now points to the
  SBC #8                 \ previous character along to the left
@@ -5677,7 +5677,7 @@ ENDIF
 
  LDA #%00010001         \ Otherwise we need to move over to the next character
  STA R                  \ block to the left, so set a mask in R to the fourth
-                        \ pixel in the 4-pixel byte
+                        \ pixel in the four-pixel byte
 
  LDA SC                 \ Subtract 8 from SC, so SC(1 0) now points to the
  SBC #8                 \ previous character along to the left
@@ -5708,7 +5708,7 @@ ENDIF
 
  LDA #%00010001         \ Otherwise we need to move over to the next character
  STA R                  \ block to the left, so set a mask in R to the fourth
-                        \ pixel in the 4-pixel byte
+                        \ pixel in the four-pixel byte
 
  LDA SC                 \ Subtract 8 from SC, so SC(1 0) now points to the
  SBC #8                 \ previous character along to the left
@@ -5739,7 +5739,7 @@ ENDIF
 
  LDA #%00010001         \ Otherwise we need to move over to the next character
  STA R                  \ block to the left, so set a mask in R to the fourth
-                        \ pixel in the 4-pixel byte
+                        \ pixel in the four-pixel byte
 
  LDA SC                 \ Subtract 8 from SC, so SC(1 0) now points to the
  SBC #8                 \ previous character along to the left
@@ -5976,7 +5976,7 @@ ENDIF
 
  LDA #%00010001         \ Otherwise we need to move over to the next character
  STA R                  \ block to the left, so set a mask in R to the fourth
-                        \ pixel in the 4-pixel byte
+                        \ pixel in the four-pixel byte
 
  LDA SC                 \ Subtract 8 from SC, so SC(1 0) now points to the
  SBC #8                 \ previous character along to the left
@@ -6009,7 +6009,7 @@ ENDIF
 
  LDA #%00010001         \ Otherwise we need to move over to the next character
  STA R                  \ block to the left, so set a mask in R to the fourth
-                        \ pixel in the 4-pixel byte
+                        \ pixel in the four-pixel byte
 
  LDA SC                 \ Subtract 8 from SC, so SC(1 0) now points to the
  SBC #8                 \ previous character along to the left
@@ -6038,7 +6038,7 @@ ENDIF
 
  LDA #%00010001         \ Otherwise we need to move over to the next character
  STA R                  \ block to the left, so set a mask in R to the fourth
-                        \ pixel in the 4-pixel byte
+                        \ pixel in the four-pixel byte
 
  LDA SC                 \ Subtract 8 from SC, so SC(1 0) now points to the
  SBC #8                 \ previous character along to the left
@@ -6067,7 +6067,7 @@ ENDIF
 
  LDA #%00010001         \ Otherwise we need to move over to the next character
  STA R                  \ block to the left, so set a mask in R to the fourth
-                        \ pixel in the 4-pixel byte
+                        \ pixel in the four-pixel byte
 
  LDA SC                 \ Subtract 8 from SC, so SC(1 0) now points to the
  SBC #8                 \ previous character along to the left
@@ -6245,10 +6245,10 @@ ENDIF
 
 .HLL1
 
- LDA COL                \ Store a full-width 4-pixel horizontal line of colour
- EOR (SC),Y             \ COL in SC(1 0) so that it draws the line on-screen,
- STA (SC),Y             \ using EOR logic so it merges with whatever is already
-                        \ on-screen
+ LDA COL                \ Store a full-width four-pixel horizontal line of
+ EOR (SC),Y             \ colour COL in SC(1 0) so that it draws the line
+ STA (SC),Y             \ on-screen, using EOR logic so it merges with whatever
+                        \ is already on-screen
 
  TYA                    \ Set Y = Y + 8 so (SC),Y points to the next character
  ADC #8                 \ block along, on the same pixel row as before
@@ -6429,7 +6429,7 @@ ENDIF
 \       Name: orange
 \       Type: Variable
 \   Category: Drawing pixels
-\    Summary: Lookup table for 2-pixel mode 1 orange pixels for the sun
+\    Summary: Lookup table for two-pixel mode 1 orange pixels for the sun
 \
 \ ------------------------------------------------------------------------------
 \
@@ -6492,7 +6492,14 @@ ENDIF
 \
 \   Y1                  The y-coordinate offset
 \
-\   ZZ                  The distance of the point (further away = smaller point)
+\   ZZ                  The distance of the point, with bigger distances drawing
+\                       smaller points:
+\
+\                         * ZZ < 80           Double-height four-pixel square
+\
+\                         * 80 <= ZZ <= 143   Single-height two-pixel dash
+\
+\                         * ZZ > 143          Single-height one-pixel dot
 \
 \ ******************************************************************************
 
@@ -6505,7 +6512,7 @@ ENDIF
  TXA                    \ Set SYL+Y to X, the low byte of the result
  STA SYL,Y
 
-                        \ Fall through into PIX1 to draw the stardust particle
+                        \ Fall through into PIXEL2 to draw the stardust particle
                         \ at (X1,Y1)
 
 \ ******************************************************************************
@@ -6529,7 +6536,14 @@ ENDIF
 \   Y1                  The y-coordinate offset (positive means up the screen
 \                       from the centre, negative means down the screen)
 \
-\   ZZ                  The distance of the point (further away = smaller point)
+\   ZZ                  The distance of the point, with bigger distances drawing
+\                       smaller points:
+\
+\                         * ZZ < 80           Double-height four-pixel square
+\
+\                         * 80 <= ZZ <= 143   Single-height two-pixel dash
+\
+\                         * ZZ > 143          Single-height one-pixel dot
 \
 \ ******************************************************************************
 
@@ -6583,14 +6597,14 @@ ENDIF
 \       Name: PIXEL
 \       Type: Subroutine
 \   Category: Drawing pixels
-\    Summary: Draw a 1-pixel dot, 2-pixel dash or 4-pixel square
+\    Summary: Draw a one-pixel dot, two-pixel dash or four-pixel square
 \  Deep dive: Drawing colour pixels on the BBC Micro
 \
 \ ------------------------------------------------------------------------------
 \
 \ Draw a point at screen coordinate (X, A) with the point size determined by the
-\ distance in ZZ. This applies to the top part of the screen (the 4-colour mode
-\ 5 portion).
+\ distance in ZZ. This applies to the top part of the screen (the four-colour
+\ mode 5 portion).
 \
 \ ------------------------------------------------------------------------------
 \
@@ -6600,7 +6614,14 @@ ENDIF
 \
 \   A                   The screen y-coordinate of the point to draw
 \
-\   ZZ                  The distance of the point (further away = smaller point)
+\   ZZ                  The distance of the point, with bigger distances drawing
+\                       smaller points:
+\
+\                         * ZZ < 80           Double-height four-pixel square
+\
+\                         * 80 <= ZZ <= 143   Single-height two-pixel dash
+\
+\                         * ZZ > 143          Single-height one-pixel dot
 \
 \ ------------------------------------------------------------------------------
 \
@@ -6618,7 +6639,8 @@ ENDIF
 
 .PIXEL
 
- STY T1                 \ Store Y in T1
+ STY T1                 \ Store Y in T1 so we can restore it at the end of the
+                        \ subroutine
 
  LDY #%00001111         \ Set bits 1 and 2 of the Access Control Register at
  STY VIA+&34            \ SHEILA &34 to switch screen memory into &3000-&7FFF
@@ -6666,8 +6688,8 @@ ENDIF
  BCC PX2                \ pretty close, so jump to PX2 to draw a four-pixel
                         \ square
 
- LDA TWOS2,X            \ Fetch a mode 1 2-pixel byte with the pixels set as in
- AND COL                \ X, and AND with the colour byte we fetched into COL
+ LDA TWOS2,X            \ Fetch a mode 1 two-pixel byte with the pixels set as
+ AND COL                \ in X, and AND with the colour byte we fetched into COL
                         \ so that pixel takes on the colour we want to draw
                         \ (i.e. A is acting as a mask on the colour byte)
 
@@ -6686,11 +6708,11 @@ ENDIF
 
 .PX2
 
-                        \ If we get here, we need to plot a 4-pixel square in
+                        \ If we get here, we need to plot a four-pixel square in
                         \ in the correct colour for this pixel's distance
 
- LDA TWOS2,X            \ Fetch a mode 1 2-pixel byte with the pixels set as in
- AND COL                \ X, and AND with the colour byte we fetched into COL
+ LDA TWOS2,X            \ Fetch a mode 1 two-pixel byte with the pixels set as
+ AND COL                \ in X, and AND with the colour byte we fetched into COL
                         \ so that pixel takes on the colour we want to draw
                         \ (i.e. A is acting as a mask on the colour byte)
 
@@ -6708,8 +6730,8 @@ ENDIF
 
                         \ We now draw our second dash
 
- LDA TWOS2,X            \ Fetch a mode 1 2-pixel byte with the pixels set as in
- AND COL                \ X, and AND with the colour byte we fetched into COL
+ LDA TWOS2,X            \ Fetch a mode 1 two-pixel byte with the pixels set as
+ AND COL                \ in X, and AND with the colour byte we fetched into COL
                         \ so that pixel takes on the colour we want to draw
                         \ (i.e. A is acting as a mask on the colour byte)
 
@@ -6733,10 +6755,10 @@ ENDIF
 \
 \ ------------------------------------------------------------------------------
 \
-\ The following table contains colour bytes for 2-pixel mode 1 pixels, with the
-\ index into the table representing distance. Closer pixels are at the top, so
-\ the closest pixels are cyan/red, then yellow, then red, then red/yellow, then
-\ yellow.
+\ The following table contains colour bytes for two-pixel mode 1 pixels, with
+\ the index into the table representing distance. Closer pixels are at the top,
+\ so the closest pixels are cyan/red, then yellow, then red, then red/yellow,
+\ then yellow.
 \
 \ That said, this table is only used with odd distance values, as set in the
 \ parasite's PIXEL3 routine, so in practice the four distances are yellow, red,
@@ -6884,10 +6906,10 @@ ENDIF
  LDA X1                 \ Copy bit 1 of X1 to bit 1 of X. X will now be either
  AND #%00000010         \ 0 or 2, and will be double the pixel number in the
  TAX                    \ character row for the left pixel in the dash (so 0
-                        \ means the left pixel in the 2-pixel character row,
+                        \ means the left pixel in the two-pixel character row,
                         \ while 2 means the right pixel)
 
- LDA CTWOS,X            \ Fetch a mode 2 1-pixel byte with the pixel position
+ LDA CTWOS,X            \ Fetch a mode 2 one-pixel byte with the pixel position
  AND COL                \ at X/2, and AND with the colour byte so that pixel
                         \ takes on the colour we want to draw (i.e. A is acting
                         \ as a mask on the colour byte)
@@ -6896,7 +6918,7 @@ ENDIF
  STA (SC),Y             \ remove it later without ruining the background that's
                         \ already on-screen
 
- LDA CTWOS+2,X          \ Fetch a mode 2 1-pixel byte with the pixel position
+ LDA CTWOS+2,X          \ Fetch a mode 2 one-pixel byte with the pixel position
                         \ at (X+1)/2, so we can draw the right pixel of the dash
 
  BPL CP1                \ The CTWOS table has 2 extra rows at the end of it that
@@ -6915,11 +6937,11 @@ ENDIF
  INC SC+1               \ the high byte of SC(1 0), as this means we just moved
                         \ into the right half of the screen row
 
- LDA CTWOS+2,X          \ Re-fetch the mode 2 1-pixel byte, as we just overwrote
-                        \ A (the byte will still be the fifth or sixth byte from
-                        \ the table, which is correct as we want to draw the
-                        \ leftmost pixel in the next character along as the
-                        \ dash's right pixel)
+ LDA CTWOS+2,X          \ Re-fetch the mode 2 one-pixel byte, as we just
+                        \ overwrote A (the byte will still be the fifth or sixth
+                        \ byte from the table, which is correct as we want to
+                        \ draw the leftmost pixel in the next character along as
+                        \ the dash's right pixel)
 
 .CP1
 
@@ -7257,9 +7279,10 @@ ENDIF
 
 .MBL1
 
- STA (SC),Y             \ Draw the 3-pixel row, and as we do not use EOR logic,
-                        \ this will overwrite anything that is already there
-                        \ (so drawing a black missile will delete what's there)
+ STA (SC),Y             \ Draw the three-pixel row, and as we do not use EOR
+                        \ logic, this will overwrite anything that is already
+                        \ there (so drawing a black missile will delete what's
+                        \ there)
 
  DEY                    \ Decrement the counter for the next row
 
@@ -7285,9 +7308,10 @@ ENDIF
 
 .MBL2
 
- STA (SC),Y             \ Draw the 1-pixel row, and as we do not use EOR logic,
-                        \ this will overwrite anything that is already there
-                        \ (so drawing a black missile will delete what's there)
+ STA (SC),Y             \ Draw the one-pixel row, and as we do not use EOR
+                        \ logic, this will overwrite anything that is already
+                        \ there (so drawing a black missile will delete what's
+                        \ there)
 
  DEY                    \ Decrement the counter for the next row
 
@@ -7428,8 +7452,9 @@ ENDIF
 
  LDA #%01000000         \ Now to draw the same line but from the right edge of
                         \ the screen, so set a pixel mask in A to check the
-                        \ second pixel of the last byte, so we skip the 2-pixel
-                        \ screen border at the right edge of the screen
+                        \ second pixel of the last byte, so we skip the
+                        \ two-pixel screen border at the right edge of the
+                        \ screen
 
  LDY #248               \ Set Y = 248 so the call to HAS3 starts drawing the
                         \ line in the last byte of the screen row, at the right
@@ -7456,7 +7481,8 @@ ENDIF
                         \ character in that second half
 
  LDA #%10001000         \ We want to start drawing from the first pixel, so we
-                        \ set a mask in A to the first pixel in the 4-pixel byte
+                        \ set a mask in A to the first pixel in the four-pixel
+                        \ byte
 
  JSR HAL3               \ Call HAL3, which draws a line from the halfway point
                         \ across the right half of the screen, going right until
@@ -7474,7 +7500,8 @@ ENDIF
                         \ character in that first half
 
  LDA #%00010000         \ We want to start drawing from the last pixel, so we
-                        \ set a mask in A to the last pixel in the 4-pixel byte
+                        \ set a mask in A to the last pixel in the four-pixel
+                        \ byte
 
  JSR HAS3               \ Call HAS3, which draws a line from the halfway point
                         \ across the left half of the screen, going left until
@@ -7523,10 +7550,11 @@ ENDIF
                         \ correct character block on the top screen row for this
                         \ x-coordinate
 
- LDX #%10001000         \ Set a mask in X to the first pixel in the 4-pixel byte
+ LDX #%10001000         \ Set a mask in X to the first pixel in the four-pixel
+                        \ byte
 
  LDY #1                 \ We are going to start drawing the line from the second
-                        \ pixel from the top (to avoid drawing on the 1-pixel
+                        \ pixel from the top (to avoid drawing on the one-pixel
                         \ border), so set Y to 1 to point to the second row in
                         \ the first character block
 
@@ -7623,7 +7651,7 @@ ENDIF
 
  LDA #%00100010         \ Set A to the pixel pattern for a mode 1 character row
                         \ byte with the third pixel set, so we start drawing the
-                        \ horizontal line just to the right of the 2-pixel
+                        \ horizontal line just to the right of the two-pixel
                         \ border along the edge of the screen
 
 .HAL2
@@ -7664,7 +7692,7 @@ ENDIF
  TAY
 
  LDA #%10001000         \ Reset the pixel mask in A to the first pixel in the
-                        \ new 4-pixel character block
+                        \ new four-pixel character block
 
  BCC HAL2               \ If the above addition didn't overflow, jump back to
                         \ HAL2 to keep drawing the line in the next character
@@ -7724,7 +7752,7 @@ ENDIF
  TAY
 
  LDA #%10001000         \ Reset the pixel mask in A to the first pixel in the
-                        \ new 4-pixel character block
+                        \ new four-pixel character block
 
  BCC HAL3               \ If the above addition didn't overflow, jump back to
                         \ HAL3 to keep drawing the line in the next character
@@ -7783,7 +7811,8 @@ ENDIF
  SBC #8                 \ to the next character block to the left
  TAY
 
- LDA #%00010000         \ Set a mask in A to the last pixel in the 4-pixel byte
+ LDA #%00010000         \ Set a mask in A to the last pixel in the four-pixel
+                        \ byte
 
  BCS HAS3               \ If the above subtraction didn't underflow, jump back
                         \ to HAS3 to keep drawing the line in the next character
@@ -8358,7 +8387,7 @@ ENDIF
 
 .RRL1
 
-                        \ We print the character's 8-pixel row in two parts,
+                        \ We print the character's eight-pixel row in two parts,
                         \ starting with the first four pixels (one byte of
                         \ screen memory), and then the second four (a second
                         \ byte of screen memory)
@@ -9180,10 +9209,10 @@ ENDIF
 \                       threshold is in pixels, so it should have a value from
 \                       0-16, as each bar indicator is 16 pixels wide
 \
-\   K                   The colour to use when A is a high value, as a 2-pixel
+\   K                   The colour to use when A is a high value, as a two-pixel
 \                       mode 2 character row byte
 \
-\   K+1                 The colour to use when A is a low value, as a 2-pixel
+\   K+1                 The colour to use when A is a low value, as a two-pixel
 \                       mode 2 character row byte
 \
 \   SC(1 0)             The screen address of the first character block in the
@@ -9264,11 +9293,11 @@ ENDIF
  LDA R                  \ Fetch the shape of the indicator row that we need to
                         \ display from R, so we can use it as a mask when
                         \ painting the indicator. It will be &FF at this point
-                        \ (i.e. a full 4-pixel row)
+                        \ (i.e. a full four-pixel row)
 
 .DL5
 
- AND COL                \ Fetch the 2-pixel mode 2 colour byte from COL, and
+ AND COL                \ Fetch the two-pixel mode 2 colour byte from COL, and
                         \ only keep pixels that have their equivalent bits set
                         \ in the mask byte in A
 
@@ -9318,7 +9347,7 @@ ENDIF
  AND #%10101010         \ which has the effect of shifting zeroes from the left
                         \ into each two-bit segment (i.e. xx xx xx xx becomes
                         \ x0 x0 x0 x0, which blanks out the last column in the
-                        \ 2-pixel mode 2 character block)
+                        \ two-pixel mode 2 character block)
 
  DEC Q                  \ Decrement the counter for the number of columns to
                         \ blank out
@@ -9422,19 +9451,19 @@ ENDIF
                         \ drawing blank characters after this one until we reach
                         \ the end of the indicator row
 
- LDA CTWOS,X            \ CTWOS is a table of ready-made 1-pixel mode 2 bytes,
+ LDA CTWOS,X            \ CTWOS is a table of ready-made one-pixel mode 2 bytes,
                         \ just like the TWOS and TWOS2 tables for mode 1 (see
                         \ the PIXEL routine for details of how they work). This
-                        \ fetches a mode 2 1-pixel byte with the pixel position
-                        \ at X, so the pixel is at the offset that we want for
-                        \ our vertical bar
+                        \ fetches a mode 2 one-pixel byte with the pixel
+                        \ position at X, so the pixel is at the offset that we
+                        \ want for our vertical bar
 
- AND #WHITE2            \ The 2-pixel mode 2 byte in #WHITE2 represents two
+ AND #WHITE2            \ The two-pixel mode 2 byte in #WHITE2 represents two
                         \ pixels of colour %0111 (7), which is white in both
                         \ dashboard palettes. We AND this with A so that we only
                         \ keep the pixel that matches the position of the
                         \ vertical bar (i.e. A is acting as a mask on the
-                        \ 2-pixel colour byte)
+                        \ two-pixel colour byte)
 
  BNE DLL12              \ Jump to DLL12 to skip the code for drawing a blank,
                         \ and move on to drawing the indicator (this BNE is
@@ -23908,7 +23937,7 @@ ENDIF
 \       Name: SCALEY
 \       Type: Subroutine
 \   Category: Maths (Geometry)
-\    Summary: Scale the y-coordinate in A
+\    Summary: Scale the y-coordinate in A to 0.5 * A
 \
 \ ------------------------------------------------------------------------------
 \
@@ -23917,20 +23946,21 @@ ENDIF
 \ the Apple II and BBC Master versions, and allows coordinates to be scaled
 \ correctly on different platforms.
 \
-\ The original source contains the comment "SCALE Scans by 3/4 to fit in".
-\
 \ ******************************************************************************
 
 .SCALEY
 
  LSR A                  \ Halve the value in A
 
+                        \ Fall through into SCALEY2 to return from the
+                        \ subroutine
+
 \ ******************************************************************************
 \
 \       Name: SCALEY2
 \       Type: Subroutine
 \   Category: Maths (Geometry)
-\    Summary: Scale the y-coordinate in A
+\    Summary: Scale the y-coordinate in A (leave it unchanged)
 \
 \ ------------------------------------------------------------------------------
 \
@@ -23938,6 +23968,8 @@ ENDIF
 \ various places in the code to scale the value in A. This code is different in
 \ the Apple II and BBC Master versions, and allows coordinates to be scaled
 \ correctly on different platforms.
+\
+\ The original source contains the comment "SCALE Scans by 3/4 to fit in".
 \
 \ ******************************************************************************
 
@@ -23950,7 +23982,7 @@ ENDIF
 \       Name: SCALEX
 \       Type: Subroutine
 \   Category: Maths (Geometry)
-\    Summary: Scale the x-coordinate in A
+\    Summary: Scale the x-coordinate in A (leave it unchanged)
 \
 \ ------------------------------------------------------------------------------
 \
@@ -24651,18 +24683,18 @@ ENDIF
  INX                    \ is stored in the range 0-14 but the displayed range
                         \ should be 1-15
 
- CLC                    \ Call pr2 to print the technology level as a 3-digit
- JSR pr2                \ number without a decimal point (by clearing the C
-                        \ flag)
+ CLC                    \ Call pr2 to print the technology level as a
+ JSR pr2                \ three-digit number without a decimal point (by
+                        \ clearing the C flag)
 
  JSR TTX69              \ Print a paragraph break and set Sentence Case
 
  LDA #192               \ Print recursive token 32 ("POPULATION") followed by a
  JSR TT68               \ colon
 
- SEC                    \ Call pr2 to print the population as a 3-digit number
- LDX QQ6                \ with a decimal point (by setting the C flag), so the
- JSR pr2                \ number printed will be population / 10
+ SEC                    \ Call pr2 to print the population as a three-digit
+ LDX QQ6                \ number with a decimal point (by setting the C flag),
+ JSR pr2                \ so the number printed will be population / 10
 
  LDA #198               \ Print recursive token 38 (" BILLION"), followed by a
  JSR TT60               \ paragraph break and Sentence Case
@@ -25045,9 +25077,9 @@ ENDIF
 
  JSR PIXEL              \ Call PIXEL to draw a point at (X, A), with the size of
                         \ the point dependent on the distance specified in ZZ
-                        \ (so a high value of ZZ will produce a 1-pixel point,
-                        \ a medium value will produce a 2-pixel dash, and a
-                        \ small value will produce a 4-pixel square)
+                        \ (so a high value of ZZ will produce a one-pixel point,
+                        \ a medium value will produce a two-pixel dash, and a
+                        \ small value will produce a four-pixel square)
 
  JSR TT20               \ We want to move on to the next system, so call TT20
                         \ to twist the three 16-bit seeds in QQ15
@@ -31541,8 +31573,8 @@ ENDIF
 
  LDX #8                 \ First we need to copy the space station's coordinates
                         \ into K3, so set a counter to copy the first 9 bytes
-                        \ (the 3-byte x, y and z coordinates) from the station's
-                        \ data block at K% + NI% into K3
+                        \ (the three-byte x, y and z coordinates) from the
+                        \ station's data block at K% + NI% into K3
 
 .SPL1
 
@@ -41502,14 +41534,14 @@ ENDMACRO
  BCS nono               \ the bottom of the screen, jump to nono as the ship's
                         \ dot is off the bottom of the space view
 
- JSR Shpt               \ Call Shpt to draw a horizontal 4-pixel dash for the
+ JSR Shpt               \ Call Shpt to draw a horizontal four-pixel dash for the
                         \ first row of the dot (i.e. a four-pixel dash)
 
  LDA K4                 \ Set A = y-coordinate of dot + 1 (so this is the second
  CLC                    \ row of the two-pixel high dot)
  ADC #1
 
- JSR Shpt               \ Call Shpt to draw a horizontal 4-pixel dash for the
+ JSR Shpt               \ Call Shpt to draw a horizontal four-pixel dash for the
                         \ second row of the dot (i.e. a four-pixel dash)
 
  LDA #%00001000         \ Set bit 3 of the ship's byte #31 to record that we
@@ -41532,7 +41564,7 @@ ENDMACRO
 
 .Shpt
 
-                        \ This routine draws a horizontal 4-pixel dash, for
+                        \ This routine draws a horizontal four-pixel dash, for
                         \ either the top or the bottom of the ship's dot
 
  STA Y1                 \ Store A in both y-coordinates, as this is a horizontal
