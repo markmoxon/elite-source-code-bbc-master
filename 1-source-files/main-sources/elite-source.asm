@@ -6674,9 +6674,9 @@ ENDIF
                         \ the first memory page for the row... so we need to
                         \ increment SC+1 to point to the correct page
 
- TYA                    \ Set Y to just bits 0-2 of the y-coordinate, which will
- AND #%00000111         \ be the number of the pixel row we need to draw into
- TAY                    \ within the character block
+ TYA                    \ Set Y = Y mod 8, which is the pixel row within the
+ AND #7                 \ character block at which we want to draw the pixel
+ TAY                    \ (as each character block has 8 rows)
 
  TXA                    \ Copy bits 0-1 of the x-coordinate to bits 0-1 of X,
  AND #%00000011         \ which will now be in the range 0-3, and will contain
@@ -26628,10 +26628,11 @@ ENDIF
                         \ This code is left over from the Apple II version,
                         \ where the scale factor is different
 
- LSR A                  \ Set Y = K4 / 8, so Y contains the number of the text
- LSR A                  \ row that contains this system
- LSR A
- TAY
+ LSR A                  \ Set Y = A >> 3
+ LSR A                  \       = K4 div 8
+ LSR A                  \
+ TAY                    \ So Y now contains the number of the character row
+                        \ that contains this system
 
                         \ Now to see if there is room for this system's label.
                         \ Ideally we would print the system name on the same
