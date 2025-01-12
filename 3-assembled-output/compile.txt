@@ -4961,12 +4961,9 @@ WP workspace from &E41 to &12A9 inclusive
 .COMC
      2C40
 .dials
-     2C41   00 00 00 00
-     2C45   00 00 00 00
-     2C49   00 00 00 00
-     2C4D   00 00
+     2C41
 .mscol
-     2C4F   00 00 00 00
+     2C4F
 .CATF
      2C53
 .DFLAG

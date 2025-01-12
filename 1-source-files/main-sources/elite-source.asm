@@ -581,7 +581,7 @@ ENDIF
 .X1
 
  SKIP 1                 \ Temporary storage, typically used for x-coordinates in
-                        \ line-drawing routines
+                        \ the line-drawing routines
 
 .Y1
 
@@ -591,7 +591,7 @@ ENDIF
 .X2
 
  SKIP 1                 \ Temporary storage, typically used for x-coordinates in
-                        \ line-drawing routines
+                        \ the line-drawing routines
 
 .Y2
 
@@ -4258,6 +4258,8 @@ ENDIF
  BNE LI130+6            \ If we get here then R must be 3, so jump to LI130+6 to
                         \ skip plotting any of the pixels, but making sure we
                         \ join the routine just after the plotting instructions
+                        \ (this BNE is effectively a JMP as we just passed
+                        \ through a BEQ)
 
 .LI190
 
@@ -4570,6 +4572,8 @@ ENDIF
  BNE LI230+6            \ If we get here then R must be 3, so jump to LI230+6 to
                         \ skip plotting any of the pixels, but making sure we
                         \ join the routine just after the plotting instructions
+                        \ (this BNE is effectively a JMP as we just passed
+                        \ through a BEQ)
 
 .LI191
 
@@ -4594,8 +4598,8 @@ ENDIF
 
  BNE LI230              \ If we get here then R must be 3, so jump to LI130 to
                         \ start plotting from the fourth pixel in this byte
-                        \ (this BNE is effectively a JMP as by now R is never
-                        \ zero)
+                        \ (this BNE is effectively a JMP as we just passed
+                        \ through a BEQ)
 
 .LI200
 
@@ -9986,14 +9990,11 @@ ENDIF
 
 .dials
 
- EQUD 0                 \ These bytes appear to be unused
- EQUD 0
- EQUD 0
- EQUW 0
+ SKIP 14                \ These bytes appear to be unused
 
 .mscol
 
- EQUD 0                 \ This byte appears to be unused
+ SKIP 4                 \ This byte appears to be unused
 
 .CATF
 
@@ -14082,8 +14083,6 @@ ENDIF
 \    Summary: Table of pointers to the local universe's ship data blocks
 \  Deep dive: The local bubble of universe
 \             Ship data blocks
-\
-\ ------------------------------------------------------------------------------
 \
 \ ******************************************************************************
 
@@ -23761,9 +23760,10 @@ ENDIF
 
 .PAUSE2
 
- JSR RDKEY              \ Scan the keyboard for a key press and return the
-                        \ ASCII code of the key pressed in X (or 0 for no key
+ JSR RDKEY              \ Scan the keyboard for a key press and return the ASCII
+                        \ code of the key pressed in A and X (or 0 for no key
                         \ press)
+ 
 
  BNE PAUSE2             \ If a key was already being held down when we entered
                         \ this routine, keep looping back up to PAUSE2, until
@@ -23773,6 +23773,7 @@ ENDIF
                         \ start scanning the keyboard again, returning the
                         \ ASCII code of the key pressed in X (or 0 for no key
                         \ press)
+ 
 
  BEQ PAUSE2             \ Keep looping up to PAUSE2 until a key is pressed
 
@@ -38032,7 +38033,9 @@ IF _SNG47
 
 ENDIF
 
- JSR RDKEY              \ Scan the keyboard for a key press
+ JSR RDKEY              \ Scan the keyboard for a key press and return the ASCII
+                        \ code of the key pressed in A and X (or 0 for no key
+                        \ press)
 
  BEQ TLL2               \ If no key was pressed, loop back up to move/rotate
                         \ the ship and check again for a key press
@@ -40170,7 +40173,9 @@ ENDIF
 .DOKEY
 
  JSR RDKEY-1            \ Scan the keyboard for a key press and return the
-                        \ ASCII code of the key pressed in X
+                        \ ASCII code of the key pressed in X (calling RDKEY-1
+                        \ only scans the keyboard for valid BCD key numbers,
+                        \ which speeds things up a bit)
 
  LDA auto               \ If auto is 0, then the docking computer is not
  BEQ DK15               \ currently activated, so jump to DK15 to skip the
@@ -40479,8 +40484,8 @@ ENDIF
  JSR WSCAN              \ Call WSCAN to wait for the vertical sync, so the whole
                         \ screen gets drawn
 
- JSR RDKEY              \ Scan the keyboard for a key press and return the
-                        \ ASCII code of the key pressed in X (or 0 for no key
+ JSR RDKEY              \ Scan the keyboard for a key press and return the ASCII
+                        \ code of the key pressed in A and X (or 0 for no key
                         \ press)
 
  CPX #'Q'               \ If "Q" is not being pressed, skip to DK6
@@ -40650,8 +40655,8 @@ ENDIF
                         \ presses being recorded
 
  JSR RDKEY              \ Scan the keyboard for a key press and return the
-                        \ ASCII code of the key pressed in X (or 0 for no key
-                        \ press)
+                        \ ASCII code of the key pressed in A and X (or 0 for no
+                        \ key press)
 
  BNE t                  \ If a key was already being held down when we entered
                         \ this routine, keep looping back up to t, until the
