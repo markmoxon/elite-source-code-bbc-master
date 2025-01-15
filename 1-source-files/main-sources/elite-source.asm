@@ -732,13 +732,13 @@ ENDIF
  SKIP 1                 \ The type of the current view:
                         \
                         \   0   = Space view
+                        \         Death screen
                         \   1   = Data on System screen (red key f6)
                         \         Get commander name ("@", save/load commander)
                         \         In-system jump just arrived ("J")
                         \   2   = Buy Cargo screen (red key f1)
                         \   3   = Mis-jump just arrived (witchspace)
                         \   4   = Sell Cargo screen (red key f2)
-                        \   6   = Death screen
                         \   8   = Status Mode screen (red key f8)
                         \         Inventory screen (red key f9)
                         \   13  = Rotating ship view (title or mission screen)
