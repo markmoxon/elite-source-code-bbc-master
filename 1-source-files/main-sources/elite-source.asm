@@ -15580,8 +15580,8 @@ ENDIF
 .STATUS
 
  LDA #8                 \ Clear the top part of the screen, draw a border box,
- JSR TRADEMODE          \ and set up a printable trading screen with a view type
-                        \ in QQ11 of 8 (Status Mode screen)
+ JSR TRADEMODE          \ and set up a trading screen with a view type in QQ11
+                        \ of 8 (Status Mode screen)
 
  JSR TT111              \ Select the system closest to galactic coordinates
                         \ (QQ9, QQ10)
@@ -24589,8 +24589,8 @@ ENDIF
 .TT25
 
  LDA #1                 \ Clear the top part of the screen, draw a border box,
- JSR TRADEMODE          \ and set up a printable trading screen with a view type
-                        \ in QQ11 of 1
+ JSR TRADEMODE          \ and set up a trading screen with a view type in QQ11
+                        \ of 1
 
  LDA #9                 \ Move the text cursor to column 9
  STA XC
@@ -25439,8 +25439,8 @@ ENDIF
 .TT219
 
  LDA #2                 \ Clear the top part of the screen, draw a border box,
- JSR TRADEMODE          \ and set up a printable trading screen with a view type
-                        \ in QQ11 of 2 (Buy Cargo screen)
+ JSR TRADEMODE          \ and set up a trading screen with a view type in QQ11
+                        \ of 2 (Buy Cargo screen)
 
  JSR TT163              \ Print the column headers for the prices table
 
@@ -25838,8 +25838,8 @@ ENDIF
 .TT208
 
  LDA #4                 \ Clear the top part of the screen, draw a border box,
- JSR TRADEMODE          \ and set up a printable trading screen with a view type
-                        \ in QQ11 of 4 (Sell Cargo screen)
+ JSR TRADEMODE          \ and set up a trading screen with a view type in QQ11
+                        \ of 4 (Sell Cargo screen)
 
  LDA #10                \ Move the text cursor to column 10
  STA XC
@@ -26083,8 +26083,8 @@ ENDIF
 .TT213
 
  LDA #8                 \ Clear the top part of the screen, draw a border box,
- JSR TRADEMODE          \ and set up a printable trading screen with a view type
-                        \ in QQ11 of 4 (Inventory screen)
+ JSR TRADEMODE          \ and set up a trading screen with a view type in QQ11
+                        \ of 4 (Inventory screen)
 
  LDA #11                \ Move the text cursor to column 11 to print the screen
  STA XC                 \ title
@@ -27955,8 +27955,8 @@ ENDIF
 .TT167
 
  LDA #16                \ Clear the top part of the screen, draw a border box,
- JSR TRADEMODE          \ and set up a printable trading screen with a view type
-                        \ in QQ11 of 32 (Market Price screen)
+ JSR TRADEMODE          \ and set up a trading screen with a view type in QQ11
+                        \ of 32 (Market Price screen)
 
  LDA #5                 \ Move the text cursor to column 5
  STA XC
@@ -47196,7 +47196,8 @@ ENDMACRO
 \       Name: TTX66K
 \       Type: Subroutine
 \   Category: Drawing the screen
-\    Summary: Clear the top part of the screen and draw a border box
+\    Summary: Clear the top part of the screen, draw a border box and configure
+\             the specified view
 \
 \ ------------------------------------------------------------------------------
 \
