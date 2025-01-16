@@ -23947,6 +23947,12 @@ ENDIF
 \ the Apple II and BBC Master versions, and allows coordinates to be scaled
 \ correctly on different platforms.
 \
+\ In the Master version, the only scaling routine that does anything is SCALEY,
+\ which halves the y-coordinates in the Long-range Chart (as the galaxy is half
+\ as tall as it is wide). The other routines are left over from the Apple II
+\ version, which uses them to scale the system charts to fit into its smaller
+\ screen size.
+\
 \ ******************************************************************************
 
 .SCALEY
@@ -23972,6 +23978,18 @@ ENDIF
 \
 \ The original source contains the comment "SCALE Scans by 3/4 to fit in".
 \
+\ In the Master version, the only scaling routine that does anything is SCALEY,
+\ which halves the y-coordinates in the Long-range Chart (as the galaxy is half
+\ as tall as it is wide). The other routines are left over from the Apple II
+\ version, which uses them to scale the system charts to fit into its smaller
+\ screen size.
+\
+\ ------------------------------------------------------------------------------
+\
+\ Returns:
+\
+\   C flag              The C flag is cleared
+\
 \ ******************************************************************************
 
 .SCALEY2
@@ -23991,6 +24009,12 @@ ENDIF
 \ various places in the code to scale the value in A. This code is different in
 \ the Apple II and BBC Master versions, and allows coordinates to be scaled
 \ correctly on different platforms.
+\
+\ In the Master version, the only scaling routine that does anything is SCALEY,
+\ which halves the y-coordinates in the Long-range Chart (as the galaxy is half
+\ as tall as it is wide). The other routines are left over from the Apple II
+\ version, which uses them to scale the system charts to fit into its smaller
+\ screen size.
 \
 \ ******************************************************************************
 
@@ -30517,17 +30541,8 @@ ENDIF
 
 .SWAPPZERO
 
-IF _SNG47
-
- LDX #&15               \ This routine starts copying zero page from &0015 and
-                        \ up, using X as an index
-
-ELIF _COMPACT
-
- LDX #&16               \ This routine starts copying zero page from &0016 and
-                        \ up, using X as an index
-
-ENDIF
+ LDX #K3+1              \ This routine starts copying zero page from the byte
+                        \ after K3 and up, using X as an index
 
 .SWPZL
 
