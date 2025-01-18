@@ -35006,7 +35006,7 @@ ENDIF
                         \
                         \   A = round(A / 16) - 4
                         \
-                        \ This set A to a value between -4 and +4, given an
+                        \ This sets A to a value between -4 and +4, given an
                         \ initial value ranging from 1 to 255 with 128 as
                         \ the centre point
 
@@ -47753,13 +47753,13 @@ ENDIF
 \       Name: RDKEY
 \       Type: Subroutine
 \   Category: Keyboard
-\    Summary: Scan the keyboard for key presses
+\    Summary: Scan the keyboard for key presses and update the key logger
 \
 \ ------------------------------------------------------------------------------
 \
 \ Scan the keyboard, starting with internal key number 16 ("Q") and working
 \ through the set of internal key numbers, returning the resulting key press in
-\ ASCII.
+\ ASCII. The key logger is also updated.
 \
 \ This routine is effectively the same as OSBYTE 122, though the OSBYTE call
 \ preserves A, unlike this routine.
