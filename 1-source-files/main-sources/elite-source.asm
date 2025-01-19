@@ -3559,8 +3559,11 @@ ENDIF
  STA X1                 \ and if the result is odd, subtract 1 to make it even
 
  TAX                    \ Set X = X1 - 2
- DEX
- DEX
+ DEX                    \
+ DEX                    \ So X contains the x-coordinate that's two pixels to
+                        \ left of the top of the stick, so we can draw the dot
+                        \ at the end of the stick by simply drawing a dot at
+                        \ x-coordinate X at the correct end of the stick
 
                         \ Next, we convert the z_hi coordinate of the ship into
                         \ the y-coordinate of the base of the ship's stick,
@@ -3661,8 +3664,8 @@ ENDIF
  STY VIA+&34            \ SHEILA &34 to switch screen memory into &3000-&7FFF
 
  JSR CPIXK              \ Call CPIXK to draw a single-height dash at the
-                        \ y-coordinate in A, and return the dash's right pixel
-                        \ byte in R, which we use below
+                        \ y-coordinate in A, to draw the ship dot, and return
+                        \ the dash's right pixel byte in R, which we use below
 
  LDA Y1                 \ Fetch the y-coordinate back into A, which was stored
                         \ in Y1 by the call to CPIX2
@@ -29397,7 +29400,7 @@ ENDIF
 \
 \ Set the system closest to galactic coordinates (QQ9, QQ10) as the selected
 \ system, redraw the crosshairs on the chart accordingly (if they are being
-\ shown), and, if this is not a space view, clear the bottom three text rows of
+\ shown), and if this is not the space view, clear the bottom three text rows of
 \ the screen.
 \
 \ ******************************************************************************
@@ -29415,9 +29418,8 @@ ENDIF
                         \ system
 
  JMP CLYNS              \ Clear the bottom three text rows of the upper screen,
-                        \ and move the text cursor to the first cleared row
-
-                        \ Return from the subroutine using a tail call
+                        \ move the text cursor to the first cleared row, and
+                        \ return from the subroutine using a tail call
 
 \ ******************************************************************************
 \
