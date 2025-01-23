@@ -3168,7 +3168,7 @@ ENDIF
 \       Type: Subroutine
 \   Category: Utility routines
 \    Summary: Release the NMI workspace (&00A0 to &00A7) so the MOS can use it
-\             and store the top part of zero page in the the buffer at &3000
+\             and store the top part of zero page in the buffer at &3000
 \
 \ ******************************************************************************
 
