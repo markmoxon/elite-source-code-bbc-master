@@ -1955,7 +1955,11 @@ ENDIF
 
 .dialc
 
- SKIP 14                \ These bytes appear to be unused
+ SKIP 14                \ These bytes are unused in this version of Elite
+                        \
+                        \ They are left over from the Apple II version, where
+                        \ they are used to store the current colour of the
+                        \ dashboard indicators
 
 .QQ24
 
