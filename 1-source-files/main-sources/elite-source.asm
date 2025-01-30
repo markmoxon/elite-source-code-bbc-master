@@ -2177,19 +2177,18 @@ ENDIF
 
  STZ DL                 \ Set DL to 0
 
-{
-.DELL1                  \ This label is a duplicate of a label in the DELT
-                        \ routine (which is why we need to surround it with
-                        \ braces, as BeebAsm doesn't allow us to redefine
-                        \ labels, unlike BBC BASIC)
+.DELL1K                 \ This label is a duplicate of a label in the DELT
+                        \ routine
+                        \
+                        \ In the original source this label is DELL1, but
+                        \ because BeebAsm doesn't allow us to redefine labels,
+                        \ I have renamed it to DELL1K
 
  LDA DL                 \ Loop round these two instructions until DL is no
- BEQ DELL1              \ longer 0 (DL gets set to 30 in the LINSCN routine,
+ BEQ DELL1K             \ longer 0 (DL gets set to 30 in the LINSCN routine,
                         \ which is run when vertical sync has occurred on the
                         \ video system, so DL will change to a non-zero value
                         \ at the start of each screen refresh)
-
-}
 
  RTS                    \ Return from the subroutine
 
@@ -7938,9 +7937,9 @@ ENDIF
                         \ is also present in this source, so it isn't clear why
                         \ this duplicate exists
                         \
-                        \ In the original source, this version also has the name
-                        \ TT67, but because BeebAsm doesn't allow us to redefine
-                        \ labels, I have renamed this one to TT67K
+                        \ In the original source this label is TT67, but
+                        \ because BeebAsm doesn't allow us to redefine labels,
+                        \ I have renamed it to TT67K
 
  LDA #12                \ Set A to a carriage return character
 
@@ -8773,21 +8772,21 @@ ENDIF
                         \ is 8 bytes), so we put this in Y to act as a byte
                         \ counter, as before
 
-{
-.EE3                    \ This label is a duplicate of a label in TT23 (which is
-                        \ why we need to surround it with braces, as BeebAsm
-                        \ doesn't allow us to redefine labels, unlike BBC
-                        \ BASIC)
+.EE3K                   \ This label is a duplicate of a label in the TT23
+                        \ routine
+                        \
+                        \ In the original source this label is EE3, but
+                        \ because BeebAsm doesn't allow us to redefine labels,
+                        \ I have renamed it to EE3K
 
  STA (SC),Y             \ Zero the Y-th byte from SC(1 0), which clears it by
                         \ setting it to colour 0, black
 
  DEY                    \ Decrement the byte counter in Y
 
- BNE EE3                \ Loop back to EE2 to blank the next byte to the left,
+ BNE EE3K               \ Loop back to EE3K to blank the next byte to the left,
                         \ until we have done one page's worth (from byte #247 to
                         \ #1)
-}
 
  INC SC+1               \ We have now blanked a whole text row, so increment
                         \ SC+1 so that SC(1 0) points to the next row
@@ -18085,13 +18084,21 @@ ENDIF
 .TA87
 
  LDA INWK+32            \ Set X to bits 1-6 of the missile's AI flag in ship
- AND #%01111111         \ byte #32, so bits 0-4 of X are the target's slot
- LSR A                  \ number, and bit 5 is set (as the missile is hostile)
- TAX                    \ so X is fairly random and in the range 32-43 (as the
-                        \ maximum slot number is 11)
+ AND #%01111111         \ byte #32, so that bits 0-4 of X are the target's slot
+ LSR A                  \ number, and bit 5 is clear (as the missile is ours)
+ TAX                    \
+                        \ So X contains the slot number of the target ship
                         \
-                        \ The value of X is used to determine the number of kill
-                        \ points awarded for the destruction of the missile
+                        \ We should now fetch the ship type from slot X, so we
+                        \ can pass the ship type to EXNO2 to add the correct
+                        \ number of kill points to award for this type of ship,
+                        \ but instead we're passing the slot number to EXNO2
+                        \
+                        \ This is a bug that means we will be allocated a fairly
+                        \ random number of kill points when destroying a ship
+                        \ with a missile; this bug was fixed in the NES version,
+                        \ but it affects the Commodore 64, Apple II and BBC
+                        \ Master versions of Elite
 
 .TA353
 
@@ -23278,22 +23285,22 @@ ENDIF
                         \ every time we call PDESC, so set a counter in X for
                         \ copying 4 bytes
 
-{
-.PDL1                   \ This label is a duplicate of the label above (which is
-                        \ why we need to surround it with braces, as BeebAsm
-                        \ doesn't allow us to redefine labels, unlike BBC BASIC)
+.PDL1K                  \ This label is a duplicate of the label above
+                        \
+                        \ In the original source this label is PDL1, but
+                        \ because BeebAsm doesn't allow us to redefine labels,
+                        \ I have renamed it to PDL1K
 
  LDA QQ15+2,X           \ Copy QQ15+2 to QQ15+5 (s1 and s2) to RAND to RAND+3
  STA RAND,X
 
  DEX                    \ Decrement the loop counter
 
- BPL PDL1               \ Loop back to PDL1 until we have copied all
+ BPL PDL1K              \ Loop back to PDL1K until we have copied all
 
  LDA #5                 \ Set A = 5, so we print extended token 5 in the next
                         \ instruction ("{lower case}{justify}{single cap}[86-90]
                         \ IS [140-144].{cr}{left align}"
-}
 
 .PD4
 
@@ -25549,15 +25556,13 @@ ENDIF
  LDX #12                \ Perhaps they were left behind when code was moved from
  STX T1                 \ here into gnum, and weren't deleted?
 
-{
-.TT223                  \ This label is a duplicate of a label in gnum (which is
-                        \ why we need to surround it with braces, as BeebAsm
-                        \ doesn't allow us to redefine labels, unlike BBC
-                        \ BASIC). This could be a remnant if the code in gnum
-                        \ was originally here, but got moved into the gnum
-                        \ subroutine without removing the original
-
-}
+.TT223K                 \ This label is a duplicate of a label in the gnum
+                        \ routine, so this could also be a remnant from code
+                        \ that got moved into the gnum subroutine
+                        \
+                        \ In the original source this label is TT223, but
+                        \ because BeebAsm doesn't allow us to redefine labels,
+                        \ I have renamed it to TT223K
 
  JSR gnum               \ Call gnum to get a number from the keyboard, which
                         \ will be the quantity of this item we want to purchase,

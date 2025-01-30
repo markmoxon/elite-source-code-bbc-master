@@ -900,7 +900,7 @@ WP workspace from &E41 to &12A9 inclusive
      1340   88 88
 .WSCAN
      1342   64 5C      STZ &5C
-.DELL1
+.DELL1K
      1344   A5 5C      LDA &5C
      1346   F0 FC      BEQ &1344
      1348   60         RTS
@@ -3275,7 +3275,7 @@ WP workspace from &E41 to &12A9 inclusive
      21ED   E6 0B      INC &0B
      21EF   91 0A      STA (&0A),Y
      21F1   A0 F7      LDY #&F7
-.EE3
+.EE3K
      21F3   91 0A      STA (&0A),Y
      21F5   88         DEY
      21F6   D0 FB      BNE &21F3
@@ -9062,7 +9062,7 @@ S.ELTB &3579  &3CE1  &1300  &3579
      48FF   D0 CE      BNE &48CF
 .PD1
      4901   A2 03      LDX #&03
-.PDL1
+.PDL1K
      4903   B5 60      LDA &60,X
      4905   95 02      STA &02,X
      4907   CA         DEX
@@ -9742,7 +9742,7 @@ S.ELTC &3CE1  &4A42  &1300  &3CE1
      4DC0   86 7A      STX &7A
      4DC2   A2 0C      LDX #&0C
      4DC4   86 06      STX &06
-.TT223
+.TT223K
      4DC6   20 23 4E   JSR &4E23
      4DC9   B0 C6      BCS &4D91
      4DCB   85 0C      STA &0C
