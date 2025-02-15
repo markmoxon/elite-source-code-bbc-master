@@ -8588,10 +8588,12 @@ ENDIF
                         \ So that's a two-pixel wide vertical border along the
                         \ left edge of the upper part of the screen, and a
                         \ two-pixel wide vertical border along the right edge
- LDA COL                \ Set locations &4000 &41F8 to %00001111, as otherwise
- STA &4000              \ the top-left and top-right corners will be black (as
- STA &41F8              \ the lines overlap at the corners, and the EOR logic
-                        \ used by LOIN will otherwise make them black)
+
+ LDA COL                \ Set locations &4000 and &41F8 to the correct colour,
+ STA &4000              \ as otherwise the top-left and top-right corners will
+ STA &41F8              \ be black (as the lines overlap at the corners, and
+                        \ the EOR logic used by LOINQ will otherwise make them
+                        \ black)
 
  PLA                    \ Restore the original colour that we stored above
  STA COL
@@ -24005,12 +24007,6 @@ ENDIF
 \ as tall as it is wide). The other routines are left over from the Apple II
 \ version, which uses them to scale the system charts to fit into its smaller
 \ screen size.
-\
-\ ------------------------------------------------------------------------------
-\
-\ Returns:
-\
-\   C flag              The C flag is cleared
 \
 \ ******************************************************************************
 
@@ -48225,13 +48221,8 @@ ENDIF
 \
 \       Name: ECMOF
 \       Type: Subroutine
-\   Category: Sound
-\    Summary: Switch off the E.C.M.
-\
-\ ------------------------------------------------------------------------------
-\
-\ Switch the E.C.M. off, turn off the dashboard bulb and make the sound of the
-\ E.C.M. switching off).
+\   Category: Dashboard
+\    Summary: Switch off the E.C.M. and turn off the dashboard bulb
 \
 \ ******************************************************************************
 
