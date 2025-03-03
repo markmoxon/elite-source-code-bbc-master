@@ -469,7 +469,25 @@ ENDIF
                         \ We now want to copy &33 pages of memory (&3300 bytes)
                         \ from &2200-&54FF to &7F00-&B1FF in main memory
 
+                        \ --- Mod: Code removed for flicker-free planets: ----->
+
+\LDX #&33               \ Set a page counter in X to copy &33 pages
+
+                        \ --- And replaced by: -------------------------------->
+
+IF _SNG47
+
  LDX #&33               \ Set a page counter in X to copy &33 pages
+
+ELIF _COMPACT
+
+ LDX #&34               \ Set a page counter in X to copy &33 pages, plus one
+                        \ extra page for the flicker-free planet code that we
+                        \ have added at &B200
+
+ENDIF
+
+                        \ --- End of replacement ------------------------------>
 
 .MPL2
 
