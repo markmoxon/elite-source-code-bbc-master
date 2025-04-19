@@ -39159,23 +39159,27 @@ ENDIF
  EOR #&A9               \ Store the checksum EOR &A9 in CHK2, the penultimate
  STA CHK2               \ byte of the last saved commander block
 
-                        \ We now copy the current commander data block into the
-                        \ TAP% staging area, though this has no effect as we
-                        \ then ignore the result (this code is left over from
-                        \ the Commodore 64 version)
+                        \ --- Mod: Code removed for Scoreboard: --------------->
 
- LDY #NT%               \ Set a counter in X to copy the NT% bytes in the
-                        \ commander data block
+\                       \ We now copy the current commander data block into the
+\                       \ TAP% staging area, though this has no effect as we
+\                       \ then ignore the result (this code is left over from
+\                       \ the Commodore 64 version)
+\
+\LDY #NT%               \ Set a counter in X to copy the NT% bytes in the
+\                       \ commander data block
+\
+\.copyme2
+\
+\LDA NA%+8,Y            \ Copy the X-th byte of NA% to the X-th byte of TAP%
+\STA TAP%,Y
+\
+\DEY                    \ Decrement the loop counter
+\
+\BPL copyme2            \ Loop back until we have copied all the bytes in the
+\                       \ commander data block
 
-.copyme2
-
- LDA NA%+8,Y            \ Copy the X-th byte of NA% to the X-th byte of TAP%
- STA TAP%,Y
-
- DEY                    \ Decrement the loop counter
-
- BPL copyme2            \ Loop back until we have copied all the bytes in the
-                        \ commander data block
+                        \ --- End of removed code ----------------------------->
 
 IF _SNG47
 
@@ -39326,11 +39330,15 @@ ENDIF
 
                         \ --- Mod: Code added for Scoreboard: ----------------->
 
- LDA #0                 \ Zero scorePort, netTally and netDeaths to reset the
- STA scorePort          \ scores and stop transmissions to the scoreboard
- STA netTally
+ LDA &0E7E+253          \ Restore the scoreboard scores from the last three
+ STA netTally           \ bytes of the loaded file
+ LDA &0E7E+254
  STA netTally+1
+ LDA &0E7E+255
  STA netDeaths
+
+ LDA #0                 \ Zero scorePort to stop transmissions to the scoreboard
+ STA scorePort
 
                         \ --- End of added code ------------------------------->
 
@@ -39583,6 +39591,17 @@ ENDIF
  CPY #7                 \ If Y < 7 then we haven't yet blanked out the whole
  BCC wfileL4            \ name, so loop back to wfileL4 to blank the next one
                         \ until the save string is ready for use
+
+                        \ --- Mod: Code added for Scoreboard: ----------------->
+
+ LDA netTally           \ Store the scoreboard scores in the last three bytes of
+ STA &0E7E+253          \ the buffer so they get saved
+ LDA netTally+1
+ STA &0E7E+254
+ LDA netDeaths
+ STA &0E7E+255
+
+                        \ --- End of added code ------------------------------->
 
 IF _SNG47
 
@@ -49028,21 +49047,12 @@ ENDIF
  LDX scoreNetwork       \ Get the current scoreboard network number from
                         \ scoreNetwork
 
- CLC                    \ Print the 8-bit number in X to 3 digits, without a
- JSR pr2                \ decimal point
+ JSR GetNumber          \ Print the number in X to 4 digits, followed by a
+                        \ question mark, and wait for a number to be entered,
+                        \ returning the result in A
 
- LDA #7                 \ Print extended token 7 ("   ")
- JSR PrintToken
-
- JSR prq+3              \ Print a question mark
-
- JSR TT162              \ Print a space
-
- JSR gnum               \ Call gnum to get a number from the keyboard
-
- LDX T1                 \ If no number was entered, skip the following to leave
- CPX #12                \ this seed alone
- BEQ gnet1
+ BEQ gnet1              \ If no number was entered, skip the following
+                        \ instruction
 
  STA scoreNetwork       \ Store the network number in scoreNetwork
 
@@ -49060,21 +49070,12 @@ ENDIF
  LDX scoreStation       \ Get the current scoreboard station number from the low
                         \ byte of scoreStation
 
- CLC                    \ Print the 8-bit number in X to 3 digits, without a
- JSR pr2                \ decimal point
+ JSR GetNumber          \ Print the number in X to 4 digits, followed by a
+                        \ question mark, and wait for a number to be entered,
+                        \ returning the result in A
 
- LDA #7                 \ Print extended token 7 ("   ")
- JSR PrintToken
-
- JSR prq+3              \ Print a question mark
-
- JSR TT162              \ Print a space
-
- JSR gnum               \ Call gnum to get a number from the keyboard
-
- LDX T1                 \ If no number was entered, skip the following to leave
- CPX #12                \ this seed alone
- BEQ gnet2
+ BEQ gnet2              \ If no number was entered, skip the following
+                        \ instruction
 
  STA scoreStation       \ Store the station number in the low byte of
                         \ scoreStation
@@ -49095,22 +49096,13 @@ ENDIF
 
  LDX scorePort          \ Get the current scoreboard port number from scorePort
 
- CLC                    \ Print the 8-bit number in X to 3 digits, without a
- JSR pr2                \ decimal point
+ JSR GetNumber          \ Print the number in X to 4 digits, followed by a
+                        \ question mark, and wait for a number to be entered,
+                        \ returning the result in A
 
- LDA #7                 \ Print extended token 7 ("   ")
- JSR PrintToken
+ BEQ gnet3              \ If no number was entered, skip the following
+                        \ instruction
 
- JSR prq+3              \ Print a question mark
-
- JSR TT162              \ Print a space
-
- JSR gnum               \ Call gnum to get a number from the keyboard
-
- LDX T1                 \ If no number was entered, skip the following to leave
- CPX #12                \ this seed alone
- BEQ gnet3
-                        
  STA scorePort          \ Store the port number in scorePort
 
 .gnet3
@@ -49121,11 +49113,12 @@ ENDIF
  LDA #8                 \ Print extended token 8 ("RESET SCORES ")
  JSR PrintToken
 
- LDX netTally           \ Get the current combat score from netTally
+ LDX netTally           \ Get the current combat score from netTally(1 0)
+ LDY netTally+1
 
- CLC                    \ Call pr2 to print the score level as a 3-digit
- JSR pr2                \ number without a decimal point (by clearing the C
-                        \ flag)
+ LDA #4                 \ Call TT11 to print the score in (Y X) as a 4-digit
+ CLC                    \ number without a decimal point (by clearing the C
+ JSR TT11               \ flag)
 
  JSR TT162              \ Print a space
 
@@ -49135,10 +49128,10 @@ ENDIF
  JSR pr2                \ number without a decimal point (by clearing the C
                         \ flag)
 
- LDA #7                 \ Print extended token 7 ("   ")
+ LDA #9                 \ Print extended token 9 ("  ")
  JSR PrintToken
 
- JSR TT214              \ Ask a question with a "Y/N?" prompt
+ JSR TT214+3            \ Ask a question with a "Y/N?" prompt
 
  BCC gnet4              \ If the answer was not "yes", jump to gnet4
 
@@ -49179,6 +49172,52 @@ ENDIF
  LDA #f8                \ Jump into the main loop at FRCE, setting the key
  JMP FRCE               \ "pressed" to red key f8 (so we show the Status Mode
                         \ screen)
+
+                        \ --- End of added code ------------------------------->
+
+\ ******************************************************************************
+\
+\       Name: GetNumber
+\       Type: Subroutine
+\   Category: Econet
+\    Summary: Print a number, then a question mark, and wait for a number to be
+\             entered
+\
+\ ------------------------------------------------------------------------------
+\
+\ Arguments:
+\
+\   X                   The number to print
+\
+\ ------------------------------------------------------------------------------
+\
+\ Returns:
+\
+\   Z flag              Set if no number was entered, clear otherwise
+\
+\ ******************************************************************************
+
+                        \ --- Mod: Code added for Scoreboard: ----------------->
+
+.GetNumber
+
+ LDA #4                 \ Print the 8-bit number in X to 4 digits, without a
+ CLC                    \ decimal point
+ JSR pr2+2
+
+ LDA #9                 \ Print extended token 9 ("  ")
+ JSR PrintToken
+
+ JSR prq+3              \ Print a question mark
+
+ JSR TT162              \ Print a space
+
+ JSR gnum               \ Call gnum to get a number from the keyboard
+
+ LDX T1                 \ If no number was entered, set the Z flag (so a BEQ
+ CPX #12                \ branch will be taken if nothing is entered)
+
+ RTS                    \ Return from the subroutine
 
                         \ --- End of added code ------------------------------->
 
@@ -49485,6 +49524,10 @@ ENDMACRO
  ECHR 'C'
  ETWO 'O', 'R'
  ETWO 'E', 'S'
+ ECHR ' '
+ EQUB VE
+
+ ECHR ' '               \ Token 9:    "  "
  ECHR ' '
  EQUB VE
 
