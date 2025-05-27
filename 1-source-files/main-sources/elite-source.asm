@@ -21539,7 +21539,7 @@ ENDIF
 .FMLTU
 
  STX P                  \ Store X in P so we can preserve it through the call to
-                        \ FMULTU
+                        \ FMLTU
 
  STA widget             \ Store A in widget, so now widget = argument A
 
@@ -38873,7 +38873,7 @@ ENDIF
  LDY #HI(DELI)          \ contains the DFS command for deleting this file
 
  JSR OSCLI              \ Call OSCLI to execute the OS command at (Y X), which
-                        \ catalogues the disc
+                        \ deletes the file
 
  JSR getzp              \ Call getzp to restore the top part of zero page from
                         \ the buffer at &3000
