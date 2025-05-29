@@ -527,11 +527,11 @@ ENDIF
 
                         \ --- Mod: Code added for Econet: --------------------->
 
- LDX #LO(MESS4)         \ Set (Y X) to point to MESS4 ("DIR ELITE")
+ LDX #LO(MESS4)         \ Set (Y X) to point to MESS4 ("DIR EliteCmdrs")
  LDY #HI(MESS4)
 
  JSR OSCLI              \ Call OSCLI to run the OS command in MESS4, which
-                        \ changes the directory to ELITE
+                        \ changes the directory to EliteCmdrs
 
                         \ --- End of added code ------------------------------->
 
