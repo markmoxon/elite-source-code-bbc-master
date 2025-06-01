@@ -16854,7 +16854,7 @@ S.ELTG &701D  &797B  &1300  &701D
      7FE3   A5 3B      LDA &3B
      7FE5   48         PHA
      7FE6   20 AB 33   JSR &33AB
-     7FE9   A9 AF      LDA #&AF
+     7FE9   A9 9F      LDA #&9F
      7FEB   85 3A      STA &3A
      7FED   A9 9F      LDA #&9F
      7FEF   4C 5F 32   JMP &325F
@@ -16968,7 +16968,7 @@ NA2% = &34CD
      9EE5   A9 03      LDA #&03
      9EE7   20 DC 7F   JSR &7FDC
      9EEA   AE A9 7F   LDX &7FA9
-     9EED   20 96 9F   JSR &9F96
+     9EED   20 86 9F   JSR &9F86
      9EF0   F0 03      BEQ &9EF5
      9EF2   8D A9 7F   STA &7FA9
 .gnet1
@@ -16979,7 +16979,7 @@ NA2% = &34CD
      9F00   A9 03      LDA #&03
      9F02   20 DC 7F   JSR &7FDC
      9F05   AE A8 7F   LDX &7FA8
-     9F08   20 96 9F   JSR &9F96
+     9F08   20 86 9F   JSR &9F86
      9F0B   F0 03      BEQ &9F10
      9F0D   8D A8 7F   STA &7FA8
 .gnet2
@@ -16992,7 +16992,7 @@ NA2% = &34CD
      9F20   A9 07      LDA #&07
      9F22   20 DC 7F   JSR &7FDC
      9F25   AE A7 7F   LDX &7FA7
-     9F28   20 96 9F   JSR &9F96
+     9F28   20 86 9F   JSR &9F86
      9F2B   F0 03      BEQ &9F30
      9F2D   8D A7 7F   STA &7FA7
 .gnet3
@@ -17012,183 +17012,177 @@ NA2% = &34CD
      9F51   A9 09      LDA #&09
      9F53   20 DC 7F   JSR &7FDC
      9F56   20 B0 4F   JSR &4FB0
-     9F59   90 1B      BCC &9F76
+     9F59   90 0B      BCC &9F66
      9F5B   A9 00      LDA #&00
      9F5D   8D AA 7F   STA &7FAA
      9F60   8D AB 7F   STA &7FAB
      9F63   8D AC 7F   STA &7FAC
-     9F66   8D 3E 12   STA &123E
-     9F69   8D 3F 12   STA &123F
-     9F6C   A9 03      LDA #&03
-     9F6E   8D 40 12   STA &1240
-     9F71   A9 E8      LDA #&E8
-     9F73   8D 41 12   STA &1241
 .gnet4
-     9F76   A9 A9      LDA #&A9
-     9F78   8D 32 4E   STA &4E32
-     9F7B   20 15 9E   JSR &9E15
-     9F7E   20 F4 4A   JSR &4AF4
-     9F81   20 F4 4A   JSR &4AF4
-     9F84   A9 06      LDA #&06
-     9F86   20 DC 7F   JSR &7FDC
-     9F89   A0 64      LDY #&64
-     9F8B   20 49 13   JSR &1349
-     9F8E   A2 FF      LDX #&FF
-     9F90   9A         TXS
-     9F91   A9 88      LDA #&88
-     9F93   4C A0 65   JMP &65A0
+     9F66   A9 A9      LDA #&A9
+     9F68   8D 32 4E   STA &4E32
+     9F6B   20 15 9E   JSR &9E15
+     9F6E   20 F4 4A   JSR &4AF4
+     9F71   20 F4 4A   JSR &4AF4
+     9F74   A9 06      LDA #&06
+     9F76   20 DC 7F   JSR &7FDC
+     9F79   A0 64      LDY #&64
+     9F7B   20 49 13   JSR &1349
+     9F7E   A2 FF      LDX #&FF
+     9F80   9A         TXS
+     9F81   A9 88      LDA #&88
+     9F83   4C A0 65   JMP &65A0
 .GetNumber
-     9F96   A9 04      LDA #&04
-     9F98   18         CLC
-     9F99   20 B5 3A   JSR &3AB5
-     9F9C   A9 09      LDA #&09
-     9F9E   20 DC 7F   JSR &7FDC
-     9FA1   20 D6 52   JSR &52D6
-     9FA4   20 5B 53   JSR &535B
-     9FA7   20 37 4E   JSR &4E37
-     9FAA   A6 07      LDX &07
-     9FAC   E0 0C      CPX #&0C
-     9FAE   60         RTS
+     9F86   A9 04      LDA #&04
+     9F88   18         CLC
+     9F89   20 B5 3A   JSR &3AB5
+     9F8C   A9 09      LDA #&09
+     9F8E   20 DC 7F   JSR &7FDC
+     9F91   20 D6 52   JSR &52D6
+     9F94   20 5B 53   JSR &535B
+     9F97   20 37 4E   JSR &4E37
+     9F9A   A6 07      LDX &07
+     9F9C   E0 0C      CPX #&0C
+     9F9E   60         RTS
 .EconetToken
-     9FAF   57
+     9F9F   57
 Macro ETWO:
-     9FB0   89
+     9FA0   89
 End macro ETWO
 Macro ETWO:
-     9FB1   A2
-End macro ETWO
-Macro ECHR:
-     9FB2   1E
-End macro ECHR
-Macro ETWO:
-     9FB3   88
-End macro ETWO
-     9FB4   57
-Macro ECHR:
-     9FB5   07
-End macro ECHR
-Macro ETWO:
-     9FB6   AA
+     9FA1   A2
 End macro ETWO
 Macro ECHR:
-     9FB7   03
+     9FA2   1E
 End macro ECHR
+Macro ETWO:
+     9FA3   88
+End macro ETWO
+     9FA4   57
+Macro ECHR:
+     9FA5   07
+End macro ECHR
+Macro ETWO:
+     9FA6   AA
+End macro ETWO
+Macro ECHR:
+     9FA7   03
+End macro ECHR
+     9FA8   57
+Macro ECHR:
+     9FA9   77
+End macro ECHR
+Macro ETWO:
+     9FAA   B6
+End macro ETWO
+Macro ECHR:
+     9FAB   1A
+End macro ECHR
+Macro ECHR:
+     9FAC   15
+End macro ECHR
+Macro ETWO:
+     9FAD   A3
+End macro ETWO
+Macro ECHR:
+     9FAE   77
+End macro ECHR
+Macro ECHR:
+     9FAF   77
+End macro ECHR
+Macro ECHR:
+     9FB0   77
+End macro ECHR
+     9FB1   57
+Macro ECHR:
+     9FB2   77
+End macro ECHR
+Macro ECHR:
+     9FB3   1A
+End macro ECHR
+Macro ECHR:
+     9FB4   12
+End macro ECHR
+Macro ETWO:
+     9FB5   B6
+End macro ETWO
+Macro ETWO:
+     9FB6   80
+End macro ETWO
+Macro ETWO:
+     9FB7   80
+End macro ETWO
      9FB8   57
 Macro ECHR:
-     9FB9   77
+     9FB9   19
 End macro ECHR
 Macro ETWO:
-     9FBA   B6
+     9FBA   8A
 End macro ETWO
 Macro ECHR:
-     9FBB   1A
-End macro ECHR
-Macro ECHR:
-     9FBC   15
+     9FBB   00
 End macro ECHR
 Macro ETWO:
-     9FBD   A3
+     9FBC   AA
 End macro ETWO
 Macro ECHR:
-     9FBE   77
+     9FBD   1C
 End macro ECHR
-Macro ECHR:
-     9FBF   77
-End macro ECHR
-Macro ECHR:
-     9FC0   77
-End macro ECHR
-     9FC1   57
-Macro ECHR:
-     9FC2   77
-End macro ECHR
-Macro ECHR:
-     9FC3   1A
-End macro ECHR
-Macro ECHR:
-     9FC4   12
-End macro ECHR
-Macro ETWO:
-     9FC5   B6
-End macro ETWO
-Macro ETWO:
-     9FC6   80
-End macro ETWO
-Macro ETWO:
-     9FC7   80
-End macro ETWO
-     9FC8   57
-Macro ECHR:
-     9FC9   19
-End macro ECHR
-Macro ETWO:
-     9FCA   8A
-End macro ETWO
-Macro ECHR:
-     9FCB   00
-End macro ECHR
-Macro ETWO:
-     9FCC   AA
-End macro ETWO
-Macro ECHR:
-     9FCD   1C
-End macro ECHR
-     9FCE   57
+     9FBE   57
 Macro EJMP:
-     9FCF   56
+     9FBF   56
 End macro EJMP
 Macro ECHR:
-     9FD0   18
+     9FC0   18
 End macro ECHR
 Macro ECHR:
-     9FD1   1C
+     9FC1   1C
 End macro ECHR
-     9FD2   57
+     9FC2   57
 Macro ECHR:
-     9FD3   77
-End macro ECHR
-Macro ECHR:
-     9FD4   77
+     9FC3   77
 End macro ECHR
 Macro ECHR:
-     9FD5   77
+     9FC4   77
 End macro ECHR
-     9FD6   57
+Macro ECHR:
+     9FC5   77
+End macro ECHR
+     9FC6   57
 Macro ETWO:
-     9FD7   A5
+     9FC7   A5
 End macro ETWO
 Macro ETWO:
-     9FD8   8D
+     9FC8   8D
 End macro ETWO
 Macro ECHR:
-     9FD9   03
+     9FC9   03
 End macro ECHR
 Macro ECHR:
-     9FDA   77
+     9FCA   77
 End macro ECHR
 Macro ECHR:
-     9FDB   04
+     9FCB   04
 End macro ECHR
 Macro ECHR:
-     9FDC   14
+     9FCC   14
 End macro ECHR
 Macro ETWO:
-     9FDD   AA
+     9FCD   AA
 End macro ETWO
 Macro ETWO:
-     9FDE   BA
+     9FCE   BA
 End macro ETWO
 Macro ECHR:
-     9FDF   77
+     9FCF   77
 End macro ECHR
-     9FE0   57
+     9FD0   57
 Macro ECHR:
-     9FE1   77
+     9FD1   77
 End macro ECHR
 Macro ECHR:
-     9FE2   77
+     9FD2   77
 End macro ECHR
-     9FE3   57
+     9FD3   57
 Saving file '3-assembled-output/ECONET.unprot.bin'
 .DIALS
      7E00
