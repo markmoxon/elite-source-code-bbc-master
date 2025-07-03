@@ -66,11 +66,11 @@
  KL    = &00C2
 
  VIEW  = &0E77
- MVT3  = &3AF9
- MULT3 = &4606
- MAD   = &47C9
- MV45  = &7C92
- LOOK1 = &7E10
+ MVT3  = &3AF4
+ MULT3 = &4601
+ MAD   = &47C4
+ MV45  = &7C8D
+ LOOK1 = &7E0B
 
  VIA = &FE00            \ Memory-mapped space for accessing internal hardware,
                         \ such as the video ULA, 6845 CRTC and 6522 VIAs (also
