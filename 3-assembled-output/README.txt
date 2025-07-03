@@ -1,6 +1,6 @@
 
 ---------------------------------------
-Acornsoft Elite (compendium version)
+Acornsoft Elite (Compendium version)
 
 For the BBC Master 128
 
@@ -23,6 +23,6 @@
 
 See www.bbcelite.com for details
 
-Build: 2025-07-03 16:27:39
+Build: 2025-07-03 16:48:54
 ---------------------------------------
 
