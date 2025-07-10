@@ -48194,7 +48194,8 @@ IF _COMPACT
  ADC #1
  TAY
 
-                        \ Fall through into ECMOF to return from the subroutine
+                        \ Fall through into yetanotherrts to return from the
+                        \ subroutine
 
 ENDIF
 
