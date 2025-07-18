@@ -75,7 +75,7 @@
 \
 \ ******************************************************************************
 
- ORG &0002
+ ORG &0002              \ Set the assembly address to &0002
 
 IF _COMPACT
 
@@ -89,7 +89,7 @@ IF _COMPACT
 
 ENDIF
 
- ORG &0070
+ ORG &0070              \ Set the assembly address to &0070
 
 .ZP
 
@@ -111,7 +111,7 @@ ENDIF
 
  SKIP 1                 \ Temporary storage, used in a number of places
 
- ORG &00F4
+ ORG &00F4              \ Set the assembly address to &00F4
 
 .LATCH
 
@@ -124,7 +124,7 @@ ENDIF
 \
 \ ******************************************************************************
 
- ORG CODE%
+ ORG CODE%              \ Set the assembly address to CODE%
 
 \ ******************************************************************************
 \
