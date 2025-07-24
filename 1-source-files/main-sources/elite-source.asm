@@ -10720,7 +10720,7 @@ ENDIF
 
 .BUF
 
- SKIP 90                \ The line buffer used by DASC to print justified text
+ SKIP 150               \ The line buffer used by DASC to print justified text
 
                         \ --- End of replacement ------------------------------>
 
