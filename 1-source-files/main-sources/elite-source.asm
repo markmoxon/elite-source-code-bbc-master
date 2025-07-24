@@ -2217,6 +2217,128 @@ ENDIF
 
 \ ******************************************************************************
 \
+\       Name: OSC
+\       Type: Subroutine
+\   Category: Loader
+\    Summary: Call OSCLI and restore private RAM to &8000-&AFFF
+\
+\ ******************************************************************************
+
+                        \ --- Mod: Code added for BBC Micro B+: --------------->
+
+.OSC
+
+ JSR OSCLI              \ Call OSCLI to run the command
+
+ LDA VIA+&30            \ Set bit 7 of the ROM Select latch at SHEILA &30 to
+ ORA #%10000000         \ switch the 12K of private RAM into &8000-&AFFF
+ STA VIA+&30
+
+ RTS                    \ Return from the subroutine
+
+                        \ --- End of added code ------------------------------->
+
+\ ******************************************************************************
+\
+\       Name: stackpt
+\       Type: Variable
+\   Category: Save and load
+\    Summary: Temporary storage for the stack pointer when jumping to the break
+\             handler at NEWBRK
+\
+\ ******************************************************************************
+
+                        \ --- Mod: Code moved for BBC Micro B+: --------------->
+
+.stackpt
+
+ EQUB &FF
+
+                        \ --- End of moved code ------------------------------->
+
+\ ******************************************************************************
+\
+\       Name: NEWBRK
+\       Type: Subroutine
+\   Category: Utility routines
+\    Summary: The standard BRKV handler for the game
+\
+\ ------------------------------------------------------------------------------
+\
+\ This routine is used to display error messages, before restarting the game.
+\ When called, it makes a beep and prints the system error message in the block
+\ pointed to by (&FD &FE), which is where the MOS will put any system errors. It
+\ then waits for a key press and restarts the game.
+\
+\ ******************************************************************************
+
+                        \ --- Mod: Code moved for BBC Micro B+: --------------->
+
+.NEWBRK
+
+ LDX stackpt            \ Set the stack pointer to the value that we stored in
+ TXS                    \ location stack, so that's back to the value it had
+                        \ before we change it in the SVE routine
+
+                        \ --- Mod: Code added for BBC Micro B+: --------------->
+
+ LDA VIA+&30            \ Set bit 7 of the ROM Select latch at SHEILA &30 to
+ ORA #%10000000         \ switch the 12K of private RAM into &8000-&AFFF
+ STA VIA+&30
+
+                        \ --- End of added code ------------------------------->
+
+ JSR getzp              \ Call getzp to restore the top part of zero page from
+                        \ the buffer at &3000, as this will have been stored in
+                        \ the buffer before performing the disc access that gave
+                        \ the error we're processsing
+
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\STZ CATF               \ Set the CATF flag to 0, so the TT26 routine reverts to
+\                       \ standard formatting
+\
+\LDY #0                 \ Set Y to 0, which we use as a loop counter below
+
+                        \ --- And replaced by: -------------------------------->
+
+ LDY #0                 \ Set Y to 0, which we use as a loop counter below
+
+ STY CATF               \ Set the CATF flag to 0, so the TT26 routine reverts to
+                        \ standard formatting
+
+                        \ --- End of replacement ------------------------------>
+
+ LDA #7                 \ Set A = 7 to generate a beep before we print the error
+                        \ message
+
+.BRBRLOOP
+
+ JSR CHPR               \ Print the character in A, which contains a line feed
+                        \ on the first loop iteration, and then any non-zero
+                        \ characters we fetch from the error message
+
+ INY                    \ Increment the loop counter
+
+ LDA (&FD),Y            \ Fetch the Y-th byte of the block pointed to by
+                        \ (&FD &FE), so that's the Y-th character of the message
+                        \ pointed to by the error message pointer
+
+ BNE BRBRLOOP           \ If the fetched character is non-zero, loop back to the
+                        \ JSR OSWRCH above to print the it, and keep looping
+                        \ until we fetch a zero (which marks the end of the
+                        \ message)
+
+ JSR t                  \ Scan the keyboard until a key is pressed, returning
+                        \ the ASCII code in A and X
+
+ JMP SVE                \ Jump to SVE to display the disc access menu and return
+                        \ from the subroutine using a tail call
+
+                        \ --- End of moved code ------------------------------->
+
+\ ******************************************************************************
+\
 \       Name: WSCAN
 \       Type: Subroutine
 \   Category: Drawing the screen
@@ -38440,9 +38562,13 @@ ENDIF
 \
 \ ******************************************************************************
 
-.stackpt
+                        \ --- Mod: Code moved for BBC Micro B+: --------------->
 
- EQUB &FF
+\.stackpt
+\
+\EQUB &FF
+
+                        \ --- End of moved code ------------------------------->
 
 \ ******************************************************************************
 \
@@ -38460,58 +38586,51 @@ ENDIF
 \
 \ ******************************************************************************
 
-.NEWBRK
+                        \ --- Mod: Code moved for BBC Micro B+: --------------->
 
- LDX stackpt            \ Set the stack pointer to the value that we stored in
- TXS                    \ location stack, so that's back to the value it had
-                        \ before we change it in the SVE routine
-
- JSR getzp              \ Call getzp to restore the top part of zero page from
-                        \ the buffer at &3000, as this will have been stored in
-                        \ the buffer before performing the disc access that gave
-                        \ the error we're processsing
-
-                        \ --- Mod: Code removed for BBC Micro B+: ------------->
-
+\.NEWBRK
+\
+\LDX stackpt            \ Set the stack pointer to the value that we stored in
+\TXS                    \ location stack, so that's back to the value it had
+\                       \ before we change it in the SVE routine
+\
+\JSR getzp              \ Call getzp to restore the top part of zero page from
+\                       \ the buffer at &3000, as this will have been stored in
+\                       \ the buffer before performing the disc access that gave
+\                       \ the error we're processsing
+\
 \STZ CATF               \ Set the CATF flag to 0, so the TT26 routine reverts to
 \                       \ standard formatting
 \
 \LDY #0                 \ Set Y to 0, which we use as a loop counter below
+\
+\LDA #7                 \ Set A = 7 to generate a beep before we print the error
+\                       \ message
+\
+\.BRBRLOOP
+\
+\JSR CHPR               \ Print the character in A, which contains a line feed
+\                       \ on the first loop iteration, and then any non-zero
+\                       \ characters we fetch from the error message
+\
+\INY                    \ Increment the loop counter
+\
+\LDA (&FD),Y            \ Fetch the Y-th byte of the block pointed to by
+\                       \ (&FD &FE), so that's the Y-th character of the message
+\                       \ pointed to by the error message pointer
+\
+\BNE BRBRLOOP           \ If the fetched character is non-zero, loop back to the
+\                       \ JSR OSWRCH above to print the it, and keep looping
+\                       \ until we fetch a zero (which marks the end of the
+\                       \ message)
+\
+\JSR t                  \ Scan the keyboard until a key is pressed, returning
+\                       \ the ASCII code in A and X
+\
+\JMP SVE                \ Jump to SVE to display the disc access menu and return
+\                       \ from the subroutine using a tail call
 
-                        \ --- And replaced by: -------------------------------->
-
- LDY #0                 \ Set Y to 0, which we use as a loop counter below
-
- STY CATF               \ Set the CATF flag to 0, so the TT26 routine reverts to
-                        \ standard formatting
-
-                        \ --- End of replacement ------------------------------>
-
- LDA #7                 \ Set A = 7 to generate a beep before we print the error
-                        \ message
-
-.BRBRLOOP
-
- JSR CHPR               \ Print the character in A, which contains a line feed
-                        \ on the first loop iteration, and then any non-zero
-                        \ characters we fetch from the error message
-
- INY                    \ Increment the loop counter
-
- LDA (&FD),Y            \ Fetch the Y-th byte of the block pointed to by
-                        \ (&FD &FE), so that's the Y-th character of the message
-                        \ pointed to by the error message pointer
-
- BNE BRBRLOOP           \ If the fetched character is non-zero, loop back to the
-                        \ JSR OSWRCH above to print the it, and keep looping
-                        \ until we fetch a zero (which marks the end of the
-                        \ message)
-
- JSR t                  \ Scan the keyboard until a key is pressed, returning
-                        \ the ASCII code in A and X
-
- JMP SVE                \ Jump to SVE to display the disc access menu and return
-                        \ from the subroutine using a tail call
+                        \ --- End of moved code ------------------------------->
 
 \ ******************************************************************************
 \
@@ -49657,10 +49776,21 @@ ENDIF
  LDA #HI(NEWBRK)
  STA BRKV+1
 
- LDA #LO(CHPR)          \ Set WRCHV to point to the CHPR routine
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\LDA #LO(CHPR)          \ Set WRCHV to point to the CHPR routine
+\STA WRCHV
+\LDA #HI(CHPR)
+\STA WRCHV+1
+
+                        \ --- And replaced by: -------------------------------->
+
+ LDA #LO(CHPRV)         \ Set WRCHV to point to the CHPRV routine below
  STA WRCHV
- LDA #HI(CHPR)
+ LDA #HI(CHPRV)
  STA WRCHV+1
+
+                        \ --- End of replacement ------------------------------>
 
  JSR setzp              \ Call setzp to copy the top part of zero page into
                         \ the buffer at &3000
@@ -49670,6 +49800,48 @@ ENDIF
 
  JMP SOFLUSH            \ Call SOFLUSH to reset the sound buffers and return
                         \ from the subroutine using a tail call
+
+\ ******************************************************************************
+\
+\       Name: CHPRV
+\       Type: Subroutine
+\   Category: Text
+\    Summary: A version of the CHPR routine that can be used by the MOS to print
+\             text
+\
+\ ******************************************************************************
+
+                        \ --- Mod: Code added for BBC Micro B+: --------------->
+
+.CHPRV
+
+                        \ For the MOS to be able to call CHPR, we first need to
+                        \ page the 12K of private RAM into &8000-&AFFF, as the
+                        \ CHPR routine requires this, and when we have done the
+                        \ printing, we reset the private RAM to the original
+                        \ state
+
+ PHA                    \ Store the character to print on the stack
+
+ LDA VIA+&30            \ Set bit 7 of the ROM Select latch at SHEILA &30 to
+ STA romLatch           \ switch the 12K of private RAM into &8000-&AFFF,
+ ORA #%10000000         \ storing the original value in romLatch
+ STA VIA+&30
+
+ PLA                    \ Store the character to print from the stack
+
+ JSR CHPR               \ Print the character in A
+
+ LDA romLatch           \ Restore the original ROM Select latch
+ STA VIA+&30
+
+ RTS                    \ Return from the subroutine
+
+.romLatch
+
+ EQUB 0                 \ Storage for the ROM Select latch
+
+                        \ --- End of added code ------------------------------->
 
 \ ******************************************************************************
 \
