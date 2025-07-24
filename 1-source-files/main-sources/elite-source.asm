@@ -347,6 +347,14 @@
  RUTOK = &AD11          \ The address of the extended system description token
                         \ table, as set in elite-data.asm
 
+ DrawPixelEOR = &AF78   \ Addresses of the pixel-drawing routines in &A000-&AFFF
+ DrawPixelSTA = &AF7A
+ DrawPixelORA = &AF7D
+ DrawDialPixels4 = &AF82
+ DrawDialPixels3 = &AF85
+ CopyInSetZP = &AF8E
+ CopyInGetZP = &AF94
+ DrawPixelP2 = &AF9F
 
                         \ --- End of replacement ------------------------------>
 
@@ -3869,8 +3877,17 @@ ENDIF
                         \ byte in R, so we load this into A (so the stick comes
                         \ out of the right side of the dot)
 
- EOR (SC),Y             \ Draw the bottom row of the double-height dot using the
- STA (SC),Y             \ same byte as the top row, plotted using EOR logic
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\EOR (SC),Y             \ Draw the bottom row of the double-height dot using the
+\STA (SC),Y             \ same byte as the top row, plotted using EOR logic
+
+                        \ --- And replaced by: -------------------------------->
+
+ JSR DrawPixelEOR       \ Perform the EOR/STA instructions from &A000-&AFFF so
+                        \ they affect screen memory in shadow RAM
+
+                        \ --- End of replacement ------------------------------>
 
 .VLO4
 
@@ -3936,8 +3953,17 @@ ENDIF
                         \ byte in R, so we load this into A (so the stick comes
                         \ out of the right side of the dot)
 
- EOR (SC),Y             \ Draw the bottom row of the double-height dot using the
- STA (SC),Y             \ same byte as the top row, plotted using EOR logic
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\EOR (SC),Y             \ Draw the bottom row of the double-height dot using the
+\STA (SC),Y             \ same byte as the top row, plotted using EOR logic
+
+                        \ --- And replaced by: -------------------------------->
+
+ JSR DrawPixelEOR       \ Perform the EOR/STA instructions from &A000-&AFFF so
+                        \ they affect screen memory in shadow RAM
+
+                        \ --- End of replacement ------------------------------>
 
 .VLO6
 
@@ -4413,26 +4439,53 @@ ENDIF
                         \ the horizontal pixel number within the character block
                         \ where the line starts (so it's 0, 1, 2 or 3)
 
- BEQ LI100+6            \ If R = 0, jump to LI100+6 to start plotting from the
-                        \ second pixel in this byte (LI100+6 points to the DEX
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\BEQ LI100+6            \ If R = 0, jump to LI100+6 to start plotting from the
+\                       \ second pixel in this byte (LI100+6 points to the DEX
+\                       \ instruction after the EOR/STA instructions, so the
+\                       \ pixel doesn't get plotted but we join at the right
+\                       \ point to decrement X correctly to plot the next three)
+\
+\CMP #2                 \ If R < 2 (i.e. R = 1), jump to LI110+6 to skip the
+\BCC LI110+6            \ first two pixels but plot the next two
+\
+\CLC                    \ Clear the C flag so it doesn't affect the additions
+\                       \ below
+\
+\BEQ LI120+6            \ If R = 2, jump to LI120+6 to skip the first three
+\                       \ pixels but plot the last one
+\
+\BNE LI130+6            \ If we get here then R must be 3, so jump to LI130+6 to
+\                       \ skip plotting any of the pixels, but making sure we
+\                       \ join the routine just after the plotting instructions
+\                       \ (this BNE is effectively a JMP as we just passed
+\                       \ through a BEQ)
+
+                        \ --- And replaced by: -------------------------------->
+
+ BEQ LI100+5            \ If R = 0, jump to LI100+5 to start plotting from the
+                        \ second pixel in this byte (LI100+5 points to the DEX
                         \ instruction after the EOR/STA instructions, so the
                         \ pixel doesn't get plotted but we join at the right
                         \ point to decrement X correctly to plot the next three)
 
- CMP #2                 \ If R < 2 (i.e. R = 1), jump to LI110+6 to skip the
- BCC LI110+6            \ first two pixels but plot the next two
+ CMP #2                 \ If R < 2 (i.e. R = 1), jump to LI110+5 to skip the
+ BCC LI110+5            \ first two pixels but plot the next two
 
  CLC                    \ Clear the C flag so it doesn't affect the additions
                         \ below
 
- BEQ LI120+6            \ If R = 2, jump to LI120+6 to skip the first three
+ BEQ LI120+5            \ If R = 2, jump to LI120+5 to skip the first three
                         \ pixels but plot the last one
 
- BNE LI130+6            \ If we get here then R must be 3, so jump to LI130+6 to
+ BNE LI130+5            \ If we get here then R must be 3, so jump to LI130+5 to
                         \ skip plotting any of the pixels, but making sure we
                         \ join the routine just after the plotting instructions
                         \ (this BNE is effectively a JMP as we just passed
                         \ through a BEQ)
+
+                        \ --- End of replacement ------------------------------>
 
 .LI190
 
@@ -4465,8 +4518,17 @@ ENDIF
                         \ the start of this section to be a bit mask for the
                         \ colour in COL)
 
- EOR (SC),Y             \ Store A into screen memory at SC(1 0), using EOR
- STA (SC),Y             \ logic so it merges with whatever is already on-screen
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\EOR (SC),Y             \ Store A into screen memory at SC(1 0), using EOR
+\STA (SC),Y             \ logic so it merges with whatever is already on-screen
+
+                        \ --- And replaced by: -------------------------------->
+
+ JSR DrawPixelEOR       \ Perform the EOR/STA instructions from &A000-&AFFF so
+                        \ they affect screen memory in shadow RAM
+
+                        \ --- End of replacement ------------------------------>
 
  DEX                    \ Decrement the counter in X
 
@@ -4495,8 +4557,17 @@ ENDIF
                         \ the start of this section to be a bit mask for the
                         \ colour in COL)
 
- EOR (SC),Y             \ Store A into screen memory at SC(1 0), using EOR
- STA (SC),Y             \ logic so it merges with whatever is already on-screen
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\EOR (SC),Y             \ Store A into screen memory at SC(1 0), using EOR
+\STA (SC),Y             \ logic so it merges with whatever is already on-screen
+
+                        \ --- And replaced by: -------------------------------->
+
+ JSR DrawPixelEOR       \ Perform the EOR/STA instructions from &A000-&AFFF so
+                        \ they affect screen memory in shadow RAM
+
+                        \ --- End of replacement ------------------------------>
 
  DEX                    \ Decrement the counter in X
 
@@ -4523,8 +4594,17 @@ ENDIF
                         \ the start of this section to be a bit mask for the
                         \ colour in COL)
 
- EOR (SC),Y             \ Store A into screen memory at SC(1 0), using EOR
- STA (SC),Y             \ logic so it merges with whatever is already on-screen
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\EOR (SC),Y             \ Store A into screen memory at SC(1 0), using EOR
+\STA (SC),Y             \ logic so it merges with whatever is already on-screen
+
+                        \ --- And replaced by: -------------------------------->
+
+ JSR DrawPixelEOR       \ Perform the EOR/STA instructions from &A000-&AFFF so
+                        \ they affect screen memory in shadow RAM
+
+                        \ --- End of replacement ------------------------------>
 
  DEX                    \ Decrement the counter in X
 
@@ -4551,8 +4631,17 @@ ENDIF
                         \ the start of this section to be a bit mask for the
                         \ colour in COL)
 
- EOR (SC),Y             \ Store A into screen memory at SC(1 0), using EOR
- STA (SC),Y             \ logic so it merges with whatever is already on-screen
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\EOR (SC),Y             \ Store A into screen memory at SC(1 0), using EOR
+\STA (SC),Y             \ logic so it merges with whatever is already on-screen
+
+                        \ --- And replaced by: -------------------------------->
+
+ JSR DrawPixelEOR       \ Perform the EOR/STA instructions from &A000-&AFFF so
+                        \ they affect screen memory in shadow RAM
+
+                        \ --- End of replacement ------------------------------>
 
  LDA S                  \ Set S = S + Q to update the slope error
  ADC Q
@@ -4727,26 +4816,53 @@ ENDIF
                         \ the horizontal pixel number within the character block
                         \ where the line starts (so it's 0, 1, 2 or 3)
 
- BEQ LI200+6            \ If R = 0, jump to LI200+6 to start plotting from the
-                        \ second pixel in this byte (LI200+6 points to the DEX
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\BEQ LI200+6            \ If R = 0, jump to LI200+6 to start plotting from the
+\                       \ second pixel in this byte (LI200+6 points to the DEX
+\                       \ instruction after the EOR/STA instructions, so the
+\                       \ pixel doesn't get plotted but we join at the right
+\                       \ point to decrement X correctly to plot the next three)
+\
+\CMP #2                 \ If R < 2 (i.e. R = 1), jump to LI210+6 to skip the
+\BCC LI210+6            \ first two pixels but plot the next two
+\
+\CLC                    \ Clear the C flag so it doesn't affect the additions
+\                       \ below
+\
+\BEQ LI220+6            \ If R = 2, jump to LI220+6 to skip the first three
+\                       \ pixels but plot the last one
+\
+\BNE LI230+6            \ If we get here then R must be 3, so jump to LI230+6 to
+\                       \ skip plotting any of the pixels, but making sure we
+\                       \ join the routine just after the plotting instructions
+\                       \ (this BNE is effectively a JMP as we just passed
+\                       \ through a BEQ)
+
+                        \ --- And replaced by: -------------------------------->
+
+ BEQ LI200+5            \ If R = 0, jump to LI200+5 to start plotting from the
+                        \ second pixel in this byte (LI200+5 points to the DEX
                         \ instruction after the EOR/STA instructions, so the
                         \ pixel doesn't get plotted but we join at the right
                         \ point to decrement X correctly to plot the next three)
 
- CMP #2                 \ If R < 2 (i.e. R = 1), jump to LI210+6 to skip the
- BCC LI210+6            \ first two pixels but plot the next two
+ CMP #2                 \ If R < 2 (i.e. R = 1), jump to LI210+5 to skip the
+ BCC LI210+5            \ first two pixels but plot the next two
 
  CLC                    \ Clear the C flag so it doesn't affect the additions
                         \ below
 
- BEQ LI220+6            \ If R = 2, jump to LI220+6 to skip the first three
+ BEQ LI220+5            \ If R = 2, jump to LI220+5 to skip the first three
                         \ pixels but plot the last one
 
- BNE LI230+6            \ If we get here then R must be 3, so jump to LI230+6 to
+ BNE LI230+5            \ If we get here then R must be 3, so jump to LI230+5 to
                         \ skip plotting any of the pixels, but making sure we
                         \ join the routine just after the plotting instructions
                         \ (this BNE is effectively a JMP as we just passed
                         \ through a BEQ)
+
+                        \ --- End of replacement ------------------------------>
 
 .LI191
 
@@ -4781,8 +4897,17 @@ ENDIF
                         \ the start of this section to be a bit mask for the
                         \ colour in COL)
 
- EOR (SC),Y             \ Store A into screen memory at SC(1 0), using EOR
- STA (SC),Y             \ logic so it merges with whatever is already on-screen
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\EOR (SC),Y             \ Store A into screen memory at SC(1 0), using EOR
+\STA (SC),Y             \ logic so it merges with whatever is already on-screen
+
+                        \ --- And replaced by: -------------------------------->
+
+ JSR DrawPixelEOR       \ Perform the EOR/STA instructions from &A000-&AFFF so
+                        \ they affect screen memory in shadow RAM
+
+                        \ --- End of replacement ------------------------------>
 
  DEX                    \ Decrement the counter in X
 
@@ -4809,8 +4934,17 @@ ENDIF
                         \ the start of this section to be a bit mask for the
                         \ colour in COL)
 
- EOR (SC),Y             \ Store A into screen memory at SC(1 0), using EOR
- STA (SC),Y             \ logic so it merges with whatever is already on-screen
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\EOR (SC),Y             \ Store A into screen memory at SC(1 0), using EOR
+\STA (SC),Y             \ logic so it merges with whatever is already on-screen
+
+                        \ --- And replaced by: -------------------------------->
+
+ JSR DrawPixelEOR       \ Perform the EOR/STA instructions from &A000-&AFFF so
+                        \ they affect screen memory in shadow RAM
+
+                        \ --- End of replacement ------------------------------>
 
  DEX                    \ Decrement the counter in X
 
@@ -4837,8 +4971,17 @@ ENDIF
                         \ the start of this section to be a bit mask for the
                         \ colour in COL)
 
- EOR (SC),Y             \ Store A into screen memory at SC(1 0), using EOR
- STA (SC),Y             \ logic so it merges with whatever is already on-screen
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\EOR (SC),Y             \ Store A into screen memory at SC(1 0), using EOR
+\STA (SC),Y             \ logic so it merges with whatever is already on-screen
+
+                        \ --- And replaced by: -------------------------------->
+
+ JSR DrawPixelEOR       \ Perform the EOR/STA instructions from &A000-&AFFF so
+                        \ they affect screen memory in shadow RAM
+
+                        \ --- End of replacement ------------------------------>
 
  DEX                    \ Decrement the counter in X
 
@@ -4865,8 +5008,17 @@ ENDIF
                         \ the start of this section to be a bit mask for the
                         \ colour in COL)
 
- EOR (SC),Y             \ Store A into screen memory at SC(1 0), using EOR
- STA (SC),Y             \ logic so it merges with whatever is already on-screen
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\EOR (SC),Y             \ Store A into screen memory at SC(1 0), using EOR
+\STA (SC),Y             \ logic so it merges with whatever is already on-screen
+
+                        \ --- And replaced by: -------------------------------->
+
+ JSR DrawPixelEOR       \ Perform the EOR/STA instructions from &A000-&AFFF so
+                        \ they affect screen memory in shadow RAM
+
+                        \ --- End of replacement ------------------------------>
 
  LDA S                  \ Set S = S + Q to update the slope error
  ADC Q
@@ -5143,47 +5295,95 @@ ENDIF
  AND #7                 \ y-coordinate mod 8
  TAY
 
- BNE P%+5               \ If Y = 0, jump to LI307+8 to start plotting from the
- JMP LI307+8            \ pixel above the top row of this character block
-                        \ (LI307+8 points to the DEX instruction after the
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\BNE P%+5               \ If Y = 0, jump to LI307+8 to start plotting from the
+\JMP LI307+8            \ pixel above the top row of this character block
+\                       \ (LI307+8 points to the DEX instruction after the
+\                       \ EOR/STA instructions, so the pixel at row 0 doesn't
+\                       \ get plotted but we join at the right point to
+\                       \ decrement X and Y correctly to continue plotting from
+\                       \ the character row above)
+\
+\CPY #2                 \ If Y < 2 (i.e. Y = 1), jump to LI306+8 to start
+\BCS P%+5               \ plotting from row 0 of this character block, missing
+\JMP LI306+8            \ out row 1
+\
+\CLC                    \ Clear the C flag so it doesn't affect the arithmetic
+\                       \ below
+\
+\BNE P%+5               \ If Y = 2, jump to LI305+8 to start plotting from row
+\JMP LI305+8            \ 1 of this character block, missing out row 2
+\
+\CPY #4                 \ If Y < 4 (i.e. Y = 3), jump to LI304+8 to start
+\BCS P%+5               \ plotting from row 2 of this character block, missing
+\JMP LI304+8            \ out row 3
+\
+\CLC                    \ Clear the C flag so it doesn't affect the arithmetic
+\                       \ below
+\
+\BNE P%+5               \ If Y = 4, jump to LI303+8 to start plotting from row
+\JMP LI303+8            \ 3 of this character block, missing out row 4
+\
+\CPY #6                 \ If Y < 6 (i.e. Y = 5), jump to LI302+8 to start
+\BCS P%+5               \ plotting from row 4 of this character block, missing
+\JMP LI302+8            \ out row 5
+\
+\CLC                    \ Clear the C flag so it doesn't affect the arithmetic
+\                       \ below
+\
+\BEQ P%+5               \ If Y <> 6 (i.e. Y = 7), jump to LI300+8 to start
+\JMP LI300+8            \ plotting from row 6 of this character block, missing
+\                       \ out row 7
+\
+\JMP LI301+8            \ Otherwise Y = 6, so jump to LI301+8 to start plotting
+\                       \ from row 5 of this character block, missing out row 6
+
+                        \ --- And replaced by: -------------------------------->
+
+ BNE P%+5               \ If Y = 0, jump to LI307+7 to start plotting from the
+ JMP LI307+7            \ pixel above the top row of this character block
+                        \ (LI307+7 points to the DEX instruction after the
                         \ EOR/STA instructions, so the pixel at row 0 doesn't
                         \ get plotted but we join at the right point to
                         \ decrement X and Y correctly to continue plotting from
                         \ the character row above)
 
- CPY #2                 \ If Y < 2 (i.e. Y = 1), jump to LI306+8 to start
+ CPY #2                 \ If Y < 2 (i.e. Y = 1), jump to LI306+7 to start
  BCS P%+5               \ plotting from row 0 of this character block, missing
- JMP LI306+8            \ out row 1
+ JMP LI306+7            \ out row 1
 
  CLC                    \ Clear the C flag so it doesn't affect the arithmetic
                         \ below
 
- BNE P%+5               \ If Y = 2, jump to LI305+8 to start plotting from row
- JMP LI305+8            \ 1 of this character block, missing out row 2
+ BNE P%+5               \ If Y = 2, jump to LI305+7 to start plotting from row
+ JMP LI305+7            \ 1 of this character block, missing out row 2
 
- CPY #4                 \ If Y < 4 (i.e. Y = 3), jump to LI304+8 to start
+ CPY #4                 \ If Y < 4 (i.e. Y = 3), jump to LI304+7 to start
  BCS P%+5               \ plotting from row 2 of this character block, missing
- JMP LI304+8            \ out row 3
+ JMP LI304+7            \ out row 3
 
  CLC                    \ Clear the C flag so it doesn't affect the arithmetic
                         \ below
 
- BNE P%+5               \ If Y = 4, jump to LI303+8 to start plotting from row
- JMP LI303+8            \ 3 of this character block, missing out row 4
+ BNE P%+5               \ If Y = 4, jump to LI303+7 to start plotting from row
+ JMP LI303+7            \ 3 of this character block, missing out row 4
 
- CPY #6                 \ If Y < 6 (i.e. Y = 5), jump to LI302+8 to start
+ CPY #6                 \ If Y < 6 (i.e. Y = 5), jump to LI302+7 to start
  BCS P%+5               \ plotting from row 4 of this character block, missing
- JMP LI302+8            \ out row 5
+ JMP LI302+7            \ out row 5
 
  CLC                    \ Clear the C flag so it doesn't affect the arithmetic
                         \ below
 
- BEQ P%+5               \ If Y <> 6 (i.e. Y = 7), jump to LI300+8 to start
- JMP LI300+8            \ plotting from row 6 of this character block, missing
+ BEQ P%+5               \ If Y <> 6 (i.e. Y = 7), jump to LI300+7 to start
+ JMP LI300+7            \ plotting from row 6 of this character block, missing
                         \ out row 7
 
- JMP LI301+8            \ Otherwise Y = 6, so jump to LI301+8 to start plotting
+ JMP LI301+7            \ Otherwise Y = 6, so jump to LI301+7 to start plotting
                         \ from row 5 of this character block, missing out row 6
+
+                        \ --- End of replacement ------------------------------>
 
 .LI290
 
@@ -5367,8 +5567,17 @@ ENDIF
  LDA R                  \ Fetch the pixel byte from R and apply the colour in
  AND COL                \ COL to it
 
- EOR (SC),Y             \ Store A into screen memory at SC(1 0), using EOR
- STA (SC),Y             \ logic so it merges with whatever is already on-screen
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\EOR (SC),Y             \ Store A into screen memory at SC(1 0), using EOR
+\STA (SC),Y             \ logic so it merges with whatever is already on-screen
+
+                        \ --- And replaced by: -------------------------------->
+
+ JSR DrawPixelEOR       \ Perform the EOR/STA instructions from &A000-&AFFF so
+                        \ they affect screen memory in shadow RAM
+
+                        \ --- End of replacement ------------------------------>
 
  DEX                    \ Decrement the counter in X
 
@@ -5392,8 +5601,17 @@ ENDIF
  LDA R                  \ Fetch the pixel byte from R and apply the colour in
  AND COL                \ COL to it
 
- EOR (SC),Y             \ Store A into screen memory at SC(1 0), using EOR
- STA (SC),Y             \ logic so it merges with whatever is already on-screen
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\EOR (SC),Y             \ Store A into screen memory at SC(1 0), using EOR
+\STA (SC),Y             \ logic so it merges with whatever is already on-screen
+
+                        \ --- And replaced by: -------------------------------->
+
+ JSR DrawPixelEOR       \ Perform the EOR/STA instructions from &A000-&AFFF so
+                        \ they affect screen memory in shadow RAM
+
+                        \ --- End of replacement ------------------------------>
 
  DEX                    \ Decrement the counter in X
 
@@ -5417,8 +5635,17 @@ ENDIF
  LDA R                  \ Fetch the pixel byte from R and apply the colour in
  AND COL                \ COL to it
 
- EOR (SC),Y             \ Store A into screen memory at SC(1 0), using EOR
- STA (SC),Y             \ logic so it merges with whatever is already on-screen
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\EOR (SC),Y             \ Store A into screen memory at SC(1 0), using EOR
+\STA (SC),Y             \ logic so it merges with whatever is already on-screen
+
+                        \ --- And replaced by: -------------------------------->
+
+ JSR DrawPixelEOR       \ Perform the EOR/STA instructions from &A000-&AFFF so
+                        \ they affect screen memory in shadow RAM
+
+                        \ --- End of replacement ------------------------------>
 
  DEX                    \ Decrement the counter in X
 
@@ -5442,8 +5669,17 @@ ENDIF
  LDA R                  \ Fetch the pixel byte from R and apply the colour in
  AND COL                \ COL to it
 
- EOR (SC),Y             \ Store A into screen memory at SC(1 0), using EOR
- STA (SC),Y             \ logic so it merges with whatever is already on-screen
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\EOR (SC),Y             \ Store A into screen memory at SC(1 0), using EOR
+\STA (SC),Y             \ logic so it merges with whatever is already on-screen
+
+                        \ --- And replaced by: -------------------------------->
+
+ JSR DrawPixelEOR       \ Perform the EOR/STA instructions from &A000-&AFFF so
+                        \ they affect screen memory in shadow RAM
+
+                        \ --- End of replacement ------------------------------>
 
  DEX                    \ Decrement the counter in X
 
@@ -5467,8 +5703,17 @@ ENDIF
  LDA R                  \ Fetch the pixel byte from R and apply the colour in
  AND COL                \ COL to it
 
- EOR (SC),Y             \ Store A into screen memory at SC(1 0), using EOR
- STA (SC),Y             \ logic so it merges with whatever is already on-screen
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\EOR (SC),Y             \ Store A into screen memory at SC(1 0), using EOR
+\STA (SC),Y             \ logic so it merges with whatever is already on-screen
+
+                        \ --- And replaced by: -------------------------------->
+
+ JSR DrawPixelEOR       \ Perform the EOR/STA instructions from &A000-&AFFF so
+                        \ they affect screen memory in shadow RAM
+
+                        \ --- End of replacement ------------------------------>
 
  DEX                    \ Decrement the counter in X
 
@@ -5492,8 +5737,17 @@ ENDIF
  LDA R                  \ Fetch the pixel byte from R and apply the colour in
  AND COL                \ COL to it
 
- EOR (SC),Y             \ Store A into screen memory at SC(1 0), using EOR
- STA (SC),Y             \ logic so it merges with whatever is already on-screen
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\EOR (SC),Y             \ Store A into screen memory at SC(1 0), using EOR
+\STA (SC),Y             \ logic so it merges with whatever is already on-screen
+
+                        \ --- And replaced by: -------------------------------->
+
+ JSR DrawPixelEOR       \ Perform the EOR/STA instructions from &A000-&AFFF so
+                        \ they affect screen memory in shadow RAM
+
+                        \ --- End of replacement ------------------------------>
 
  DEX                    \ Decrement the counter in X
 
@@ -5517,8 +5771,17 @@ ENDIF
  LDA R                  \ Fetch the pixel byte from R and apply the colour in
  AND COL                \ COL to it
 
- EOR (SC),Y             \ Store A into screen memory at SC(1 0), using EOR
- STA (SC),Y             \ logic so it merges with whatever is already on-screen
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\EOR (SC),Y             \ Store A into screen memory at SC(1 0), using EOR
+\STA (SC),Y             \ logic so it merges with whatever is already on-screen
+
+                        \ --- And replaced by: -------------------------------->
+
+ JSR DrawPixelEOR       \ Perform the EOR/STA instructions from &A000-&AFFF so
+                        \ they affect screen memory in shadow RAM
+
+                        \ --- End of replacement ------------------------------>
 
  DEX                    \ Decrement the counter in X
 
@@ -5542,8 +5805,17 @@ ENDIF
  LDA R                  \ Fetch the pixel byte from R and apply the colour in
  AND COL                \ COL to it
 
- EOR (SC),Y             \ Store A into screen memory at SC(1 0), using EOR
- STA (SC),Y             \ logic so it merges with whatever is already on-screen
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\EOR (SC),Y             \ Store A into screen memory at SC(1 0), using EOR
+\STA (SC),Y             \ logic so it merges with whatever is already on-screen
+
+                        \ --- And replaced by: -------------------------------->
+
+ JSR DrawPixelEOR       \ Perform the EOR/STA instructions from &A000-&AFFF so
+                        \ they affect screen memory in shadow RAM
+
+                        \ --- End of replacement ------------------------------>
 
  DEX                    \ Decrement the counter in X
 
@@ -5723,47 +5995,95 @@ ENDIF
                         \ So Y is the pixel row within the character block where
                         \ we want to start drawing
 
- BNE P%+5               \ If Y = 0, jump to LI407+8 to start plotting from the
- JMP LI407+8            \ pixel above the top row of this character block
-                        \ (LI407+8 points to the DEX instruction after the
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\BNE P%+5               \ If Y = 0, jump to LI407+8 to start plotting from the
+\JMP LI407+8            \ pixel above the top row of this character block
+\                       \ (LI407+8 points to the DEX instruction after the
+\                       \ EOR/STA instructions, so the pixel at row 0 doesn't
+\                       \ get plotted but we join at the right point to
+\                       \ decrement X and Y correctly to continue plotting from
+\                       \ the character row above)
+\
+\CPY #2                 \ If Y < 2 (i.e. Y = 1), jump to LI406+8 to start
+\BCS P%+5               \ plotting from row 0 of this character block, missing
+\JMP LI406+8            \ out row 1
+\
+\CLC                    \ Clear the C flag so it doesn't affect the arithmetic
+\                       \ below
+\
+\BNE P%+5               \ If Y = 2, jump to LI405+8 to start plotting from row
+\JMP LI405+8            \ 1 of this character block, missing out row 2
+\
+\CPY #4                 \ If Y < 4 (i.e. Y = 3), jump to LI404+8 to start
+\BCS P%+5               \ plotting from row 2 of this character block, missing
+\JMP LI404+8            \ out row 3
+\
+\CLC                    \ Clear the C flag so it doesn't affect the arithmetic
+\                       \ below
+\
+\BNE P%+5               \ If Y = 4, jump to LI403+8 to start plotting from row
+\JMP LI403+8            \ 3 of this character block, missing out row 4
+\
+\CPY #6                 \ If Y < 6 (i.e. Y = 5), jump to LI402+8 to start
+\BCS P%+5               \ plotting from row 4 of this character block, missing
+\JMP LI402+8            \ out row 5
+\
+\CLC                    \ Clear the C flag so it doesn't affect the arithmetic
+\                       \ below
+\
+\BEQ P%+5               \ If Y <> 6 (i.e. Y = 7), jump to LI400+8 to start
+\JMP LI400+8            \ plotting from row 6 of this character block, missing
+\                       \ out row 7
+\
+\JMP LI401+8            \ Otherwise Y = 6, so jump to LI401+8 to start plotting
+\                       \ from row 5 of this character block, missing out row 6
+
+                        \ --- And replaced by: -------------------------------->
+
+ BNE P%+5               \ If Y = 0, jump to LI407+7 to start plotting from the
+ JMP LI407+7            \ pixel above the top row of this character block
+                        \ (LI407+7 points to the DEX instruction after the
                         \ EOR/STA instructions, so the pixel at row 0 doesn't
                         \ get plotted but we join at the right point to
                         \ decrement X and Y correctly to continue plotting from
                         \ the character row above)
 
- CPY #2                 \ If Y < 2 (i.e. Y = 1), jump to LI406+8 to start
+ CPY #2                 \ If Y < 2 (i.e. Y = 1), jump to LI406+7 to start
  BCS P%+5               \ plotting from row 0 of this character block, missing
- JMP LI406+8            \ out row 1
+ JMP LI406+7            \ out row 1
 
  CLC                    \ Clear the C flag so it doesn't affect the arithmetic
                         \ below
 
- BNE P%+5               \ If Y = 2, jump to LI405+8 to start plotting from row
- JMP LI405+8            \ 1 of this character block, missing out row 2
+ BNE P%+5               \ If Y = 2, jump to LI405+7 to start plotting from row
+ JMP LI405+7            \ 1 of this character block, missing out row 2
 
- CPY #4                 \ If Y < 4 (i.e. Y = 3), jump to LI404+8 to start
+ CPY #4                 \ If Y < 4 (i.e. Y = 3), jump to LI404+7 to start
  BCS P%+5               \ plotting from row 2 of this character block, missing
- JMP LI404+8            \ out row 3
+ JMP LI404+7            \ out row 3
 
  CLC                    \ Clear the C flag so it doesn't affect the arithmetic
                         \ below
 
- BNE P%+5               \ If Y = 4, jump to LI403+8 to start plotting from row
- JMP LI403+8            \ 3 of this character block, missing out row 4
+ BNE P%+5               \ If Y = 4, jump to LI403+7 to start plotting from row
+ JMP LI403+7            \ 3 of this character block, missing out row 4
 
- CPY #6                 \ If Y < 6 (i.e. Y = 5), jump to LI402+8 to start
+ CPY #6                 \ If Y < 6 (i.e. Y = 5), jump to LI402+7 to start
  BCS P%+5               \ plotting from row 4 of this character block, missing
- JMP LI402+8            \ out row 5
+ JMP LI402+7            \ out row 5
 
  CLC                    \ Clear the C flag so it doesn't affect the arithmetic
                         \ below
 
- BEQ P%+5               \ If Y <> 6 (i.e. Y = 7), jump to LI400+8 to start
- JMP LI400+8            \ plotting from row 6 of this character block, missing
+ BEQ P%+5               \ If Y <> 6 (i.e. Y = 7), jump to LI400+7 to start
+ JMP LI400+7            \ plotting from row 6 of this character block, missing
                         \ out row 7
 
- JMP LI401+8            \ Otherwise Y = 6, so jump to LI401+8 to start plotting
+ JMP LI401+7            \ Otherwise Y = 6, so jump to LI401+7 to start plotting
                         \ from row 5 of this character block, missing out row 6
+
+                        \ --- End of replacement ------------------------------>
 
 .LI291
 
@@ -5945,8 +6265,17 @@ ENDIF
  LDA R                  \ Fetch the pixel byte from R and apply the colour in
  AND COL                \ COL to it
 
- EOR (SC),Y             \ Store A into screen memory at SC(1 0), using EOR
- STA (SC),Y             \ logic so it merges with whatever is already on-screen
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\EOR (SC),Y             \ Store A into screen memory at SC(1 0), using EOR
+\STA (SC),Y             \ logic so it merges with whatever is already on-screen
+
+                        \ --- And replaced by: -------------------------------->
+
+ JSR DrawPixelEOR       \ Perform the EOR/STA instructions from &A000-&AFFF so
+                        \ they affect screen memory in shadow RAM
+
+                        \ --- End of replacement ------------------------------>
 
  DEX                    \ Decrement the counter in X
 
@@ -5970,8 +6299,17 @@ ENDIF
  LDA R                  \ Fetch the pixel byte from R and apply the colour in
  AND COL                \ COL to it
 
- EOR (SC),Y             \ Store A into screen memory at SC(1 0), using EOR
- STA (SC),Y             \ logic so it merges with whatever is already on-screen
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\EOR (SC),Y             \ Store A into screen memory at SC(1 0), using EOR
+\STA (SC),Y             \ logic so it merges with whatever is already on-screen
+
+                        \ --- And replaced by: -------------------------------->
+
+ JSR DrawPixelEOR       \ Perform the EOR/STA instructions from &A000-&AFFF so
+                        \ they affect screen memory in shadow RAM
+
+                        \ --- End of replacement ------------------------------>
 
  DEX                    \ Decrement the counter in X
 
@@ -5995,8 +6333,17 @@ ENDIF
  LDA R                  \ Fetch the pixel byte from R and apply the colour in
  AND COL                \ COL to it
 
- EOR (SC),Y             \ Store A into screen memory at SC(1 0), using EOR
- STA (SC),Y             \ logic so it merges with whatever is already on-screen
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\EOR (SC),Y             \ Store A into screen memory at SC(1 0), using EOR
+\STA (SC),Y             \ logic so it merges with whatever is already on-screen
+
+                        \ --- And replaced by: -------------------------------->
+
+ JSR DrawPixelEOR       \ Perform the EOR/STA instructions from &A000-&AFFF so
+                        \ they affect screen memory in shadow RAM
+
+                        \ --- End of replacement ------------------------------>
 
  DEX                    \ Decrement the counter in X
 
@@ -6020,8 +6367,17 @@ ENDIF
  LDA R                  \ Fetch the pixel byte from R and apply the colour in
  AND COL                \ COL to it
 
- EOR (SC),Y             \ Store A into screen memory at SC(1 0), using EOR
- STA (SC),Y             \ logic so it merges with whatever is already on-screen
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\EOR (SC),Y             \ Store A into screen memory at SC(1 0), using EOR
+\STA (SC),Y             \ logic so it merges with whatever is already on-screen
+
+                        \ --- And replaced by: -------------------------------->
+
+ JSR DrawPixelEOR       \ Perform the EOR/STA instructions from &A000-&AFFF so
+                        \ they affect screen memory in shadow RAM
+
+                        \ --- End of replacement ------------------------------>
 
  DEX                    \ Decrement the counter in X
 
@@ -6045,8 +6401,17 @@ ENDIF
  LDA R                  \ Fetch the pixel byte from R and apply the colour in
  AND COL                \ COL to it
 
- EOR (SC),Y             \ Store A into screen memory at SC(1 0), using EOR
- STA (SC),Y             \ logic so it merges with whatever is already on-screen
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\EOR (SC),Y             \ Store A into screen memory at SC(1 0), using EOR
+\STA (SC),Y             \ logic so it merges with whatever is already on-screen
+
+                        \ --- And replaced by: -------------------------------->
+
+ JSR DrawPixelEOR       \ Perform the EOR/STA instructions from &A000-&AFFF so
+                        \ they affect screen memory in shadow RAM
+
+                        \ --- End of replacement ------------------------------>
 
  DEX                    \ Decrement the counter in X
 
@@ -6070,8 +6435,17 @@ ENDIF
  LDA R                  \ Fetch the pixel byte from R and apply the colour in
  AND COL                \ COL to it
 
- EOR (SC),Y             \ Store A into screen memory at SC(1 0), using EOR
- STA (SC),Y             \ logic so it merges with whatever is already on-screen
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\EOR (SC),Y             \ Store A into screen memory at SC(1 0), using EOR
+\STA (SC),Y             \ logic so it merges with whatever is already on-screen
+
+                        \ --- And replaced by: -------------------------------->
+
+ JSR DrawPixelEOR       \ Perform the EOR/STA instructions from &A000-&AFFF so
+                        \ they affect screen memory in shadow RAM
+
+                        \ --- End of replacement ------------------------------>
 
  DEX                    \ Decrement the counter in X
 
@@ -6095,8 +6469,17 @@ ENDIF
  LDA R                  \ Fetch the pixel byte from R and apply the colour in
  AND COL                \ COL to it
 
- EOR (SC),Y             \ Store A into screen memory at SC(1 0), using EOR
- STA (SC),Y             \ logic so it merges with whatever is already on-screen
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\EOR (SC),Y             \ Store A into screen memory at SC(1 0), using EOR
+\STA (SC),Y             \ logic so it merges with whatever is already on-screen
+
+                        \ --- And replaced by: -------------------------------->
+
+ JSR DrawPixelEOR       \ Perform the EOR/STA instructions from &A000-&AFFF so
+                        \ they affect screen memory in shadow RAM
+
+                        \ --- End of replacement ------------------------------>
 
  DEX                    \ Decrement the counter in X
 
@@ -6120,8 +6503,17 @@ ENDIF
  LDA R                  \ Fetch the pixel byte from R and apply the colour in
  AND COL                \ COL to it
 
- EOR (SC),Y             \ Store A into screen memory at SC(1 0), using EOR
- STA (SC),Y             \ logic so it merges with whatever is already on-screen
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\EOR (SC),Y             \ Store A into screen memory at SC(1 0), using EOR
+\STA (SC),Y             \ logic so it merges with whatever is already on-screen
+
+                        \ --- And replaced by: -------------------------------->
+
+ JSR DrawPixelEOR       \ Perform the EOR/STA instructions from &A000-&AFFF so
+                        \ they affect screen memory in shadow RAM
+
+                        \ --- End of replacement ------------------------------>
 
  DEX                    \ Decrement the counter in X
 
@@ -6394,9 +6786,18 @@ ENDIF
                         \ set in screen memory to paint the relevant pixels in
                         \ the required colour
 
- EOR (SC),Y             \ Store this into screen memory at SC(1 0), using EOR
- STA (SC),Y             \ logic so it merges with whatever is already on-screen,
-                        \ so we have now drawn the line's left cap
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\EOR (SC),Y             \ Store this into screen memory at SC(1 0), using EOR
+\STA (SC),Y             \ logic so it merges with whatever is already on-screen,
+\                       \ so we have now drawn the line's left cap
+
+                        \ --- And replaced by: -------------------------------->
+
+ JSR DrawPixelEOR       \ Perform the EOR/STA instructions from &A000-&AFFF so
+                        \ they affect screen memory in shadow RAM
+
+                        \ --- End of replacement ------------------------------>
 
  TYA                    \ Set Y = Y + 8 so (SC),Y points to the next character
  ADC #8                 \ block along, on the same pixel row as before
@@ -6426,10 +6827,19 @@ ENDIF
 
 .HLL1
 
- LDA COL                \ Store a full-width four-pixel horizontal line of
- EOR (SC),Y             \ colour COL in SC(1 0) so that it draws the line
- STA (SC),Y             \ on-screen, using EOR logic so it merges with whatever
-                        \ is already on-screen
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\LDA COL                \ Store a full-width four-pixel horizontal line of
+\EOR (SC),Y             \ colour COL in SC(1 0) so that it draws the line
+\STA (SC),Y             \ on-screen, using EOR logic so it merges with whatever
+\                       \ is already on-screen
+
+                        \ --- And replaced by: -------------------------------->
+
+ LDA COL                \ Perform the EOR/STA instructions from &A000-&AFFF so
+ JSR DrawPixelEOR       \ they affect screen memory in shadow RAM
+
+                        \ --- End of replacement ------------------------------>
 
  TYA                    \ Set Y = Y + 8 so (SC),Y points to the next character
  ADC #8                 \ block along, on the same pixel row as before
@@ -6466,9 +6876,18 @@ ENDIF
                         \ set in screen memory to paint the relevant pixels in
                         \ the required colour
 
- EOR (SC),Y             \ Store this into screen memory at SC(1 0), using EOR
- STA (SC),Y             \ logic so it merges with whatever is already on-screen,
-                        \ so we have now drawn the line's right cap
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\EOR (SC),Y             \ Store this into screen memory at SC(1 0), using EOR
+\STA (SC),Y             \ logic so it merges with whatever is already on-screen,
+\                       \ so we have now drawn the line's right cap
+
+                        \ --- And replaced by: -------------------------------->
+
+ JSR DrawPixelEOR       \ Perform the EOR/STA instructions from &A000-&AFFF so
+                        \ they affect screen memory in shadow RAM
+
+                        \ --- End of replacement ------------------------------>
 
 .HL6
 
@@ -6524,9 +6943,18 @@ ENDIF
                         \ set in screen memory to paint the relevant pixels in
                         \ the required colour
 
- EOR (SC),Y             \ Store our horizontal line byte into screen memory at
- STA (SC),Y             \ SC(1 0), using EOR logic so it merges with whatever is
-                        \ already on-screen
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\EOR (SC),Y             \ Store our horizontal line byte into screen memory at
+\STA (SC),Y             \ SC(1 0), using EOR logic so it merges with whatever is
+\                       \ already on-screen
+
+                        \ --- And replaced by: -------------------------------->
+
+ JSR DrawPixelEOR       \ Perform the EOR/STA instructions from &A000-&AFFF so
+                        \ they affect screen memory in shadow RAM
+
+                        \ --- End of replacement ------------------------------>
 
                         \ --- Mod: Code removed for BBC Micro B+: ------------->
 
@@ -6886,9 +7314,18 @@ ENDIF
                         \ so that pixel takes on the colour we want to draw
                         \ (i.e. A is acting as a mask on the colour byte)
 
- EOR (SC),Y             \ Draw the pixel on-screen using EOR logic, so we can
- STA (SC),Y             \ remove it later without ruining the background that's
-                        \ already on-screen
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\EOR (SC),Y             \ Draw the pixel on-screen using EOR logic, so we can
+\STA (SC),Y             \ remove it later without ruining the background that's
+\                       \ already on-screen
+
+                        \ --- And replaced by: -------------------------------->
+
+ JSR DrawPixelEOR       \ Perform the EOR/STA instructions from &A000-&AFFF so
+                        \ they affect screen memory in shadow RAM
+
+                        \ --- End of replacement ------------------------------>
 
                         \ --- Mod: Code removed for BBC Micro B+: ------------->
 
@@ -6913,9 +7350,18 @@ ENDIF
                         \ so that pixel takes on the colour we want to draw
                         \ (i.e. A is acting as a mask on the colour byte)
 
- EOR (SC),Y             \ Draw the pixel on-screen using EOR logic, so we can
- STA (SC),Y             \ remove it later without ruining the background that's
-                        \ already on-screen
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\EOR (SC),Y             \ Draw the pixel on-screen using EOR logic, so we can
+\STA (SC),Y             \ remove it later without ruining the background that's
+\                       \ already on-screen
+
+                        \ --- And replaced by: -------------------------------->
+
+ JSR DrawPixelEOR       \ Perform the EOR/STA instructions from &A000-&AFFF so
+                        \ they affect screen memory in shadow RAM
+
+                        \ --- End of replacement ------------------------------>
 
  DEY                    \ Reduce Y by 1 to point to the pixel row above the one
  BPL P%+4               \ we just plotted, and if it is still positive, skip the
@@ -6932,9 +7378,19 @@ ENDIF
                         \ so that pixel takes on the colour we want to draw
                         \ (i.e. A is acting as a mask on the colour byte)
 
- EOR (SC),Y             \ Draw the pixel on-screen using EOR logic, so we can
- STA (SC),Y             \ remove it later without ruining the background that's
-                        \ already on-screen
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\EOR (SC),Y             \ Draw the pixel on-screen using EOR logic, so we can
+\STA (SC),Y             \ remove it later without ruining the background that's
+\                       \ already on-screen
+
+                        \ --- And replaced by: -------------------------------->
+
+ JSR DrawPixelEOR       \ Perform the EOR/STA instructions from &A000-&AFFF so
+                        \ they affect screen memory in shadow RAM
+
+                        \ --- End of replacement ------------------------------>
+
                         \ --- Mod: Code removed for BBC Micro B+: ------------->
 
 \LDY #%00001001         \ Clear bits 1 and 2 of the Access Control Register at
@@ -7132,9 +7588,18 @@ ENDIF
                         \ takes on the colour we want to draw (i.e. A is acting
                         \ as a mask on the colour byte)
 
- EOR (SC),Y             \ Draw the pixel on-screen using EOR logic, so we can
- STA (SC),Y             \ remove it later without ruining the background that's
-                        \ already on-screen
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\EOR (SC),Y             \ Draw the pixel on-screen using EOR logic, so we can
+\STA (SC),Y             \ remove it later without ruining the background that's
+\                       \ already on-screen
+
+                        \ --- And replaced by: -------------------------------->
+
+ JSR DrawPixelEOR       \ Perform the EOR/STA instructions from &A000-&AFFF so
+                        \ they affect screen memory in shadow RAM
+
+                        \ --- End of replacement ------------------------------>
 
  LDA CTWOS+2,X          \ Fetch a mode 2 one-pixel byte with the pixel position
                         \ at (X+1)/2, so we can draw the right pixel of the dash
@@ -7167,9 +7632,18 @@ ENDIF
 
  STA R                  \ Store the dash's right pixel byte in R
 
- EOR (SC),Y             \ Draw the dash's right pixel according to the mask in
- STA (SC),Y             \ A, with the colour in COL, using EOR logic, just as
-                        \ above
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\EOR (SC),Y             \ Draw the dash's right pixel according to the mask in
+\STA (SC),Y             \ A, with the colour in COL, using EOR logic, just as
+\                       \ above
+
+                        \ --- And replaced by: -------------------------------->
+
+ JSR DrawPixelEOR       \ Perform the EOR/STA instructions from &A000-&AFFF so
+                        \ they affect screen memory in shadow RAM
+
+                        \ --- End of replacement ------------------------------>
 
  RTS                    \ Return from the subroutine
 
@@ -7226,12 +7700,21 @@ ENDIF
 
  LDA ECBT,Y             \ Fetch the Y-th byte of the bulb bitmap
 
- EOR (SC),Y             \ EOR the byte with the current contents of screen
-                        \ memory, so drawing the bulb when it is already
-                        \ on-screen will erase it
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
 
- STA (SC),Y             \ Store the Y-th byte of the bulb bitmap in screen
-                        \ memory
+\EOR (SC),Y             \ EOR the byte with the current contents of screen
+\                       \ memory, so drawing the bulb when it is already
+\                       \ on-screen will erase it
+\
+\STA (SC),Y             \ Store the Y-th byte of the bulb bitmap in screen
+\                       \ memory
+
+                        \ --- And replaced by: -------------------------------->
+
+ JSR DrawPixelEOR       \ Perform the EOR/STA instructions from &A000-&AFFF so
+                        \ they affect screen memory in shadow RAM
+
+                        \ --- End of replacement ------------------------------>
 
  DEY                    \ Decrement the loop counter
 
@@ -7292,12 +7775,21 @@ ENDIF
 
  LDA SPBT,Y             \ Fetch the Y-th byte of the bulb bitmap
 
- EOR (SC),Y             \ EOR the byte with the current contents of screen
-                        \ memory, so drawing the bulb when it is already
-                        \ on-screen will erase it
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
 
- STA (SC),Y             \ Store the Y-th byte of the bulb bitmap in screen
-                        \ memory
+\EOR (SC),Y             \ EOR the byte with the current contents of screen
+\                       \ memory, so drawing the bulb when it is already
+\                       \ on-screen will erase it
+\
+\STA (SC),Y             \ Store the Y-th byte of the bulb bitmap in screen
+\                       \ memory
+
+                        \ --- And replaced by: -------------------------------->
+
+ JSR DrawPixelEOR       \ Perform the EOR/STA instructions from &A000-&AFFF so
+                        \ they affect screen memory in shadow RAM
+
+                        \ --- End of replacement ------------------------------>
 
  DEY                    \ Decrement the loop counter
 
@@ -7513,10 +8005,19 @@ ENDIF
 
 .MBL1
 
- STA (SC),Y             \ Draw the three-pixel row, and as we do not use EOR
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\STA (SC),Y             \ Draw the three-pixel row, and as we do not use EOR
                         \ logic, this will overwrite anything that is already
                         \ there (so drawing a black missile will delete what's
                         \ there)
+
+                        \ --- And replaced by: -------------------------------->
+
+ JSR DrawPixelSTA       \ Perform the STA instruction from &A000-&AFFF so it
+                        \ affects screen memory in shadow RAM
+
+                        \ --- End of replacement ------------------------------>
 
  DEY                    \ Decrement the counter for the next row
 
@@ -7542,10 +8043,19 @@ ENDIF
 
 .MBL2
 
- STA (SC),Y             \ Draw the one-pixel row, and as we do not use EOR
-                        \ logic, this will overwrite anything that is already
-                        \ there (so drawing a black missile will delete what's
-                        \ there)
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\STA (SC),Y             \ Draw the one-pixel row, and as we do not use EOR
+\                       \ logic, this will overwrite anything that is already
+\                       \ there (so drawing a black missile will delete what's
+\                       \ there)
+
+                        \ --- And replaced by: -------------------------------->
+
+ JSR DrawPixelSTA       \ Perform the STA instruction from &A000-&AFFF so it
+                        \ affects screen memory in shadow RAM
+
+                        \ --- End of replacement ------------------------------>
 
  DEY                    \ Decrement the counter for the next row
 
@@ -7823,11 +8333,20 @@ ENDIF
                         \ red pixels, so we now know which bits to set in screen
                         \ memory
 
- ORA (SC),Y             \ OR the byte with the current contents of screen
-                        \ memory, so the pixel we want is set to red (because
-                        \ we know the bits are already 0 from the above test)
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
 
- STA (SC),Y             \ Store the updated pixel in screen memory
+\ORA (SC),Y             \ OR the byte with the current contents of screen
+\                       \ memory, so the pixel we want is set to red (because
+\                       \ we know the bits are already 0 from the above test)
+\
+\STA (SC),Y             \ Store the updated pixel in screen memory
+
+                        \ --- And replaced by: -------------------------------->
+
+ JSR DrawPixelORA       \ Perform the ORA/STA instructions from &A000-&AFFF so
+                        \ they affect screen memory in shadow RAM
+
+                        \ --- End of replacement ------------------------------>
 
  INY                    \ Increment Y to point to the next row in the character
                         \ block, i.e. the next pixel down
@@ -7927,11 +8446,20 @@ ENDIF
                         \ red pixels, so we now know which bits to set in screen
                         \ memory
 
- ORA (SC),Y             \ OR the byte with the current contents of screen
-                        \ memory, so the pixel we want is set to red (because
-                        \ we know the bits are already 0 from the above test)
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
 
- STA (SC),Y             \ Store the updated pixel in screen memory
+\ORA (SC),Y             \ OR the byte with the current contents of screen
+\                       \ memory, so the pixel we want is set to red (because
+\                       \ we know the bits are already 0 from the above test)
+\
+\STA (SC),Y             \ Store the updated pixel in screen memory
+
+                        \ --- And replaced by: -------------------------------->
+
+ JSR DrawPixelORA       \ Perform the ORA/STA instructions from &A000-&AFFF so
+                        \ they affect screen memory in shadow RAM
+
+                        \ --- End of replacement ------------------------------>
 
  TXA                    \ Retrieve the value of A we stored above, so A now
                         \ contains the pixel mask again
@@ -7987,11 +8515,20 @@ ENDIF
                         \ red pixels, so we now know which bits to set in screen
                         \ memory
 
- ORA (SC),Y             \ OR the byte with the current contents of screen
-                        \ memory, so the pixel we want is set to red (because
-                        \ we know the bits are already 0 from the above test)
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
 
- STA (SC),Y             \ Store the updated pixel in screen memory
+\ORA (SC),Y             \ OR the byte with the current contents of screen
+\                       \ memory, so the pixel we want is set to red (because
+\                       \ we know the bits are already 0 from the above test)
+\
+\STA (SC),Y             \ Store the updated pixel in screen memory
+
+                        \ --- And replaced by: -------------------------------->
+
+ JSR DrawPixelORA       \ Perform the ORA/STA instructions from &A000-&AFFF so
+                        \ they affect screen memory in shadow RAM
+
+                        \ --- End of replacement ------------------------------>
 
  TXA                    \ Retrieve the value of A we stored above, so A now
                         \ contains the pixel mask again
@@ -8046,11 +8583,20 @@ ENDIF
  TXA                    \ Retrieve the value of A we stored above, so A now
                         \ contains the pixel mask again
 
- ORA (SC),Y             \ OR the byte with the current contents of screen
-                        \ memory, so the pixel we want is set to red (because
-                        \ we know the bits are already 0 from the above test)
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
 
- STA (SC),Y             \ Store the updated pixel in screen memory
+\ORA (SC),Y             \ OR the byte with the current contents of screen
+\                       \ memory, so the pixel we want is set to red (because
+\                       \ we know the bits are already 0 from the above test)
+\
+\STA (SC),Y             \ Store the updated pixel in screen memory
+
+                        \ --- And replaced by: -------------------------------->
+
+ JSR DrawPixelORA       \ Perform the ORA/STA instructions from &A000-&AFFF so
+                        \ they affect screen memory in shadow RAM
+
+                        \ --- End of replacement ------------------------------>
 
  TXA                    \ Retrieve the value of A we stored above, so A now
                         \ contains the pixel mask again
@@ -8686,16 +9232,25 @@ ENDIF
                         \ the colour we want to draw (i.e. A is acting as a mask
                         \ on the colour byte)
 
- EOR (SC),Y             \ If we EOR this value with the existing screen
-                        \ contents, then it's reversible (so reprinting the
-                        \ same character in the same place will revert the
-                        \ screen to what it looked like before we printed
-                        \ anything); this means that printing a white pixel
-                        \ onto a white background results in a black pixel, but
-                        \ that's a small price to pay for easily erasable text
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
 
- STA (SC),Y             \ Store the Y-th byte at the screen address for this
-                        \ character location
+\EOR (SC),Y             \ If we EOR this value with the existing screen
+\                       \ contents, then it's reversible (so reprinting the
+\                       \ same character in the same place will revert the
+\                       \ screen to what it looked like before we printed
+\                       \ anything); this means that printing a white pixel
+\                       \ onto a white background results in a black pixel, but
+\                       \ that's a small price to pay for easily erasable text
+\
+\STA (SC),Y             \ Store the Y-th byte at the screen address for this
+\                       \ character location
+
+                        \ --- And replaced by: -------------------------------->
+
+ JSR DrawPixelEOR       \ Perform the EOR/STA instructions from &A000-&AFFF so
+                        \ they affect screen memory in shadow RAM
+
+                        \ --- End of replacement ------------------------------>
 
                         \ We now repeat the process for the second batch of four
                         \ pixels in this character row
@@ -8717,13 +9272,22 @@ ENDIF
                         \ the colour we want to draw (i.e. A is acting as a mask
                         \ on the colour byte)
 
- EOR (P+2),Y            \ EOR this value with the existing screen contents of
-                        \ P(3 2), which is equal to SC(1 0) + 8, the next four
-                        \ pixels along from the first four pixels we just
-                        \ plotted in SC(1 0)
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
 
- STA (P+2),Y            \ Store the Y-th byte at the screen address for this
-                        \ character location
+\EOR (P+2),Y            \ EOR this value with the existing screen contents of
+\                       \ P(3 2), which is equal to SC(1 0) + 8, the next four
+\                       \ pixels along from the first four pixels we just
+\                       \ plotted in SC(1 0)
+\
+\STA (P+2),Y            \ Store the Y-th byte at the screen address for this
+\                       \ character location
+
+                        \ --- And replaced by: -------------------------------->
+
+ JSR DrawPixelP2        \ Perform the EOR/STA instructions from &A000-&AFFF so
+                        \ they affect screen memory in shadow RAM
+
+                        \ --- End of replacement ------------------------------>
 
  DEY                    \ Decrement the loop counter
 
@@ -8984,8 +9548,17 @@ ENDIF
 
 .ZEL1
 
- STA (SC),Y             \ Zero the Y-th byte of the block pointed to by SC,
-                        \ so that's effectively the Y-th byte before SC
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\STA (SC),Y             \ Zero the Y-th byte of the block pointed to by SC,
+\                       \ so that's effectively the Y-th byte before SC
+
+                        \ --- And replaced by: -------------------------------->
+
+ JSR DrawPixelSTA       \ Perform the STA instruction from &A000-&AFFF so it
+                        \ affects screen memory in shadow RAM
+
+                        \ --- End of replacement ------------------------------>
 
  INY                    \ Increment the loop counter
 
@@ -9061,8 +9634,17 @@ ENDIF
 
 .EE2
 
- STA (SC),Y             \ Zero the Y-th byte from SC(1 0), which clears it by
-                        \ setting it to colour 0, black
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\STA (SC),Y             \ Zero the Y-th byte from SC(1 0), which clears it by
+\                       \ setting it to colour 0, black
+
+                        \ --- And replaced by: -------------------------------->
+
+ JSR DrawPixelSTA       \ Perform the STA instruction from &A000-&AFFF so it
+                        \ affects screen memory in shadow RAM
+
+                        \ --- End of replacement ------------------------------>
 
  INY                    \ Increment the byte counter in Y
 
@@ -9074,8 +9656,17 @@ ENDIF
                         \ so SC(1 0) points to the start of the next page, or
                         \ the start of the right half of the row
 
- STA (SC),Y             \ Clear the byte at SC(1 0), as that won't be caught by
-                        \ the next loop
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\STA (SC),Y             \ Clear the byte at SC(1 0), as that won't be caught by
+\                       \ the next loop
+
+                        \ --- And replaced by: -------------------------------->
+
+ JSR DrawPixelSTA       \ Perform the STA instruction from &A000-&AFFF so it
+                        \ affects screen memory in shadow RAM
+
+                        \ --- End of replacement ------------------------------>
 
  LDY #247               \ The second page covers the right half of the text row,
                         \ and as before we don't want to overwrite the border,
@@ -9093,8 +9684,17 @@ ENDIF
                         \ because BeebAsm doesn't allow us to redefine labels,
                         \ I have renamed it to EE3K
 
- STA (SC),Y             \ Zero the Y-th byte from SC(1 0), which clears it by
-                        \ setting it to colour 0, black
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\STA (SC),Y             \ Zero the Y-th byte from SC(1 0), which clears it by
+\                       \ setting it to colour 0, black
+
+                        \ --- And replaced by: -------------------------------->
+
+ JSR DrawPixelSTA       \ Perform the STA instruction from &A000-&AFFF so it
+                        \ affects screen memory in shadow RAM
+
+                        \ --- End of replacement ------------------------------>
 
  DEY                    \ Decrement the byte counter in Y
 
@@ -9651,14 +10251,23 @@ ENDIF
                         \ only keep pixels that have their equivalent bits set
                         \ in the mask byte in A
 
- STA (SC),Y             \ Draw the shape of the mask on pixel row Y of the
-                        \ character block we are processing
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
 
- INY                    \ Draw the next pixel row, incrementing Y
- STA (SC),Y
+\STA (SC),Y             \ Draw the shape of the mask on pixel row Y of the
+\                       \ character block we are processing
+\
+\INY                    \ Draw the next pixel row, incrementing Y
+\STA (SC),Y
+\
+\INY                    \ And draw the third pixel row, incrementing Y
+\STA (SC),Y
 
- INY                    \ And draw the third pixel row, incrementing Y
- STA (SC),Y
+                        \ --- And replaced by: -------------------------------->
+
+ JSR DrawDialPixels3    \ Perform the INY/STA instructions from &A000-&AFFF so
+                        \ they affect screen memory in shadow RAM
+
+                        \ --- End of replacement ------------------------------>
 
  TYA                    \ Add 6 to Y, so Y is now 8 more than when we started
  CLC                    \ this loop iteration, so Y now points to the address
@@ -9841,17 +10450,26 @@ ENDIF
                         \ character blocks we display from now on will be blank
 .DLL12
 
- STA (SC),Y             \ Draw the shape of the mask on pixel row Y of the
-                        \ character block we are processing
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
 
- INY                    \ Draw the next pixel row, incrementing Y
- STA (SC),Y
+\STA (SC),Y             \ Draw the shape of the mask on pixel row Y of the
+\                       \ character block we are processing
+\
+\INY                    \ Draw the next pixel row, incrementing Y
+\STA (SC),Y
+\
+\INY                    \ And draw the third pixel row, incrementing Y
+\STA (SC),Y
+\
+\INY                    \ And draw the fourth pixel row, incrementing Y
+\STA (SC),Y
 
- INY                    \ And draw the third pixel row, incrementing Y
- STA (SC),Y
+                        \ --- And replaced by: -------------------------------->
 
- INY                    \ And draw the fourth pixel row, incrementing Y
- STA (SC),Y
+ JSR DrawDialPixels4    \ Perform the INY/STA instructions from &A000-&AFFF so
+                        \ they affect screen memory in shadow RAM
+
+                        \ --- End of replacement ------------------------------>
 
  TYA                    \ Add 5 to Y, so Y is now 8 more than when we started
  CLC                    \ this loop iteration, so Y now points to the address
