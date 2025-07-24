@@ -41979,17 +41979,19 @@ ENDIF
 
 \DEC A                  \ The volume down key is being pressed, so decrement the
 \                       \ volume level in A
+\
+\EQUB &24               \ Skip the next instruction by turning it into &24 &1A,
+\                       \ or BIT &001A, which does nothing apart from affect the
+\                       \ flags
 
                         \ --- And replaced by: -------------------------------->
 
  SEC                    \ The volume down key is being pressed, so decrement the
  SBC #1                 \ volume level in A
 
-                        \ --- End of replacement ------------------------------>
+ JMP DOVOL1+3           \ Skip the next two instructions
 
- EQUB &24               \ Skip the next instruction by turning it into &24 &1A,
-                        \ or BIT &001A, which does nothing apart from affect the
-                        \ flags
+                        \ --- End of replacement ------------------------------>
 
 .DOVOL1
 
