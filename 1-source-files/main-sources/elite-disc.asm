@@ -39,7 +39,7 @@
  _COMPACT               = (_VARIANT = 2)
 
 IF _SNG47
- PUTFILE "3-assembled-output/M128Elt.bin", "M128Elt", &FF0E00, &FF0E43
+ PUTFILE "3-assembled-output/M128Elt.bin", "M128Elt", &FF1100, &FF1143
  PUTFILE "3-assembled-output/BDATA.bin", "BDATA", &000000, &000000
  PUTFILE "3-assembled-output/BCODE.bin", "BCODE", &000000, &000000
 ELIF _COMPACT
