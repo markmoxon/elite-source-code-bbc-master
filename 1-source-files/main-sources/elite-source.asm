@@ -8947,14 +8947,31 @@ ENDIF
                         \
                         \ We'll refer to this below
 
- LDX #(FONT%-1)         \ Set X to point to the page before the first font page,
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\LDX #(FONT%-1)         \ Set X to point to the page before the first font page,
                         \ which is FONT% - 1
+
+                        \ --- And replaced by: -------------------------------->
+
+ LDX #&BF               \ Set X to point to the first font page in ROM minus 1,
+                        \ which is &C0 - 1, or &BF
+
+                        \ --- End of replacement ------------------------------>
 
  ASL A                  \ If bit 6 of the character is clear (A is 32-63)
  ASL A                  \ then skip the following instruction
  BCC P%+4
 
- LDX #(FONT%+1)         \ A is 64-126, so set X to point to page FONT% + 1
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\LDX #(FONT%+1)         \ A is 64-126, so set X to point to page FONT% + 1
+
+                        \ --- And replaced by: -------------------------------->
+
+ LDX #&C1               \ A is 64-126, so set X to point to page &C1
+
+                        \ --- End of replacement ------------------------------>
 
  ASL A                  \ If bit 5 of the character is clear (A is 64-95)
  BCC P%+3               \ then skip the following instruction
@@ -10671,9 +10688,13 @@ ENDIF
 \
 \ ******************************************************************************
 
- FONT% = HI(P%)
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
 
- INCBIN "1-source-files/fonts/P.FONT.bin"
+\FONT% = HI(P%)
+\
+\INCBIN "1-source-files/fonts/P.FONT.bin"
+
+                        \ --- End of removed code ----------------------------->
 
 \ ******************************************************************************
 \
