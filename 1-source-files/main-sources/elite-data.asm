@@ -60,6 +60,14 @@
  VE = &57               \ The obfuscation byte used to hide the extended tokens
                         \ table from crackers viewing the binary code
 
+                        \ --- Mod: Code added for BBC Micro B+: --------------->
+
+ ZP = &0000             \ The address of the zero page variables used when
+ P = &000C              \ drawing to the screen
+ SC = &000A
+
+                        \ --- End of added code ------------------------------->
+
 \ ******************************************************************************
 \
 \ ELITE GAME DATA SOURCE
@@ -9681,6 +9689,71 @@ ENDIF
  EQUB VE
 
                         \ --- Mod: Code added for BBC Micro B+: --------------->
+
+.DrawPixelEOR
+
+ EOR (SC),Y             \ Draw a pixel using EOR logic
+
+.DrawPixelSTA
+
+ STA (SC),Y             \ Draw a pixel
+
+ RTS                    \ Return from the subroutine
+
+.DrawPixelORA
+
+ ORA (SC),Y             \ Draw a pixel using OR logic
+ STA (SC),Y
+
+ RTS                    \ Return from the subroutine
+
+.DrawDialPixels4
+
+ STA (SC),Y             \ Draw the shape of the mask on pixel row Y of the
+                        \ character block we are processing
+
+ INY                    \ Increment Y to draw the next pixel
+
+.DrawDialPixels3
+
+ STA (SC),Y             \ Draw the shape of the mask on pixel row Y of the
+                        \ character block we are processing
+
+ INY                    \ Draw the next pixel row, incrementing Y
+ STA (SC),Y
+
+ INY                    \ And draw the third pixel row, incrementing Y
+ STA (SC),Y
+
+ RTS                    \ Return from the subroutine
+
+.CopyInSetZP
+
+ LDA ZP,X               \ Copy the X-th byte of ZP to the X-th byte of &3000
+ STA &3000,X
+
+ RTS                    \ Return from the subroutine
+
+.CopyInGetZP
+
+ LDA ZP,X               \ Swap the X-th byte of ZP with the X-th byte of &3000
+ LDY &3000,X
+ STY ZP,X
+ STA &3000,X
+
+ RTS                    \ Return from the subroutine
+
+.DrawPixelP2
+
+ EOR (P+2),Y            \ EOR this value with the existing screen contents of
+                        \ P(3 2), which is equal to SC(1 0) + 8, the next four
+                        \ pixels along from the first four pixels we just
+                        \ plotted in SC(1 0)
+
+ STA (P+2),Y            \ Store the Y-th byte at the screen address for this
+                        \ character location
+
+ RTS                    \ Return from the subroutine
 
  SKIPTO &B000
 
