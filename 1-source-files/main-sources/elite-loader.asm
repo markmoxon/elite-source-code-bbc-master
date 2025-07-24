@@ -49,15 +49,35 @@
 \
 \ ******************************************************************************
 
- CODE% = &0E00          \ The address where the code will be run
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
 
- LOAD% = &0E00          \ The address where the code will be loaded
+\CODE% = &0E00          \ The address where the code will be run
+\
+\LOAD% = &0E00          \ The address where the code will be loaded
+
+
+                        \ --- And replaced by: -------------------------------->
+
+ CODE% = &1100          \ The address where the code will be run
+
+ LOAD% = &1100          \ The address where the code will be loaded
+
+                        \ --- End of replacement ------------------------------>
 
  N% = 67                \ N% is set to the number of bytes in the VDU table, so
                         \ we can loop through them below
 
- S% = &2C6C             \ The address of the main entry point workspace in the
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\S% = &2C6C             \ The address of the main entry point workspace in the
+\                       \ main game code
+
+                        \ --- And replaced by: -------------------------------->
+
+ S% = &299C             \ The address of the main entry point workspace in the
                         \ main game code
+
+                        \ --- End of replacement ------------------------------>
 
  VIA = &FE00            \ Memory-mapped space for accessing internal hardware,
                         \ such as the video ULA, 6845 CRTC and 6522 VIAs (also
@@ -354,35 +374,43 @@ ENDIF
  CPY #N%                \ Loop back for the next byte until we have done them
  BNE LOOP               \ all (the number of bytes was set in N% above)
 
- LDA #%00001111         \ Set the Access Control latch at SHEILA &34, as
- STA VIA+&34            \ follows:
-                        \
-                        \   * Bit 7 = IRR = 0: Do not IRQ the CPU with this
-                        \   * Bit 6 = TST = 0: Must be set to 0
-                        \   * Bit 5 = IFJ = 0: &FC00-&FDFF maps to the 1Mhz bus
-                        \   * Bit 4 = ITU = 0: CPU can access external co-pro
-                        \   * Bit 3 = Y = 1: &C000-&DFFF set to 8K private RAM
-                        \   * Bit 2 = X = 1: &3000-&7FFF set to 20K shadow RAM
-                        \   * Bit 1 = E = 1: All shadow RAM locations accessible
-                        \   * Bit 0 = D = 1: Display shadow RAM as screen memory
-                        \
-                        \ In short, this switches the screen memory, which is in
-                        \ shadow RAM, into the memory map at &3000-&7FFF, so now
-                        \ we can poke directly to the screen memory, and it also
-                        \ maps the filing system RAM space into &C000-&DFFF
-                        \ (HAZEL), in place of the MOS VDU workspace
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\LDA #%00001111         \ Set the Access Control latch at SHEILA &34, as
+\STA VIA+&34            \ follows:
+\                       \
+\                       \   * Bit 7 = IRR = 0: Do not IRQ the CPU with this
+\                       \   * Bit 6 = TST = 0: Must be set to 0
+\                       \   * Bit 5 = IFJ = 0: &FC00-&FDFF maps to the 1Mhz bus
+\                       \   * Bit 4 = ITU = 0: CPU can access external co-pro
+\                       \   * Bit 3 = Y = 1: &C000-&DFFF set to 8K private RAM
+\                       \   * Bit 2 = X = 1: &3000-&7FFF set to 20K shadow RAM
+\                       \   * Bit 1 = E = 1: All shadow RAM locations accessible
+\                       \   * Bit 0 = D = 1: Display shadow RAM as screen memory
+\                       \
+\                       \ In short, this switches the screen memory, which is in
+\                       \ shadow RAM, into the memory map at &3000-&7FFF, so now
+\                       \ we can poke directly to the screen memory, and it also
+\                       \ maps the filing system RAM space into &C000-&DFFF
+\                       \ (HAZEL), in place of the MOS VDU workspace
+
+                        \ --- End of removed code ----------------------------->
 
  JSR PLL1               \ Call PLL1 to draw Saturn
 
- LDA #%00001001         \ Clear bits 1 and 2 of the Access Control latch at
- STA VIA+&34            \ SHEILA &34, which changes the following:
-                        \
-                        \   * Bit 2 = X = 0: &3000-&7FFF set to main RAM
-                        \   * Bit 1 = E = 0: VDU shadow RAM locations accessible
-                        \
-                        \ In short, this switches the screen memory, which is in
-                        \ shadow RAM, out of the memory map, so &3000-&7FFF is
-                        \ now mapped to main RAM and we can't update the screen
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\LDA #%00001001         \ Clear bits 1 and 2 of the Access Control latch at
+\STA VIA+&34            \ SHEILA &34, which changes the following:
+\                       \
+\                       \   * Bit 2 = X = 0: &3000-&7FFF set to main RAM
+\                       \   * Bit 1 = E = 0: VDU shadow RAM locations accessible
+\                       \
+\                       \ In short, this switches the screen memory, which is in
+\                       \ shadow RAM, out of the memory map, so &3000-&7FFF is
+\                       \ now mapped to main RAM and we can't update the screen
+
+                        \ --- End of removed code ----------------------------->
 
  LDA #4                 \ Call OSBYTE with A = 4, X = 1 and Y = 0 to disable
  LDX #1                 \ cursor editing, so the cursor keys return ASCII values
@@ -401,41 +429,51 @@ ENDIF
                         \ BBC Master rather than getting passed across the Tube
                         \ to the Second Processor, if one is fitted
 
- LDA #6                 \ Set the RAM copy of the currently selected paged ROM
- STA LATCH              \ to 6, so it matches the paged ROM selection latch at
-                        \ SHEILA &30 that we are about to set
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
 
- LDA VIA+&30            \ Set bits 0-3 of the ROM Select latch at SHEILA &30 to
- AND #%11110000         \ 6, to switch sideways RAM bank 6 into &8000-&BFFF in
- ORA #6                 \ main memory
+\LDA #6                 \ Set the RAM copy of the currently selected paged ROM
+\STA LATCH              \ to 6, so it matches the paged ROM selection latch at
+\                       \ SHEILA &30 that we are about to set
+\
+\LDA VIA+&30            \ Set bits 0-3 of the ROM Select latch at SHEILA &30 to
+\AND #%11110000         \ 6, to switch sideways RAM bank 6 into &8000-&BFFF in
+\ORA #6                 \ main memory
+\STA VIA+&30
+\
+\LDA #%10101010         \ Set A and location &8000 to %10101010
+\STA &8000
+\
+\LSR A                  \ Shift A and location &8000 right
+\LSR &8000
+\
+\CMP &8000              \ If A matches location &8000 (i.e. both now contain
+\BEQ OK                 \ %01010101) then jump to OK, as ROM bank 6 is writable
+\                       \ and does indeed contain sideways RAM rather than a
+\                       \ paged ROM, which is what we need for running the game
+\
+\BRK                    \ Otherwise we can't run the game, so terminate the
+\                       \ loader with the following error message
+\
+\EQUB 0                 \ Error number
+\
+\EQUB 22, 7             \ Switch to mode 7 and clear the screen
+\
+\EQUS "ELITE needs RAM in slot #6"
+\
+\EQUB 0                 \ End of error message
+\
+\.OK
+\
+\LDA #%00001111         \ Set bits 1 and 2 of the Access Control Register at
+\STA VIA+&34            \ SHEILA &34 to switch screen memory into &3000-&7FFF
+
+                        \ --- And replaced by: -------------------------------->
+
+ LDA VIA+&30            \ Set bit 7 of the ROM Select latch at SHEILA &30 to
+ ORA #%10000000         \ switch the 12K of private RAM into &8000-&AFFF
  STA VIA+&30
 
- LDA #%10101010         \ Set A and location &8000 to %10101010
- STA &8000
-
- LSR A                  \ Shift A and location &8000 right
- LSR &8000
-
- CMP &8000              \ If A matches location &8000 (i.e. both now contain
- BEQ OK                 \ %01010101) then jump to OK, as ROM bank 6 is writable
-                        \ and does indeed contain sideways RAM rather than a
-                        \ paged ROM, which is what we need for running the game
-
- BRK                    \ Otherwise we can't run the game, so terminate the
-                        \ loader with the following error message
-
- EQUB 0                 \ Error number
-
- EQUB 22, 7             \ Switch to mode 7 and clear the screen
-
- EQUS "ELITE needs RAM in slot #6"
-
- EQUB 0                 \ End of error message
-
-.OK
-
- LDA #%00001111         \ Set bits 1 and 2 of the Access Control Register at
- STA VIA+&34            \ SHEILA &34 to switch screen memory into &3000-&7FFF
+                        \ --- End of replacement ------------------------------>
 
                         \ We now want to copy &F pages of memory (&F00 bytes)
                         \ from &1300-&21FF to &7000-&7EFF in screen memory
@@ -485,13 +523,24 @@ ENDIF
  BNE MPL1               \ Loop back to copy the next page until we have done all
                         \ &F of them
 
- LDA #%00001001         \ Clear bits 1 and 2 of the Access Control Register at
- STA VIA+&34            \ SHEILA &34 to switch main memory back into &3000-&7FFF
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
 
-                        \ We now want to copy &33 pages of memory (&3300 bytes)
-                        \ from &2200-&54FF to &7F00-&B1FF in main memory
+\LDA #%00001001         \ Clear bits 1 and 2 of the Access Control Register at
+\STA VIA+&34            \ SHEILA &34 to switch main memory back into &3000-&7FFF
+\
+\                       \ We now want to copy &33 pages of memory (&3300 bytes)
+\                       \ from &2200-&54FF to &7F00-&B1FF in main memory
+\
+\LDX #&33               \ Set a page counter in X to copy &33 pages
 
- LDX #&33               \ Set a page counter in X to copy &33 pages
+                        \ --- And replaced by: -------------------------------->
+
+                        \ We now want to copy &31 pages of memory (&3100 bytes)
+                        \ from &2200-&52FF to &7F00-&AFFF in main memory
+
+ LDX #&31               \ Set a page counter in X to copy &31 pages
+
+                        \ --- End of replacement ------------------------------>
 
 .MPL2
 
@@ -529,17 +578,72 @@ ENDIF
  JSR OSCLI              \ Call OSCLI to run the OS command in MESS3, which
                         \ changes the disc directory to E
 
- LDA #6                 \ Set the RAM copy of the currently selected paged ROM
- STA LATCH              \ to 6, so it matches the paged ROM selection latch at
-                        \ SHEILA &30 that we are about to set
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
 
- LDA VIA+&30            \ Switch ROM bank 6 into memory by setting bits 0-3 of
- AND #%11110000         \ the ROM selection latch at SHEILA &30 to 6
- ORA #6
+\LDA #6                 \ Set the RAM copy of the currently selected paged ROM
+\STA LATCH              \ to 6, so it matches the paged ROM selection latch at
+\                       \ SHEILA &30 that we are about to set
+\
+\LDA VIA+&30            \ Switch ROM bank 6 into memory by setting bits 0-3 of
+\AND #%11110000         \ the ROM selection latch at SHEILA &30 to 6
+\ORA #6
+\STA VIA+&30
+
+                        \ --- And replaced by: -------------------------------->
+
+ LDA VIA+&30            \ Set bit 7 of the ROM Select latch at SHEILA &30 to
+ ORA #%10000000         \ switch the 12K of private RAM into &8000-&AFFF
  STA VIA+&30
+
+                        \ --- End of replacement ------------------------------>
 
  JMP S%                 \ Jump to the start of the main game code at S%, which
                         \ we just loaded in the BCODE/ELITE file
+
+\ ******************************************************************************
+\
+\       Name: MESS2
+\       Type: Variable
+\   Category: Loader
+\    Summary: The OS command string for loading the main game code binary
+\
+\ ******************************************************************************
+
+                        \ --- Mod: Code moved for BBC Micro B+: --------------->
+
+.MESS2
+
+IF _SNG47
+
+ EQUS "L.BCODE FFFF1300"    \ This is short for "*LOAD BCODE FFFF1300"
+ EQUB 13
+
+ELIF _COMPACT
+
+ EQUS "L.ELITE FFFF1300"    \ This is short for "*LOAD ELITE FFFF1300"
+ EQUB 13
+
+ENDIF
+
+                        \ --- End of moved code ------------------------------->
+
+\ ******************************************************************************
+\
+\       Name: MESS3
+\       Type: Variable
+\   Category: Loader
+\    Summary: The OS command string for changing the disc directory to E
+\
+\ ******************************************************************************
+
+                        \ --- Mod: Code moved for BBC Micro B+: --------------->
+
+.MESS3
+
+ EQUS "DIR E"
+ EQUB 13
+
+                        \ --- End of moved code ------------------------------->
 
 \ ******************************************************************************
 \
@@ -1277,19 +1381,23 @@ ENDIF
 \
 \ ******************************************************************************
 
-.MESS2
+                        \ --- Mod: Code moved for BBC Micro B+: --------------->
 
-IF _SNG47
+\.MESS2
+\
+\IF _SNG47
+\
+\EQUS "L.BCODE FFFF1300"    \ This is short for "*LOAD BCODE FFFF1300"
+\EQUB 13
+\
+\ELIF _COMPACT
+\
+\EQUS "L.ELITE FFFF1300"    \ This is short for "*LOAD ELITE FFFF1300"
+\EQUB 13
+\
+\ENDIF
 
- EQUS "L.BCODE FFFF1300"    \ This is short for "*LOAD BCODE FFFF1300"
- EQUB 13
-
-ELIF _COMPACT
-
- EQUS "L.ELITE FFFF1300"    \ This is short for "*LOAD ELITE FFFF1300"
- EQUB 13
-
-ENDIF
+                        \ --- End of moved code ------------------------------->
 
 \ ******************************************************************************
 \
@@ -1300,10 +1408,14 @@ ENDIF
 \
 \ ******************************************************************************
 
-.MESS3
+                        \ --- Mod: Code moved for BBC Micro B+: --------------->
 
- EQUS "DIR E"
- EQUB 13
+\.MESS3
+\
+\EQUS "DIR E"
+\EQUB 13
+
+                        \ --- End of moved code ------------------------------->
 
 \ ******************************************************************************
 \
