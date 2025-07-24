@@ -3237,8 +3237,12 @@ IF _COMPACT
 
 ENDIF
 
- LDA #%00001111         \ Set bits 1 and 2 of the Access Control Register at
- STA VIA+&34            \ SHEILA &34 to switch screen memory into &3000-&7FFF
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\LDA #%00001111         \ Set bits 1 and 2 of the Access Control Register at
+\STA VIA+&34            \ SHEILA &34 to switch screen memory into &3000-&7FFF
+
+                        \ --- End of removed code ----------------------------->
 
  LDX #&90               \ We want to save zero page from &0090 and up, so set an
                         \ index in X, starting from &90
@@ -3253,8 +3257,12 @@ ENDIF
  BNE sz1                \ Loop back until we have copied the last byte of zero
                         \ page
 
- LDA #%00001001         \ Clear bits 1 and 2 of the Access Control Register at
- STA VIA+&34            \ SHEILA &34 to switch main memory back into &3000-&7FFF
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\LDA #%00001001         \ Clear bits 1 and 2 of the Access Control Register at
+\STA VIA+&34            \ SHEILA &34 to switch main memory back into &3000-&7FFF
+
+                        \ --- End of removed code ----------------------------->
 
  RTS                    \ Return from the subroutine
 
@@ -3311,8 +3319,12 @@ IF _COMPACT
 
 ENDIF
 
- LDA #%00001111         \ Set bits 1 and 2 of the Access Control Register at
- STA VIA+&34            \ SHEILA &34 to switch screen memory into &3000-&7FFF
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\LDA #%00001111         \ Set bits 1 and 2 of the Access Control Register at
+\STA VIA+&34            \ SHEILA &34 to switch screen memory into &3000-&7FFF
+
+                        \ --- End of removed code ----------------------------->
 
  LDX #&90               \ We want to swap zero page from &0090 and up, so set an
                         \ index in X, starting from &90
@@ -3329,13 +3341,17 @@ ENDIF
  CPX #&F0               \ Loop back until we have swapped up to location &00EF
  BNE sz2
 
- LDA #%00001001         \ Clear bits 1 and 2 of the Access Control Register at
- STA VIA+&34            \ SHEILA &34 to switch main memory back into &3000-&7FFF
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
 
- LDA #6                 \ Set bits 0-3 of the ROM Select latch at SHEILA &30 to
- STA VIA+&30            \ 6, to switch sideways ROM bank 6 into &8000-&BFFF in
-                        \ main memory (we already confirmed that this bank
-                        \ contains RAM rather than ROM in the loader)
+\LDA #%00001001         \ Clear bits 1 and 2 of the Access Control Register at
+\STA VIA+&34            \ SHEILA &34 to switch main memory back into &3000-&7FFF
+\
+\LDA #6                 \ Set bits 0-3 of the ROM Select latch at SHEILA &30 to
+\STA VIA+&30            \ 6, to switch sideways ROM bank 6 into &8000-&BFFF in
+\                       \ main memory (we already confirmed that this bank
+\                       \ contains RAM rather than ROM in the loader)
+
+                        \ --- End of removed code ----------------------------->
 
  RTS                    \ Return from the subroutine
 
@@ -3756,8 +3772,12 @@ ENDIF
  LDA #246               \ A >= 247, so set A to 246, the maximum allowed value
                         \ for the y-coordinate of our ship's dot
 
- LDY #%00001111         \ Set bits 1 and 2 of the Access Control Register at
- STY VIA+&34            \ SHEILA &34 to switch screen memory into &3000-&7FFF
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\LDY #%00001111         \ Set bits 1 and 2 of the Access Control Register at
+\STY VIA+&34            \ SHEILA &34 to switch screen memory into &3000-&7FFF
+
+                        \ --- End of removed code ----------------------------->
 
  JSR CPIXK              \ Call CPIXK to draw a single-height dash at the
                         \ y-coordinate in A, to draw the ship dot, and return
@@ -3845,8 +3865,12 @@ ENDIF
 
 .VLO5
 
- LDA #%00001001         \ Clear bits 1 and 2 of the Access Control Register at
- STA VIA+&34            \ SHEILA &34 to switch main memory back into &3000-&7FFF
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\LDA #%00001001         \ Clear bits 1 and 2 of the Access Control Register at
+\STA VIA+&34            \ SHEILA &34 to switch main memory back into &3000-&7FFF
+
+                        \ --- End of removed code ----------------------------->
 
  RTS                    \ Return from the subroutine
 
@@ -3900,8 +3924,12 @@ ENDIF
  BNE VLOL2              \ If we still have more stick to draw, jump up to VLOL2
                         \ to draw the next pixel
 
- LDA #%00001001         \ Clear bits 1 and 2 of the Access Control Register at
- STA VIA+&34            \ SHEILA &34 to switch main memory back into &3000-&7FFF
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\LDA #%00001001         \ Clear bits 1 and 2 of the Access Control Register at
+\STA VIA+&34            \ SHEILA &34 to switch main memory back into &3000-&7FFF
+
+                        \ --- End of removed code ----------------------------->
 
  RTS                    \ Return from the subroutine
 
@@ -3930,13 +3958,21 @@ ENDIF
 
  STY YSAV               \ Store Y in YSAV so we can retrieve it below
 
- LDA #%00001111         \ Set bits 1 and 2 of the Access Control Register at
- STA VIA+&34            \ SHEILA &34 to switch screen memory into &3000-&7FFF
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\LDA #%00001111         \ Set bits 1 and 2 of the Access Control Register at
+\STA VIA+&34            \ SHEILA &34 to switch screen memory into &3000-&7FFF
+
+                        \ --- End of removed code ----------------------------->
 
  JSR LOINQ              \ Draw a line from (X1, Y1) to (X2, Y2)
 
- LDA #%00001001         \ Clear bits 1 and 2 of the Access Control Register at
- STA VIA+&34            \ SHEILA &34 to switch main memory back into &3000-&7FFF
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\LDA #%00001001         \ Clear bits 1 and 2 of the Access Control Register at
+\STA VIA+&34            \ SHEILA &34 to switch main memory back into &3000-&7FFF
+
+                        \ --- End of removed code ----------------------------->
 
  LDY YSAV               \ Retrieve the value of Y we stored above
 
@@ -6230,8 +6266,12 @@ ENDIF
  STY YSAV               \ Store Y into YSAV, so we can preserve it across the
                         \ call to this subroutine
 
- LDY #%00001111         \ Set bits 1 and 2 of the Access Control Register at
- STY VIA+&34            \ SHEILA &34 to switch screen memory into &3000-&7FFF
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\LDA #%00001111         \ Set bits 1 and 2 of the Access Control Register at
+\STA VIA+&34            \ SHEILA &34 to switch screen memory into &3000-&7FFF
+
+                        \ --- End of removed code ----------------------------->
 
  LDX X1                 \ Set X = X1
 
@@ -6394,8 +6434,12 @@ ENDIF
 
 .HL6
 
- LDY #%00001001         \ Clear bits 1 and 2 of the Access Control Register at
- STY VIA+&34            \ SHEILA &34 to switch main memory back into &3000-&7FFF
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\LDY #%00001001         \ Clear bits 1 and 2 of the Access Control Register at
+\STY VIA+&34            \ SHEILA &34 to switch main memory back into &3000-&7FFF
+
+                        \ --- End of removed code ----------------------------->
 
  LDY YSAV               \ Restore Y from YSAV, so that it's preserved
 
@@ -6446,8 +6490,12 @@ ENDIF
  STA (SC),Y             \ SC(1 0), using EOR logic so it merges with whatever is
                         \ already on-screen
 
- LDY #%00001001         \ Clear bits 1 and 2 of the Access Control Register at
- STY VIA+&34            \ SHEILA &34 to switch main memory back into &3000-&7FFF
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\LDY #%00001001         \ Clear bits 1 and 2 of the Access Control Register at
+\STY VIA+&34            \ SHEILA &34 to switch main memory back into &3000-&7FFF
+
+                        \ --- End of removed code ----------------------------->
 
  LDY YSAV               \ Restore Y from YSAV, so that it's preserved
 
@@ -6745,8 +6793,12 @@ ENDIF
  STY T1                 \ Store Y in T1 so we can restore it at the end of the
                         \ subroutine
 
- LDY #%00001111         \ Set bits 1 and 2 of the Access Control Register at
- STY VIA+&34            \ SHEILA &34 to switch screen memory into &3000-&7FFF
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\LDY #%00001111         \ Set bits 1 and 2 of the Access Control Register at
+\STY VIA+&34            \ SHEILA &34 to switch screen memory into &3000-&7FFF
+
+                        \ --- End of removed code ----------------------------->
 
  TAY                    \ Copy the screen y-coordinate from A into Y
 
@@ -6800,8 +6852,12 @@ ENDIF
  STA (SC),Y             \ remove it later without ruining the background that's
                         \ already on-screen
 
- LDY #%00001001         \ Clear bits 1 and 2 of the Access Control Register at
- STY VIA+&34            \ SHEILA &34 to switch main memory back into &3000-&7FFF
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\LDY #%00001001         \ Clear bits 1 and 2 of the Access Control Register at
+\STY VIA+&34            \ SHEILA &34 to switch main memory back into &3000-&7FFF
+
+                        \ --- End of removed code ----------------------------->
 
  LDY T1                 \ Restore Y from T1, so Y is preserved by the routine
 
@@ -6841,9 +6897,12 @@ ENDIF
  EOR (SC),Y             \ Draw the pixel on-screen using EOR logic, so we can
  STA (SC),Y             \ remove it later without ruining the background that's
                         \ already on-screen
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
 
- LDY #%00001001         \ Clear bits 1 and 2 of the Access Control Register at
- STY VIA+&34            \ SHEILA &34 to switch main memory back into &3000-&7FFF
+\LDY #%00001001         \ Clear bits 1 and 2 of the Access Control Register at
+\STY VIA+&34            \ SHEILA &34 to switch main memory back into &3000-&7FFF
+
+                        \ --- End of removed code ----------------------------->
 
  LDY T1                 \ Restore Y from T1, so Y is preserved by the routine
 
@@ -6907,8 +6966,12 @@ ENDIF
 
 .DOT
 
- LDA #%00001111         \ Set bits 1 and 2 of the Access Control Register at
- STA VIA+&34            \ SHEILA &34 to switch screen memory into &3000-&7FFF
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\LDA #%00001111         \ Set bits 1 and 2 of the Access Control Register at
+\STA VIA+&34            \ SHEILA &34 to switch screen memory into &3000-&7FFF
+
+                        \ --- End of removed code ----------------------------->
 
  LDA COMX               \ Set X1 = COMX, the x-coordinate of the dash
  STA X1
@@ -6942,8 +7005,12 @@ ENDIF
 
  JSR CPIXK              \ Call CPIXK to draw a single-height dash
 
- LDA #%00001001         \ Clear bits 1 and 2 of the Access Control Register at
- STA VIA+&34            \ SHEILA &34 to switch main memory back into &3000-&7FFF
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\LDA #%00001001         \ Clear bits 1 and 2 of the Access Control Register at
+\STA VIA+&34            \ SHEILA &34 to switch main memory back into &3000-&7FFF
+
+                        \ --- End of removed code ----------------------------->
 
  RTS                    \ Return from the subroutine
 
@@ -7096,8 +7163,12 @@ ENDIF
 
 .ECBLB
 
- LDA #%00001111         \ Set bits 1 and 2 of the Access Control Register at
- STA VIA+&34            \ SHEILA &34 to switch screen memory into &3000-&7FFF
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\LDA #%00001111         \ Set bits 1 and 2 of the Access Control Register at
+\STA VIA+&34            \ SHEILA &34 to switch screen memory into &3000-&7FFF
+
+                        \ --- End of removed code ----------------------------->
 
  LDA #8*14              \ The E.C.M. bulb is in character block number 14 with
  STA SC                 \ each character taking 8 bytes, so this sets the low
@@ -7152,8 +7223,12 @@ ENDIF
 
 .SPBLB
 
- LDA #%00001111         \ Set bits 1 and 2 of the Access Control Register at
- STA VIA+&34            \ SHEILA &34 to switch screen memory into &3000-&7FFF
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\LDA #%00001111         \ Set bits 1 and 2 of the Access Control Register at
+\STA VIA+&34            \ SHEILA &34 to switch screen memory into &3000-&7FFF
+
+                        \ --- End of removed code ----------------------------->
 
  LDA #16*8              \ The space station bulb is in character block number 48
  STA SC                 \ (counting from the left edge of the screen), with the
@@ -7193,8 +7268,12 @@ ENDIF
 
 .away
 
- LDA #%00001001         \ Clear bits 1 and 2 of the Access Control Register at
- STA VIA+&34            \ SHEILA &34 to switch main memory back into &3000-&7FFF
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\LDA #%00001001         \ Clear bits 1 and 2 of the Access Control Register at
+\STA VIA+&34            \ SHEILA &34 to switch main memory back into &3000-&7FFF
+
+                        \ --- End of removed code ----------------------------->
 
  RTS                    \ Return from the subroutine
 
@@ -7348,8 +7427,12 @@ ENDIF
 
 .MSBAR
 
- LDA #%00001111         \ Set bits 1 and 2 of the Access Control Register at
- STA VIA+&34            \ SHEILA &34 to switch screen memory into &3000-&7FFF
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\LDA #%00001111         \ Set bits 1 and 2 of the Access Control Register at
+\STA VIA+&34            \ SHEILA &34 to switch screen memory into &3000-&7FFF
+
+                        \ --- End of removed code ----------------------------->
 
  TXA                    \ Store the value of X on the stack so we can preserve
  PHA                    \ it across the call to this subroutine
@@ -7443,8 +7526,12 @@ ENDIF
 
 IF _SNG47
 
- LDA #%00001001         \ Clear bits 1 and 2 of the Access Control Register at
- STA VIA+&34            \ SHEILA &34 to switch main memory back into &3000-&7FFF
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\LDA #%00001001         \ Clear bits 1 and 2 of the Access Control Register at
+\STA VIA+&34            \ SHEILA &34 to switch main memory back into &3000-&7FFF
+
+                        \ --- End of removed code ----------------------------->
 
  RTS                    \ Return from the subroutine
 
@@ -7514,8 +7601,12 @@ ENDIF
                         \ from 2 to 12, one for each of the 11 horizontal lines
                         \ in the floor, so set the initial value in X
 
- LDA #%00001111         \ Set bits 1 and 2 of the Access Control Register at
- STA VIA+&34            \ SHEILA &34 to switch screen memory into &3000-&7FFF
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\LDA #%00001111         \ Set bits 1 and 2 of the Access Control Register at
+\STA VIA+&34            \ SHEILA &34 to switch screen memory into &3000-&7FFF
+
+                        \ --- End of removed code ----------------------------->
 
 .HAL1
 
@@ -7732,8 +7823,12 @@ ENDIF
 
 IF _SNG47
 
- LDA #%00001001         \ Clear bits 1 and 2 of the Access Control Register at
- STA VIA+&34            \ SHEILA &34 to switch main memory back into &3000-&7FFF
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\LDA #%00001001         \ Clear bits 1 and 2 of the Access Control Register at
+\STA VIA+&34            \ SHEILA &34 to switch main memory back into &3000-&7FFF
+
+                        \ --- End of removed code ----------------------------->
 
  RTS                    \ Return from the subroutine (this instruction is not
                         \ needed as we could just fall through into the RTS at
@@ -8150,8 +8245,12 @@ IF _COMPACT
 
 ENDIF
 
- LDY #%00001111         \ Set bits 1 and 2 of the Access Control Register at
- STY VIA+&34            \ SHEILA &34 to switch screen memory into &3000-&7FFF
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\LDY #%00001111         \ Set bits 1 and 2 of the Access Control Register at
+\STY VIA+&34            \ SHEILA &34 to switch screen memory into &3000-&7FFF
+
+                        \ --- End of removed code ----------------------------->
 
  TAY                    \ Set Y = the character to be printed
 
@@ -8432,8 +8531,12 @@ IF _SNG47
  JSR TTX66              \ Otherwise we are off the bottom of the screen, so
                         \ clear the screen and draw a border box
 
- LDA #%00001111         \ Set bits 1 and 2 of the Access Control Register at
- STA VIA+&34            \ SHEILA &34 to switch screen memory into &3000-&7FFF
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\LDA #%00001111         \ Set bits 1 and 2 of the Access Control Register at
+\STA VIA+&34            \ SHEILA &34 to switch screen memory into &3000-&7FFF
+
+                        \ --- End of removed code ----------------------------->
 
 ELIF _COMPACT
 
@@ -8590,8 +8693,13 @@ ENDIF
 
 .RR4
 
- LDA #%00001001         \ Clear bits 1 and 2 of the Access Control Register at
- STA VIA+&34            \ SHEILA &34 to switch main memory back into &3000-&7FFF
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\LDA #%00001001         \ Clear bits 1 and 2 of the Access Control Register at
+\STA VIA+&34            \ SHEILA &34 to switch main memory back into &3000-&7FFF
+
+                        \ --- End of removed code ----------------------------->
+
                         \ --- Mod: Code removed for BBC Micro B+: ------------->
 
 \PLX                    \ We're done printing, so restore the values of the
@@ -8639,8 +8747,12 @@ ENDIF
 
 .TTX66
 
- LDX #%00001111         \ Set bits 1 and 2 of the Access Control Register at
- STX VIA+&34            \ SHEILA &34 to switch screen memory into &3000-&7FFF
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\LDX #%00001111         \ Set bits 1 and 2 of the Access Control Register at
+\STX VIA+&34            \ SHEILA &34 to switch screen memory into &3000-&7FFF
+
+                        \ --- End of removed code ----------------------------->
 
  LDX #&40               \ Set X to point to page &40, which is the start of the
                         \ screen memory at &4000
@@ -8659,8 +8771,12 @@ ENDIF
 
 .BOX
 
- LDX #%00001111         \ Set bits 1 and 2 of the Access Control Register at
- STX VIA+&34            \ SHEILA &34 to switch screen memory into &3000-&7FFF
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\LDX #%00001111         \ Set bits 1 and 2 of the Access Control Register at
+\STX VIA+&34            \ SHEILA &34 to switch screen memory into &3000-&7FFF
+
+                        \ --- End of removed code ----------------------------->
 
  LDA COL                \ Store the current colour on the stack, so we can
  PHA                    \ restore it once we have drawn the border
@@ -8725,8 +8841,12 @@ ENDIF
  PLA                    \ Restore the original colour that we stored above
  STA COL
 
- LDA #%00001001         \ Clear bits 1 and 2 of the Access Control Register at
- STA VIA+&34            \ SHEILA &34 to switch main memory back into &3000-&7FFF
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\LDA #%00001001         \ Clear bits 1 and 2 of the Access Control Register at
+\STA VIA+&34            \ SHEILA &34 to switch main memory back into &3000-&7FFF
+
+                        \ --- End of removed code ----------------------------->
 
  RTS                    \ Return from the subroutine
 
@@ -8877,8 +8997,12 @@ ENDIF
 
  JSR TT67K              \ Print a newline
 
- LDA #%00001111         \ Set bits 1 and 2 of the Access Control Register at
- STA VIA+&34            \ SHEILA &34 to switch screen memory into &3000-&7FFF
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\LDA #%00001111         \ Set bits 1 and 2 of the Access Control Register at
+\STA VIA+&34            \ SHEILA &34 to switch screen memory into &3000-&7FFF
+
+                        \ --- End of removed code ----------------------------->
 
  LDA #&6A               \ Set SC+1 = &6A, for the high byte of SC(1 0)
  STA SC+1
@@ -8948,8 +9072,12 @@ ENDIF
  BNE CLYL               \ Loop back to blank another row, until we have done the
                         \ number of rows in X
 
- LDA #%00001001         \ Clear bits 1 and 2 of the Access Control Register at
- STA VIA+&34            \ SHEILA &34 to switch main memory back into &3000-&7FFF
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\LDA #%00001001         \ Clear bits 1 and 2 of the Access Control Register at
+\STA VIA+&34            \ SHEILA &34 to switch main memory back into &3000-&7FFF
+
+                        \ --- End of removed code ----------------------------->
 
  LDA #0                 \ Set A = 0 as this is a return value for this routine
 
@@ -8976,8 +9104,12 @@ ENDIF
 
 .DIALS
 
- LDA #%00001111         \ Set bits 1 and 2 of the Access Control Register at
- STA VIA+&34            \ SHEILA &34 to switch screen memory into &3000-&7FFF
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\LDA #%00001111         \ Set bits 1 and 2 of the Access Control Register at
+\STA VIA+&34            \ SHEILA &34 to switch screen memory into &3000-&7FFF
+
+                        \ --- End of removed code ----------------------------->
 
  LDA #1                 \ Set location &DDEB to 1. This location is in HAZEL,
  STA &DDEB              \ which contains the filing system RAM space, though
@@ -9275,8 +9407,12 @@ ENDIF
  LDA ALTIT              \ Draw the altitude indicator using a range of 0-255
  JSR DILX
 
- LDA #%00001001         \ Clear bits 1 and 2 of the Access Control Register at
- STA VIA+&34            \ SHEILA &34 to switch main memory back into &3000-&7FFF
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\LDA #%00001001         \ Clear bits 1 and 2 of the Access Control Register at
+\STA VIA+&34            \ SHEILA &34 to switch main memory back into &3000-&7FFF
+
+                        \ --- End of removed code ----------------------------->
 
  JMP COMPAS             \ We have now drawn all the indicators, so jump to
                         \ COMPAS to draw the compass, returning from the
