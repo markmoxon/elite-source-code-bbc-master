@@ -113,7 +113,7 @@ print("3-assembled-output/BCODE.bin file saved")
 load_address = 0x1300 + 0x5D00
 seed = 0x62
 scramble_from = 0x8000
-scramble_to = 0xB1FF
+scramble_to = 0xAFFF
 
 data_block = bytearray()
 
