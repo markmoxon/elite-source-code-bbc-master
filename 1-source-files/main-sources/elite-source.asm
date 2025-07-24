@@ -355,9 +355,7 @@
  DrawPixelORA = &AF7D
  DrawDialPixels4 = &AF82
  DrawDialPixels3 = &AF85
- CopyInSetZP = &AF8E
- CopyInGetZP = &AF94
- DrawPixelP2 = &AF9F
+ DrawPixelP2 = &AF8E
 
                         \ --- End of replacement ------------------------------>
 
@@ -384,40 +382,20 @@
 
 .ZP
 
- SKIP 2                 \ These bytes appear to be unused
-
-IF _COMPACT
-
-.MOS
-
- SKIP 1                 \ Determines whether we are running on a Master Compact
-                        \
-                        \   * 0 = This is a Master Compact
-                        \
-                        \   * &FF = This is not a Master Compact
-
-ENDIF
+ SKIP 0                 \ The start of the zero page workspace
 
 .RAND
 
  SKIP 4                 \ Four 8-bit seeds for the random number generation
                         \ system implemented in the DORND routine
 
-.T1
+.W
 
  SKIP 1                 \ Temporary storage, used in a number of places
 
-.T2
+.T1
 
- SKIP 1                 \ This byte appears to be unused
-
-.T3
-
- SKIP 1                 \ This byte appears to be unused
-
-.T4
-
- SKIP 1                 \ This byte appears to be unused
+ SKIP 1                 \ Temporary storage, used in a number of places
 
 .SC
 
@@ -432,88 +410,14 @@ ENDIF
 
  SKIP 1                 \ Screen address (high byte)
 
-.P
-
- SKIP 4                 \ Temporary storage, used in a number of places
-
-.XC
-
- SKIP 1                 \ The x-coordinate of the text cursor (i.e. the text
-                        \ column), which can be from 0 to 32
-                        \
-                        \ A value of 0 denotes the leftmost column and 32 the
-                        \ rightmost column, but because the top part of the
-                        \ screen (the space view) has a border box that
-                        \ clashes with columns 0 and 32, text is only shown
-                        \ in columns 1-31
-
-.COL
-
- SKIP 1                 \ Temporary storage, used to store colour information
-                        \ when drawing pixels in the dashboard
-
-.YC
-
- SKIP 1                 \ The y-coordinate of the text cursor (i.e. the text
-                        \ row), which can be from 0 to 23
-                        \
-                        \ The screen actually has 31 character rows if you
-                        \ include the dashboard, but the text printing routines
-                        \ only work on the top part (the space view), so the
-                        \ text cursor only goes up to a maximum of 23, the row
-                        \ just before the screen splits
-                        \
-                        \ A value of 0 denotes the top row, but because the
-                        \ top part of the screen has a border box that clashes
-                        \ with row 0, text is always shown at row 1 or greater
-
-.QQ17
-
- SKIP 1                 \ Contains a number of flags that affect how text tokens
-                        \ are printed, particularly capitalisation:
-                        \
-                        \   * If all bits are set (255) then text printing is
-                        \     disabled
-                        \
-                        \   * Bit 7: 0 = ALL CAPS
-                        \            1 = Sentence Case, bit 6 determines the
-                        \                case of the next letter to print
-                        \
-                        \   * Bit 6: 0 = print the next letter in upper case
-                        \            1 = print the next letter in lower case
-                        \
-                        \   * Bits 0-5: If any of bits 0-5 are set, print in
-                        \               lower case
-                        \
-                        \ So:
-                        \
-                        \   * QQ17 = 0 means case is set to ALL CAPS
-                        \
-                        \   * QQ17 = %10000000 means Sentence Case, currently
-                        \            printing upper case
-                        \
-                        \   * QQ17 = %11000000 means Sentence Case, currently
-                        \            printing lower case
-                        \
-                        \   * QQ17 = %11111111 means printing is disabled
-
-.K3
-
- SKIP 0                 \ Temporary storage, used in a number of places
-
-.XX2
-
- SKIP 14                \ Temporary storage, used to store the visibility of the
-                        \ ship's faces during the ship-drawing routine at LL9
-
-.K4
-
- SKIP 2                 \ Temporary storage, used in a number of places
-
 .XX16
 
  SKIP 18                \ Temporary storage for a block of values, used in a
                         \ number of places
+
+.P
+
+ SKIP 4                 \ Temporary storage, used in a number of places
 
 .XX0
 
@@ -565,6 +469,32 @@ ENDIF
 
  SKIP 1                 \ The magnitude of the pitch angle beta, i.e. |beta|,
                         \ which is a positive value between 0 and 8
+
+.XC
+
+ SKIP 1                 \ The x-coordinate of the text cursor (i.e. the text
+                        \ column), which can be from 0 to 32
+                        \
+                        \ A value of 0 denotes the leftmost column and 32 the
+                        \ rightmost column, but because the top part of the
+                        \ screen (the space view) has a border box that
+                        \ clashes with columns 0 and 32, text is only shown
+                        \ in columns 1-31
+
+.YC
+
+ SKIP 1                 \ The y-coordinate of the text cursor (i.e. the text
+                        \ row), which can be from 0 to 23
+                        \
+                        \ The screen actually has 31 character rows if you
+                        \ include the dashboard, but the text printing routines
+                        \ only work on the top part (the space view), so the
+                        \ text cursor only goes up to a maximum of 23, the row
+                        \ just before the screen splits
+                        \
+                        \ A value of 0 denotes the top row, but because the
+                        \ top part of the screen has a border box that clashes
+                        \ with row 0, text is always shown at row 1 or greater
 
 .QQ22
 
@@ -682,15 +612,40 @@ ENDIF
                         \   * 1-12 = the slot number of the ship that our
                         \            missile is locked onto
 
-.DL
+.XX1
 
- SKIP 1                 \ Vertical sync flag
+ SKIP 0                 \ This is an alias for INWK that is used in the main
+                        \ ship-drawing routine at LL9
+
+.INWK
+
+ SKIP 33                \ The zero-page internal workspace for the current ship
+                        \ data block
                         \
-                        \ DL gets set to 30 every time we reach vertical sync on
-                        \ the video system, which happens 50 times a second
-                        \ (50Hz). The WSCAN routine uses this to pause until the
-                        \ vertical sync, by setting DL to 0 and then monitoring
-                        \ its value until it changes to 30
+                        \ As operations on zero page locations are faster and
+                        \ have smaller opcodes than operations on the rest of
+                        \ the addressable memory, Elite tends to store oft-used
+                        \ data here. A lot of the routines in Elite need to
+                        \ access and manipulate ship data, so to make this an
+                        \ efficient exercise, the ship data is first copied from
+                        \ the ship data blocks at K% into INWK (or, when new
+                        \ ships are spawned, from the blueprints at XX21)
+
+.XX19
+
+ SKIP NI% - 34          \ XX19(1 0) shares its location with INWK(34 33), which
+                        \ contains the address of the ship line heap
+
+.NEWB
+
+ SKIP 1                 \ The ship's "new byte flags" (or NEWB flags)
+                        \
+                        \ Contains details about the ship's type and associated
+                        \ behaviour, such as whether they are a trader, a bounty
+                        \ hunter, a pirate, currently hostile, in the process of
+                        \ docking, inside the hold having been scooped, and so
+                        \ on. The default values for each ship type are taken
+                        \ from the table at E%
 
 .LSP
 
@@ -711,17 +666,47 @@ ENDIF
 
 .XX18
 
- SKIP 4                 \ Temporary storage used to store coordinates in the
+ SKIP 0                 \ Temporary storage used to store coordinates in the
                         \ LL9 ship-drawing routine
+
+.QQ17
+
+ SKIP 1                 \ Contains a number of flags that affect how text tokens
+                        \ are printed, particularly capitalisation:
+                        \
+                        \   * If all bits are set (255) then text printing is
+                        \     disabled
+                        \
+                        \   * Bit 7: 0 = ALL CAPS
+                        \            1 = Sentence Case, bit 6 determines the
+                        \                case of the next letter to print
+                        \
+                        \   * Bit 6: 0 = print the next letter in upper case
+                        \            1 = print the next letter in lower case
+                        \
+                        \   * Bits 0-5: If any of bits 0-5 are set, print in
+                        \               lower case
+                        \
+                        \ So:
+                        \
+                        \   * QQ17 = 0 means case is set to ALL CAPS
+                        \
+                        \   * QQ17 = %10000000 means Sentence Case, currently
+                        \            printing upper case
+                        \
+                        \   * QQ17 = %11000000 means Sentence Case, currently
+                        \            printing lower case
+                        \
+                        \   * QQ17 = %11111111 means printing is disabled
+
+.QQ19
+
+ SKIP 3                 \ Temporary storage, used in a number of places
 
 .K6
 
  SKIP 5                 \ Temporary storage, typically used for storing
                         \ coordinates during vector calculations
-
-.QQ19
-
- SKIP 6                 \ Temporary storage, used in a number of places
 
 .BET2
 
@@ -756,10 +741,6 @@ ENDIF
 
  SKIP 1                 \ Temporary storage, used in a number of places
 
-.T
-
- SKIP 1                 \ Temporary storage, used in a number of places
-
 .XSAV
 
  SKIP 1                 \ Temporary storage for saving the value of the X
@@ -775,10 +756,6 @@ ENDIF
  SKIP 1                 \ Temporary storage, used in BPRNT to store the number
                         \ of characters to print, and as the edge counter in the
                         \ main ship-drawing routine
-
-.W
-
- SKIP 1                 \ Temporary storage, used in a number of places
 
 .QQ11
 
@@ -819,6 +796,16 @@ ENDIF
                         \ This counter determines how often certain actions are
                         \ performed within the main loop
 
+.DL
+
+ SKIP 1                 \ Vertical sync flag
+                        \
+                        \ DL gets set to 30 every time we reach vertical sync on
+                        \ the video system, which happens 50 times a second
+                        \ (50Hz). The WSCAN routine uses this to pause until the
+                        \ vertical sync, by setting DL to 0 and then monitoring
+                        \ its value until it changes to 30
+
 .TYPE
 
  SKIP 1                 \ The current ship type
@@ -852,6 +839,19 @@ ENDIF
  SKIP 1                 \ Temporary storage, typically used as a target value
                         \ for counters when drawing explosion clouds and partial
                         \ circles
+
+.SWAP
+
+ SKIP 1                 \ Temporary storage, used to store a flag that records
+                        \ whether or not we had to swap a line's start and end
+                        \ coordinates around when clipping the line in routine
+                        \ LL145 (the flag is used in places like BLINE to swap
+                        \ them back)
+
+.COL
+
+ SKIP 1                 \ Temporary storage, used to store colour information
+                        \ when drawing pixels in the dashboard
 
 .FLAG
 
@@ -896,19 +896,9 @@ ENDIF
 
  SKIP 1                 \ Temporary storage, used in a number of places
 
-.LSNUM
+.XX14
 
- SKIP 1                 \ The pointer to the current position in the ship line
-                        \ heap as we work our way through the new ship's edges
-                        \ (and the corresponding old ship's edges) when drawing
-                        \ the ship in the main ship-drawing routine at LL9
-
-.LSNUM2
-
- SKIP 1                 \ The size of the existing ship line heap for the ship
-                        \ we are drawing in LL9, i.e. the number of lines in the
-                        \ old ship that is currently shown on-screen and which
-                        \ we need to erase
+ SKIP 1                 \ This byte appears to be unused
 
 .RAT
 
@@ -924,342 +914,24 @@ ENDIF
 
  SKIP 4                 \ Temporary storage, used in a number of places
 
-.widget
+ ORG &00D1              \ Set the assembly address to &00D1
 
- SKIP 1                 \ Temporary storage, used to store the original argument
-                        \ in A in the logarithmic FMLTU and LL28 routines
+.T
 
-.dontclip
+ SKIP 1                 \ Temporary storage, used in a number of places
 
- SKIP 1                 \ This is set to 0 in the RES2 routine, but the value is
-                        \ never actually read (this is left over from the
-                        \ Commodore 64 version of Elite)
+.K3
 
-.Yx2M1
+ SKIP 0                 \ Temporary storage, used in a number of places
 
- SKIP 1                 \ This is used to store the number of pixel rows in the
-                        \ space view minus 1, which is also the y-coordinate of
-                        \ the bottom pixel row of the space view (it is set to
-                        \ 191 in the RES2 routine)
+.XX2
 
-.messXC
+ SKIP 14                \ Temporary storage, used to store the visibility of the
+                        \ ship's faces during the ship-drawing routine at LL9
 
- SKIP 1                 \ Temporary storage, used to store the text column
-                        \ of the in-flight message in MESS, so it can be erased
-                        \ from the screen at the correct time
+.K4
 
-.newzp
-
- SKIP 1                 \ This is used by the STARS2 routine for storing the
-                        \ stardust particle's delta_x value
-
-.XX1
-
- SKIP 0                 \ This is an alias for INWK that is used in the main
-                        \ ship-drawing routine at LL9
-
-.INWK
-
- SKIP 33                \ The zero-page internal workspace for the current ship
-                        \ data block
-                        \
-                        \ As operations on zero page locations are faster and
-                        \ have smaller opcodes than operations on the rest of
-                        \ the addressable memory, Elite tends to store oft-used
-                        \ data here. A lot of the routines in Elite need to
-                        \ access and manipulate ship data, so to make this an
-                        \ efficient exercise, the ship data is first copied from
-                        \ the ship data blocks at K% into INWK (or, when new
-                        \ ships are spawned, from the blueprints at XX21)
-
-.XX19
-
- SKIP NI% - 34          \ XX19(1 0) shares its location with INWK(34 33), which
-                        \ contains the address of the ship line heap
-
-.NEWB
-
- SKIP 1                 \ The ship's "new byte flags" (or NEWB flags)
-                        \
-                        \ Contains details about the ship's type and associated
-                        \ behaviour, such as whether they are a trader, a bounty
-                        \ hunter, a pirate, currently hostile, in the process of
-                        \ docking, inside the hold having been scooped, and so
-                        \ on. The default values for each ship type are taken
-                        \ from the table at E%
-
-.JSTX
-
- SKIP 1                 \ Our current roll rate
-                        \
-                        \ This value is shown in the dashboard's RL indicator,
-                        \ and determines the rate at which we are rolling
-                        \
-                        \ The value ranges from 1 to 255 with 128 as the centre
-                        \ point, so 1 means roll is decreasing at the maximum
-                        \ rate, 128 means roll is not changing, and 255 means
-                        \ roll is increasing at the maximum rate
-                        \
-                        \ This value is updated by "<" and ">" key presses, or
-                        \ if joysticks are enabled, from the joystick. If
-                        \ keyboard damping is enabled (which it is by default),
-                        \ the value is slowly moved towards the centre value of
-                        \ 128 (no roll) if there are no key presses or joystick
-                        \ movement
-
-.JSTY
-
- SKIP 1                 \ Our current pitch rate
-                        \
-                        \ This value is shown in the dashboard's DC indicator,
-                        \ and determines the rate at which we are pitching
-                        \
-                        \ The value ranges from 1 to 255 with 128 as the centre
-                        \ point, so 1 means pitch is decreasing at the maximum
-                        \ rate, 128 means pitch is not changing, and 255 means
-                        \ pitch is increasing at the maximum rate
-                        \
-                        \ This value is updated by "S" and "X" key presses, or
-                        \ if joysticks are enabled, from the joystick. If
-                        \ keyboard damping is enabled (which it is by default),
-                        \ the value is slowly moved towards the centre value of
-                        \ 128 (no pitch) if there are no key presses or joystick
-                        \ movement
-
-.KL
-
- SKIP 1                 \ The following bytes implement a key logger that
-                        \ enables Elite to scan for concurrent key presses of
-                        \ the primary flight keys, plus a secondary flight key
-                        \
-                        \ If a key is being pressed that is not in the keyboard
-                        \ table at KYTB, it can be stored here (as seen in
-                        \ routine DK4, for example)
-
-.KY17
-
- SKIP 1                 \ "E" is being pressed (activate E.C.M.)
-                        \
-                        \   * 0 = no
-                        \
-                        \   * Non-zero = yes
-
-.KY14
-
- SKIP 1                 \ "T" is being pressed (target missile)
-                        \
-                        \   * 0 = no
-                        \
-                        \   * Non-zero = yes
-
-.KY15
-
- SKIP 1                 \ "U" is being pressed (unarm missile)
-                        \
-                        \   * 0 = no
-                        \
-                        \   * Non-zero = yes
-
-.KY20
-
- SKIP 1                 \ "P" is being pressed (deactivate docking computer)
-                        \
-                        \   * 0 = no
-                        \
-                        \   * Non-zero = yes
-
-.KY7
-
- SKIP 1                 \ "A" is being pressed (fire lasers)
-                        \
-                        \   * 0 = no
-                        \
-                        \   * Non-zero = yes
-                        \
-                        \ This is also set when the joystick fire button has
-                        \ been pressed
-
-.KY5
-
- SKIP 1                 \ "X" is being pressed (pull up)
-                        \
-                        \   * 0 = no
-                        \
-                        \   * Non-zero = yes
-
-.KY18
-
- SKIP 1                 \ "J" is being pressed (in-system jump)
-                        \
-                        \   * 0 = no
-                        \
-                        \   * Non-zero = yes
-
-.KY6
-
- SKIP 1                 \ "S" is being pressed (pitch down)
-                        \
-                        \   * 0 = no
-                        \
-                        \   * Non-zero = yes
-
-.KY19
-
- SKIP 1                 \ "C" is being pressed (activate docking computer)
-                        \
-                        \   * 0 = no
-                        \
-                        \   * Non-zero = yes
-
-.KY12
-
- SKIP 1                 \ TAB is being pressed (energy bomb)
-                        \
-                        \   * 0 = no
-                        \
-                        \   * Non-zero = yes
-
-.KY2
-
- SKIP 1                 \ Space is being pressed (speed up)
-                        \
-                        \   * 0 = no
-                        \
-                        \   * Non-zero = yes
-
-.KY16
-
- SKIP 1                 \ "M" is being pressed (fire missile)
-                        \
-                        \   * 0 = no
-                        \
-                        \   * Non-zero = yes
-
-.KY3
-
- SKIP 1                 \ "<" is being pressed (roll left)
-                        \
-                        \   * 0 = no
-                        \
-                        \   * Non-zero = yes
-
-.KY4
-
- SKIP 1                 \ ">" is being pressed (roll right)
-                        \
-                        \   * 0 = no
-                        \
-                        \   * Non-zero = yes
-
-.KY1
-
- SKIP 1                 \ "?" is being pressed (slow down)
-                        \
-                        \   * 0 = no
-                        \
-                        \   * Non-zero = yes
-
-.KY13
-
- SKIP 1                 \ ESCAPE is being pressed (launch escape pod)
-                        \
-                        \   * 0 = no
-                        \
-                        \   * Non-zero = yes
-
-.LSX
-
- SKIP 1                 \ LSX contains the status of the sun line heap at LSO
-                        \
-                        \   * &FF indicates the sun line heap is empty
-                        \
-                        \   * Otherwise the LSO heap contains the line data for
-                        \     the sun
-
-.FSH
-
- SKIP 1                 \ Forward shield status
-                        \
-                        \   * 0 = empty
-                        \
-                        \   * &FF = full
-
-.ASH
-
- SKIP 1                 \ Aft shield status
-                        \
-                        \   * 0 = empty
-                        \
-                        \   * &FF = full
-
-.ENERGY
-
- SKIP 1                 \ Energy bank status
-                        \
-                        \   * 0 = empty
-                        \
-                        \   * &FF = full
-
-.QQ3
-
- SKIP 1                 \ The selected system's economy (0-7)
-                        \
-                        \   * 0 = Rich Industrial
-                        \   * 1 = Average Industrial
-                        \   * 2 = Poor Industrial
-                        \   * 3 = Mainly Industrial
-                        \   * 4 = Mainly Agricultural
-                        \   * 5 = Rich Agricultural
-                        \   * 6 = Average Agricultural
-                        \   * 7 = Poor Agricultural
-
-.QQ4
-
- SKIP 1                 \ The selected system's government (0-7)
-
-.QQ5
-
- SKIP 1                 \ The selected system's tech level (0-14)
-
-.QQ6
-
- SKIP 2                 \ The selected system's population in billions * 10
-                        \ (1-71), so the maximum population is 7.1 billion
-
-.QQ7
-
- SKIP 2                 \ The selected system's productivity in M CR (96-62480)
-
-.QQ8
-
- SKIP 2                 \ The distance from the current system to the selected
-                        \ system in light years * 10, stored as a 16-bit number
-                        \
-                        \ The distance will be 0 if the selected system is the
-                        \ current system
-                        \
-                        \ The galaxy chart is 102.4 light years wide and 51.2
-                        \ light years tall (see the intra-system distance
-                        \ calculations in routine TT111 for details), which
-                        \ equates to 1024 x 512 in terms of QQ8
-
-.QQ9
-
- SKIP 1                 \ The galactic x-coordinate of the crosshairs in the
-                        \ galaxy chart (and, most of the time, the selected
-                        \ system's galactic x-coordinate)
-
-.QQ10
-
- SKIP 1                 \ The galactic y-coordinate of the crosshairs in the
-                        \ galaxy chart (and, most of the time, the selected
-                        \ system's galactic y-coordinate)
-
-.NOSTM
-
- SKIP 1                 \ The number of stardust particles shown on screen,
-                        \ which is 20 (#NOST) for normal space, and 3 for
-                        \ witchspace
+ SKIP 2                 \ Temporary storage, used in a number of places
 
  PRINT "ZP workspace from ", ~ZP, "to ", ~P%-1, "inclusive"
 
@@ -1570,7 +1242,49 @@ ENDIF
 \
 \SKIP 90                \ The line buffer used by DASC to print justified text
 
-                        \ --- End of removed code ----------------------------->
+                        \ --- End of moved code ------------------------------->
+
+                        \ --- Mod: Code moved for BBC Micro B+: --------------->
+
+.JSTX
+
+ SKIP 1                 \ Our current roll rate
+                        \
+                        \ This value is shown in the dashboard's RL indicator,
+                        \ and determines the rate at which we are rolling
+                        \
+                        \ The value ranges from 1 to 255 with 128 as the centre
+                        \ point, so 1 means roll is decreasing at the maximum
+                        \ rate, 128 means roll is not changing, and 255 means
+                        \ roll is increasing at the maximum rate
+                        \
+                        \ This value is updated by "<" and ">" key presses, or
+                        \ if joysticks are enabled, from the joystick. If
+                        \ keyboard damping is enabled (which it is by default),
+                        \ the value is slowly moved towards the centre value of
+                        \ 128 (no roll) if there are no key presses or joystick
+                        \ movement
+
+.JSTY
+
+ SKIP 1                 \ Our current pitch rate
+                        \
+                        \ This value is shown in the dashboard's DC indicator,
+                        \ and determines the rate at which we are pitching
+                        \
+                        \ The value ranges from 1 to 255 with 128 as the centre
+                        \ point, so 1 means pitch is decreasing at the maximum
+                        \ rate, 128 means pitch is not changing, and 255 means
+                        \ pitch is increasing at the maximum rate
+                        \
+                        \ This value is updated by "S" and "X" key presses, or
+                        \ if joysticks are enabled, from the joystick. If
+                        \ keyboard damping is enabled (which it is by default),
+                        \ the value is slowly moved towards the centre value of
+                        \ 128 (no pitch) if there are no key presses or joystick
+                        \ movement
+
+                        \ --- End of moved code ------------------------------->
 
 .SX
 
@@ -1630,7 +1344,7 @@ ENDIF
                         \
                         \   * 0 = we have crashed into the surface
 
-.SWAP
+\.SWAP
 
  SKIP 1                 \ Temporary storage, used to store a flag that records
                         \ whether or not we had to swap a line's start and end
@@ -2014,6 +1728,34 @@ ENDIF
                         \ currently being shown, and which will be removed by
                         \ the me2 routine when the counter in DLY reaches zero
 
+                        \ --- Mod: Code moved for BBC Micro B+: --------------->
+
+.FSH
+
+ SKIP 1                 \ Forward shield status
+                        \
+                        \   * 0 = empty
+                        \
+                        \   * &FF = full
+
+.ASH
+
+ SKIP 1                 \ Aft shield status
+                        \
+                        \   * 0 = empty
+                        \
+                        \   * &FF = full
+
+.ENERGY
+
+ SKIP 1                 \ Energy bank status
+                        \
+                        \   * 0 = empty
+                        \
+                        \   * &FF = full
+
+                        \ --- End of moved code ------------------------------->
+
 .COMX
 
  SKIP 1                 \ The x-coordinate of the compass dot
@@ -2080,6 +1822,71 @@ ENDIF
  SKIP 6                 \ The three 16-bit seeds for the current system, i.e.
                         \ the one we are currently in
 
+                        \ --- Mod: Code moved for BBC Micro B+: --------------->
+
+.QQ3
+
+ SKIP 1                 \ The selected system's economy (0-7)
+                        \
+                        \   * 0 = Rich Industrial
+                        \   * 1 = Average Industrial
+                        \   * 2 = Poor Industrial
+                        \   * 3 = Mainly Industrial
+                        \   * 4 = Mainly Agricultural
+                        \   * 5 = Rich Agricultural
+                        \   * 6 = Average Agricultural
+                        \   * 7 = Poor Agricultural
+
+.QQ4
+
+ SKIP 1                 \ The selected system's government (0-7)
+
+.QQ5
+
+ SKIP 1                 \ The selected system's tech level (0-14)
+
+.QQ6
+
+ SKIP 2                 \ The selected system's population in billions * 10
+                        \ (1-71), so the maximum population is 7.1 billion
+
+.QQ7
+
+ SKIP 2                 \ The selected system's productivity in M CR (96-62480)
+
+.QQ8
+
+ SKIP 2                 \ The distance from the current system to the selected
+                        \ system in light years * 10, stored as a 16-bit number
+                        \
+                        \ The distance will be 0 if the selected system is the
+                        \ current system
+                        \
+                        \ The galaxy chart is 102.4 light years wide and 51.2
+                        \ light years tall (see the intra-system distance
+                        \ calculations in routine TT111 for details), which
+                        \ equates to 1024 x 512 in terms of QQ8
+
+.QQ9
+
+ SKIP 1                 \ The galactic x-coordinate of the crosshairs in the
+                        \ galaxy chart (and, most of the time, the selected
+                        \ system's galactic x-coordinate)
+
+.QQ10
+
+ SKIP 1                 \ The galactic y-coordinate of the crosshairs in the
+                        \ galaxy chart (and, most of the time, the selected
+                        \ system's galactic y-coordinate)
+
+.NOSTM
+
+ SKIP 1                 \ The number of stardust particles shown on screen,
+                        \ which is 18 (#NOST) for normal space, and 3 for
+                        \ witchspace
+
+                        \ --- End of moved code ------------------------------->
+
 .safehouse
 
  SKIP 6                 \ Backup storage for the seeds for the selected system
@@ -2090,6 +1897,47 @@ ENDIF
                         \ earlier version where you could hyperspace while
                         \ docking and magically appear in your destination
                         \ station
+
+                        \ --- Mod: Code moved for BBC Micro B+: --------------->
+
+.widget
+
+ SKIP 1                 \ Temporary storage, used to store the original argument
+                        \ in A in the logarithmic FMLTU and LL28 routines
+
+.Yx2M1
+
+ SKIP 1                 \ This is used to store the number of pixel rows in the
+                        \ space view minus 1, which is also the y-coordinate of
+                        \ the bottom pixel row of the space view (it is set to
+                        \ 191 in the RES2 routine)
+
+.messXC
+
+ SKIP 1                 \ Temporary storage, used to store the text column
+                        \ of the in-flight message in MESS, so it can be erased
+                        \ from the screen at the correct time
+
+.newzp
+
+ SKIP 1                 \ This is used by the STARS2 routine for storing the
+                        \ stardust particle's delta_x value
+
+.LSNUM
+
+ SKIP 1                 \ The pointer to the current position in the ship line
+                        \ heap as we work our way through the new ship's edges
+                        \ (and the corresponding old ship's edges) when drawing
+                        \ the ship in the main ship-drawing routine at LL9
+
+.LSNUM2
+
+ SKIP 1                 \ The size of the existing ship line heap for the ship
+                        \ we are drawing in LL9, i.e. the number of lines in the
+                        \ old ship that is currently shown on-screen and which
+                        \ we need to erase
+
+                        \ --- End of moved code ------------------------------->
 
 .frump
 
@@ -2297,10 +2145,14 @@ ENDIF
 
                         \ --- End of added code ------------------------------->
 
- JSR getzp              \ Call getzp to restore the top part of zero page from
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\JSR getzp              \ Call getzp to restore the top part of zero page from
                         \ the buffer at &3000, as this will have been stored in
                         \ the buffer before performing the disc access that gave
                         \ the error we're processsing
+
+                        \ --- End of removed code ----------------------------->
 
                         \ --- Mod: Code removed for BBC Micro B+: ------------->
 
@@ -3411,52 +3263,39 @@ ENDIF
 \
 \ ******************************************************************************
 
-.setzp
-
-IF _COMPACT
-
- JSR NMICLAIM           \ Claim the NMI workspace (&00A0 to &00A7) from the MOS
-                        \ so the game can use it
-
-ENDIF
-
                         \ --- Mod: Code removed for BBC Micro B+: ------------->
 
+\.setzp
+\
+\IF _COMPACT
+\
+\JSR NMICLAIM           \ Claim the NMI workspace (&00A0 to &00A7) from the MOS
+\                       \ so the game can use it
+\
+\ENDIF
+\
 \LDA #%00001111         \ Set bits 1 and 2 of the Access Control Register at
 \STA VIA+&34            \ SHEILA &34 to switch screen memory into &3000-&7FFF
-
-                        \ --- End of removed code ----------------------------->
-
- LDX #&90               \ We want to save zero page from &0090 and up, so set an
-                        \ index in X, starting from &90
-
-.sz1
-
-                        \ --- Mod: Code removed for BBC Micro B+: ------------->
-
+\
+\LDX #&90               \ We want to save zero page from &0090 and up, so set an
+\                       \ index in X, starting from &90
+\
+\.sz1
+\
 \LDA ZP,X               \ Copy the X-th byte of ZP to the X-th byte of &3000
 \STA &3000,X
-
-                        \ --- And replaced by: -------------------------------->
-
- JSR CopyInSetZP        \ Perform the LDA/STA instructions from &A000-&AFFF so
-                        \ they affect screen memory in shadow RAM
-
-                        \ --- End of replacement ------------------------------>
-
- INX                    \ Increment the loop counter
-
- BNE sz1                \ Loop back until we have copied the last byte of zero
-                        \ page
-
-                        \ --- Mod: Code removed for BBC Micro B+: ------------->
-
+\
+\INX                    \ Increment the loop counter
+\
+\BNE sz1                \ Loop back until we have copied the last byte of zero
+\                       \ page
+\
 \LDA #%00001001         \ Clear bits 1 and 2 of the Access Control Register at
 \STA VIA+&34            \ SHEILA &34 to switch main memory back into &3000-&7FFF
+\
+\RTS                    \ Return from the subroutine
 
                         \ --- End of removed code ----------------------------->
-
- RTS                    \ Return from the subroutine
 
 \ ******************************************************************************
 \
@@ -3502,48 +3341,35 @@ ENDIF
 \
 \ ******************************************************************************
 
-.getzp
-
-IF _COMPACT
-
- JSR NMICLAIM           \ Claim the NMI workspace (&00A0 to &00A7) from the MOS
-                        \ so the game can use it
-
-ENDIF
-
                         \ --- Mod: Code removed for BBC Micro B+: ------------->
 
+\.getzp
+\
+\IF _COMPACT
+\
+\JSR NMICLAIM           \ Claim the NMI workspace (&00A0 to &00A7) from the MOS
+\                       \ so the game can use it
+\
+\ENDIF
+\
 \LDA #%00001111         \ Set bits 1 and 2 of the Access Control Register at
 \STA VIA+&34            \ SHEILA &34 to switch screen memory into &3000-&7FFF
-
-                        \ --- End of removed code ----------------------------->
-
- LDX #&90               \ We want to swap zero page from &0090 and up, so set an
-                        \ index in X, starting from &90
-
-.sz2
-
-                        \ --- Mod: Code removed for BBC Micro B+: ------------->
-
+\
+\LDX #&90               \ We want to swap zero page from &0090 and up, so set an
+\                       \ index in X, starting from &90
+\
+\.sz2
+\
 \LDA ZP,X               \ Swap the X-th byte of ZP with the X-th byte of &3000
 \LDY &3000,X
 \STY ZP,X
 \STA &3000,X
-
-                        \ --- And replaced by: -------------------------------->
-
- JSR CopyInGetZP        \ Perform the LDx/STx instructions from &A000-&AFFF so
-                        \ they affect screen memory in shadow RAM
-
-                        \ --- End of replacement ------------------------------>
-
- INX                    \ Increment the loop counter
-
- CPX #&F0               \ Loop back until we have swapped up to location &00EF
- BNE sz2
-
-                        \ --- Mod: Code removed for BBC Micro B+: ------------->
-
+\
+\INX                    \ Increment the loop counter
+\
+\CPX #&F0               \ Loop back until we have swapped up to location &00EF
+\BNE sz2
+\
 \LDA #%00001001         \ Clear bits 1 and 2 of the Access Control Register at
 \STA VIA+&34            \ SHEILA &34 to switch main memory back into &3000-&7FFF
 \
@@ -3551,10 +3377,10 @@ ENDIF
 \STA VIA+&30            \ 6, to switch sideways ROM bank 6 into &8000-&BFFF in
 \                       \ main memory (we already confirmed that this bank
 \                       \ contains RAM rather than ROM in the loader)
+\
+\RTS                    \ Return from the subroutine
 
                         \ --- End of removed code ----------------------------->
-
- RTS                    \ Return from the subroutine
 
 \ ******************************************************************************
 \
@@ -10873,6 +10699,16 @@ ENDIF
 
  SKIP 256               \ The ball line heap for storing y-coordinates
 
+.LSX
+
+ SKIP 1                 \ LSX is an alias that points to the first byte of the
+                        \ sun line heap at LSO
+                        \
+                        \   * &FF indicates the sun line heap is empty
+                        \
+                        \   * Otherwise the LSO heap contains the line data for
+                        \     the sun
+
 .LSO
 
  SKIP 200               \ The ship line heap for the space station (see NWSPS)
@@ -11163,6 +10999,151 @@ ENDIF
 .UP
 
  SKIP 0                 \ The start of the UP workspace
+
+                        \ --- Mod: Code moved for BBC Micro B+: --------------->
+
+.KL
+
+ SKIP 1                 \ The following bytes implement a key logger that
+                        \ enables Elite to scan for concurrent key presses of
+                        \ the primary flight keys, plus a secondary flight key
+                        \
+                        \ If a key is being pressed that is not in the keyboard
+                        \ table at KYTB, it can be stored here (as seen in
+                        \ routine DK4, for example)
+
+.KY17
+
+ SKIP 1                 \ "E" is being pressed (activate E.C.M.)
+                        \
+                        \   * 0 = no
+                        \
+                        \   * Non-zero = yes
+
+.KY14
+
+ SKIP 1                 \ "T" is being pressed (target missile)
+                        \
+                        \   * 0 = no
+                        \
+                        \   * Non-zero = yes
+
+.KY15
+
+ SKIP 1                 \ "U" is being pressed (unarm missile)
+                        \
+                        \   * 0 = no
+                        \
+                        \   * Non-zero = yes
+
+.KY20
+
+ SKIP 1                 \ "P" is being pressed (deactivate docking computer)
+                        \
+                        \   * 0 = no
+                        \
+                        \   * Non-zero = yes
+
+.KY7
+
+ SKIP 1                 \ "A" is being pressed (fire lasers)
+                        \
+                        \   * 0 = no
+                        \
+                        \   * Non-zero = yes
+                        \
+                        \ This is also set when the joystick fire button has
+                        \ been pressed
+
+.KY5
+
+ SKIP 1                 \ "X" is being pressed (pull up)
+                        \
+                        \   * 0 = no
+                        \
+                        \   * Non-zero = yes
+
+.KY18
+
+ SKIP 1                 \ "J" is being pressed (in-system jump)
+                        \
+                        \   * 0 = no
+                        \
+                        \   * Non-zero = yes
+
+.KY6
+
+ SKIP 1                 \ "S" is being pressed (pitch down)
+                        \
+                        \   * 0 = no
+                        \
+                        \   * Non-zero = yes
+
+.KY19
+
+ SKIP 1                 \ "C" is being pressed (activate docking computer)
+                        \
+                        \   * 0 = no
+                        \
+                        \   * Non-zero = yes
+
+.KY12
+
+ SKIP 1                 \ TAB is being pressed (energy bomb)
+                        \
+                        \   * 0 = no
+                        \
+                        \   * Non-zero = yes
+
+.KY2
+
+ SKIP 1                 \ Space is being pressed (speed up)
+                        \
+                        \   * 0 = no
+                        \
+                        \   * Non-zero = yes
+
+.KY16
+
+ SKIP 1                 \ "M" is being pressed (fire missile)
+                        \
+                        \   * 0 = no
+                        \
+                        \   * Non-zero = yes
+
+.KY3
+
+ SKIP 1                 \ "<" is being pressed (roll left)
+                        \
+                        \   * 0 = no
+                        \
+                        \   * Non-zero = yes
+
+.KY4
+
+ SKIP 1                 \ ">" is being pressed (roll right)
+                        \
+                        \   * 0 = no
+                        \
+                        \   * Non-zero = yes
+
+.KY1
+
+ SKIP 1                 \ "?" is being pressed (slow down)
+                        \
+                        \   * 0 = no
+                        \
+                        \   * Non-zero = yes
+
+.KY13
+
+ SKIP 1                 \ ESCAPE is being pressed (launch escape pod)
+                        \
+                        \   * 0 = no
+                        \
+                        \   * Non-zero = yes
+
+                        \ --- End of moved code ------------------------------->
 
 .COMC
 
@@ -37107,9 +37088,13 @@ ENDIF
 \LDA #&10               \ These instructions are commented out in the original
 \STA COL2               \ source
 
- LDA #0                 \ Set dontclip to 0 (though this variable is never used,
- STA dontclip           \ so this has no effect; it is left over from the
-                        \ Commodore 64 version)
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\LDA #0                 \ Set dontclip to 0 (though this variable is never used,
+\STA dontclip           \ so this has no effect; it is left over from the
+\                       \ Commodore 64 version)
+
+                        \ --- End of removed code ----------------------------->
 
  LDA #2*Y-1             \ Set Yx2M1 to the number of pixel lines in the space
  STA Yx2M1              \ view
@@ -39945,17 +39930,17 @@ IF _COMPACT
 
 \JSR OSCLI              \ Call OSCLI to run the OS command in DIRI, which
 \                       \ changes the disc directory to the name entered
+\
+\JMP getzp              \ Call getzp to restore the top part of zero page from
+                        \ the buffer at &3000 and return from the subroutine
+                        \ using a tail call
 
                         \ --- And replaced by: -------------------------------->
 
- JSR OSC                \ Call OSCLI to run the OS command in DIRI, which
+ JMP OSC                \ Call OSCLI to run the OS command in DIRI, which
                         \ changes the disc directory to the name entered
 
                         \ --- End of replacement ------------------------------>
-
- JMP getzp              \ Call getzp to restore the top part of zero page from
-                        \ the buffer at &3000 and return from the subroutine
-                        \ using a tail call
 
 ENDIF
 
@@ -40021,9 +40006,13 @@ ENDIF
 
 IF _SNG47
 
- JSR getzp              \ Call getzp to store the top part of zero page in the
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\JSR getzp              \ Call getzp to store the top part of zero page in the
                         \ the buffer at &3000, as it gets corrupted by the MOS
                         \ during disc access
+
+                        \ --- End of removed code ----------------------------->
 
 ELIF _COMPACT
 
@@ -40051,8 +40040,12 @@ ENDIF
 
                         \ --- End of replacement ------------------------------>
 
- JSR getzp              \ Call getzp to restore the top part of zero page from
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\JSR getzp              \ Call getzp to restore the top part of zero page from
                         \ the buffer at &3000
+
+                        \ --- End of removed code ----------------------------->
 
                         \ --- Mod: Code removed for BBC Micro B+: ------------->
 
@@ -40173,9 +40166,13 @@ IF _SNG47
  BNE DELL1              \ Loop back to DELL1 to copy the next character until we
                         \ have copied the whole filename
 
- JSR getzp              \ Call getzp to store the top part of zero page in the
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\JSR getzp              \ Call getzp to store the top part of zero page in the
                         \ the buffer at &3000, as it gets corrupted by the MOS
                         \ during disc access
+
+                        \ --- End of removed code ----------------------------->
 
 ELIF _COMPACT
 
@@ -40209,8 +40206,12 @@ ENDIF
 
                         \ --- End of replacement ------------------------------>
 
- JSR getzp              \ Call getzp to restore the top part of zero page from
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\JSR getzp              \ Call getzp to restore the top part of zero page from
                         \ the buffer at &3000
+
+                        \ --- End of removed code ----------------------------->
 
  JMP SVE                \ Jump to SVE to display the disc access menu and return
                         \ from the subroutine using a tail call
@@ -40887,9 +40888,13 @@ ENDIF
 
 IF _SNG47
 
- JSR getzp              \ Call getzp to store the top part of zero page in the
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\JSR getzp              \ Call getzp to store the top part of zero page in the
                         \ the buffer at &3000, as it gets corrupted by the MOS
                         \ during disc access
+
+                        \ --- End of removed code ----------------------------->
 
 ELIF _COMPACT
 
@@ -40907,17 +40912,17 @@ ENDIF
 
 \JSR OSCLI              \ Call OSCLI to execute the OS command at (Y X), which
 \                       \ saves the commander file
+\
+\JMP getzp              \ Call getzp to restore the top part of zero page from
+                        \ the buffer at &3000 and return from the subroutine
+                        \ using a tail call
 
                         \ --- And replaced by: -------------------------------->
 
- JSR OSC                \ Call OSCLI to execute the OS command at (Y X), which
+ JMP OSC                \ Call OSCLI to execute the OS command at (Y X), which
                         \ saves the commander file
 
                         \ --- End of replacement ------------------------------>
-
- JMP getzp              \ Call getzp to restore the top part of zero page from
-                        \ the buffer at &3000 and return from the subroutine
-                        \ using a tail call
 
 \ ******************************************************************************
 \
@@ -41010,9 +41015,13 @@ ENDIF
 
 IF _SNG47
 
- JSR getzp              \ Call getzp to store the top part of zero page in the
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\JSR getzp              \ Call getzp to store the top part of zero page in the
                         \ the buffer at &3000, as it gets corrupted by the MOS
                         \ during disc access
+
+                        \ --- End of removed code ----------------------------->
 
 ELIF _COMPACT
 
@@ -41039,8 +41048,12 @@ ENDIF
 
                         \ --- End of replacement ------------------------------>
 
- JSR getzp              \ Call getzp to restore the top part of zero page from
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\JSR getzp              \ Call getzp to restore the top part of zero page from
                         \ the buffer at &3000
+
+                        \ --- End of removed code ----------------------------->
 
                         \ We now copy the newly loaded commander data block to
                         \ the TAP% staging area, though this has no effect as we
@@ -42353,8 +42366,18 @@ ENDIF
                         \ E.C.M., fuel scoops, energy bomb, energy unit and
                         \ docking computer, all of which can be destroyed
 
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\LDA DLY                \ If there is already an in-flight message on-screen,
+\BNE out                \ return from the subroutine (as out contains an RTS)
+
+                        \ --- And replaced by: -------------------------------->
+
  LDA DLY                \ If there is already an in-flight message on-screen,
- BNE out                \ return from the subroutine (as out contains an RTS)
+ BEQ P%+5               \ return from the subroutine (as out contains an RTS)
+ JMP out
+
+                        \ --- End of replacement ------------------------------>
 
  LDY #3                 \ Set bit 1 of de, the equipment destruction flag, so
  STY de                 \ that when we call MESS below, " DESTROYED" is appended
@@ -49194,7 +49217,15 @@ ENDIF
 
 .ZEKLOOP
 
- STA JSTY,X             \ Store 0 in the X-th byte of the key logger
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\STA JSTY,X             \ Store 0 in the X-th byte of the key logger
+
+                        \ --- And replaced by: -------------------------------->
+
+ STA KL-1,X             \ Store 0 in the X-th byte of the key logger
+
+                        \ --- End of replacement ------------------------------>
 
  DEX                    \ Decrement the counter
 
@@ -49391,8 +49422,17 @@ IF _COMPACT
                         \ button is pressed, otherwise it is set, so AND'ing
                         \ the value of IRB with %10000 extracts this bit
 
- BNE P%+6               \ If the joystick fire button is not being pressed, skip
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\BNE P%+6               \ If the joystick fire button is not being pressed, skip
+\                       \ the following to return from the subroutine
+
+                        \ --- And replaced by: -------------------------------->
+
+ BNE P%+7               \ If the joystick fire button is not being pressed, skip
                         \ the following to return from the subroutine
+
+                        \ --- End of replacement ------------------------------>
 
  LDA #&FF               \ Update the key logger at KY7 to "press" the "A" (fire)
  STA KY7                \ button
@@ -49415,20 +49455,62 @@ IF _COMPACT
                         \   PB3 = up
                         \   PB4 = right
 
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\LSR A                  \ If PB0 from the User VIA is set (fire button), skip
+\BCS P%+4               \ the following
+\
+\STX KY7                \ Update the key logger at KY7 to "press" the "A" (fire)
+\                       \ button
+\
+\LSR A                  \ If PB1 from the User VIA is set (left), skip the
+\BCS P%+4               \ following
+\
+\STX KY3                \ Update the key logger at KY3 to "press" the "<" (roll
+\                       \ left) button
+\
+\LSR A                  \ If PB2 from the User VIA is set (down), skip the
+\BCS P%+4               \ following
+\
+\STX KY6                \ Update the key logger at KY6 to "press" the "S" (pitch
+\                       \ down) button
+\                       \
+\                       \ Note that this is the opposite key press to the stick
+\                       \ direction, as in the default configuration, we want to
+\                       \ pull up when we pull the joystick back (i.e. when the
+\                       \ stick is down). To fix this, we flip this result below
+\
+\LSR A                  \ If PB3 from the User VIA is set (up), skip the
+\BCS P%+4               \ following
+\
+\STX KY5                \ Update the key logger at KY5 to "press" the "X" (pull
+\                       \ up) button
+\                       \
+\                       \ Note that this is the opposite key press to the stick
+\                       \ direction, as in the default configuration, we want to
+\                       \ pitch down when we push the joystick forward (i.e.
+\                       \ when the stick is up). To fix this, we flip this
+\                       \ result below
+\
+\LSR A                  \ If PB4 from the User VIA is set (right), skip the
+\BCS P%+4               \ following
+
+                        \ --- And replaced by: -------------------------------->
+
  LSR A                  \ If PB0 from the User VIA is set (fire button), skip
- BCS P%+4               \ the following
+ BCS P%+5               \ the following
 
  STX KY7                \ Update the key logger at KY7 to "press" the "A" (fire)
                         \ button
 
  LSR A                  \ If PB1 from the User VIA is set (left), skip the
- BCS P%+4               \ following
+ BCS P%+5               \ following
 
  STX KY3                \ Update the key logger at KY3 to "press" the "<" (roll
                         \ left) button
 
  LSR A                  \ If PB2 from the User VIA is set (down), skip the
- BCS P%+4               \ following
+ BCS P%+5               \ following
 
  STX KY6                \ Update the key logger at KY6 to "press" the "S" (pitch
                         \ down) button
@@ -49439,7 +49521,7 @@ IF _COMPACT
                         \ stick is down). To fix this, we flip this result below
 
  LSR A                  \ If PB3 from the User VIA is set (up), skip the
- BCS P%+4               \ following
+ BCS P%+5               \ following
 
  STX KY5                \ Update the key logger at KY5 to "press" the "X" (pull
                         \ up) button
@@ -49451,7 +49533,9 @@ IF _COMPACT
                         \ result below
 
  LSR A                  \ If PB4 from the User VIA is set (right), skip the
- BCS P%+4               \ following
+ BCS P%+5               \ following
+
+                        \ --- End of replacement ------------------------------>
 
  STX KY4                \ Update the key logger at KY4 to "press" the ">" (roll
                         \ right) button
@@ -49856,8 +49940,12 @@ ENDIF
 
                         \ --- End of replacement ------------------------------>
 
- JSR setzp              \ Call setzp to copy the top part of zero page into
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\JSR setzp              \ Call setzp to copy the top part of zero page into
                         \ the buffer at &3000
+
+                        \ --- End of removed code ----------------------------->
 
  JSR SETINTS            \ Call SETINTS to set various vectors, interrupts and
                         \ timers

@@ -63,8 +63,8 @@
                         \ --- Mod: Code added for BBC Micro B+: --------------->
 
  ZP = &0000             \ The address of the zero page variables used when
- P = &000C              \ drawing to the screen
- SC = &000A
+ P = &001A              \ drawing to the screen
+ SC = &0006
 
                         \ --- End of added code ------------------------------->
 
@@ -9724,22 +9724,6 @@ ENDIF
 
  INY                    \ And draw the third pixel row, incrementing Y
  STA (SC),Y
-
- RTS                    \ Return from the subroutine
-
-.CopyInSetZP
-
- LDA ZP,X               \ Copy the X-th byte of ZP to the X-th byte of &3000
- STA &3000,X
-
- RTS                    \ Return from the subroutine
-
-.CopyInGetZP
-
- LDA ZP,X               \ Swap the X-th byte of ZP with the X-th byte of &3000
- LDY &3000,X
- STY ZP,X
- STA &3000,X
 
  RTS                    \ Return from the subroutine
 
