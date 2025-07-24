@@ -7493,9 +7493,19 @@ ENDIF
 
  LDA COMY               \ Set Y1 = COMY, the y-coordinate of the dash
 
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\CPX #YELLOW2           \ If the colour in X is yellow, then the planet/station
+\BNE P%+8               \ is behind us, so skip the following three instructions
+\                       \ so we only draw a single-height dash
+
+                        \ --- And replaced by: -------------------------------->
+
  CPX #YELLOW2           \ If the colour in X is yellow, then the planet/station
- BNE P%+8               \ is behind us, so skip the following three instructions
+ BNE DOT2               \ is behind us, so skip the following four instructions
                         \ so we only draw a single-height dash
+
+                        \ --- End of replacement ------------------------------>
 
  JSR CPIXK              \ Call CPIXK to draw a single-height dash, i.e. the top
                         \ row of a double-height dash
