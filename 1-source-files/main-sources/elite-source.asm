@@ -266,13 +266,7 @@
 \                       \ (this shares a location with LSX2 and is the address
 \                       \ used in the *SAVE and *LOAD OS commands)
 
-                        \ --- And replaced by: -------------------------------->
-
- commbuf = &0900        \ The file buffer where we load and save commander files
-                        \ (this shares a location with LSX2 and is the address
-                        \ used in the *SAVE and *LOAD OS commands)
-
-                        \ --- End of replacement ------------------------------>
+                        \ --- End of removed code ----------------------------->
 
  XX21 = &8000           \ The address of the ship blueprints lookup table, as
                         \ set in elite-data.asm
@@ -40550,7 +40544,7 @@ IF _SNG47
 
                         \ --- And replaced by: -------------------------------->
 
- EQUS "SAVE :1.E.JAMESON  900 +100 0 0"
+ EQUS "SAVE :1.E.JAMESON ", STR$~(LSX2), " +100 0 0"
  EQUB 13
 
                         \ --- End of replacement ------------------------------>
@@ -40582,7 +40576,7 @@ IF _SNG47
 
                         \ --- And replaced by: -------------------------------->
 
- EQUS "LOAD :1.E.JAMESON  900"
+ EQUS "LOAD :1.E.JAMESON ", STR$~(LSX2)
  EQUB 13
 
                         \ --- End of replacement ------------------------------>
@@ -40617,8 +40611,17 @@ ENDIF
 
 .wfileL1
 
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\LDA NA%+8,Y            \ Copy the Y-th byte of NA%+8 to the Y-th byte of the
+\STA commbuf,Y          \ commbuf file buffer
+
+                        \ --- And replaced by: -------------------------------->
+
  LDA NA%+8,Y            \ Copy the Y-th byte of NA%+8 to the Y-th byte of the
- STA commbuf,Y          \ commbuf file buffer
+ STA LSX2,Y             \ commbuf file buffer, which is shared with LSX2
+
+                        \ --- End of replacement ------------------------------>
 
  DEY                    \ Decrement the loop counter
 
@@ -40635,7 +40638,16 @@ ENDIF
 
 .wfileL2
 
- STA commbuf,Y          \ Zero the Y-th byte of the commbuf file buffer
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\STA commbuf,Y          \ Zero the Y-th byte of the commbuf file buffer
+
+                        \ --- And replaced by: -------------------------------->
+
+ STA LSX2,Y             \ Zero the Y-th byte of the commbuf file buffer, which
+                        \ is shared with LSX2
+
+                        \ --- End of replacement ------------------------------>
 
  INY                    \ Increment the loop counter
 
@@ -40857,8 +40869,18 @@ ENDIF
 
 .rfileL1
 
- LDA commbuf,Y          \ Copy the Y-th byte of the commbuf file buffer to the
- STA TAP%,Y             \ Y-th byte of the TAP% staging area
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\LDA commbuf,Y          \ Copy the Y-th byte of the commbuf file buffer to the
+\STA TAP%,Y             \ Y-th byte of the TAP% staging area
+
+                        \ --- And replaced by: -------------------------------->
+
+ LDA LSX2,Y             \ Copy the Y-th byte of the commbuf file buffer to the
+ STA TAP%,Y             \ Y-th byte of the TAP% staging area (commbuf is shared
+                        \ with LSX2)
+
+                        \ --- End of replacement ------------------------------>
 
  DEY                    \ Decrement the loop counter
 
