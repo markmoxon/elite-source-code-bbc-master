@@ -36085,8 +36085,8 @@ ENDIF
 
                         \ --- And replaced by: -------------------------------->
 
- STX T                  \ Set T to the value of X, which contains the joystick
-                        \ roll value
+ STX XX24               \ Set XX24 to the value of X, which contains the
+                        \ joystick roll value
 
                         \ --- End of replacement ------------------------------>
 
@@ -36112,7 +36112,7 @@ ENDIF
 
                         \ --- And replaced by: -------------------------------->
 
- LDX T                  \ SHIFT is not being pressed, so retrieve the value of X
+ LDX XX24               \ SHIFT is not being pressed, so retrieve the value of X
                         \ we stored above so we can return it
 
                         \ --- End of replacement ------------------------------>
@@ -36130,8 +36130,8 @@ ENDIF
 
                         \ --- And replaced by: -------------------------------->
 
- LDA T                  \ Fetch the value of X from T into A, so A now contains
-                        \ the change in the x-coordinate
+ LDA XX24               \ Fetch the value of X from XX24 into A, so A now
+                        \ contains the change in the x-coordinate
 
                         \ --- End of replacement ------------------------------>
 
