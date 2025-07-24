@@ -260,9 +260,19 @@
                         \ before saving (though this isn't actually used in this
                         \ version, and is left-over Commodore 64 code)
 
- commbuf = &0E7E        \ The file buffer where we load and save commander files
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\commbuf = &0E7E        \ The file buffer where we load and save commander files
+\                       \ (this shares a location with LSX2 and is the address
+\                       \ used in the *SAVE and *LOAD OS commands)
+
+                        \ --- And replaced by: -------------------------------->
+
+ commbuf = &0900        \ The file buffer where we load and save commander files
                         \ (this shares a location with LSX2 and is the address
                         \ used in the *SAVE and *LOAD OS commands)
+
+                        \ --- End of replacement ------------------------------>
 
  XX21 = &8000           \ The address of the ship blueprints lookup table, as
                         \ set in elite-data.asm
@@ -276,41 +286,69 @@
  KWH% = &8084           \ The address of the kill tally integer table, as set in
                         \ elite-data.asm
 
- QQ18 = &A000           \ The address of the text token table, as set in
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\QQ18 = &A000           \ The address of the text token table, as set in
+\                       \ elite-data.asm
+\
+\SNE = &A3C0            \ The address of the sine lookup table, as set in
+\                       \ elite-data.asm
+\
+\ACT = &A3E0            \ The address of the arctan lookup table, as set in
+\                       \ elite-data.asm
+\
+\TKN1 = &A400           \ The address of the extended token table, as set in
+\                       \ elite-data.asm
+\
+\IF _SNG47
+\
+\RUPLA = &AF48          \ The address of the extended system description system
+\                       \ number table, as set in elite-data.asm
+\
+\RUGAL = &AF62          \ The address of the extended system description galaxy
+\                       \ number table, as set in elite-data.asm
+\
+\RUTOK = &AF7C          \ The address of the extended system description token
+\                       \ table, as set in elite-data.asm
+\
+\ELIF _COMPACT
+\
+\RUPLA = &AF43          \ The address of the extended system description system
+\                       \ number table, as set in elite-data.asm
+\
+\RUGAL = &AF5D          \ The address of the extended system description galaxy
+\                       \ number table, as set in elite-data.asm
+\
+\RUTOK = &AF77          \ The address of the extended system description token
+\                       \ table, as set in elite-data.asm
+\
+\ENDIF
+
+                        \ --- And replaced by: -------------------------------->
+
+ QQ18 = &9D95           \ The address of the text token table, as set in
                         \ elite-data.asm
 
- SNE = &A3C0            \ The address of the sine lookup table, as set in
+ SNE = &A155            \ The address of the sine lookup table, as set in
                         \ elite-data.asm
 
- ACT = &A3E0            \ The address of the arctan lookup table, as set in
+ ACT = &A175            \ The address of the arctan lookup table, as set in
                         \ elite-data.asm
 
- TKN1 = &A400           \ The address of the extended token table, as set in
+ TKN1 = &A195           \ The address of the extended token table, as set in
                         \ elite-data.asm
 
-IF _SNG47
-
- RUPLA = &AF48          \ The address of the extended system description system
+ RUPLA = &ACDD          \ The address of the extended system description system
                         \ number table, as set in elite-data.asm
 
- RUGAL = &AF62          \ The address of the extended system description galaxy
+ RUGAL = &ACF7          \ The address of the extended system description galaxy
                         \ number table, as set in elite-data.asm
 
- RUTOK = &AF7C          \ The address of the extended system description token
+ RUTOK = &AD11          \ The address of the extended system description token
                         \ table, as set in elite-data.asm
 
-ELIF _COMPACT
 
- RUPLA = &AF43          \ The address of the extended system description system
-                        \ number table, as set in elite-data.asm
-
- RUGAL = &AF5D          \ The address of the extended system description galaxy
-                        \ number table, as set in elite-data.asm
-
- RUTOK = &AF77          \ The address of the extended system description token
-                        \ table, as set in elite-data.asm
-
-ENDIF
+                        \ --- End of replacement ------------------------------>
 
  VIA = &FE00            \ Memory-mapped space for accessing internal hardware,
                         \ such as the video ULA, 6845 CRTC and 6522 VIAs (also
@@ -39799,8 +39837,17 @@ ENDIF
 
 IF _SNG47
 
- EQUS "SAVE :1.E.JAMESON  E7E +100 0 0"
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\EQUS "SAVE :1.E.JAMESON  E7E +100 0 0"
+\EQUB 13
+
+                        \ --- And replaced by: -------------------------------->
+
+ EQUS "SAVE :1.E.JAMESON  900 +100 0 0"
  EQUB 13
+
+                        \ --- End of replacement ------------------------------>
 
 ELIF _COMPACT
 
@@ -39822,8 +39869,17 @@ ENDIF
 
 IF _SNG47
 
- EQUS "LOAD :1.E.JAMESON  E7E"
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\EQUS "LOAD :1.E.JAMESON  E7E"
+\EQUB 13
+
+                        \ --- And replaced by: -------------------------------->
+
+ EQUS "LOAD :1.E.JAMESON  900"
  EQUB 13
+
+                        \ --- End of replacement ------------------------------>
 
 ELIF _COMPACT
 
