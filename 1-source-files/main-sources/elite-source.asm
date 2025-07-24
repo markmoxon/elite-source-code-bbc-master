@@ -1321,7 +1321,15 @@ ENDIF
 \
 \ ******************************************************************************
 
- ORG &0E41              \ Set the assembly address to &0E41
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\ORG &0E41              \ Set the assembly address to &0E41
+
+                        \ --- And replaced by: -------------------------------->
+
+ ORG &1100              \ Set the assembly address to &1100
+
+                        \ --- End of replacement ------------------------------>
 
 .WP
 
@@ -1536,26 +1544,30 @@ ENDIF
                         \     * 1 = the string " DESTROYED" gets added to the
                         \       end of the message
 
-.LSX2
+                        \ --- Mod: Code moved for BBC Micro B+: --------------->
 
- SKIP 256               \ The ball line heap for storing x-coordinates
+\.LSX2
+\
+\SKIP 256               \ The ball line heap for storing x-coordinates
+\
+\.LSY2
+\
+\SKIP 256               \ The ball line heap for storing y-coordinates
+\
+\.LSO
+\
+\SKIP 200               \ The ship line heap for the space station (see NWSPS)
+\                       \ and the sun line heap (see SUN)
+\                       \
+\                       \ The spaces can be shared as our local bubble of
+\                       \ universe can support either the sun or a space
+\                       \ station, but not both
+\
+\.BUF
+\
+\SKIP 90                \ The line buffer used by DASC to print justified text
 
-.LSY2
-
- SKIP 256               \ The ball line heap for storing y-coordinates
-
-.LSO
-
- SKIP 200               \ The ship line heap for the space station (see NWSPS)
-                        \ and the sun line heap (see SUN)
-                        \
-                        \ The spaces can be shared as our local bubble of
-                        \ universe can support either the sun or a space
-                        \ station, but not both
-
-.BUF
-
- SKIP 90                \ The line buffer used by DASC to print justified text
+                        \ --- End of removed code ----------------------------->
 
 .SX
 
@@ -10653,42 +10665,46 @@ ENDIF
 
  RTS                    \ Return from the subroutine
 
-IF _MATCH_ORIGINAL_BINARIES
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
 
- IF _SNG47
+\IF _MATCH_ORIGINAL_BINARIES
+\
+\IF _SNG47
+\
+\ EQUB &41, &23, &6D, &65, &6D, &3A, &53, &54   \ These bytes appear to be
+\ EQUB &41, &6C, &61, &74, &63, &68, &3A, &52   \ unused and just contain random
+\ EQUB &54, &53, &0D, &13, &74, &09, &5C, &2E   \ workspace noise left over from
+\ EQUB &2E, &2E, &2E, &0D, &18, &60, &05, &20   \ the BBC Micro assembly process
+\ EQUB &0D, &1A, &F4, &21, &5C, &2E, &2E, &2E
+\ EQUB &2E, &2E, &2E, &2E, &2E, &2E, &2E, &42
+\ EQUB &61, &79, &20, &56, &69, &65, &77, &2E
+\ EQUB &2E, &2E, &2E, &2E, &2E, &2E, &2E, &2E
+\ EQUB &2E, &0D, &1A, &FE, &05, &20, &0D, &1B
+\ EQUB &08, &11, &2E, &48, &41
+\
+\ELIF _COMPACT
+\
+\ EQUB &2B, &26, &33    \ These bytes appear to be unused and just contain
+\                       \ random workspace noise left over from the BBC Micro
+\                       \ assembly process
+\
+\ENDIF
+\
+\ELSE
+\
+\IF _SNG47
+\
+\ SKIP 77               \ These bytes appear to be unused
+\
+\ELIF _COMPACT
+\
+\ SKIP 3                \ These bytes appear to be unused
+\
+\ENDIF
+\
+\ENDIF
 
-  EQUB &41, &23, &6D, &65, &6D, &3A, &53, &54   \ These bytes appear to be
-  EQUB &41, &6C, &61, &74, &63, &68, &3A, &52   \ unused and just contain random
-  EQUB &54, &53, &0D, &13, &74, &09, &5C, &2E   \ workspace noise left over from
-  EQUB &2E, &2E, &2E, &0D, &18, &60, &05, &20   \ the BBC Micro assembly process
-  EQUB &0D, &1A, &F4, &21, &5C, &2E, &2E, &2E
-  EQUB &2E, &2E, &2E, &2E, &2E, &2E, &2E, &42
-  EQUB &61, &79, &20, &56, &69, &65, &77, &2E
-  EQUB &2E, &2E, &2E, &2E, &2E, &2E, &2E, &2E
-  EQUB &2E, &0D, &1A, &FE, &05, &20, &0D, &1B
-  EQUB &08, &11, &2E, &48, &41
-
- ELIF _COMPACT
-
-  EQUB &2B, &26, &33    \ These bytes appear to be unused and just contain
-                        \ random workspace noise left over from the BBC Micro
-                        \ assembly process
-
- ENDIF
-
-ELSE
-
- IF _SNG47
-
-  SKIP 77               \ These bytes appear to be unused
-
- ELIF _COMPACT
-
-  SKIP 3                \ These bytes appear to be unused
-
- ENDIF
-
-ENDIF
+                        \ --- End of removed code ----------------------------->
 
 \ ******************************************************************************
 \
@@ -10722,7 +10738,30 @@ ENDIF
 \
 \INCBIN "1-source-files/fonts/P.FONT.bin"
 
-                        \ --- End of removed code ----------------------------->
+                        \ --- And replaced by: -------------------------------->
+
+.LSX2
+
+ SKIP 256               \ The ball line heap for storing x-coordinates
+
+.LSY2
+
+ SKIP 256               \ The ball line heap for storing y-coordinates
+
+.LSO
+
+ SKIP 200               \ The ship line heap for the space station (see NWSPS)
+                        \ and the sun line heap (see SUN)
+                        \
+                        \ The spaces can be shared as our local bubble of
+                        \ universe can support either the sun or a space
+                        \ station, but not both
+
+.BUF
+
+ SKIP 90                \ The line buffer used by DASC to print justified text
+
+                        \ --- End of replacement ------------------------------>
 
 \ ******************************************************************************
 \
