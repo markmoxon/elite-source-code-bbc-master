@@ -31,8 +31,12 @@
 
  INCLUDE "1-source-files/main-sources/elite-build-options.asm"
 
- CPU 1                  \ Switch to 65SC12 assembly, as this code runs on a
-                        \ BBC Master
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\CPU 1                  \ Switch to 65SC12 assembly, as this code runs on a
+\                       \ BBC Master
+
+                        \ --- End of removed code ----------------------------->
 
  _SNG47                 = (_VARIANT = 1)
  _COMPACT               = (_VARIANT = 2)
@@ -2176,7 +2180,16 @@ ENDIF
 
 .WSCAN
 
- STZ DL                 \ Set DL to 0
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\STZ DL                 \ Set DL to 0
+
+                        \ --- And replaced by: -------------------------------->
+
+ LDA #0                 \ Set DL to 0
+ STA DL
+
+                        \ --- End of replacement ------------------------------>
 
 .DELL1K                 \ This label is a duplicate of a label in the DELT
                         \ routine
@@ -2236,8 +2249,17 @@ ENDIF
 
 .BOOP
 
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\LDY #soboop            \ Call the NOISE routine with Y = 0 to make a long, low
+\BRA NOISE              \ beep, returning from the subroutine using a tail call
+
+                        \ --- And replaced by: -------------------------------->
+
  LDY #soboop            \ Call the NOISE routine with Y = 0 to make a long, low
- BRA NOISE              \ beep, returning from the subroutine using a tail call
+ BEQ NOISE              \ beep, returning from the subroutine using a tail call
+
+                        \ --- End of replacement ------------------------------>
 
 \ ******************************************************************************
 \
@@ -2250,9 +2272,19 @@ ENDIF
 
 .BEEP
 
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\LDY #sobeep            \ Call the NOISE routine with Y = 1 to make a short,
+\BRA NOISE              \ high beep, returning from the subroutine using a tail
+\                       \ call
+
+                        \ --- And replaced by: -------------------------------->
+
  LDY #sobeep            \ Call the NOISE routine with Y = 1 to make a short,
- BRA NOISE              \ high beep, returning from the subroutine using a tail
+ BNE NOISE              \ high beep, returning from the subroutine using a tail
                         \ call
+
+                        \ --- End of replacement ------------------------------>
 
 \ ******************************************************************************
 \
@@ -2404,9 +2436,19 @@ ENDIF
  LDY #9                 \ Call the NOISE routine with Y = 9 to make the first
  JSR NOISE              \ sound of us being hit
 
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\LDY #5                 \ Call the NOISE routine with Y = 5 to make the second
+\BRA NOISE              \ sound of us being hit, returning from the subroutine
+\                       \ using a tail call
+
+                        \ --- And replaced by: -------------------------------->
+
  LDY #5                 \ Call the NOISE routine with Y = 5 to make the second
- BRA NOISE              \ sound of us being hit, returning from the subroutine
+ BNE NOISE              \ sound of us being hit, returning from the subroutine
                         \ using a tail call
+
+                        \ --- End of replacement ------------------------------>
 
 \ ******************************************************************************
 \
@@ -2911,7 +2953,16 @@ ENDIF
 
 .IRQ1
 
- PHY                    \ Store Y on the stack
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\PHY                    \ Store Y on the stack
+
+                        \ --- And replaced by: -------------------------------->
+
+ TYA                    \ Store Y on the stack
+ PHA
+
+                        \ --- End of replacement ------------------------------>
 
  LDY #15                \ Set Y as a counter for 16 bytes, to use when setting
                         \ the dashboard palette below
@@ -2990,7 +3041,16 @@ ENDIF
 
 .jvec
 
- PLY                    \ Restore Y from the stack
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\PLY                    \ Restore Y from the stack
+
+                        \ --- And replaced by: -------------------------------->
+
+ PLA                    \ Restore Y from the stack
+ TAY
+
+                        \ --- End of replacement ------------------------------>
 
  LDA VIA+&44            \ Read 6522 System VIA T1C-L timer 1 low-order counter
                         \ (SHEILA &44)
@@ -3064,17 +3124,45 @@ ENDIF
 
 .j2vec
 
- PHX                    \ Call SOINT to send the current sound data to the
- JSR SOINT              \ 76489 sound chip, stashing X on the stack so it gets
- PLX                    \ preserved across the call
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
 
- PLA                    \ Restore A from the stack
+\PHX                    \ Call SOINT to send the current sound data to the
+\JSR SOINT              \ 76489 sound chip, stashing X on the stack so it gets
+\PLX                    \ preserved across the call
+\
+\PLA                    \ Restore A from the stack
+\
+\PLY                    \ Restore Y from the stack
 
- PLY                    \ Restore Y from the stack
+                        \ --- And replaced by: -------------------------------->
+
+ TXA                    \ Call SOINT to send the current sound data to the
+ PHA                    \ 76489 sound chip, stashing X on the stack so it gets
+ JSR SOINT              \ preserved across the call
+ PLA
+ TAX
+
+ PLA                    \ Restore A from the stack into tempA
+ STA tempA
+
+ PLA                    \ Restore Y from the stack
+ TAY
+
+ LDA tempA              \ Restore A from tempA
+
+                        \ --- End of replacement ------------------------------>
 
  RTI                    \ Return from interrupts, so this interrupt is not
                         \ passed on to the next interrupt handler, but instead
                         \ the interrupt terminates here
+
+                        \ --- Mod: Code added for BBC Micro B+: --------------->
+
+.tempA
+
+ EQUB 0
+
+                        \ --- End of added code ------------------------------->
 
 \ ******************************************************************************
 \
@@ -6837,8 +6925,18 @@ ENDIF
  JSR CPIXK              \ Call CPIXK to draw a single-height dash, i.e. the top
                         \ row of a double-height dash
 
- LDA Y1                 \ Fetch the y-coordinate of the row we just drew and
- DEC A                  \ decrement it, ready to draw the bottom row
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\LDA Y1                 \ Fetch the y-coordinate of the row we just drew and
+\DEC A                  \ decrement it, ready to draw the bottom row
+
+                        \ --- And replaced by: -------------------------------->
+
+ LDY Y1                 \ Fetch the y-coordinate of the row we just drew and
+ DEY                    \ decrement it, ready to draw the bottom row
+ TYA
+
+                        \ --- End of replacement ------------------------------>
 
 .DOT2
 
@@ -7332,7 +7430,16 @@ ENDIF
 
  BNE MBL2               \ Loop back to MBL2 if have more rows to draw
 
- PLX                    \ Restore X from the stack, so that it's preserved
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\PLX                    \ Restore X from the stack, so that it's preserved
+
+                        \ --- And replaced by: -------------------------------->
+
+ PLA                    \ Restore X from the stack, so that it's preserved
+ TAX
+
+                        \ --- End of replacement ------------------------------>
 
 IF _SNG47
 
@@ -8010,9 +8117,19 @@ ENDIF
 
 .CHPR
 
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\STA K3                 \ Store the A, X and Y registers, so we can restore
+\PHY                    \ them at the end (so they don't get changed by this
+\PHX                    \ routine)
+
+                        \ --- And replaced by: -------------------------------->
+
  STA K3                 \ Store the A, X and Y registers, so we can restore
- PHY                    \ them at the end (so they don't get changed by this
- PHX                    \ routine)
+ STY YSAV2              \ them at the end (so they don't get changed by this
+ STX XSAV2              \ routine)
+
+                        \ --- End of replacement ------------------------------>
 
  LDY QQ17               \ Load the QQ17 flag, which contains the text printing
                         \ flags
@@ -8475,11 +8592,21 @@ ENDIF
 
  LDA #%00001001         \ Clear bits 1 and 2 of the Access Control Register at
  STA VIA+&34            \ SHEILA &34 to switch main memory back into &3000-&7FFF
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
 
- PLX                    \ We're done printing, so restore the values of the
- PLY                    \ A, X and Y registers that we saved above and clear the
- LDA K3                 \ C flag, so everything is back to how it was
+\PLX                    \ We're done printing, so restore the values of the
+\PLY                    \ A, X and Y registers that we saved above and clear the
+\LDA K3                 \ C flag, so everything is back to how it was
+\CLC
+
+                        \ --- And replaced by: -------------------------------->
+
+ LDY YSAV2              \ We're done printing, so restore the values of the
+ LDX XSAV2              \ A, X and Y registers that we saved above and clear
+ LDA K3                 \ the C flag, so everything is back to how it was
  CLC
+
+                        \ --- End of replacement ------------------------------>
 
  RTS                    \ Return from the subroutine
 
@@ -8612,7 +8739,16 @@ ENDIF
 
 .BOS1
 
- STZ Y1                 \ Set Y1 = 0
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\STZ Y1                 \ Set Y1 = 0
+
+                        \ --- And replaced by: -------------------------------->
+
+ LDA #0                 \ Set Y1 = 0
+ STA Y1
+
+                        \ --- End of replacement ------------------------------>
 
  LDA #2*Y-1             \ Set Y2 = 2 * #Y - 1. The constant #Y is 96, the
  STA Y2                 \ y-coordinate of the mid-point of the space view, so
@@ -8710,12 +8846,25 @@ ENDIF
 
 .CLYNS
 
- STZ DLY                \ Set the delay in DLY to 0, to indicate that we are
-                        \ no longer showing an in-flight message, so any new
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\STZ DLY                \ Set the delay in DLY to 0, to indicate that we are
+\                       \ no longer showing an in-flight message, so any new
+\                       \ in-flight messages will be shown instantly
+\
+\STZ de                 \ Clear de, the flag that appends " DESTROYED" to the
+\                       \ end of the next text token, so that it doesn't
+
+                        \ --- And replaced by: -------------------------------->
+
+ LDA #0                 \ Set the delay in DLY to 0, to indicate that we are
+ STA DLY                \ no longer showing an in-flight message, so any new
                         \ in-flight messages will be shown instantly
 
- STZ de                 \ Clear de, the flag that appends " DESTROYED" to the
+ STA de                 \ Clear de, the flag that appends " DESTROYED" to the
                         \ end of the next text token, so that it doesn't
+
+                        \ --- End of replacement ------------------------------>
 
  LDA #%11111111         \ Set DTW2 = %11111111 to denote that we are not
  STA DTW2               \ currently printing a word
@@ -8873,8 +9022,18 @@ ENDIF
 \
 \ ******************************************************************************
 
- STZ R                  \ Set R = P = 0 for the low bytes in the call to the ADD
- STZ P                  \ routine below
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\STZ R                  \ Set R = P = 0 for the low bytes in the call to the ADD
+\STZ P                  \ routine below
+
+                        \ --- And replaced by: -------------------------------->
+
+ LDA #0                 \ Set R = P = 0 for the low bytes in the call to the ADD
+ STA R                  \ routine below
+ STA P
+
+                        \ --- End of replacement ------------------------------>
 
  LDA #8                 \ Set S = 8, which is the value of the centre of the
  STA S                  \ roll indicator
@@ -9376,8 +9535,17 @@ ENDIF
  PHA                    \ Store the mask byte on the stack while we use the
                         \ accumulator for a bit
 
- STZ R                  \ Change the mask so no bits are set, so the characters
-                        \ after the one we're about to draw will be all blank
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\STZ R                  \ Change the mask so no bits are set, so the characters
+\                       \ after the one we're about to draw will be all blank
+
+                        \ --- And replaced by: -------------------------------->
+
+ LDA #0                 \ Change the mask so no bits are set, so the characters
+ STA R                  \ after the one we're about to draw will be all blank
+
+                        \ --- End of replacement ------------------------------>
 
  LDA #99                \ Set Q to a high number (99, why not) so we will keep
  STA Q                  \ drawing blank characters until we reach the end of
@@ -20403,8 +20571,17 @@ ENDIF
 
  JSR HFS2               \ Call HFS2 to draw the hyperspace tunnel rings
 
- STZ HFX                \ Set HFX back to 0, so we switch back to the normal
-                        \ split-screen mode
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\STZ HFX                \ Set HFX back to 0, so we switch back to the normal
+\                       \ split-screen mode
+
+                        \ --- And replaced by: -------------------------------->
+
+ LDA #0                 \ Set HFX back to 0, so we switch back to the normal
+ STA HFX                \ split-screen mode
+
+                        \ --- End of replacement ------------------------------>
 
  RTS                    \ Return from the subroutine
 
@@ -24857,7 +25034,16 @@ ENDIF
 
  JSR TT162              \ Print a space
 
- STZ QQ17               \ Set QQ17 = 0 to switch to ALL CAPS
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\STZ QQ17               \ Set QQ17 = 0 to switch to ALL CAPS
+
+                        \ --- And replaced by: -------------------------------->
+
+ LDA #0                 \ Set QQ17 = 0 to switch to ALL CAPS
+ STA QQ17
+
+                        \ --- End of replacement ------------------------------>
 
  LDA #'M'               \ Print "M"
  JSR TT27
@@ -25448,8 +25634,18 @@ ENDIF
  LDA QQ19+1             \ Set K4 = the y-coordinate of the centre
  STA K4
 
- STZ K4+1               \ Set the high bytes of K3(1 0) and K4(1 0) to 0
- STZ K3+1
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\STZ K4+1               \ Set the high bytes of K3(1 0) and K4(1 0) to 0
+\STZ K3+1
+
+                        \ --- And replaced by: -------------------------------->
+
+ LDX #0                 \ Set the high bytes of K3(1 0) and K4(1 0) to 0
+ STX K4+1
+ STX K3+1
+
+                        \ --- End of replacement ------------------------------>
 
  LDX #1                 \ Set LSP = 1 to reset the ball line heap
  STX LSP
@@ -25822,7 +26018,16 @@ ENDIF
 
  JSR TT26               \ Print the character for the key that was pressed
 
- STZ R                  \ Set R = 0, so we return 0
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\STZ R                  \ Set R = 0, so we return 0
+
+                        \ --- And replaced by: -------------------------------->
+
+ LDA #0                 \ Set R = 0, so we return 0
+ STA R
+
+                        \ --- End of replacement ------------------------------>
 
  JMP OUT                \ Jump to OUT to return from the subroutine
 
@@ -26644,11 +26849,24 @@ ENDIF
                         \ This code is left over from the Apple II version,
                         \ where the scale factor is different
 
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\LSR A                  \ Move the text cursor to column x-delta / 2 + 1
+\LSR A                  \ which will be in the range 1-10
+\LSR A
+\INC A
+\STA XC
+
+                        \ --- And replaced by: -------------------------------->
+
  LSR A                  \ Move the text cursor to column x-delta / 2 + 1
  LSR A                  \ which will be in the range 1-10
  LSR A
- INC A
+ CLC
+ ADC #1
  STA XC
+
+                        \ --- End of replacement ------------------------------>
 
  LDA QQ15+1             \ Set A = s0_hi - QQ1, the vertical distance between
  SEC                    \ this system and the current system, where |A| < 38.
@@ -34971,8 +35189,17 @@ ENDIF
  BNE P%+3
  INY
 
- PHX                    \ Store X (which contains the change in the
-                        \ x-coordinate) on the stack so we can retrieve it later
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\PHX                    \ Store X (which contains the change in the
+\                       \ x-coordinate) on the stack so we can retrieve it later
+
+                        \ --- And replaced by: -------------------------------->
+
+ STX T                  \ Set T to the value of X, which contains the joystick
+                        \ roll value
+
+                        \ --- End of replacement ------------------------------>
 
 IF _SNG47
 
@@ -34989,8 +35216,17 @@ ENDIF
  BMI speedup            \ If SHIFT is being pressed, skip the next three
                         \ instructions
 
- PLX                    \ SHIFT is not being pressed, so retrieve the value of X
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\PLX                    \ SHIFT is not being pressed, so retrieve the value of X
+\                       \ we stored above so we can return it
+
+                        \ --- And replaced by: -------------------------------->
+
+ LDX T                  \ SHIFT is not being pressed, so retrieve the value of X
                         \ we stored above so we can return it
+
+                        \ --- End of replacement ------------------------------>
 
  LDA KL                 \ Set A to the value of KL (the key pressed)
 
@@ -34998,8 +35234,17 @@ ENDIF
 
 .speedup
 
- PLA                    \ Pull the value of X from the stack into A, so A now
-                        \ contains the change in the x-coordinate
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\PLA                    \ Pull the value of X from the stack into A, so A now
+\                       \ contains the change in the x-coordinate
+
+                        \ --- And replaced by: -------------------------------->
+
+ LDA T                  \ Fetch the value of X from T into A, so A now contains
+                        \ the change in the x-coordinate
+
+                        \ --- End of replacement ------------------------------>
 
  ASL A                  \ SHIFT is being held down, so quadruple the value of A
  ASL A                  \ (i.e. SHIFT moves the cursor at four times the speed
@@ -37343,10 +37588,21 @@ ENDIF
                         \ the buffer before performing the disc access that gave
                         \ the error we're processsing
 
- STZ CATF               \ Set the CATF flag to 0, so the TT26 routine reverts to
-                        \ standard formatting
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\STZ CATF               \ Set the CATF flag to 0, so the TT26 routine reverts to
+\                       \ standard formatting
+\
+\LDY #0                 \ Set Y to 0, which we use as a loop counter below
+
+                        \ --- And replaced by: -------------------------------->
 
  LDY #0                 \ Set Y to 0, which we use as a loop counter below
+
+ STY CATF               \ Set the CATF flag to 0, so the TT26 routine reverts to
+                        \ standard formatting
+
+                        \ --- End of replacement ------------------------------>
 
  LDA #7                 \ Set A = 7 to generate a beep before we print the error
                         \ message
@@ -37407,8 +37663,17 @@ ENDIF
                         \ this value is chosen, as it gets overwritten by the
                         \ next instruction anyway)
 
- STZ QQ11               \ Set QQ11 to 0, so from here on we are using a space
-                        \ view
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\STZ QQ11               \ Set QQ11 to 0, so from here on we are using a space
+\                       \ view
+
+                        \ --- And replaced by: -------------------------------->
+
+ LDA #0                 \ Set QQ11 to 0, so from here on we are using a space
+ STA QQ11               \ view
+
+                        \ --- End of replacement ------------------------------>
 
  JSR BOX                \ Call BOX to redraw the same border box (BOX is part
                         \ of TT66), which removes the border as it is drawn
@@ -38025,7 +38290,16 @@ ENDIF
  LDA #5                 \ Set the main loop counter in MCNT to 5, to act as the
  STA MCNT               \ inner loop counter for the loop starting at TLL2
 
- STZ JSTK               \ Set JSTK = 0 (i.e. keyboard, not joystick)
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\STZ JSTK               \ Set JSTK = 0 (i.e. keyboard, not joystick)
+
+                        \ --- And replaced by: -------------------------------->
+
+ LDA #0                 \ Set JSTK = 0 (i.e. keyboard, not joystick)
+ STA JSTK
+
+                        \ --- End of replacement ------------------------------>
 
 .TLL2
 
@@ -38751,8 +39025,17 @@ ENDIF
  JSR getzp              \ Call getzp to restore the top part of zero page from
                         \ the buffer at &3000
 
- STZ CATF               \ Set the CATF flag to 0, so the TT26 routine reverts to
-                        \ standard formatting
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\STZ CATF               \ Set the CATF flag to 0, so the TT26 routine reverts to
+\                       \ standard formatting
+
+                        \ --- And replaced by: -------------------------------->
+
+ LDA #0                 \ Set the CATF flag to 0, so the TT26 routine reverts to
+ STA CATF               \ standard formatting
+
+                        \ --- End of replacement ------------------------------>
 
  CLC                    \ Clear the C flag
 
@@ -40567,8 +40850,17 @@ ENDIF
  CPX #','               \ If "," is not being pressed (i.e. the "<" key) then
  BNE DOVOL4             \ jump to DOVOL4 to skip the following
 
- DEC A                  \ The volume down key is being pressed, so decrement the
-                        \ volume level in A
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\DEC A                  \ The volume down key is being pressed, so decrement the
+\                       \ volume level in A
+
+                        \ --- And replaced by: -------------------------------->
+
+ SEC                    \ The volume down key is being pressed, so decrement the
+ SBC #1                 \ volume level in A
+
+                        \ --- End of replacement ------------------------------>
 
  EQUB &24               \ Skip the next instruction by turning it into &24 &1A,
                         \ or BIT &001A, which does nothing apart from affect the
@@ -40576,8 +40868,17 @@ ENDIF
 
 .DOVOL1
 
- INC A                  \ The volume up key is being pressed, so increment the
-                        \ volume level in A
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\INC A                  \ The volume up key is being pressed, so increment the
+\                       \ volume level in A
+
+                        \ --- And replaced by: -------------------------------->
+
+ CLC                    \ The volume up key is being pressed, so increment the
+ ADC #1                 \ volume level in A
+
+                        \ --- End of replacement ------------------------------>
 
  TAY                    \ Copy the new volume level to Y
 
@@ -40591,8 +40892,17 @@ ENDIF
 
 .DOVOL3
 
- PHX                    \ Store X on the stack so we can retrieve it below after
-                        \ making a beep
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\PHX                    \ Store X on the stack so we can retrieve it below after
+\                       \ making a beep
+
+                        \ --- And replaced by: -------------------------------->
+
+ TXA                    \ Store X on the stack so we can retrieve it below after
+ PHA                    \ making a beep
+
+                        \ --- End of replacement ------------------------------>
 
  JSR BEEP               \ Call the BEEP subroutine to make a short, high beep at
                         \ the new volume level
@@ -40600,7 +40910,16 @@ ENDIF
  LDY #10                \ Wait for 10/50 of a second (0.2 seconds)
  JSR DELAY
 
- PLX                    \ Restore the value of X we stored above
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\PLX                    \ Restore the value of X we stored above
+
+                        \ --- And replaced by: -------------------------------->
+
+ PLA                    \ Restore the value of X we stored above
+ TAX
+
+                        \ --- End of replacement ------------------------------>
 
 .DOVOL4
 

@@ -32,8 +32,12 @@
 
  INCLUDE "1-source-files/main-sources/elite-build-options.asm"
 
- CPU 1                  \ Switch to 65SC12 assembly, as this code runs on a
-                        \ BBC Master
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\CPU 1                  \ Switch to 65SC12 assembly, as this code runs on a
+\                       \ BBC Master
+
+                        \ --- End of removed code ----------------------------->
 
  _SNG47                 = (_VARIANT = 1)
  _COMPACT               = (_VARIANT = 2)

@@ -31,8 +31,12 @@
 
  INCLUDE "1-source-files/main-sources/elite-build-options.asm"
 
- CPU 1                  \ Switch to 65SC12 assembly, as this code runs on the
-                        \ BBC Master
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\CPU 1                  \ Switch to 65SC12 assembly, as this code runs on a
+\                       \ BBC Master
+
+                        \ --- End of removed code ----------------------------->
 
  _SNG47                 = (_VARIANT = 1)
  _COMPACT               = (_VARIANT = 2)
@@ -438,13 +442,28 @@ ENDIF
 
  LDX #&F                \ Set a page counter in X to copy &F pages
 
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\LDA #&13               \ Set ZP(1 0) = &1300
+\STA ZP+1
+\STZ ZP
+\
+\STZ P                  \ Set P(1 0) = &7000
+\LDA #&70
+\STA P+1
+
+                        \ --- And replaced by: -------------------------------->
+
  LDA #&13               \ Set ZP(1 0) = &1300
  STA ZP+1
- STZ ZP
+ LDA #0
+ STA ZP
 
- STZ P                  \ Set P(1 0) = &7000
+ STA P                  \ Set P(1 0) = &7000
  LDA #&70
  STA P+1
+
+                        \ --- End of replacement ------------------------------>
 
  LDY #0                 \ Set Y = 0 to act as a byte counter within each page
 
