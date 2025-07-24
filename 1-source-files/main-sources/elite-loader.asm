@@ -396,6 +396,36 @@ ENDIF
 
                         \ --- End of removed code ----------------------------->
 
+                        \ --- Mod: Code added for BBC Micro B+: --------------->
+
+ LDA VIA+&30            \ Set bit 7 of the ROM Select latch at SHEILA &30 to
+ ORA #%10000000         \ switch the 12K of private RAM into &8000-&AFFF
+ STA VIA+&30
+
+ LDA #HI(privateRAM)    \ Set ZP(1 0) = privateRAM
+ STA ZP+1
+ LDA #LO(privateRAM)
+ STA ZP
+
+ LDA #&A0               \ Set P(1 0) = &A000
+ STA P+1
+ LDA #0
+ STA P
+
+ LDY #endRAM-privateRAM \ Set Y to act as a byte counter within each page
+
+.pram1
+
+ LDA (ZP),Y             \ Copy the Y-th byte of the memory block at ZP(1 0) to
+ STA (P),Y              \ the Y-th byte of the memory block at P(1 0)
+
+ DEY                    \ Decrement the byte counter
+
+ BPL pram1              \ Loop back to copy the next byte until we have copied
+                        \ all Y bytes
+
+                        \ --- End of added code ------------------------------->
+
  JSR PLL1               \ Call PLL1 to draw Saturn
 
                         \ --- Mod: Code removed for BBC Micro B+: ------------->
@@ -507,8 +537,17 @@ ENDIF
 
 .MPL1
 
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\LDA (ZP),Y             \ Copy the Y-th byte of the memory block at ZP(1 0) to
+\STA (P),Y              \ the Y-th byte of the memory block at P(1 0)
+
+                        \ --- And replaced by: -------------------------------->
+
  LDA (ZP),Y             \ Copy the Y-th byte of the memory block at ZP(1 0) to
- STA (P),Y              \ the Y-th byte of the memory block at P(1 0)
+ JSR staPY              \ the Y-th byte of the memory block at P(1 0)
+
+                        \ --- End of replacement ------------------------------>
 
  DEY                    \ Decrement the byte counter
 
@@ -1173,9 +1212,18 @@ ENDIF
                         \ wide)
 
  LDA TWOS,X             \ Fetch a pixel from TWOS and poke it into ZP+Y
- STA (ZP),Y
 
- RTS                    \ Return from the subroutine
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\STA (ZP),Y
+\
+\RTS                    \ Return from the subroutine
+
+                        \ --- And replaced by: -------------------------------->
+
+ JMP staZpY
+
+                        \ --- End of replacement ------------------------------>
 
 \ ******************************************************************************
 \
@@ -1416,6 +1464,37 @@ ENDIF
 \EQUB 13
 
                         \ --- End of moved code ------------------------------->
+
+\ ******************************************************************************
+\
+\       Name: Shadow RAM routines
+\       Type: Subroutine
+\   Category: Drawing pixels
+\    Summary: Routines to live at &A000-&AFFF so they can access shadow RAM
+\
+\ ******************************************************************************
+
+.privateRAM
+
+ ORG &A000              \ Set the assembly address for private RAM
+
+.staZpY
+
+ STA (ZP),Y             \ Store the pixel value in A in screen memory at ZP(1 0)
+
+ RTS                    \ Return from the subroutine
+
+.staPY
+
+ STA (P),Y              \ Store the pixel value in A in screen memory at P(1 0)
+
+ RTS                    \ Return from the subroutine
+
+ COPYBLOCK staZpY, P%, privateRAM
+
+ ORG privateRAM + P% - staZpY
+
+.endRAM
 
 \ ******************************************************************************
 \
