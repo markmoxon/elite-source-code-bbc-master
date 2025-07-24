@@ -39932,8 +39932,17 @@ IF _COMPACT
  LDX #LO(DIRI)          \ Set (Y X) to point to DIRI ("DIR <name entered>")
  LDY #HI(DIRI)
 
- JSR OSCLI              \ Call OSCLI to run the OS command in DIRI, which
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\JSR OSCLI              \ Call OSCLI to run the OS command in DIRI, which
+\                       \ changes the disc directory to the name entered
+
+                        \ --- And replaced by: -------------------------------->
+
+ JSR OSC                \ Call OSCLI to run the OS command in DIRI, which
                         \ changes the disc directory to the name entered
+
+                        \ --- End of replacement ------------------------------>
 
  JMP getzp              \ Call getzp to restore the top part of zero page from
                         \ the buffer at &3000 and return from the subroutine
@@ -40021,8 +40030,17 @@ ENDIF
                         \ DFS command for cataloguing that drive (*. being short
                         \ for *CAT)
 
- JSR OSCLI              \ Call OSCLI to execute the OS command at (Y X), which
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\JSR OSCLI              \ Call OSCLI to execute the OS command at (Y X), which
+\                       \ catalogues the disc
+
+                        \ --- And replaced by: -------------------------------->
+
+ JSR OSC                \ Call OSCLI to execute the OS command at (Y X), which
                         \ catalogues the disc
+
+                        \ --- End of replacement ------------------------------>
 
  JSR getzp              \ Call getzp to restore the top part of zero page from
                         \ the buffer at &3000
@@ -40160,8 +40178,17 @@ ENDIF
  LDX #LO(DELI)          \ Set (Y X) to point to the OS command at DELI, which
  LDY #HI(DELI)          \ contains the DFS command for deleting this file
 
- JSR OSCLI              \ Call OSCLI to execute the OS command at (Y X), which
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\JSR OSCLI              \ Call OSCLI to execute the OS command at (Y X), which
+\                       \ deletes the file
+
+                        \ --- And replaced by: -------------------------------->
+
+ JSR OSC                \ Call OSCLI to execute the OS command at (Y X), which
                         \ deletes the file
+
+                        \ --- End of replacement ------------------------------>
 
  JSR getzp              \ Call getzp to restore the top part of zero page from
                         \ the buffer at &3000
@@ -40857,8 +40884,17 @@ ENDIF
  LDX #LO(savosc)        \ Set (Y X) to point to the OS command at savosc, which
  LDY #HI(savosc)        \ contains the DFS command for saving the commander file
 
- JSR OSCLI              \ Call OSCLI to execute the OS command at (Y X), which
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\JSR OSCLI              \ Call OSCLI to execute the OS command at (Y X), which
+\                       \ saves the commander file
+
+                        \ --- And replaced by: -------------------------------->
+
+ JSR OSC                \ Call OSCLI to execute the OS command at (Y X), which
                         \ saves the commander file
+
+                        \ --- End of replacement ------------------------------>
 
  JMP getzp              \ Call getzp to restore the top part of zero page from
                         \ the buffer at &3000 and return from the subroutine
@@ -40972,8 +41008,17 @@ ENDIF
  LDY #HI(lodosc)        \ contains the DFS command for loading the commander
                         \ file
 
- JSR OSCLI              \ Call OSCLI to execute the OS command at (Y X), which
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\JSR OSCLI              \ Call OSCLI to execute the OS command at (Y X), which
+\                       \ loads the commander file
+
+                        \ --- And replaced by: -------------------------------->
+
+ JSR OSC                \ Call OSCLI to execute the OS command at (Y X), which
                         \ loads the commander file
+
+                        \ --- End of replacement ------------------------------>
 
  JSR getzp              \ Call getzp to restore the top part of zero page from
                         \ the buffer at &3000
