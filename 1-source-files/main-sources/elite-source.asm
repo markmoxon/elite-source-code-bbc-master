@@ -3295,8 +3295,17 @@ ENDIF
 
 .sz1
 
- LDA ZP,X               \ Copy the X-th byte of ZP to the X-th byte of &3000
- STA &3000,X
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\LDA ZP,X               \ Copy the X-th byte of ZP to the X-th byte of &3000
+\STA &3000,X
+
+                        \ --- And replaced by: -------------------------------->
+
+ JSR CopyInSetZP        \ Perform the LDA/STA instructions from &A000-&AFFF so
+                        \ they affect screen memory in shadow RAM
+
+                        \ --- End of replacement ------------------------------>
 
  INX                    \ Increment the loop counter
 
@@ -3377,10 +3386,19 @@ ENDIF
 
 .sz2
 
- LDA ZP,X               \ Swap the X-th byte of ZP with the X-th byte of &3000
- LDY &3000,X
- STY ZP,X
- STA &3000,X
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\LDA ZP,X               \ Swap the X-th byte of ZP with the X-th byte of &3000
+\LDY &3000,X
+\STY ZP,X
+\STA &3000,X
+
+                        \ --- And replaced by: -------------------------------->
+
+ JSR CopyInGetZP        \ Perform the LDx/STx instructions from &A000-&AFFF so
+                        \ they affect screen memory in shadow RAM
+
+                        \ --- End of replacement ------------------------------>
 
  INX                    \ Increment the loop counter
 
