@@ -10426,8 +10426,17 @@ ENDIF
  LDA #HI(XX21-1)
  STA FRIN+1
 
- LDA #&B1               \ Set (A Y) = &B1FF as the high address of the
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\LDA #&B1               \ Set (A Y) = &B1FF as the high address of the
+\LDY #&FF               \ decryption block
+
+                        \ --- And replaced by: -------------------------------->
+
+ LDA #&AF               \ Set (A Y) = &AFFF as the high address of the
  LDY #&FF               \ decryption block
+
+                        \ --- End of replacement ------------------------------>
 
  LDX #KEY2              \ Set X = KEY2 as the decryption seed (the value used to
                         \ encrypt the code, which is done in elite-checksum.py)
