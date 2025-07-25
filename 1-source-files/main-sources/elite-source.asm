@@ -32042,9 +32042,19 @@ ENDIF
 
 IF _SNG47
 
- STA &FFFF,Y            \ Y is going from 3 to 6, so this stores the four bytes
-                        \ in memory locations &02, &03, &04 and &05, which are
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\STA &FFFF,Y            \ Y is going from 3 to 6, so this stores the four bytes
+\                       \ in memory locations &02, &03, &04 and &05, which are
+\                       \ the memory locations of RAND through RAND+3
+
+                        \ --- And replaced by: -------------------------------->
+
+ STA &FFFD,Y            \ Y is going from 3 to 6, so this stores the four bytes
+                        \ in memory locations &00, &01, &02 and &03, which are
                         \ the memory locations of RAND through RAND+3
+
+                        \ --- End of replacement ------------------------------>
 
 ELIF _COMPACT
 
