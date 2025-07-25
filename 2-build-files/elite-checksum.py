@@ -46,7 +46,7 @@ print("Encryption = ", encrypt)
 
 if release == 1:
     # SNG47
-    f = 0x7FD8                  # F%
+    f = 0x7FD9                  # F%
     scramble_from = 0x2C34      # G%
     na2_per_cent = 0x344F       # NA2%
 elif release == 2:
