@@ -48,4 +48,6 @@ ELIF _COMPACT
  PUTFILE "3-assembled-output/BCODE.bin", "ELITE", &001300, &002C6C
 ENDIF
 
+ PUTFILE "1-source-files/other-files/E.MAX.bin", "E.MAX", &000000, &000000
+
  PUTFILE "3-assembled-output/README.txt", "README", &FFFFFF, &FFFFFF
