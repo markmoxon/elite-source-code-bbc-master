@@ -74,7 +74,7 @@
 
                         \ --- And replaced by: -------------------------------->
 
- S% = &2BDF             \ The address of the main entry point workspace in the
+ S% = &2BAD             \ The address of the main entry point workspace in the
                         \ main game code
 
                         \ --- End of replacement ------------------------------>

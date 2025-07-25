@@ -1011,6 +1011,316 @@
 
  SKIP 0                 \ The start of the WP workspace
 
+                        \ --- Mod: Code moved for BBC Micro B+: --------------->
+
+.KL
+
+ SKIP 1                 \ The following bytes implement a key logger that
+                        \ enables Elite to scan for concurrent key presses of
+                        \ the primary flight keys, plus a secondary flight key
+                        \
+                        \ If a key is being pressed that is not in the keyboard
+                        \ table at KYTB, it can be stored here (as seen in
+                        \ routine DK4, for example)
+
+.KY17
+
+ SKIP 1                 \ "E" is being pressed (activate E.C.M.)
+                        \
+                        \   * 0 = no
+                        \
+                        \   * Non-zero = yes
+
+.KY14
+
+ SKIP 1                 \ "T" is being pressed (target missile)
+                        \
+                        \   * 0 = no
+                        \
+                        \   * Non-zero = yes
+
+.KY15
+
+ SKIP 1                 \ "U" is being pressed (unarm missile)
+                        \
+                        \   * 0 = no
+                        \
+                        \   * Non-zero = yes
+
+.KY20
+
+ SKIP 1                 \ "P" is being pressed (deactivate docking computer)
+                        \
+                        \   * 0 = no
+                        \
+                        \   * Non-zero = yes
+
+.KY7
+
+ SKIP 1                 \ "A" is being pressed (fire lasers)
+                        \
+                        \   * 0 = no
+                        \
+                        \   * Non-zero = yes
+                        \
+                        \ This is also set when the joystick fire button has
+                        \ been pressed
+
+.KY5
+
+ SKIP 1                 \ "X" is being pressed (pull up)
+                        \
+                        \   * 0 = no
+                        \
+                        \   * Non-zero = yes
+
+.KY18
+
+ SKIP 1                 \ "J" is being pressed (in-system jump)
+                        \
+                        \   * 0 = no
+                        \
+                        \   * Non-zero = yes
+
+.KY6
+
+ SKIP 1                 \ "S" is being pressed (pitch down)
+                        \
+                        \   * 0 = no
+                        \
+                        \   * Non-zero = yes
+
+.KY19
+
+ SKIP 1                 \ "C" is being pressed (activate docking computer)
+                        \
+                        \   * 0 = no
+                        \
+                        \   * Non-zero = yes
+
+.KY12
+
+ SKIP 1                 \ TAB is being pressed (energy bomb)
+                        \
+                        \   * 0 = no
+                        \
+                        \   * Non-zero = yes
+
+.KY2
+
+ SKIP 1                 \ Space is being pressed (speed up)
+                        \
+                        \   * 0 = no
+                        \
+                        \   * Non-zero = yes
+
+.KY16
+
+ SKIP 1                 \ "M" is being pressed (fire missile)
+                        \
+                        \   * 0 = no
+                        \
+                        \   * Non-zero = yes
+
+.KY3
+
+ SKIP 1                 \ "<" is being pressed (roll left)
+                        \
+                        \   * 0 = no
+                        \
+                        \   * Non-zero = yes
+
+.KY4
+
+ SKIP 1                 \ ">" is being pressed (roll right)
+                        \
+                        \   * 0 = no
+                        \
+                        \   * Non-zero = yes
+
+.KY1
+
+ SKIP 1                 \ "?" is being pressed (slow down)
+                        \
+                        \   * 0 = no
+                        \
+                        \   * Non-zero = yes
+
+.KY13
+
+ SKIP 1                 \ ESCAPE is being pressed (launch escape pod)
+                        \
+                        \   * 0 = no
+                        \
+                        \   * Non-zero = yes
+
+.COMC
+
+ SKIP 1                 \ The colour of the dot on the compass
+                        \
+                        \   * #WHITE2 = the object in the compass is in front of
+                        \     us, so the dot is white
+                        \
+                        \   * #GREEN2 = the object in the compass is behind us,
+                        \     so the dot is green
+
+.dials
+
+ SKIP 14                \ These bytes appear to be unused
+
+.mscol
+
+ SKIP 4                 \ This byte appears to be unused
+
+.CATF
+
+ SKIP 1                 \ The disc catalogue flag
+                        \
+                        \ Determines whether a disc catalogue is currently in
+                        \ progress, so the TT26 print routine can format the
+                        \ output correctly:
+                        \
+                        \   * 0 = disc is not currently being catalogued
+                        \
+                        \   * 1 = disc is currently being catalogued
+                        \
+                        \ Specifically, when CATF is non-zero, TT26 will omit
+                        \ column 17 from the catalogue so that it will fit
+                        \ on-screen (column 17 is blank column in the middle
+                        \ of the catalogue, between the two lists of filenames,
+                        \ so it can be dropped without affecting the layout)
+
+.DFLAG
+
+ SKIP 1                 \ This byte appears to be unused
+
+.DNOIZ
+
+ SKIP 1                 \ Sound on/off configuration setting
+                        \
+                        \   * 0 = sound is on (default)
+                        \
+                        \   * Non-zero = sound is off
+                        \
+                        \ Toggled by pressing "S" when paused, see the DK4
+                        \ routine for details
+
+.DAMP
+
+ SKIP 1                 \ Keyboard damping configuration setting
+                        \
+                        \   * 0 = damping is enabled (default)
+                        \
+                        \   * &FF = damping is disabled
+                        \
+                        \ Toggled by pressing CAPS LOCK when paused, see the
+                        \ DKS3 routine for details
+
+.DJD
+
+ SKIP 1                 \ Keyboard auto-recentre configuration setting
+                        \
+                        \   * 0 = auto-recentre is enabled (default)
+                        \
+                        \   * &FF = auto-recentre is disabled
+                        \
+                        \ Toggled by pressing "A" when paused, see the DKS3
+                        \ routine for details
+
+.PATG
+
+ SKIP 1                 \ Configuration setting to show the author names on the
+                        \ start-up screen and enable manual hyperspace mis-jumps
+                        \
+                        \   * 0 = no author names or manual mis-jumps (default)
+                        \
+                        \   * &FF = show author names and allow manual mis-jumps
+                        \
+                        \ Toggled by pressing "X" when paused, see the DKS3
+                        \ routine for details
+                        \
+                        \ This needs to be turned on for manual mis-jumps to be
+                        \ possible. To do a manual mis-jump, first toggle the
+                        \ author display by pausing the game and pressing "X",
+                        \ and during the next hyperspace, hold down CTRL to
+                        \ force a mis-jump. See routine ee5 for the "AND PATG"
+                        \ instruction that implements this logic
+
+.FLH
+
+ SKIP 1                 \ Flashing console bars configuration setting
+                        \
+                        \   * 0 = static bars (default)
+                        \
+                        \   * &FF = flashing bars
+                        \
+                        \ Toggled by pressing "F" when paused, see the DKS3
+                        \ routine for details
+
+.JSTGY
+
+ SKIP 1                 \ Reverse joystick Y-channel configuration setting
+                        \
+                        \   * 0 = reversed Y-channel
+                        \
+                        \   * &FF = standard Y-channel (default)
+                        \
+                        \ Toggled by pressing "Y" when paused, see the DKS3
+                        \ routine for details
+
+.JSTE
+
+ SKIP 1                 \ Reverse both joystick channels configuration setting
+                        \
+                        \   * 0 = standard channels (default)
+                        \
+                        \   * &FF = reversed channels
+                        \
+                        \ Toggled by pressing "J" when paused, see the DKS3
+                        \ routine for details
+
+.JSTK
+
+ SKIP 1                 \ Keyboard or joystick configuration setting
+                        \
+                        \   * 0 = keyboard (default)
+                        \
+                        \   * &FF = joystick
+                        \
+                        \ Toggled by pressing "K" when paused, see the DKS3
+                        \ routine for details
+
+.UPTOG
+
+ SKIP 1                 \ The configuration setting for toggle key "U", which
+                        \ isn't actually used but is still updated by pressing
+                        \ "U" while the game is paused. This is a configuration
+                        \ option from the Apple II version of Elite that lets
+                        \ you switch between lower-case and upper-case text
+
+.DISK
+
+ SKIP 1                 \ The configuration setting for toggle key "T", which
+                        \ isn't actually used but is still updated by pressing
+                        \ "T" while the game is paused. This is a configuration
+                        \ option from the Commodore 64 version of Elite that
+                        \ lets you switch between tape and disc
+
+.BSTK
+
+ SKIP 1                 \ Bitstik configuration setting
+                        \
+                        \   * 0 = keyboard or joystick (default)
+                        \
+                        \   * &FF = Bitstik
+                        \
+                        \ Toggled by pressing "B" when paused, see the DKS3
+                        \ routine for details
+
+\SKIP 1                 \ This byte appears to be unused
+
+                        \ --- End of moved code ------------------------------->
+
 .FRIN
 
  SKIP NOSH + 1          \ Slots for the ships in the local bubble of universe
@@ -11049,313 +11359,173 @@ ENDIF
 
                         \ --- Mod: Code moved for BBC Micro B+: --------------->
 
-.KL
-
- SKIP 1                 \ The following bytes implement a key logger that
-                        \ enables Elite to scan for concurrent key presses of
-                        \ the primary flight keys, plus a secondary flight key
-                        \
-                        \ If a key is being pressed that is not in the keyboard
-                        \ table at KYTB, it can be stored here (as seen in
-                        \ routine DK4, for example)
-
-.KY17
-
- SKIP 1                 \ "E" is being pressed (activate E.C.M.)
-                        \
-                        \   * 0 = no
-                        \
-                        \   * Non-zero = yes
-
-.KY14
-
- SKIP 1                 \ "T" is being pressed (target missile)
-                        \
-                        \   * 0 = no
-                        \
-                        \   * Non-zero = yes
-
-.KY15
-
- SKIP 1                 \ "U" is being pressed (unarm missile)
-                        \
-                        \   * 0 = no
-                        \
-                        \   * Non-zero = yes
-
-.KY20
-
- SKIP 1                 \ "P" is being pressed (deactivate docking computer)
-                        \
-                        \   * 0 = no
-                        \
-                        \   * Non-zero = yes
-
-.KY7
-
- SKIP 1                 \ "A" is being pressed (fire lasers)
-                        \
-                        \   * 0 = no
-                        \
-                        \   * Non-zero = yes
-                        \
-                        \ This is also set when the joystick fire button has
-                        \ been pressed
-
-.KY5
-
- SKIP 1                 \ "X" is being pressed (pull up)
-                        \
-                        \   * 0 = no
-                        \
-                        \   * Non-zero = yes
-
-.KY18
-
- SKIP 1                 \ "J" is being pressed (in-system jump)
-                        \
-                        \   * 0 = no
-                        \
-                        \   * Non-zero = yes
-
-.KY6
-
- SKIP 1                 \ "S" is being pressed (pitch down)
-                        \
-                        \   * 0 = no
-                        \
-                        \   * Non-zero = yes
-
-.KY19
-
- SKIP 1                 \ "C" is being pressed (activate docking computer)
-                        \
-                        \   * 0 = no
-                        \
-                        \   * Non-zero = yes
-
-.KY12
-
- SKIP 1                 \ TAB is being pressed (energy bomb)
-                        \
-                        \   * 0 = no
-                        \
-                        \   * Non-zero = yes
-
-.KY2
-
- SKIP 1                 \ Space is being pressed (speed up)
-                        \
-                        \   * 0 = no
-                        \
-                        \   * Non-zero = yes
-
-.KY16
-
- SKIP 1                 \ "M" is being pressed (fire missile)
-                        \
-                        \   * 0 = no
-                        \
-                        \   * Non-zero = yes
-
-.KY3
-
- SKIP 1                 \ "<" is being pressed (roll left)
-                        \
-                        \   * 0 = no
-                        \
-                        \   * Non-zero = yes
-
-.KY4
-
- SKIP 1                 \ ">" is being pressed (roll right)
-                        \
-                        \   * 0 = no
-                        \
-                        \   * Non-zero = yes
-
-.KY1
-
- SKIP 1                 \ "?" is being pressed (slow down)
-                        \
-                        \   * 0 = no
-                        \
-                        \   * Non-zero = yes
-
-.KY13
-
- SKIP 1                 \ ESCAPE is being pressed (launch escape pod)
-                        \
-                        \   * 0 = no
-                        \
-                        \   * Non-zero = yes
+\.COMC
+\
+\SKIP 1                 \ The colour of the dot on the compass
+\                       \
+\                       \   * #WHITE2 = the object in the compass is in front of
+\                       \     us, so the dot is white
+\                       \
+\                       \   * #GREEN2 = the object in the compass is behind us,
+\                       \     so the dot is green
+\
+\.dials
+\
+\SKIP 14                \ These bytes appear to be unused
+\
+\.mscol
+\
+\SKIP 4                 \ This byte appears to be unused
+\
+\.CATF
+\
+\SKIP 1                 \ The disc catalogue flag
+\                       \
+\                       \ Determines whether a disc catalogue is currently in
+\                       \ progress, so the TT26 print routine can format the
+\                       \ output correctly:
+\                       \
+\                       \   * 0 = disc is not currently being catalogued
+\                       \
+\                       \   * 1 = disc is currently being catalogued
+\                       \
+\                       \ Specifically, when CATF is non-zero, TT26 will omit
+\                       \ column 17 from the catalogue so that it will fit
+\                       \ on-screen (column 17 is blank column in the middle
+\                       \ of the catalogue, between the two lists of filenames,
+\                       \ so it can be dropped without affecting the layout)
+\
+\.DFLAG
+\
+\SKIP 1                 \ This byte appears to be unused
+\
+\.DNOIZ
+\
+\SKIP 1                 \ Sound on/off configuration setting
+\                       \
+\                       \   * 0 = sound is on (default)
+\                       \
+\                       \   * Non-zero = sound is off
+\                       \
+\                       \ Toggled by pressing "S" when paused, see the DK4
+\                       \ routine for details
+\
+\.DAMP
+\
+\SKIP 1                 \ Keyboard damping configuration setting
+\                       \
+\                       \   * 0 = damping is enabled (default)
+\                       \
+\                       \   * &FF = damping is disabled
+\                       \
+\                       \ Toggled by pressing CAPS LOCK when paused, see the
+\                       \ DKS3 routine for details
+\
+\.DJD
+\
+\SKIP 1                 \ Keyboard auto-recentre configuration setting
+\                       \
+\                       \   * 0 = auto-recentre is enabled (default)
+\                       \
+\                       \   * &FF = auto-recentre is disabled
+\                       \
+\                       \ Toggled by pressing "A" when paused, see the DKS3
+\                       \ routine for details
+\
+\.PATG
+\
+\SKIP 1                 \ Configuration setting to show the author names on the
+\                       \ start-up screen and enable manual hyperspace mis-jumps
+\                       \
+\                       \   * 0 = no author names or manual mis-jumps (default)
+\                       \
+\                       \   * &FF = show author names and allow manual mis-jumps
+\                       \
+\                       \ Toggled by pressing "X" when paused, see the DKS3
+\                       \ routine for details
+\                       \
+\                       \ This needs to be turned on for manual mis-jumps to be
+\                       \ possible. To do a manual mis-jump, first toggle the
+\                       \ author display by pausing the game and pressing "X",
+\                       \ and during the next hyperspace, hold down CTRL to
+\                       \ force a mis-jump. See routine ee5 for the "AND PATG"
+\                       \ instruction that implements this logic
+\
+\.FLH
+\
+\SKIP 1                 \ Flashing console bars configuration setting
+\                       \
+\                       \   * 0 = static bars (default)
+\                       \
+\                       \   * &FF = flashing bars
+\                       \
+\                       \ Toggled by pressing "F" when paused, see the DKS3
+\                       \ routine for details
+\
+\.JSTGY
+\
+\SKIP 1                 \ Reverse joystick Y-channel configuration setting
+\                       \
+\                       \   * 0 = reversed Y-channel
+\                       \
+\                       \   * &FF = standard Y-channel (default)
+\                       \
+\                       \ Toggled by pressing "Y" when paused, see the DKS3
+\                       \ routine for details
+\
+\.JSTE
+\
+\SKIP 1                 \ Reverse both joystick channels configuration setting
+\                       \
+\                       \   * 0 = standard channels (default)
+\                       \
+\                       \   * &FF = reversed channels
+\                       \
+\                       \ Toggled by pressing "J" when paused, see the DKS3
+\                       \ routine for details
+\
+\.JSTK
+\
+\SKIP 1                 \ Keyboard or joystick configuration setting
+\                       \
+\                       \   * 0 = keyboard (default)
+\                       \
+\                       \   * &FF = joystick
+\                       \
+\                       \ Toggled by pressing "K" when paused, see the DKS3
+\                       \ routine for details
+\
+\.UPTOG
+\
+\SKIP 1                 \ The configuration setting for toggle key "U", which
+\                       \ isn't actually used but is still updated by pressing
+\                       \ "U" while the game is paused. This is a configuration
+\                       \ option from the Apple II version of Elite that lets
+\                       \ you switch between lower-case and upper-case text
+\
+\.DISK
+\
+\SKIP 1                 \ The configuration setting for toggle key "T", which
+\                       \ isn't actually used but is still updated by pressing
+\                       \ "T" while the game is paused. This is a configuration
+\                       \ option from the Commodore 64 version of Elite that
+\                       \ lets you switch between tape and disc
+\
+\.BSTK
+\
+\SKIP 1                 \ Bitstik configuration setting
+\                       \
+\                       \   * 0 = keyboard or joystick (default)
+\                       \
+\                       \   * &FF = Bitstik
+\                       \
+\                       \ Toggled by pressing "B" when paused, see the DKS3
+\                       \ routine for details
+\
+\SKIP 1                 \ This byte appears to be unused
 
                         \ --- End of moved code ------------------------------->
 
-.COMC
-
- SKIP 1                 \ The colour of the dot on the compass
-                        \
-                        \   * #WHITE2 = the object in the compass is in front of
-                        \     us, so the dot is white
-                        \
-                        \   * #GREEN2 = the object in the compass is behind us,
-                        \     so the dot is green
-
-.dials
-
- SKIP 14                \ These bytes appear to be unused
-
-.mscol
-
- SKIP 4                 \ This byte appears to be unused
-
-.CATF
-
- SKIP 1                 \ The disc catalogue flag
-                        \
-                        \ Determines whether a disc catalogue is currently in
-                        \ progress, so the TT26 print routine can format the
-                        \ output correctly:
-                        \
-                        \   * 0 = disc is not currently being catalogued
-                        \
-                        \   * 1 = disc is currently being catalogued
-                        \
-                        \ Specifically, when CATF is non-zero, TT26 will omit
-                        \ column 17 from the catalogue so that it will fit
-                        \ on-screen (column 17 is blank column in the middle
-                        \ of the catalogue, between the two lists of filenames,
-                        \ so it can be dropped without affecting the layout)
-
-.DFLAG
-
- SKIP 1                 \ This byte appears to be unused
-
-.DNOIZ
-
- SKIP 1                 \ Sound on/off configuration setting
-                        \
-                        \   * 0 = sound is on (default)
-                        \
-                        \   * Non-zero = sound is off
-                        \
-                        \ Toggled by pressing "S" when paused, see the DK4
-                        \ routine for details
-
-.DAMP
-
- SKIP 1                 \ Keyboard damping configuration setting
-                        \
-                        \   * 0 = damping is enabled (default)
-                        \
-                        \   * &FF = damping is disabled
-                        \
-                        \ Toggled by pressing CAPS LOCK when paused, see the
-                        \ DKS3 routine for details
-
-.DJD
-
- SKIP 1                 \ Keyboard auto-recentre configuration setting
-                        \
-                        \   * 0 = auto-recentre is enabled (default)
-                        \
-                        \   * &FF = auto-recentre is disabled
-                        \
-                        \ Toggled by pressing "A" when paused, see the DKS3
-                        \ routine for details
-
-.PATG
-
- SKIP 1                 \ Configuration setting to show the author names on the
-                        \ start-up screen and enable manual hyperspace mis-jumps
-                        \
-                        \   * 0 = no author names or manual mis-jumps (default)
-                        \
-                        \   * &FF = show author names and allow manual mis-jumps
-                        \
-                        \ Toggled by pressing "X" when paused, see the DKS3
-                        \ routine for details
-                        \
-                        \ This needs to be turned on for manual mis-jumps to be
-                        \ possible. To do a manual mis-jump, first toggle the
-                        \ author display by pausing the game and pressing "X",
-                        \ and during the next hyperspace, hold down CTRL to
-                        \ force a mis-jump. See routine ee5 for the "AND PATG"
-                        \ instruction that implements this logic
-
-.FLH
-
- SKIP 1                 \ Flashing console bars configuration setting
-                        \
-                        \   * 0 = static bars (default)
-                        \
-                        \   * &FF = flashing bars
-                        \
-                        \ Toggled by pressing "F" when paused, see the DKS3
-                        \ routine for details
-
-.JSTGY
-
- SKIP 1                 \ Reverse joystick Y-channel configuration setting
-                        \
-                        \   * 0 = reversed Y-channel
-                        \
-                        \   * &FF = standard Y-channel (default)
-                        \
-                        \ Toggled by pressing "Y" when paused, see the DKS3
-                        \ routine for details
-
-.JSTE
-
- SKIP 1                 \ Reverse both joystick channels configuration setting
-                        \
-                        \   * 0 = standard channels (default)
-                        \
-                        \   * &FF = reversed channels
-                        \
-                        \ Toggled by pressing "J" when paused, see the DKS3
-                        \ routine for details
-
-.JSTK
-
- SKIP 1                 \ Keyboard or joystick configuration setting
-                        \
-                        \   * 0 = keyboard (default)
-                        \
-                        \   * &FF = joystick
-                        \
-                        \ Toggled by pressing "K" when paused, see the DKS3
-                        \ routine for details
-
-.UPTOG
-
- SKIP 1                 \ The configuration setting for toggle key "U", which
-                        \ isn't actually used but is still updated by pressing
-                        \ "U" while the game is paused. This is a configuration
-                        \ option from the Apple II version of Elite that lets
-                        \ you switch between lower-case and upper-case text
-
-.DISK
-
- SKIP 1                 \ The configuration setting for toggle key "T", which
-                        \ isn't actually used but is still updated by pressing
-                        \ "T" while the game is paused. This is a configuration
-                        \ option from the Commodore 64 version of Elite that
-                        \ lets you switch between tape and disc
-
-.BSTK
-
- SKIP 1                 \ Bitstik configuration setting
-                        \
-                        \   * 0 = keyboard or joystick (default)
-                        \
-                        \   * &FF = Bitstik
-                        \
-                        \ Toggled by pressing "B" when paused, see the DKS3
-                        \ routine for details
-
- SKIP 1                 \ This byte appears to be unused
 
 .VOL
 
