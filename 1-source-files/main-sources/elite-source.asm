@@ -11702,10 +11702,14 @@ ENDIF
 
  RTS                    \ Return from the subroutine
 
- EQUB &B7, &AA          \ These bytes appear to be unused, though there is a
- EQUB &45, &23          \ comment in the original source that says "red
-                        \ herring", so this would appear to be a red herring
-                        \ aimed at confusing any crackers
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\EQUB &B7, &AA          \ These bytes appear to be unused, though there is a
+\EQUB &45, &23          \ comment in the original source that says "red
+\                       \ herring", so this would appear to be a red herring
+\                       \ aimed at confusing any crackers
+
+                        \ --- End of removed code ----------------------------->
 
 \ ******************************************************************************
 \
@@ -19485,6 +19489,14 @@ ENDIF
 
  LDA #&0B               \ Set the ship line heap pointer in INWK(34 33) to point
  STA INWK+34            \ to &0B00
+
+                        \ --- Mod: Code added for red enemy lasers: ----------->
+
+ LDY #2                 \ Set the Y2 coordinate of the laser line in the ship
+ LDA #255               \ line heap to 255 so there is no laser line
+ STA (INWK+33),Y
+
+                        \ --- End of added code ------------------------------->
 
  JSR DORND              \ We now perform a random number of small angle (3.6
  STA XSAV               \ degree) rotations to spin the ship on the deck while
@@ -33856,6 +33868,14 @@ ENDIF
  LDA INWK+34            \ heap (i.e. INWK+33) in SLSP, doing both the high and
  STA SLSP+1             \ low bytes
 
+                        \ --- Mod: Code added for red enemy lasers: ----------->
+
+ LDY #2                 \ Set the Y2 coordinate of the laser line in the ship
+ LDA #255               \ line heap to 255 so there is no laser line
+ STA (INWK+33),Y
+
+                        \ --- End of added code ------------------------------->
+
 .NW6
 
  LDY #14                \ Fetch ship blueprint byte #14, which contains the
@@ -40389,13 +40409,17 @@ ENDIF
 
 .FILEPR
 
- LDA #3                 \ Print extended token 3 + DISK, i.e. token 3 or 2 (as
- CLC                    \ DISK can be 0 or &FF). In other versions of the game,
- ADC DISK               \ such as the Commodore 64 version, token 2 is "disk"
- JMP DETOK              \ and token 3 is "tape", so this displays the currently
-                        \ selected media, but this system is unused in the
-                        \ Master version and tokens 2 and 3 contain different
-                        \ text
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\LDA #3                 \ Print extended token 3 + DISK, i.e. token 3 or 2 (as
+\CLC                    \ DISK can be 0 or &FF). In other versions of the game,
+\ADC DISK               \ such as the Commodore 64 version, token 2 is "disk"
+\JMP DETOK              \ and token 3 is "tape", so this displays the currently
+\                       \ selected media, but this system is unused in the
+\                       \ Master version and tokens 2 and 3 contain different
+\                       \ text
+
+                        \ --- End of removed code ----------------------------->
 
 \ ******************************************************************************
 \
@@ -40409,13 +40433,17 @@ ENDIF
 
 .OTHERFILEPR
 
- LDA #2                 \ Print extended token 2 - DISK, i.e. token 2 or 3 (as
- SEC                    \ DISK can be 0 or &FF). In other versions of the game,
- SBC DISK               \ such as the Commodore 64 version, token 2 is "disk"
- JMP DETOK              \ and token 3 is "tape", so this displays the other,
-                        \ non-selected media, but this system is unused in the
-                        \ Master version and tokens 2 and 3 contain different
-                        \ text
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\LDA #2                 \ Print extended token 2 - DISK, i.e. token 2 or 3 (as
+\SEC                    \ DISK can be 0 or &FF). In other versions of the game,
+\SBC DISK               \ such as the Commodore 64 version, token 2 is "disk"
+\JMP DETOK              \ and token 3 is "tape", so this displays the other,
+\                       \ non-selected media, but this system is unused in the
+\                       \ Master version and tokens 2 and 3 contain different
+\                       \ text
+
+                        \ --- End of removed code ----------------------------->
 
 \ ******************************************************************************
 \
@@ -41190,11 +41218,15 @@ ENDIF
 \
 \ ******************************************************************************
 
-.backtonormal
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
 
- RTS                    \ Return from the subroutine, as backtonormal does
-                        \ nothing in this version of Elite (it is left over from
-                        \ the 6502 Second Processor version)
+\.backtonormal
+\
+\RTS                    \ Return from the subroutine, as backtonormal does
+\                       \ nothing in this version of Elite (it is left over from
+\                       \ the 6502 Second Processor version)
+
+                        \ --- End of removed code ----------------------------->
 
 \ ******************************************************************************
 \
@@ -41210,11 +41242,15 @@ ENDIF
 \
 \ ******************************************************************************
 
-.CLDELAY
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
 
- RTS                    \ Return from the subroutine, as CLDELAY does nothing in
-                        \ this version of Elite (it is left over from the 6502
-                        \ Second Processor version)
+\.CLDELAY
+\
+\RTS                    \ Return from the subroutine, as CLDELAY does nothing in
+\                       \ this version of Elite (it is left over from the 6502
+\                       \ Second Processor version)
+
+                        \ --- End of removed code ----------------------------->
 
 \ ******************************************************************************
 \
@@ -43578,10 +43614,10 @@ ENDMACRO
 \
 \ ******************************************************************************
 
-.buf
-
                         \ --- Mod: Code removed for BBC Micro B+: ------------->
 
+\.buf
+\
 \EQUB 2                 \ Transmit 2 bytes as part of this command
 \
 \EQUB 15                \ Receive 15 bytes as part of this command
@@ -44222,10 +44258,22 @@ ENDMACRO
                         \            ship that's currently on-screen (or 0 if
                         \            there is no ship currently on-screen)
 
- LDY #1                 \ Set LSNUM = 1, the offset of the first set of line
- STY LSNUM              \ coordinates in the ship line heap
+                        \ --- Mod: Code removed for red enemy lasers: --------->
 
- DEY                    \ Decrement Y to 0
+\LDY #1                 \ Set LSNUM = 1, the offset of the first set of line
+\STY LSNUM              \ coordinates in the ship line heap
+\
+\DEY                    \ Decrement Y to 0
+
+                        \ --- And replaced by: -------------------------------->
+
+ LDY #5                 \ Set LSNUM = 5, the offset of the first set of line
+ STY LSNUM              \ coordinates in the ship line heap, after the four
+                        \ coordinates for the laser line
+
+ LDY #0                 \ Set Y to 0
+
+                        \ --- End of replacement ------------------------------>
 
  LDA #%00001000         \ If bit 3 of the ship's byte #31 is set, then the ship
  BIT INWK+31            \ is currently being drawn on-screen, so skip the
@@ -44341,6 +44389,13 @@ ENDMACRO
  EOR XX1+31             \ Otherwise flip bit 3 of byte #31 and store it (which
  STA XX1+31             \ clears bit 3 as we know it was set before the EOR), so
                         \ this sets this ship as no longer being drawn on-screen
+
+                        \ --- Mod: Code added for red enemy lasers: ----------->
+
+ JSR RemoveLaserLine    \ Check whether there is a laser line on-screen, and if
+                        \ there is, remove it
+
+                        \ --- End of added code ------------------------------->
 
  JMP LSCLR              \ Jump to LSCLR to draw the ship, which removes it from
                         \ the screen, returning from the subroutine using a
@@ -46029,6 +46084,13 @@ ENDMACRO
  STY XX17               \
                         \ The STY is commented out in the original source
 
+                        \ --- Mod: Code added for red enemy lasers: ----------->
+
+ JSR RemoveLaserLine    \ Check whether there is a laser line on-screen, and if
+                        \ there is, remove it
+
+                        \ --- End of added code ------------------------------->
+
  BIT XX1+31             \ If bit 6 of the ship's byte #31 is clear, then the
  BVC LL170              \ ship is not firing its lasers, so jump to LL170 to
                         \ skip the drawing of laser lines
@@ -46109,9 +46171,46 @@ ENDMACRO
                         \ screen, so jump to LL170 so we don't store this line
                         \ in the ship line heap
 
- JSR LSPUT              \ Draw the laser line using flicker-free animation, by
-                        \ first drawing the new laser line and then erasing the
-                        \ corresponding old line from the screen
+                        \ --- Mod: Code removed for red enemy lasers: --------->
+
+\JSR LSPUT              \ Draw the laser line using flicker-free animation, by
+\                       \ first drawing the new laser line and then erasing the
+\                       \ corresponding old line from the screen
+
+                        \ --- And replaced by: -------------------------------->
+
+                        \ If we get here then there is a laser line, so now we
+                        \ store it and draw it
+
+ LDY #1                 \ Store X1 as the first coordinate on the ship line heap
+ LDA X1
+ STA (XX19),Y
+
+ INY                    \ Increment the index to point to the Y1 coordinate
+
+ LDA Y1                 \ Store Y1 as the first coordinate on the ship line heap
+ STA (XX19),Y
+
+ INY                    \ Increment the index to point to the X2 coordinate
+
+ LDA X2                 \ Store X2 as the second coordinate on the ship line
+ STA (XX19),Y           \ heap
+
+ INY                    \ Increment the index to point to the Y2 coordinate
+
+ LDA Y2                 \ Store Y2 as the second coordinate on the ship line
+ STA (XX19),Y           \ heap
+
+ LDA #RED               \ Switch to colour 2, which is red in the space view
+ STA COL
+
+ JSR LOIN               \ Draw the new laser line
+
+ LDX TYPE               \ Switch back to the ship colour for this ship 
+ LDA shpcol,X
+ STA COL
+
+                        \ --- End of replacement ------------------------------>
 
 \ ******************************************************************************
 \
@@ -47439,6 +47538,64 @@ ENDMACRO
 .LSC3
 
  RTS                    \ Return from the subroutine
+
+\ ******************************************************************************
+\
+\       Name: RemoveLaserLine
+\       Type: Subroutine
+\   Category: Drawing lines
+\    Summary: Remove the laser line from the screen, if there is one
+\
+\ ******************************************************************************
+
+.RemoveLaserLine
+
+                        \ --- Mod: Code added for red enemy lasers: ----------->
+
+                        \ We now need to check whether there is a laser line
+                        \ on-screen, and if so remove it
+
+ LDY #1                 \ Set X1 to the first coordinate on the ship line heap,
+ LDA (XX19),Y           \ which is the start of the laser line
+ STA X1
+
+ INY                    \ Increment the index to point to the Y1 coordinate
+
+ LDA (XX19),Y           \ Set Y1 to the first coordinate on the ship line heap
+ STA Y1                 \ which is the start of the laser line
+
+ CMP #255               \ If the Y1 coordinate is 255 then there is no laser
+ BEQ noLaserLine        \ line currently on-screen, so jump to noLaserLine to
+                        \ skip the removal of the old line
+
+ LDA #255               \ Set the Y2 coordinate of the laser line in the ship
+ STA (XX19),Y           \ line heap to 255 to remove the laser line from the
+                        \ heap
+
+ INY                    \ Increment the index to point to the X2 coordinate
+
+ LDA (XX19),Y           \ Set X2 to the second coordinate on the ship line heap,
+ STA X2                 \ which is the end of the laser line
+
+ INY                    \ Increment the index to point to the Y2 coordinate
+
+ LDA (XX19),Y           \ Set Y2 to the second coordinate on the ship line heap,
+ STA Y2                 \ which is the end of the laser line
+
+ LDA #RED               \ Switch to colour 2, which is red in the space view
+ STA COL
+
+ JSR LOIN               \ Draw the old laser line to remove it from the screen
+
+ LDX TYPE               \ Switch back to the ship colour for this ship 
+ LDA shpcol,X
+ STA COL
+
+.noLaserLine
+
+ RTS                    \ Return from the subroutine
+
+                        \ --- End of added code ------------------------------->
 
 \ ******************************************************************************
 \
