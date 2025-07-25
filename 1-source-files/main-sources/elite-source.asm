@@ -356,6 +356,7 @@
  DrawDialPixels4 = &AF82
  DrawDialPixels3 = &AF85
  DrawPixelP2 = &AF8E
+ DrawPixelAND = &AF93
 
                         \ --- End of replacement ------------------------------>
 
@@ -8314,9 +8315,19 @@ ENDIF
 
  TXA                    \ Copy the pixel mask to A
 
- AND (SC),Y             \ If the pixel we want to draw is non-zero (using A as a
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\AND (SC),Y             \ If the pixel we want to draw is non-zero (using A as a
+\BNE HA6                \ mask), then this means it already contains something,
+\                       \ so jump to HA6 to stop drawing this line
+
+                        \ --- And replaced by: -------------------------------->
+
+ JSR DrawPixelAND       \ If the pixel we want to draw is non-zero (using A as a
  BNE HA6                \ mask), then this means it already contains something,
                         \ so jump to HA6 to stop drawing this line
+
+                        \ --- End of replacement ------------------------------>
 
  TXA                    \ Copy the pixel mask to A again
 
@@ -8424,11 +8435,23 @@ ENDIF
  TAX                    \ Store A in X so we can retrieve it after the following
                         \ check and again after updating screen memory
 
- AND (SC),Y             \ If the pixel we want to draw is non-zero (using A as a
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\AND (SC),Y             \ If the pixel we want to draw is non-zero (using A as a
+\BNE HA3                \ mask), then this means it already contains something,
+\                       \ so we stop drawing because we have run into something
+\                       \ that's already on-screen, and return from the
+\                       \ subroutine (as HA3 contains an RTS)
+
+                        \ --- And replaced by: -------------------------------->
+
+ JSR DrawPixelAND       \ If the pixel we want to draw is non-zero (using A as a
  BNE HA3                \ mask), then this means it already contains something,
                         \ so we stop drawing because we have run into something
                         \ that's already on-screen, and return from the
                         \ subroutine (as HA3 contains an RTS)
+
+                        \ --- End of replacement ------------------------------>
 
  TXA                    \ Retrieve the value of A we stored above, so A now
                         \ contains the pixel mask again
@@ -8493,11 +8516,23 @@ ENDIF
  TAX                    \ Store A in X so we can retrieve it after the following
                         \ check and again after updating screen memory
 
- AND (SC),Y             \ If the pixel we want to draw is non-zero (using A as a
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\AND (SC),Y             \ If the pixel we want to draw is non-zero (using A as a
+\BNE HA3                \ mask), then this means it already contains something,
+\                       \ so we stop drawing because we have run into something
+\                       \ that's already on-screen, and return from the
+\                       \ subroutine (as HA3 contains an RTS)
+
+                        \ --- And replaced by: -------------------------------->
+
+ JSR DrawPixelAND       \ If the pixel we want to draw is non-zero (using A as a
  BNE HA3                \ mask), then this means it already contains something,
                         \ so we stop drawing because we have run into something
                         \ that's already on-screen, and return from the
                         \ subroutine (as HA3 contains an RTS)
+
+                        \ --- End of replacement ------------------------------>
 
  TXA                    \ Retrieve the value of A we stored above, so A now
                         \ contains the pixel mask again
@@ -8565,11 +8600,23 @@ ENDIF
  TAX                    \ Store A in X so we can retrieve it after the following
                         \ check and again after updating screen memory
 
- AND (SC),Y             \ If the pixel we want to draw is non-zero (using A as a
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\AND (SC),Y             \ If the pixel we want to draw is non-zero (using A as a
+\BNE HA3                \ mask), then this means it already contains something,
+\                       \ so we stop drawing because we have run into something
+\                       \ that's already on-screen, and return from the
+\                       \ subroutine (as HA3 contains an RTS)
+
+                        \ --- And replaced by: -------------------------------->
+
+ JSR DrawPixelAND       \ If the pixel we want to draw is non-zero (using A as a
  BNE HA3                \ mask), then this means it already contains something,
                         \ so we stop drawing because we have run into something
                         \ that's already on-screen, and return from the
                         \ subroutine (as HA3 contains an RTS)
+
+                        \ --- End of replacement ------------------------------>
 
  TXA                    \ Retrieve the value of A we stored above, so A now
                         \ contains the pixel mask again

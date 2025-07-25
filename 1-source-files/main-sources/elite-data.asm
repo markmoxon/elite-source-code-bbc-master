@@ -63,9 +63,8 @@
                         \ --- Mod: Code added for BBC Micro B+: --------------->
 
  ZP = &0000             \ The address of the zero page variables used when
- P = &001A              \ drawing to the screen
- SC = &0006
-
+ SC = &0006             \ drawing to the screen
+ P = &001A
                         \ --- End of added code ------------------------------->
 
 \ ******************************************************************************
@@ -9690,6 +9689,16 @@ ENDIF
 
                         \ --- Mod: Code added for BBC Micro B+: --------------->
 
+\ ******************************************************************************
+\
+\       Name: Pixel-drawing routines for shadow RAM
+\       Type: Subroutine
+\   Category: Ship hangar
+\    Summary: Draw pixels into shadow RAM by running the code in &A000-&AFFF,
+\             so that shadow RAM is mapped into &3000-&7FFF
+\
+\ ******************************************************************************
+
 .DrawPixelEOR
 
  EOR (SC),Y             \ Draw a pixel using EOR logic
@@ -9736,6 +9745,12 @@ ENDIF
 
  STA (P+2),Y            \ Store the Y-th byte at the screen address for this
                         \ character location
+
+ RTS                    \ Return from the subroutine
+
+.DrawPixelAND
+
+ AND (SC),Y             \ Check the pixel and set the flags
 
  RTS                    \ Return from the subroutine
 
