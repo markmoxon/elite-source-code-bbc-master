@@ -73,17 +73,10 @@ else
   match-original-binaries=TRUE
 endif
 
-ifeq ($(variant), compact)
-  variant-number=2
-  folder=compact
-  suffix=-compact
-  boot=-opt 2
-else
-  variant-number=1
-  folder=sng47
-  suffix=-sng47
-  boot=-boot M128Elt
-endif
+variant-number=1
+folder=sng47
+suffix=-b-plus-sng47
+boot=-boot M128Elt
 
 .PHONY:all
 all:
