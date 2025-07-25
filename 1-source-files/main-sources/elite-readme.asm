@@ -42,7 +42,9 @@
  EQUS "Acornsoft Elite"
  EQUB 10, 13
  EQUB 10, 13
- EQUS "Version: BBC Master"
+ EQUS "Version: BBC Micro B+ version of the"
+ EQUB 10, 13
+ EQUS "         original BBC Master release"
  EQUB 10, 13
 
 IF _SNG47
@@ -62,7 +64,13 @@ ELIF _COMPACT
 ENDIF
 
  EQUB 10, 13
+ EQUS "BBC Micro B+ conversion by Mark Moxon"
+ EQUB 10, 13
+ EQUB 10, 13
  EQUS "See www.bbcelite.com for details"
+ EQUB 10, 13
+ EQUB 10, 13
+ EQUS "Build: ", TIME$("%F %T")
  EQUB 10, 13
  EQUS "---------------------------------------"
  EQUB 10, 13
