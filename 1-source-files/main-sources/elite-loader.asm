@@ -67,17 +67,8 @@
  N% = 67                \ N% is set to the number of bytes in the VDU table, so
                         \ we can loop through them below
 
-                        \ --- Mod: Code removed for BBC Micro B+: ------------->
-
-\S% = &2C6C             \ The address of the main entry point workspace in the
-\                       \ main game code
-
-                        \ --- And replaced by: -------------------------------->
-
- S% = &2BAD             \ The address of the main entry point workspace in the
+ S% = &2C6C             \ The address of the main entry point workspace in the
                         \ main game code
-
-                        \ --- End of replacement ------------------------------>
 
  VIA = &FE00            \ Memory-mapped space for accessing internal hardware,
                         \ such as the video ULA, 6845 CRTC and 6522 VIAs (also
@@ -601,23 +592,23 @@ ENDIF
 
  CLI                    \ Enable interrupts
 
- LDX #LO(MESS2)         \ Set (Y X) to point to MESS2 ("L.BCODE FFFF1300" in the
- LDY #HI(MESS2)         \ Master release, or "L.ELITE FFFF1300" in the Master
-                        \ Compact release)
-
- JSR OSCLI              \ Call OSCLI to run the OS command in MESS2, which loads
-                        \ the BCODE/ELITE file to address &1300-&7F48, appending
-                        \ &FFFF to the address to make sure it loads in the main
-                        \ BBC Master rather than getting passed across the Tube
-                        \ to the Second Processor, if one is fitted
-
- LDX #LO(MESS3)         \ Set (Y X) to point to MESS3 ("DIR E")
- LDY #HI(MESS3)
-
- JSR OSCLI              \ Call OSCLI to run the OS command in MESS3, which
-                        \ changes the disc directory to E
-
                         \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\LDX #LO(MESS2)         \ Set (Y X) to point to MESS2 ("L.BCODE FFFF1300" in the
+\LDY #HI(MESS2)         \ Master release, or "L.ELITE FFFF1300" in the Master
+\                       \ Compact release)
+\
+\JSR OSCLI              \ Call OSCLI to run the OS command in MESS2, which loads
+\                       \ the BCODE/ELITE file to address &1300-&7F48, appending
+\                       \ &FFFF to the address to make sure it loads in the main
+\                       \ BBC Master rather than getting passed across the Tube
+\                       \ to the Second Processor, if one is fitted
+\
+\LDX #LO(MESS3)         \ Set (Y X) to point to MESS3 ("DIR E")
+\LDY #HI(MESS3)
+\
+\JSR OSCLI              \ Call OSCLI to run the OS command in MESS3, which
+\                       \ changes the disc directory to E
 
 \LDA #6                 \ Set the RAM copy of the currently selected paged ROM
 \STA LATCH              \ to 6, so it matches the paged ROM selection latch at
@@ -627,62 +618,37 @@ ENDIF
 \AND #%11110000         \ the ROM selection latch at SHEILA &30 to 6
 \ORA #6
 \STA VIA+&30
+\
+\JMP S%                 \ Jump to the start of the main game code at S%, which
+\                       \ we just loaded in the BCODE/ELITE file
 
                         \ --- And replaced by: -------------------------------->
 
- LDA VIA+&30            \ Set bit 7 of the ROM Select latch at SHEILA &30 to
- ORA #%10000000         \ switch the 12K of private RAM into &8000-&AFFF
- STA VIA+&30
+ LDX #LO(MESS4)         \ Set (Y X) to point to MESS2 ("R.BCODE")
+ LDY #HI(MESS4)
+
+ JMP OSCLI              \ Call OSCLI to run the OS command in MESS2, which runs
+                        \ the BCODE file
 
                         \ --- End of replacement ------------------------------>
 
- JMP S%                 \ Jump to the start of the main game code at S%, which
-                        \ we just loaded in the BCODE/ELITE file
-
 \ ******************************************************************************
 \
-\       Name: MESS2
+\       Name: MESS4
 \       Type: Variable
 \   Category: Loader
 \    Summary: The OS command string for loading the main game code binary
 \
 \ ******************************************************************************
 
-                        \ --- Mod: Code moved for BBC Micro B+: --------------->
+                        \ --- Mod: Code added for BBC Micro B+: --------------->
 
-.MESS2
+ .MESS4
 
-IF _SNG47
-
- EQUS "L.BCODE FFFF1300"    \ This is short for "*LOAD BCODE FFFF1300"
+ EQUS "R.BCODE"         \ This is short for "*RUN BCODE"
  EQUB 13
 
-ELIF _COMPACT
-
- EQUS "L.ELITE FFFF1300"    \ This is short for "*LOAD ELITE FFFF1300"
- EQUB 13
-
-ENDIF
-
-                        \ --- End of moved code ------------------------------->
-
-\ ******************************************************************************
-\
-\       Name: MESS3
-\       Type: Variable
-\   Category: Loader
-\    Summary: The OS command string for changing the disc directory to E
-\
-\ ******************************************************************************
-
-                        \ --- Mod: Code moved for BBC Micro B+: --------------->
-
-.MESS3
-
- EQUS "DIR E"
- EQUB 13
-
-                        \ --- End of moved code ------------------------------->
+                        \ --- End of added code ------------------------------->
 
 \ ******************************************************************************
 \
@@ -1429,23 +1395,19 @@ ENDIF
 \
 \ ******************************************************************************
 
-                        \ --- Mod: Code moved for BBC Micro B+: --------------->
+ .MESS2
 
-\.MESS2
-\
-\IF _SNG47
-\
-\EQUS "L.BCODE FFFF1300"    \ This is short for "*LOAD BCODE FFFF1300"
-\EQUB 13
-\
-\ELIF _COMPACT
-\
-\EQUS "L.ELITE FFFF1300"    \ This is short for "*LOAD ELITE FFFF1300"
-\EQUB 13
-\
-\ENDIF
+IF _SNG47
 
-                        \ --- End of moved code ------------------------------->
+ EQUS "L.BCODE FFFF1300"    \ This is short for "*LOAD BCODE FFFF1300"
+ EQUB 13
+
+ELIF _COMPACT
+
+ EQUS "L.ELITE FFFF1300"    \ This is short for "*LOAD ELITE FFFF1300"
+ EQUB 13
+
+ENDIF
 
 \ ******************************************************************************
 \
@@ -1456,14 +1418,10 @@ ENDIF
 \
 \ ******************************************************************************
 
-                        \ --- Mod: Code moved for BBC Micro B+: --------------->
+.MESS3
 
-\.MESS3
-\
-\EQUS "DIR E"
-\EQUB 13
-
-                        \ --- End of moved code ------------------------------->
+ EQUS "DIR E"
+ EQUB 13
 
 \ ******************************************************************************
 \

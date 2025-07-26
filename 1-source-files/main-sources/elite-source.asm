@@ -49,9 +49,19 @@
 \
 \ ******************************************************************************
 
- CODE% = &1300          \ The address where the code will be run
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
 
- LOAD% = &1300          \ The address where the code will be loaded
+\CODE% = &1300          \ The address where the code will be run
+\
+\LOAD% = &1300          \ The address where the code will be loaded
+
+                        \ --- And replaced by: -------------------------------->
+
+ CODE% = &1100          \ The address where the code will be run
+
+ LOAD% = &1100          \ The address where the code will be loaded
+
+                        \ --- End of replacement ------------------------------>
 
  Q% = _MAX_COMMANDER    \ Set Q% to TRUE to max out the default commander, FALSE
                         \ for the standard default commander
@@ -1003,7 +1013,7 @@
 
                         \ --- And replaced by: -------------------------------->
 
- ORG &1100              \ Set the assembly address to &1100
+ ORG &0900              \ Set the assembly address to &0B00
 
                         \ --- End of replacement ------------------------------>
 
@@ -11556,6 +11566,51 @@ ENDIF
 
 \ ******************************************************************************
 \
+\       Name: ENTRY
+\       Type: Subroutine
+\   Category: Loader
+\    Summary: Main entry point for the BCODE file
+\
+\ ******************************************************************************
+
+                        \ --- Mod: Code added for BBC Micro B+: --------------->
+
+.ENTRY
+
+ LDX #LO(MESS3)         \ Set (Y X) to point to MESS3 ("DIR E")
+ LDY #HI(MESS3)
+
+ JSR OSCLI              \ Call OSCLI to run the OS command in MESS3, which
+                        \ changes the disc directory to E
+
+ LDA VIA+&30            \ Set bit 7 of the ROM Select latch at SHEILA &30 to
+ ORA #%10000000         \ switch the 12K of private RAM into &8000-&AFFF
+ STA VIA+&30
+
+ JMP S%                 \ Jump to S% to start the game
+
+                        \ --- End of added code ------------------------------->
+
+\ ******************************************************************************
+\
+\       Name: MESS3
+\       Type: Variable
+\   Category: Loader
+\    Summary: The OS command string for changing the disc directory to E
+\
+\ ******************************************************************************
+
+                        \ --- Mod: Code added for BBC Micro B+: --------------->
+
+.MESS3
+
+ EQUS "DIR E"
+ EQUB 13
+
+                        \ --- End of added code ------------------------------->
+
+\ ******************************************************************************
+\
 \       Name: S%
 \       Type: Subroutine
 \   Category: Loader
@@ -19487,8 +19542,17 @@ ENDIF
  STA RAT2               \ Set RAT2 = %10000000, so the yaw calls in HAL5 below
                         \ are negative
 
- LDA #&0B               \ Set the ship line heap pointer in INWK(34 33) to point
- STA INWK+34            \ to &0B00
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\LDA #&0B               \ Set the ship line heap pointer in INWK(34 33) to point
+\STA INWK+34            \ to &0B00
+
+                        \ --- And replaced by: -------------------------------->
+
+ LDA #&06               \ Set the ship line heap pointer in INWK(34 33) to point
+ STA INWK+34            \ to &0600
+
+                        \ --- End of replacement ------------------------------>
 
                         \ --- Mod: Code added for red enemy lasers: ----------->
 
