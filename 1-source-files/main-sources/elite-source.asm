@@ -15876,7 +15876,7 @@ ENDIF
  STA K3+8               \ in the call to DrawPlanetLine, but store the
                         \ coordinates so we we can check them below
 
- JSR DrawPlanetLine+2   \ Calculate the current line from the old heap, but do
+ JSR DrawPlanetLine+4   \ Calculate the current line from the old heap, but do
                         \ not draw it, but store the coordinates (X1, Y1) and
                         \ (X2, Y2) in K3+4 to K3+7
 
@@ -15971,7 +15971,7 @@ ENDIF
 \
 \ Other entry points:
 \
-\   DrawPlanetLine+2    If bit 7 of K3+8 is set, store the line coordinates in
+\   DrawPlanetLine+4    If bit 7 of K3+8 is set, store the line coordinates in
 \                       K3+4 to K3+7 (X1, Y1, X2, Y2) and do not draw the line
 \
 \ ******************************************************************************
