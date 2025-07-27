@@ -367,6 +367,7 @@
  DrawDialPixels3 = &AF85
  DrawPixelP2 = &AF8E
  DrawPixelAND = &AF93
+ DrawBoxCorners = &AF96
 
                         \ --- End of replacement ------------------------------>
 
@@ -9809,11 +9810,23 @@ ENDIF
                         \ left edge of the upper part of the screen, and a
                         \ two-pixel wide vertical border along the right edge
 
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\LDA COL                \ Set locations &4000 and &41F8 to the correct colour,
+\STA &4000              \ as otherwise the top-left and top-right corners will
+\STA &41F8              \ be black (as the lines overlap at the corners, and
+\                       \ the EOR logic used by LOINQ will otherwise make them
+\                       \ black)
+
+                        \ --- And replaced by: -------------------------------->
+
  LDA COL                \ Set locations &4000 and &41F8 to the correct colour,
- STA &4000              \ as otherwise the top-left and top-right corners will
- STA &41F8              \ be black (as the lines overlap at the corners, and
+ JSR DrawBoxCorners     \ as otherwise the top-left and top-right corners will
+                        \ be black (as the lines overlap at the corners, and
                         \ the EOR logic used by LOINQ will otherwise make them
                         \ black)
+
+                        \ --- End of replacement ------------------------------>
 
  PLA                    \ Restore the original colour that we stored above
  STA COL

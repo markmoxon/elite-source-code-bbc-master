@@ -9754,6 +9754,16 @@ ENDIF
 
  RTS                    \ Return from the subroutine
 
+.DrawBoxCorners
+
+ STA &4000              \ Set locations &4000 and &41F8 to the correct colour,
+ STA &41F8              \ as otherwise the top-left and top-right corners will
+                        \ be black (as the lines overlap at the corners, and
+                        \ the EOR logic used by LOINQ will otherwise make them
+                        \ black)
+
+ RTS                    \ Return from the subroutine
+
  SKIPTO &B000
 
                         \ --- End of added code ------------------------------->
