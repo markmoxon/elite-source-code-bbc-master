@@ -1332,6 +1332,21 @@
 
                         \ --- End of moved code ------------------------------->
 
+                        \ --- Mod: Code added for Delta 14B: ------------------>
+
+.delta14b
+
+ SKIP 1                 \ Delta 14B configuration setting
+                        \
+                        \   * 0 = keyboard or joystick (default)
+                        \
+                        \   * &FF = Delta 14B
+                        \
+                        \ Toggled by pressing "D" when paused, see the DK4
+                        \ routine for details
+
+                        \ --- End of replacement ------------------------------>
+
 .FRIN
 
  SKIP NOSH + 1          \ Slots for the ships in the local bubble of universe
@@ -39637,9 +39652,20 @@ ENDIF
 
 .BEGIN
 
- LDX #(DISK-COMC)       \ We start by zeroing all the configuration variables
-                        \ between COMC and DISK, to set them to their default
-                        \ values, so set a counter in X for DISK - COMC bytes
+                        \ --- Mod: Code removed for Delta 14B: ---------------->
+
+\LDX #(DISK-COMC)       \ We start by zeroing all the configuration variables
+\                       \ between COMC and DISK, to set them to their default
+\                       \ values, so set a counter in X for DISK - COMC bytes
+
+                        \ --- And replaced by: -------------------------------->
+
+ LDX #(delta14b-COMC)   \ We start by zeroing all the configuration variables
+                        \ between COMC and delta14b, to set them to their
+                        \ default values, so set a counter in X for
+                        \ delta14b - COMC bytes
+
+                        \ --- End of replacement ------------------------------>
 
  LDA #0                 \ Set A = 0 so we can zero the variables
 
@@ -40124,6 +40150,15 @@ ENDIF
  DEC MCNT               \ Decrement the main loop counter
 
 IF _SNG47
+
+                        \ --- Mod: Code added for Delta 14B: ------------------>
+
+ LDA #&51               \ Set 6522 User VIA output register ORB (SHEILA &60) to
+ STA VIA+&60            \ the Delta 14B joystick button in the middle column
+                        \ (high nibble &5) and top row (low nibble &1), which
+                        \ corresponds to the fire button
+
+                        \ --- End of added code ------------------------------->
 
  LDA VIA+&40            \ Read 6522 System VIA input register IRB (SHEILA &40)
 
@@ -42658,6 +42693,15 @@ IF _SNG47
 
  STA JSTY               \ Store the resulting joystick Y value in JSTY
 
+                        \ --- Mod: Code added for Delta 14B: ------------------>
+
+ LDA #&51               \ Set 6522 User VIA output register ORB (SHEILA &60) to
+ STA VIA+&60            \ the Delta 14B joystick button in the middle column
+                        \ (high nibble &5) and top row (low nibble &1), which
+                        \ corresponds to the fire button
+
+                        \ --- End of added code ------------------------------->
+
  LDA VIA+&40            \ Read 6522 System VIA input register IRB (SHEILA &40)
 
  AND #%00010000         \ Bit 4 of IRB (PB4) is clear if joystick 1's fire
@@ -42758,8 +42802,18 @@ ENDIF
 
  LDX KL                 \ Fetch the key pressed from byte #0 of the key logger
 
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\CPX #&8B               \ If COPY is not being pressed, jump to DK2 below,
+\BNE DK2                \ otherwise let's process the configuration keys
+
+                        \ --- And replaced by: -------------------------------->
+
  CPX #&8B               \ If COPY is not being pressed, jump to DK2 below,
- BNE DK2                \ otherwise let's process the configuration keys
+ BEQ P%+5               \ otherwise let's process the configuration keys
+ JMP DK2
+
+                        \ --- End of replacement ------------------------------>
 
 .FREEZE
 
@@ -42886,6 +42940,24 @@ ENDIF
 
 .DOVOL4
 
+                        \ --- Mod: Code added for Delta 14B: ------------------>
+
+ CPX #'L'               \ If "L" is not being pressed, skip to delt1
+ BNE delt1
+
+ LDA delta14b           \ Toggle the value of delta14b between 0 and &FF
+ EOR #&FF
+ STA delta14b
+
+ STA JSTK               \ Configure JSTK to the same value, so when the Delta
+                        \ 14B is enabled, so is the joystick
+
+ JMP delt2              \ Jump to delt2 to make a beep, if appropriate
+
+.delt1
+
+                        \ --- End of added code ------------------------------->
+
  CPX #'B'               \ If "B" is not being pressed, skip to DOVOL2
  BNE DOVOL2
 
@@ -42900,6 +42972,12 @@ ENDIF
                         \ is enabled, the joystick is configured with reversed
                         \ channels
 
+                        \ --- Mod: Code added for Delta 14B: ------------------>
+
+.delt2
+
+                        \ --- End of added code ------------------------------->
+
  BPL P%+5               \ If we just toggled the Bitstik off (i.e. to 0, which
                         \ is positive), then skip the first of these two
                         \ instructions, so we get two beeps for on and one beep
@@ -42909,6 +42987,18 @@ ENDIF
                         \ system beeps (this being the first)
 
  JSR BELL               \ Make another system beep
+
+                        \ --- Mod: Code added for Delta 14B: ------------------>
+
+ JSR DELAY              \ Wait for Y vertical syncs (Y is between 64 and 70, so
+                        \ this is always a bit longer than a second)
+
+ LDX #&51               \ Set X to &51, which is the internal key for "S" on the
+                        \ BBC Micro. This is set to ensure that X has the same
+                        \ value at this point as the BBC Micro version of this
+                        \ routine would
+
+                        \ --- End of added code ------------------------------->
 
 .DOVOL2
 
@@ -42926,10 +43016,21 @@ ENDIF
  JMP DEATH2             \ ESCAPE is being pressed, so jump to DEATH2 to end
                         \ the game
 
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\CPX #&7F               \ If DELETE is not being pressed, we are still paused,
+\BNE FREEZE             \ so loop back up to keep listening for configuration
+\                       \ keys, otherwise fall through into the rest of the
+\                       \ key detection code, which unpauses the game
+
+                        \ --- And replaced by: -------------------------------->
+
  CPX #&7F               \ If DELETE is not being pressed, we are still paused,
- BNE FREEZE             \ so loop back up to keep listening for configuration
-                        \ keys, otherwise fall through into the rest of the
+ BEQ P%+5               \ so loop back up to keep listening for configuration
+ JMP FREEZE             \ keys, otherwise fall through into the rest of the
                         \ key detection code, which unpauses the game
+
+                        \ --- End of replacement ------------------------------>
 
 .DK2
 
@@ -49931,6 +50032,37 @@ ENDMACRO
                         \ X to 0 (so we can use X as an index for working our
                         \ way through the flight keys in Rd2 below)
 
+                        \ --- Mod: Code added for Delta 14B: ------------------>
+
+IF _SNG47
+
+ LDA delta14b           \ If delta14b is zero, then the Delta 14B joystick
+ BEQ fill2              \ is not configured, so jump to fill2 to skip the
+                        \ following
+
+ LDY #16                \ So set a decreasing counter in Y to work through the
+                        \ Delta 14B buttons
+
+.fill1
+
+ LDA #%10000000         \ Set A to 128, as that's what the b_14 routine expects
+                        \ as a parameter
+
+ JSR b_14               \ Call b_14 to check the Delta 14B joystick buttons and
+                        \ populate the key logger
+
+ DEY                    \ Decrement the loop counter
+
+ BNE fill1              \ If not, loop back to process the next key
+
+ LDX #0                 \ Set an index in X to work through the keyboard
+
+.fill2
+
+ENDIF
+
+                        \ --- End of added code ------------------------------->
+
  LDA #16                \ Start the scan with internal key number 16 ("Q")
 
  CLC                    \ Clear the C flag so we can do the additions below
@@ -50973,12 +51105,268 @@ ENDIF
 
 IF _SNG47
 
-.NMIpissoff
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
 
- CLI                    \ These instructions are never reached and have no
- RTI                    \ effect
+
+\.NMIpissoff
+\
+\CLI                    \ These instructions are never reached and have no
+\RTI                    \ effect
+
+                        \ --- End of removed code ----------------------------->
 
 ENDIF
+
+\ ******************************************************************************
+\
+\       Name: b_table
+\       Type: Variable
+\   Category: Keyboard
+\    Summary: Lookup table for Delta 14B joystick buttons
+\  Deep dive: Delta 14B joystick support
+\
+\ ------------------------------------------------------------------------------
+\
+\ In the following table, which maps buttons on the Delta 14B to the flight
+\ controls, the high nibble of the value gives the column:
+\
+\   &6 = %110 = left column
+\   &5 = %101 = middle column
+\   &3 = %011 = right column
+\
+\ while the low nibble gives the row:
+\
+\   &1 = %0001 = top row
+\   &2 = %0010 = second row
+\   &4 = %0100 = third row
+\   &8 = %1000 = bottom row
+\
+\ This results in the following mapping (as the top two fire buttons are treated
+\ the same as the top button in the middle row):
+\
+\   Fire laser                                    Fire laser
+\   Slow down              Fire laser             Speed up
+\   Unarm Missile          Fire Missile           Target missile
+\   Front view             E.C.M.                 Rear view
+\   Docking computer on    In-system jump         Docking computer off
+\
+\ ******************************************************************************
+
+                        \ --- Mod: Code added for Delta 14B: ------------------>
+
+.b_table
+
+ EQUB &54               \ Middle column  Third row    KL+1    E.C.M.
+ EQUB &32               \ Right column   Second row   KL+2    Arm missile
+ EQUB &62               \ Left column    Second row   KL+3    Unarm missile
+ EQUB &68               \ Left column    Bottom row   KL+4    Cancel docking
+ EQUB &51               \ Middle column  Top row      KL+5    Fire lasers
+ EQUB &80               \ -                           KL+6    Pitch up
+ EQUB &58               \ Middle column  Bottom row   KL+7    In-system jump
+ EQUB &80               \ -                           KL+8    Pitch down
+ EQUB &38               \ Right column   Bottom row   KL+9    Docking computer
+ EQUB &64               \ Left column    Third row    -       Front view
+ EQUB &31               \ Right column   Top row      KL+11   Speed up
+ EQUB &52               \ Middle column  Second row   KL+12   Fire missile
+ EQUB &80               \ -                           KL+13   Roll left
+ EQUB &80               \ -                           KL+14   Roll right
+ EQUB &61               \ Left column    Top row      KL+15   Slow down
+ EQUB &34               \ Right column   Third row    -       Rear view
+\EQUB &34               \ Right column   Third row    KL+16   Escape pod
+
+                        \ --- End of added code ------------------------------->
+
+\ ******************************************************************************
+\
+\       Name: b_14
+\       Type: Subroutine
+\   Category: Keyboard
+\    Summary: Scan the Delta 14B joystick buttons
+\  Deep dive: Delta 14B joystick support
+\
+\ ------------------------------------------------------------------------------
+\
+\ Scan the Delta 14B for the flight key given in register Y, where Y is the
+\ offset into the KYTB table above (so this is the same approach as in DKS1).
+\
+\ The keys on the Delta 14B are laid out as follows (the top two fire buttons
+\ are treated the same as the top button in the middle row):
+\
+\   Fire laser                                    Fire laser
+\   Slow down              Fire laser             Speed up
+\   Unarm Missile          Fire Missile           Target missile
+\   Front view             E.C.M.                 Rear view
+\   Docking computer on    In-system jump         Docking computer off
+\
+\ ------------------------------------------------------------------------------
+\
+\ Arguments:
+\
+\   Y                   The offset into the KYTB table of the key that we want
+\                       to scan on the Delta 14B
+\
+\ ******************************************************************************
+
+                        \ --- Mod: Code added for Delta 14B: ------------------>
+
+.b_13
+
+ LDA #0                 \ Set A = 0 for the second pass through the following,
+                        \ so we can check the joystick plugged into the rear
+                        \ socket of the Delta 14B adaptor
+
+.b_14
+
+                        \ This is the entry point for the routine, which is
+                        \ called with A = 128 (the value of BSTK when the Delta
+                        \ 14b is enabled), and if the key we are checking has a
+                        \ corresponding button on the Delta 14B, it is run a
+                        \ second time with A = 0
+
+ TAX                    \ Store A in X so we can restore it below
+
+ EOR b_table-1,Y        \ We now EOR the value in A with the Y-th entry in
+ BEQ b_quit             \ b_table, and jump to b_quit to return from the
+                        \ subroutine if the table entry is 128 (&80) - in other
+                        \ words, we quit if Y is the offset for the roll and
+                        \ pitch controls
+
+                        \ If we get here, then the offset in Y points to a
+                        \ control with a corresponding button on the Delta 14B,
+                        \ and we pass through the following twice, once with a
+                        \ starting value of A = 128, and again with a starting
+                        \ value of A = 0
+                        \
+                        \ On the first pass, the EOR will set A to the value
+                        \ from b_table but with bit 7 set, which means we scan
+                        \ the joystick plugged into the side socket of the
+                        \ Delta 14B adaptor
+                        \
+                        \ On the second pass, the EOR will set A to the value
+                        \ from b_table (i.e. with bit 7 clear), which means we
+                        \ scan the joystick plugged into the rear socket of the
+                        \ Delta 14B adaptor
+
+ STA VIA+&60            \ Set 6522 User VIA output register ORB (SHEILA &60) to
+                        \ the value in A, which tells the Delta 14B adaptor box
+                        \ that we want to read the buttons specified in PB4 to
+                        \ PB7 (i.e. bits 4-7), as follows:
+                        \
+                        \ On the side socket joystick (bit 7 set):
+                        \
+                        \   %1110 = read buttons in left column   (bit 4 clear)
+                        \   %1101 = read buttons in middle column (bit 5 clear)
+                        \   %1011 = read buttons in right column  (bit 6 clear)
+                        \
+                        \ On the rear socket joystick (bit 7 clear):
+                        \
+                        \   %0110 = read buttons in left column   (bit 4 clear)
+                        \   %0101 = read buttons in middle column (bit 5 clear)
+                        \   %0011 = read buttons in right column  (bit 6 clear)
+
+ AND #%00001111         \ We now read the 6522 User VIA to fetch PB0 to PB3 from
+ AND VIA+&60            \ the user port (PB0 = bit 0 to PB3 = bit 3), which
+                        \ tells us whether any buttons in the specified column
+                        \ are being pressed, and if they are, in which row. The
+                        \ values read are as follows:
+                        \
+                        \   %1111 = no button is being pressed in this column
+                        \   %1110 = button pressed in top row    (bit 0 clear)
+                        \   %1101 = button pressed in second row (bit 1 clear)
+                        \   %1011 = button pressed in third row  (bit 2 clear)
+                        \   %0111 = button pressed in bottom row (bit 3 clear)
+                        \
+                        \ In other words, if a button is being pressed in the
+                        \ top row in the previously specified column, then PB0
+                        \ (bit 0) will go low in the value we read from the user
+                        \ port
+
+ BEQ b_pressed          \ In the above we AND'd the result from the user port
+                        \ with the bottom four bits of the table value (the
+                        \ low nibble). The low nibble in b_table contains
+                        \ a 1 in the relevant position for that row that
+                        \ corresponds with the clear bit in the response from
+                        \ the user port, so if we AND the two together and get
+                        \ a zero, that means that button is being pressed, in
+                        \ which case we jump to b_pressed to update the key
+                        \ logger for that button
+                        \
+                        \ For example, take the b_table entry for the escape pod
+                        \ button, in the right column and third row. The value
+                        \ in b_table is &34. The high nibble denotes the column,
+                        \ which is &3 = %011, which means in the STA VIA+&60
+                        \ above, we write %1011 in the first pass (when A = 128)
+                        \ to set the right column for the side socket joystick,
+                        \ and we write %0011 in the first pass (when A = 0) to
+                        \ set the right column for the rear socket joystick
+                        \
+                        \ Now for the row. The low nibble of the &34 value
+                        \ from b_table contains the row, so that's &4 = %0100.
+                        \ When we read the user port, then we will fetch %1011
+                        \ from VIA+&60 if the button in the third row is being
+                        \ pressed, so when we AND the two together, we get:
+                        \
+                        \   %0100 AND %1011 = 0
+                        \
+                        \ which will indicate the button is being pressed. If
+                        \ any other button is being pressed, or no buttons at
+                        \ all, then the result will be non-zero and we move on
+                        \ to the next button
+
+ TXA                    \ Restore the original value of A that we stored in X
+
+ BMI b_13               \ If we just did the above with A = 128, then loop back
+                        \ to b_13 to do it again with A = 0
+
+.b_quit
+
+ RTS                    \ Return from the subroutine
+
+.b_pressed
+
+ CPY #10                \ If this is the front view button, jump to b_front to
+ BEQ b_front            \ process it
+
+ CPY #16                \ If this is the front view button, jump to b_rear to
+ BEQ b_rear             \ process it
+
+ LDA #&FF               \ Store &FF in the Y-th byte of the key logger at KL
+ STA KL,Y
+
+ RTS                    \ Return from the subroutine
+
+.b_front
+
+ LDX VIEW               \ If we are already on the front view, do nothing
+ BEQ b_quit
+
+ LDX #&20               \ Set the key "pressed" to f0 (internal key &20)
+
+ BNE b_return           \ Jump to b_return to "press" this key (this BNE is
+                        \ effectively a JMP as X is never zero)
+
+.b_rear
+
+ LDX VIEW               \ If we are already on the rear view, do nothing
+ CPX #1
+ BEQ b_quit
+
+ LDX #&71               \ Set the key "pressed" to f1 (internal key &71)
+
+.b_return
+
+ STX KL                 \ Set the key "pressed" to the internal key in X
+
+ CLD                    \ Clear the D flag to return to binary mode (for cases
+                        \ where this routine is called in BCD mode)
+
+ PLA                    \ Remove the return address from the top of the stack,
+ PLA                    \ so the RTS returns to the caller of FILLKL (i.e. back
+                        \ to RDKEY)
+
+ RTS                    \ Return from the subroutine
+
+                        \ --- End of added code ------------------------------->
 
 \ ******************************************************************************
 \
