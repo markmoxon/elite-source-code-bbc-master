@@ -2280,6 +2280,21 @@ ENDIF
                         \ channel 3 (the Bitstik rotation value), which gets
                         \ updated regularly by the IRQ1 interrupt handler
 
+                        \ --- Mod: Code added for docking fee: ---------------->
+
+.chargeDockingFee
+
+ SKIP 1                 \ Records whether we have been charged a docking fee, so
+                        \ we don't get charged twice:
+                        \
+                        \   * 0 = we have not been charged a docking fee
+                        \
+                        \   * Non-zero = we have been charged a docking fee
+                        \
+                        \ The docking fee is 5.0 credits
+
+                        \ --- End of added code ------------------------------->
+
  PRINT "WP workspace from ", ~WP, "to ", ~P%-1, "inclusive"
 
 \ ******************************************************************************
@@ -12421,6 +12436,54 @@ ENDIF
  AND DKCMP              \ computer fitted, keep going, otherwise jump down to
  BEQ MA68               \ MA68 to skip the following
 
+                        \ --- Mod: Code added for docking fee: ---------------->
+
+                        \ We now deduct a docking fee of 5.0 credits for using
+                        \ the docking computer
+
+ LDA chargeDockingFee   \ If we have already been charged a docking fee
+ BNE barb4              \ (chargeDockingFee is non-zero), then jump to barb4 to
+                        \ engage the docking computer without charging a docking
+                        \ fee
+
+                        \ Otherwise we charge the docking fee
+
+ LDY #0                 \ Set (Y X) = 50, so the docking fee is 5.0 credits
+ LDX #50
+
+ JSR LCASH              \ Subtract (Y X) cash from the cash pot, but only if
+                        \ we have enough cash
+
+ BCS barb3              \ If the C flag is set then we did have enough cash for
+                        \ the transaction, so jump to barb3 to skip the
+                        \ following instruction
+
+                        \ If we get here then we don't have enough cash for the
+                        \ docking fee, so make a beep and return from the
+                        \ subroutine without engaging the docking computer
+
+ LDA #0                 \ Set auto to 0, so the docking computer is no longer
+ STA auto               \ activated
+
+ JMP BOOP               \ Call the BOOP routine to make a long, low beep, and
+                        \ return from the subroutine using a tail call
+
+.barb3
+
+ DEC chargeDockingFee   \ Set chargeDockingFee to &FF so we don't charge another
+                        \ docking fee
+
+ LDA #0                 \ Print control code 0 (current amount of cash and
+ JSR MESS               \ newline) as an in-flight message, to show our balance
+                        \ after the docking fee has been paid
+
+.barb4
+
+ LDA #1                 \ Set A to 1 to enable the docking computer and music in
+                        \ the following
+
+                        \ --- End of added code ------------------------------->
+
  STA auto               \ Set auto to the non-zero value of A, so the docking
                         \ computer is activated
 
@@ -13692,10 +13755,30 @@ ENDIF
  BEQ MA23               \ skip fuel scooping, as we can't scoop without fuel
                         \ scoops
 
+                        \ --- Mod: Code removed for moving fuel scoops: ------->
+
+\LDA DELT4+1            \ We are now successfully fuel scooping, so it's time
+\LSR A                  \ to work out how much fuel we're scooping. Fetch the
+\                       \ high byte of DELT4, which contains our current speed
+\                       \ divided by 4, and halve it to get our current speed
+\                       \ divided by 8 (so it's now a value between 1 and 5, as
+\                       \ our speed is normally between 1 and 40). This gives
+\                       \ us the amount of fuel that's being scooped in A, so
+\                       \ the faster we go, the more fuel we scoop, and because
+\                       \ the fuel levels are stored as 10 * the fuel in light
+\                       \ years, that means we just scooped between 0.1 and 0.5
+\                       \ light years of free fuel
+
+                        \ --- And replaced by: -------------------------------->
+
  LDA DELT4+1            \ We are now successfully fuel scooping, so it's time
- LSR A                  \ to work out how much fuel we're scooping. Fetch the
+ BEQ MA23               \ to work out how much fuel we're scooping. Fetch the
                         \ high byte of DELT4, which contains our current speed
-                        \ divided by 4, and halve it to get our current speed
+                        \ divided by 4, and if it is zero, jump to BA23 to skip
+                        \ skip fuel scooping, as we can't scoop fuel if we are
+                        \ not moving
+
+ LSR A                  \ If we are moving, halve A to get our current speed
                         \ divided by 8 (so it's now a value between 1 and 5, as
                         \ our speed is normally between 1 and 40). This gives
                         \ us the amount of fuel that's being scooped in A, so
@@ -13703,6 +13786,8 @@ ENDIF
                         \ the fuel levels are stored as 10 * the fuel in light
                         \ years, that means we just scooped between 0.1 and 0.5
                         \ light years of free fuel
+
+                        \ --- End of replacement ------------------------------>
 
  ADC QQ14               \ Set A = A + the current fuel level * 10 (from QQ14)
 
@@ -19953,10 +20038,31 @@ ENDIF
  AND #%00000100         \ the ship's NEWB flags is set, and if it is (i.e. the
  BNE TN5                \ station is hostile), jump to TN5 to spawn some cops
 
- LDA MANY+SHU+1         \ The station is not hostile, so check how many
- BNE TA1                \ Transporters there are in the vicinity, and if we
+                        \ --- Mod: Code removed for better docking computer: -->
+
+\LDA MANY+SHU+1         \ The station is not hostile, so check how many
+\BNE TA1                \ Transporters there are in the vicinity, and if we
+\                       \ already have one, return from the subroutine (as TA1
+\                       \ contains an RTS)
+
+                        \ --- And replaced by: -------------------------------->
+
+ LDA MANY+SHU+1         \ Set A to the number of Transporters in the vicinity
+
+ ORA auto               \ If the docking computer is on then auto is &FF, so
+                        \ this ensures that A is always non-zero when we are
+                        \ auto-docking, so the following jump to TA1 will be
+                        \ taken and no Transporters will be spawned from the
+                        \ space station (unlike in the disc version, where you
+                        \ can get smashed into space dust by a badly timed
+                        \ Transporter launch when using the docking computer)
+
+ BNE TA1                \ The station is not hostile, so check how many
+                        \ Transporters there are in the vicinity, and if we
                         \ already have one, return from the subroutine (as TA1
                         \ contains an RTS)
+
+                        \ --- End of replacement ------------------------------>
 
                         \ If we get here then the station is not hostile, so we
                         \ can consider spawning a Transporter or Shuttle
@@ -37758,6 +37864,13 @@ ENDIF
                         \ source; it is left over from the Commodore 64 version
                         \ of Elite and would reset the number of Trumbles
 
+                        \ --- Mod: Code added for docking fee: ---------------->
+
+ STA chargeDockingFee   \ Set chargeDockingFee to 0 so the docking fee is marked
+                        \ as being not already paid
+
+                        \ --- End of added code ------------------------------->
+
  LDA #3                 \ Reset DELTA (speed) to 3
  STA DELTA
 
@@ -42078,6 +42191,26 @@ ENDIF
 \ ******************************************************************************
 
 .WARP
+
+                        \ --- Mod: Code added for better docking computer: ---->
+
+ LDA auto               \ If the docking computer is engaged (auto is non-zero)
+ AND SSPR               \ and we are inside the space station safe zone (SSPR
+ BEQ warp1              \ is non-zero), then this sets A to be non-zero, so if
+                        \ this is not the case, jump to warp1 to skip the
+                        \ following
+
+                        \ If we get here then the docking computer is engaged
+                        \ and we are in the space station safe zone, in which
+                        \ case the fast-forward button docks us instantly
+
+ JMP GOIN               \ Go to the docking bay (i.e. show the ship hangar
+                        \ screen) and return from the subroutine with a tail
+                        \ call
+
+.warp1
+
+                        \ --- End of added code ------------------------------->
 
  LDX JUNK               \ Set X to the total number of junk items in the
                         \ vicinity (e.g. asteroids, escape pods, cargo
