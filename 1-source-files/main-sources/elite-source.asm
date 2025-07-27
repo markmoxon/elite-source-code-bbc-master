@@ -339,35 +339,23 @@
 
                         \ --- And replaced by: -------------------------------->
 
- QQ18 = &9D95           \ The address of the text token table, as set in
+ QQ18 = &9D91           \ The address of the text token table, as set in
                         \ elite-data.asm
 
- SNE = &A155            \ The address of the sine lookup table, as set in
+ TKN1 = &A14C           \ The address of the extended token table, as set in
                         \ elite-data.asm
 
- ACT = &A175            \ The address of the arctan lookup table, as set in
-                        \ elite-data.asm
-
- TKN1 = &A195           \ The address of the extended token table, as set in
-                        \ elite-data.asm
-
- RUPLA = &ACDD          \ The address of the extended system description system
-                        \ number table, as set in elite-data.asm
-
- RUGAL = &ACF7          \ The address of the extended system description galaxy
-                        \ number table, as set in elite-data.asm
-
- RUTOK = &AD11          \ The address of the extended system description token
+ RUTOK = &AD90          \ The address of the extended system description token
                         \ table, as set in elite-data.asm
 
- DrawPixelEOR = &AF78   \ Addresses of the pixel-drawing routines in &A000-&AFFF
- DrawPixelSTA = &AF7A
- DrawPixelORA = &AF7D
- DrawDialPixels4 = &AF82
- DrawDialPixels3 = &AF85
- DrawPixelP2 = &AF8E
- DrawPixelAND = &AF93
- DrawBoxCorners = &AF96
+ DrawPixelEOR = &AFDD   \ Addresses of the pixel-drawing routines in &A000-&AFFF
+ DrawPixelORA = &AFE0
+ DrawDialPixels4 = &AFE5
+ DrawDialPixels3 = &AFE8
+ DrawPixelSTA = &AFEE
+ DrawPixelP2 = &AFF1
+ DrawPixelAND = &AFF6
+ DrawBoxCorners = &AFF9
 
                         \ --- End of replacement ------------------------------>
 
@@ -11985,6 +11973,34 @@ ENDIF
 \
 \.EN6
 
+                        \ --- Mod: Code added for Trumbles: ------------------->
+
+\LDA CASH+2             \ This is the Trumbles code from the Commodore 64
+\CMP #&C4               \ version, which triggers the mission when you reach a
+\BCC EN6                \ cash level of &C400 (or 5017.6 credits)
+                        \
+                        \ Instead, we're going to use the NES code, which offers
+                        \ the mission at 6553.6 credits
+
+ LDA CASH+1             \ If the second most significant byte of CASH(0 1 2 3)
+ BEQ EN6                \ is zero then the cash amount is less than &010000
+                        \ (6553.6 credits), so jump to EN6
+
+ LDA TP                 \ If bit 4 of TP is set, then the Tribbles mission has
+ AND #%00010000         \ already been completed, so jump to EN6
+ BNE EN6
+
+                        \ If we get here then cheat mode has not been applied,
+                        \ we have at least 6553.6 credits and the Trumble
+                        \ mission has not yet been offered, so we do that now
+
+ JMP TBRIEF             \ Jump to TBRIEF to offer the Trumble mission, returning
+                        \ from the subroutine using a tail call
+
+.EN6
+
+                        \ --- End of added code ------------------------------->
+
  JMP BAY                \ If we get here them we didn't start or any missions,
                         \ so jump to BAY to go to the docking bay (i.e. show the
                         \ Status Mode screen)
@@ -13765,6 +13781,26 @@ ENDIF
 \ROR TRIBBLE
 \
 \.nokilltr
+
+                        \ --- Mod: Code added for Trumbles: ------------------->
+
+ CMP #240               \ If the cabin temperature < 240 then jump to nokilltr
+ BCC nokilltr           \ as the heat isn't high enough to kill Trumbles
+
+ LDA TRIBBLE+1          \ If TRIBBLE(1 0) = 0 then there are no Trumbles in the
+ ORA TRIBBLE            \ hold, so jump to nokilltr to skip the following
+ BEQ nokilltr
+
+ LSR TRIBBLE+1          \ Halve the number of Trumbles in TRIBBLE(1 0) as the
+ ROR TRIBBLE            \ cabin temperature is high enough to kill them off
+                        \ (this will eventually bring the number down to zero)
+
+ LDY #sohyp2            \ Call the NOISE routine with Y = 11 to make the sound
+ JSR NOISE              \ of Trumbles being killed off by the heat of the sun
+
+.nokilltr
+
+                        \ --- End of added code ------------------------------->
 
  LDA BST                \ If we don't have fuel scoops fitted, jump to BA23 to
  BEQ MA23               \ skip fuel scooping, as we can't scoop without fuel
@@ -19184,6 +19220,23 @@ ENDIF
 \STA TRIBBLE+1          \ mission, so the code is disabled
 \
 \.nosurviv
+
+                        \ --- Mod: Code added for Trumbles: ------------------->
+
+ LDA TRIBBLE            \ If there are no Trumbles in our hold, then both bytes
+ ORA TRIBBLE+1          \ of TRIBBLE(1 0) will be zero, so jump to nosurviv to
+ BEQ nosurviv           \ skip the following
+
+ JSR DORND              \ Otherwise set TRIBBLE(1 0) to a random number between
+ AND #7                 \ 1 and 7, to determine how many Trumbles manage to
+ ORA #1                 \ hitch a ride in the escape pod (so using an escape pod
+ STA TRIBBLE            \ is not a solution to the trouble with Trumbles)
+ LDA #0
+ STA TRIBBLE+1
+
+.nosurviv
+
+                        \ --- End of added code ------------------------------->
 
  LDA #70                \ Our replacement ship is delivered with a full tank of
  STA QQ14               \ fuel, so set the current fuel level in QQ14 to 70, or
@@ -25355,6 +25408,35 @@ ENDIF
 \INC TRIBBLE
 \
 \JMP BAY
+
+                        \ --- Mod: Code added for Trumbles: ------------------->
+
+.TBRIEF
+
+ LDA TP                 \ Set bit 4 of TP to indicate that mission 3 has been
+ ORA #%00010000         \ triggered
+ STA TP
+
+ LDA #199               \ Print extended token 199, which is the briefing for
+ JSR DETOK              \ the Trumbles mission
+
+ JSR YESNO              \ Call YESNO to wait until either "Y" or "N" is pressed
+
+ BCC BAYSTEP            \ If "N" was pressed, then the mission was not accepted,
+                        \ jump to BAYSTEP to go to the docking bay (i.e. show
+                        \ the Status Mode screen)
+
+ LDY #HI(50000)         \ Otherwise the mission was accepted, so subtract
+ LDX #LO(50000)         \ 50,000 CR from the cash pot to pay for the Trumble
+ JSR LCASH
+
+ INC TRIBBLE            \ Increment the number of Trumbles from 0 to 1, so they
+                        \ start breeding
+
+ JMP BAY                \ Go to the docking bay (i.e. show the Status Mode
+                        \ screen)
+
+                        \ --- End of added code ------------------------------->
 
 \ ******************************************************************************
 \
@@ -38882,6 +38964,79 @@ ENDIF
 
 .plus13
 
+                        \ --- Mod: Code added for Trumbles: ------------------->
+
+ LDA TRIBBLE+1          \ If the high byte of TRIBBLE(1 0), the number of
+ BEQ game5              \ Trumbles in the hold, is zero, jump to game5 to skip
+                        \ the following
+
+                        \ We have a lot of Trumbles in the hold, so let's see if
+                        \ any of them are breeding (note that Trumbles always
+                        \ breed when we jump into a new system in the SOLAR
+                        \ routine, but when we have lots of them, they also
+                        \ breed here in the main flight loop)
+
+ JSR DORND              \ Set A and X to random numbers
+
+ CMP #220               \ If A >= 220 then set the C flag (14% chance)
+
+ LDA TRIBBLE            \ Add the C flag to TRIBBLE(1 0), starting with the low
+ ADC #0                 \ bytes
+ STA TRIBBLE
+
+ BCC game5              \ And then the high bytes
+ INC TRIBBLE+1          \
+                        \ So there is a 14% chance of a Trumble being born
+
+ BPL game5              \ If the high byte of TRIBBLE(1 0) is now &80, then
+ DEC TRIBBLE+1          \ decrement it back to &7F, so the number of Trumbles
+                        \ never goes above &7FFF (32767)
+
+.game5
+
+ LDA TRIBBLE+1          \ If the high byte of TRIBBLE(1 0), the number of
+ BEQ game7              \ Trumbles in the hold, is zero, jump to game7 to skip
+                        \ the following
+
+                        \ We have a lot of Trumbles in the hold, so they are
+                        \ probably making a bit of a noise
+
+ LDY CABTMP             \ If the cabin temperature is >= 224 then jump to game6
+ CPY #224               \ to skip the following and leave the value of A as a
+ BCS game6              \ high value, so the chances of the Trumbles making a
+                        \ noise in hot temperature is greater (specifically,
+                        \ this is the temperature at which the fuel scoop start
+                        \ working)
+
+ LSR A                  \ Set A = A / 2
+ LSR A
+
+.game6
+
+ STA T                  \ Set T = A, which will be higher with more Trumbles and
+                        \ higher temperatures
+ 
+ JSR DORND              \ Set A and X to random numbers
+ 
+ CMP T                  \ If A >= T then jump to game7 to skip making any noise,
+ BCS game7              \ so there is a higher chance of Trumbles making noise
+                        \ when there are lots of them or the cabin temperature
+                        \ is hot enough for the fuel scoops to work
+ 
+ AND #%100              \ Set A to our random number, set to either 0 or 4
+
+ ADC #3                 \ Set Y to our random number, set to either 3 or 7 (we
+ TAY                    \ know the C flag is clear as we just passed through a
+                        \ BCS)
+
+ JSR NOISE              \ Call the NOISE routine to make the sound of the
+                        \ Trumbles in Y, which will be one of 3 or 7, with an
+                        \ equal chance of either
+
+.game7
+
+                        \ --- End of added code ------------------------------->
+
  JSR TT17               \ Scan the keyboard for the cursor keys or joystick,
                         \ returning the cursor's delta values in X and Y and
                         \ the key pressed in A
@@ -51367,6 +51522,256 @@ ENDIF
  RTS                    \ Return from the subroutine
 
                         \ --- End of added code ------------------------------->
+
+\ ******************************************************************************
+\
+\       Name: SNE
+\       Type: Variable
+\   Category: Maths (Geometry)
+\    Summary: Sine/cosine table
+\  Deep dive: The sine, cosine and arctan tables
+\             Drawing circles
+\             Drawing ellipses
+\
+\ ------------------------------------------------------------------------------
+\
+\ This lookup table contains sine values for the first half of a circle, from 0
+\ to 180 degrees (0 to PI radians). In terms of circle or ellipse line segments,
+\ there are 64 segments in a circle, so this contains sine values for segments
+\ 0 to 31.
+\
+\ In terms of segments, to calculate the sine of the angle at segment x, we look
+\ up the value in SNE + x, and to calculate the cosine of the angle we look up
+\ the value in SNE + ((x + 16) mod 32).
+\
+\ In terms of radians, to calculate the following:
+\
+\   sin(theta) * 256
+\
+\ where theta is in radians, we look up the value in:
+\
+\   SNE + (theta * 10)
+\
+\ To calculate the following:
+\
+\   cos(theta) * 256
+\
+\ where theta is in radians, look up the value in:
+\
+\   SNE + ((theta * 10) + 16) mod 32
+\
+\ Theta must be between 0 and 3.1 radians, so theta * 10 is between 0 and 31.
+\
+\ ******************************************************************************
+
+                        \ --- Mod: Code moved for BBC Micro B+: --------------->
+
+.SNE
+
+ FOR I%, 0, 31
+
+  N = ABS(SIN((I% / 64) * 2 * PI))
+
+  IF N >= 1
+   EQUB 255
+  ELSE
+   EQUB INT(256 * N + 0.5)
+  ENDIF
+
+ NEXT
+
+                        \ --- End of moved code ------------------------------->
+
+\ ******************************************************************************
+\
+\       Name: ACT
+\       Type: Variable
+\   Category: Maths (Geometry)
+\    Summary: Arctan table
+\  Deep dive: The sine, cosine and arctan tables
+\
+\ ------------------------------------------------------------------------------
+\
+\ This table contains lookup values for arctangent calculations involving angles
+\ in the range 0 to 45 degrees (or 0 to PI / 4 radians).
+\
+\ To calculate the value of theta in the following:
+\
+\   theta = arctan(t)
+\
+\ where 0 <= t < 1, we look up the value in:
+\
+\   ACT + (t * 32)
+\
+\ The result will be an integer representing the angle in radians, where 256
+\ represents a full circle of 360 degrees (2 * PI radians). The result of the
+\ lookup will therefore be an integer in the range 0 to 31, as this represents
+\ 0 to 45 degrees (0 to PI / 4 radians).
+\
+\ The table does not support values of t >= 1 or t < 0 directly, so if we need
+\ to calculate the arctangent for an angle greater than 45 degrees, we can apply
+\ the following calculation to the result from the table:
+\
+\   * For t > 1, arctan(t) = 64 - arctan(1 / t)
+\
+\ For negative values of t where -1 < t < 0, we can apply the following
+\ calculation to the result from the table:
+\
+\   * For t < 0, arctan(-t) = 128 - arctan(t)
+\
+\ Finally, if t < -1, we can do the first calculation to get arctan(|t|), and
+\ the second to get arctan(-|t|).
+\
+\ ******************************************************************************
+
+                        \ --- Mod: Code moved for BBC Micro B+: --------------->
+
+.ACT
+
+ FOR I%, 0, 31
+
+  EQUB INT((128 / PI) * ATN(I% / 32) + 0.5)
+
+ NEXT
+
+                        \ --- End of moved code ------------------------------->
+
+\ ******************************************************************************
+\
+\       Name: RUPLA
+\       Type: Variable
+\   Category: Text
+\    Summary: System numbers that have extended description overrides
+\  Deep dive: Extended system descriptions
+\             Extended text tokens
+\             The Constrictor mission
+\
+\ ------------------------------------------------------------------------------
+\
+\ This table contains the extended token numbers to show as the specified
+\ system's extended description, if the criteria in the RUGAL table are met.
+\
+\ The three variables work as follows:
+\
+\   * The RUPLA table contains the system numbers
+\
+\   * The RUGAL table contains the galaxy numbers and mission criteria
+\
+\   * The RUTOK table contains the extended token to display instead of the
+\     normal extended description if the criteria in RUPLA and RUGAL are met
+\
+\ See the PDESC routine for details of how extended system descriptions work.
+\
+\ This version of Elite contains an extended system description override for
+\ Lave that welcomes us to the seventeenth galaxy. This is never shown in-game,
+\ as the galaxy number in RUGAL has to be 16, and this cannot happen.
+\
+\ ******************************************************************************
+
+                        \ --- Mod: Code moved for BBC Micro B+: --------------->
+
+.RUPLA
+
+ EQUB 211               \ System 211, Galaxy 0                 Teorge = Token  1
+ EQUB 150               \ System 150, Galaxy 0, Mission 1        Xeer = Token  2
+ EQUB 36                \ System  36, Galaxy 0, Mission 1    Reesdice = Token  3
+ EQUB 28                \ System  28, Galaxy 0, Mission 1       Arexe = Token  4
+ EQUB 253               \ System 253, Galaxy 1, Mission 1      Errius = Token  5
+ EQUB 79                \ System  79, Galaxy 1, Mission 1      Inbibe = Token  6
+ EQUB 53                \ System  53, Galaxy 1, Mission 1       Ausar = Token  7
+ EQUB 118               \ System 118, Galaxy 1, Mission 1      Usleri = Token  8
+ EQUB 100               \ System 100, Galaxy 2                 Arredi = Token  9
+ EQUB 32                \ System  32, Galaxy 1, Mission 1      Bebege = Token 10
+ EQUB 68                \ System  68, Galaxy 1, Mission 1      Cearso = Token 11
+ EQUB 164               \ System 164, Galaxy 1, Mission 1      Dicela = Token 12
+ EQUB 220               \ System 220, Galaxy 1, Mission 1      Eringe = Token 13
+ EQUB 106               \ System 106, Galaxy 1, Mission 1      Gexein = Token 14
+ EQUB 16                \ System  16, Galaxy 1, Mission 1      Isarin = Token 15
+ EQUB 162               \ System 162, Galaxy 1, Mission 1    Letibema = Token 16
+ EQUB 3                 \ System   3, Galaxy 1, Mission 1      Maisso = Token 17
+ EQUB 107               \ System 107, Galaxy 1, Mission 1        Onen = Token 18
+ EQUB 26                \ System  26, Galaxy 1, Mission 1      Ramaza = Token 19
+ EQUB 192               \ System 192, Galaxy 1, Mission 1      Sosole = Token 20
+ EQUB 184               \ System 184, Galaxy 1, Mission 1      Tivere = Token 21
+ EQUB 5                 \ System   5, Galaxy 1, Mission 1      Veriar = Token 22
+ EQUB 101               \ System 101, Galaxy 2, Mission 1      Xeveon = Token 23
+ EQUB 193               \ System 193, Galaxy 1, Mission 1      Orarra = Token 24
+ EQUB 41                \ System  41, Galaxy 2                 Anreer = Token 25
+ EQUB 1                 \ System   7, Galaxy 16                  Lave = Token 26
+
+                        \ --- End of moved code ------------------------------->
+
+\ ******************************************************************************
+\
+\       Name: RUGAL
+\       Type: Variable
+\   Category: Text
+\    Summary: The criteria for systems with extended description overrides
+\  Deep dive: Extended system descriptions
+\             Extended text tokens
+\             The Constrictor mission
+\
+\ ------------------------------------------------------------------------------
+\
+\ This table contains the criteria for printing an extended description override
+\ for a system. The galaxy number is in bits 0-6, while bit 7 determines whether
+\ to show this token during mission 1 only (bit 7 is clear, i.e. a value of &0x
+\ in the table below), or all of the time (bit 7 is set, i.e. a value of &8x in
+\ the table below).
+\
+\ In other words, Teorge, Arredi, Anreer and Lave have extended description
+\ overrides that are always shown, while the rest only appear when mission 1 is
+\ in progress.
+\
+\ The three variables work as follows:
+\
+\   * The RUPLA table contains the system numbers
+\
+\   * The RUGAL table contains the galaxy numbers and mission criteria
+\
+\   * The RUTOK table contains the extended token to display instead of the
+\     normal extended description if the criteria in RUPLA and RUGAL are met
+\
+\ See the PDESC routine for details of how extended system descriptions work.
+\
+\ This version of Elite contains an extended system description override for
+\ Lave that welcomes us to the seventeenth galaxy. This is never shown in-game,
+\ as the galaxy number in RUGAL has to be 16, and this cannot happen.
+\
+\ ******************************************************************************
+
+                        \ --- Mod: Code moved for BBC Micro B+: --------------->
+
+.RUGAL
+
+ EQUB &80               \ System 211, Galaxy 0                 Teorge = Token  1
+ EQUB &00               \ System 150, Galaxy 0, Mission 1        Xeer = Token  2
+ EQUB &00               \ System  36, Galaxy 0, Mission 1    Reesdice = Token  3
+ EQUB &00               \ System  28, Galaxy 0, Mission 1       Arexe = Token  4
+ EQUB &01               \ System 253, Galaxy 1, Mission 1      Errius = Token  5
+ EQUB &01               \ System  79, Galaxy 1, Mission 1      Inbibe = Token  6
+ EQUB &01               \ System  53, Galaxy 1, Mission 1       Ausar = Token  7
+ EQUB &01               \ System 118, Galaxy 1, Mission 1      Usleri = Token  8
+ EQUB &82               \ System 100, Galaxy 2                 Arredi = Token  9
+ EQUB &01               \ System  32, Galaxy 1, Mission 1      Bebege = Token 10
+ EQUB &01               \ System  68, Galaxy 1, Mission 1      Cearso = Token 11
+ EQUB &01               \ System 164, Galaxy 1, Mission 1      Dicela = Token 12
+ EQUB &01               \ System 220, Galaxy 1, Mission 1      Eringe = Token 13
+ EQUB &01               \ System 106, Galaxy 1, Mission 1      Gexein = Token 14
+ EQUB &01               \ System  16, Galaxy 1, Mission 1      Isarin = Token 15
+ EQUB &01               \ System 162, Galaxy 1, Mission 1    Letibema = Token 16
+ EQUB &01               \ System   3, Galaxy 1, Mission 1      Maisso = Token 17
+ EQUB &01               \ System 107, Galaxy 1, Mission 1        Onen = Token 18
+ EQUB &01               \ System  26, Galaxy 1, Mission 1      Ramaza = Token 19
+ EQUB &01               \ System 192, Galaxy 1, Mission 1      Sosole = Token 20
+ EQUB &01               \ System 184, Galaxy 1, Mission 1      Tivere = Token 21
+ EQUB &01               \ System   5, Galaxy 1, Mission 1      Veriar = Token 22
+ EQUB &02               \ System 101, Galaxy 2, Mission 1      Xeveon = Token 23
+ EQUB &01               \ System 193, Galaxy 1, Mission 1      Orarra = Token 24
+ EQUB &82               \ System  41, Galaxy 2                 Anreer = Token 25
+ EQUB &90               \ System   7, Galaxy 16                  Lave = Token 26
+
+                        \ --- End of moved code ------------------------------->
 
 \ ******************************************************************************
 \

@@ -2814,8 +2814,12 @@ ENDMACRO
  FACE      -80,       46,       50,         31      \ Face 10
  FACE        0,        0,      -90,         31      \ Face 11
 
- EQUB &45, &4D          \ These bytes appear to be unused
- EQUB &41, &36
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\EQUB &45, &4D          \ These bytes appear to be unused
+\EQUB &41, &36
+
+                        \ --- End of removed code ----------------------------->
 
 \ ******************************************************************************
 \
@@ -5134,9 +5138,13 @@ ENDMACRO
  CHAR 'R'
  EQUB 0
 
- EQUB &00, &00          \ These bytes appear to be unused and just contain
- EQUB &19, &03          \ random workspace noise left over from the BBC Micro
- EQUB &16               \ assembly process
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\EQUB &00, &00          \ These bytes appear to be unused and just contain
+\EQUB &19, &03          \ random workspace noise left over from the BBC Micro
+\EQUB &16               \ assembly process
+
+                        \ --- End of removed code ----------------------------->
 
 \ ******************************************************************************
 \
@@ -5179,19 +5187,23 @@ ENDMACRO
 \
 \ ******************************************************************************
 
-.SNE
+                        \ --- Mod: Code moved for BBC Micro B+: --------------->
 
- FOR I%, 0, 31
+\.SNE
+\
+\FOR I%, 0, 31
+\
+\ N = ABS(SIN((I% / 64) * 2 * PI))
+\
+\ IF N >= 1
+\  EQUB 255
+\ ELSE
+\  EQUB INT(256 * N + 0.5)
+\ ENDIF
+\
+\NEXT
 
-  N = ABS(SIN((I% / 64) * 2 * PI))
-
-  IF N >= 1
-   EQUB 255
-  ELSE
-   EQUB INT(256 * N + 0.5)
-  ENDIF
-
- NEXT
+                        \ --- End of moved code ------------------------------->
 
 \ ******************************************************************************
 \
@@ -5235,13 +5247,17 @@ ENDMACRO
 \
 \ ******************************************************************************
 
-.ACT
+                        \ --- Mod: Code moved for BBC Micro B+: --------------->
 
- FOR I%, 0, 31
+\.ACT
+\
+\FOR I%, 0, 31
+\
+\ EQUB INT((128 / PI) * ATN(I% / 32) + 0.5)
+\
+\NEXT
 
-  EQUB INT((128 / PI) * ATN(I% / 32) + 0.5)
-
- NEXT
+                        \ --- End of moved code ------------------------------->
 
 \ ******************************************************************************
 \
@@ -7199,21 +7215,61 @@ ENDIF
  ETOK 209
  EQUB VE
 
- EQUB VE                \ Token 111:    ""
-                        \
-                        \ Encoded as:   ""
+                        \ --- Mod: Code removed for Trumbles: ----------------->
 
- EQUB VE                \ Token 112:    ""
-                        \
-                        \ Encoded as:   ""
+\EQUB VE                \ Token 111:    ""
+\                       \
+\                       \ Encoded as:   ""
+\
+\EQUB VE                \ Token 112:    ""
+\                       \
+\                       \ Encoded as:   ""
+\
+\EQUB VE                \ Token 113:    ""
+\                       \
+\                       \ Encoded as:   ""
+\
+\EQUB VE                \ Token 114:    ""
+\                       \
+\                       \ Encoded as:   ""
 
- EQUB VE                \ Token 113:    ""
-                        \
-                        \ Encoded as:   ""
+                        \ --- And replaced by: -------------------------------->
 
- EQUB VE                \ Token 114:    ""
-                        \
-                        \ Encoded as:   ""
+ ECHR ' '               \ Token 111:    " CUDDLY"
+ ECHR 'C'               \
+ ECHR 'U'               \ Encoded as:   " CUDDLY"
+ ECHR 'D'
+ ECHR 'D'
+ ECHR 'L'
+ ECHR 'Y'
+ EQUB VE
+
+ ECHR ' '               \ Token 112:    " CUTE"
+ ECHR 'C'               \
+ ECHR 'U'               \ Encoded as:   " CUTE"
+ ECHR 'T'
+ ECHR 'E'
+ EQUB VE
+
+ ECHR ' '               \ Token 113:    " FURRY"
+ ECHR 'F'               \
+ ECHR 'U'               \ Encoded as:   " FURRY"
+ ECHR 'R'
+ ECHR 'R'
+ ECHR 'Y'
+ EQUB VE
+
+ ECHR ' '               \ Token 114:    " FRIENDLY"
+ ECHR 'F'               \
+ ECHR 'R'               \ Encoded as:   " FRI<246>DLY"
+ ECHR 'I'
+ ETWO 'E', 'N'
+ ECHR 'D'
+ ECHR 'L'
+ ECHR 'Y'
+ EQUB VE
+
+                        \ --- End of replacement ------------------------------>
 
  ECHR 'W'               \ Token 115:    "WASP"
  ECHR 'A'               \
@@ -7794,13 +7850,249 @@ ENDIF
  ECHR 'L'
  EQUB VE
 
- EQUB VE                \ Token 198:    ""
-                        \
-                        \ Encoded as:   ""
+                        \ --- Mod: Code removed for Trumbles: ----------------->
 
- EQUB VE                \ Token 199:    ""
-                        \
-                        \ Encoded as:   ""
+\EQUB VE                \ Token 198:    ""
+\                       \
+\                       \ Encoded as:   ""
+\
+\EQUB VE                \ Token 199:    ""
+\                       \
+\                       \ Encoded as:   ""
+
+                        \ --- And replaced by: -------------------------------->
+
+ ECHR ' '               \ Token 198:    " LITTLE TRUMBLE"
+ ECHR 'L'               \
+ ETWO 'I', 'T'          \ Encoded as:   " L<219>T<229> TRUMB<229>"
+ ECHR 'T'
+ ETWO 'L', 'E'
+ ECHR ' '
+ ECHR 'T'
+ ECHR 'R'
+ ECHR 'U'
+ ECHR 'M'
+ ECHR 'B'
+ ETWO 'L', 'E'
+ EQUB VE  
+
+ EJMP 25                \ Token 199:    "{incoming message screen, wait 2s}
+ EJMP 9                 \                {clear screen}
+ EJMP 23                \                {move to row 10, white, lower case}
+ EJMP 14                \                {justify}
+ ECHR ' '               \                  {single cap}GOOD DAY COMMANDER
+ ECHR ' '               \                {commander name}, ALLOW ME TO INTRODUCE
+ EJMP 19                \                MYSELF. {single cap}I AM {single cap}
+ ECHR 'G'               \                THE {single cap}MERCHANT {single cap}
+ ECHR 'O'               \                PRINCE OF THRUN AND I {single cap}FIND
+ ECHR 'O'               \                MYSELF FORCED TO SELL MY MOST            
+ ECHR 'D'               \                TREASURED POSSESSION.{cr}
+ ECHR ' '               \                 {single cap}I AM OFFERING YOU, FOR THE
+ ECHR 'D'               \                PALTRY SUM OF JUST 5000{single cap}C
+ ECHR 'A'               \                {single cap}R THE RAREST THING IN THE
+ ECHR 'Y'               \                {single cap}KNOWN {single cap}UNIVERSE.
+ ECHR ' '               \                {cr}
+ ETOK 154               \                 {single cap}{single cap}WILL YOU TAKE
+ ECHR ' '               \                IT(Y/N)?{cr}
+ EJMP 4                 \                {left align}{all caps}{tab 6}
+ ECHR ','               \
+ EJMP 13                \ Encoded as:   "{25}{9}{23}{14}  {19}GOOD DAY [154] {4}
+ ECHR ' '               \                ,{13} <228><224>W ME[201]<240>TRODU
+ ETWO 'A', 'L'          \                <233> MY<218>LF. {19}I AM {19}<226>E
+ ETWO 'L', 'O'          \                 {19}M<244>CH<255>T {19}PR<240><233> OF
+ ECHR 'W'               \                 {19}<226>RUN <255>D {19}I{26}F<240>D M
+ ECHR ' '               \                Y<218>LF F<253><233>D[201]<218>LL MY MO
+ ECHR 'M'               \                <222> T<242>ASUR<242> POSS<237>SI<223>
+ ECHR 'E'               \                [204]I AM OFF<244>[195][179], F<253>
+ ETOK 201               \                 [147]P<228>TRY SUM OF JU<222> 5000{19}
+ ETWO 'I', 'N'          \                C{19}R [147]R<238>E<222> <226>[195]
+ ECHR 'T'               \                 <240> <226>E {19}K<227>WN {19}UNIV
+ ECHR 'R'               \                <244><218>[204]W<220>L [179] TAKE <219>
+ ECHR 'O'               \                [206]{12}{15}{1}{8}"
+ ECHR 'D'
+ ECHR 'U'             
+ ETWO 'C', 'E'
+ ECHR ' '             
+ ECHR 'M'
+ ECHR 'Y'
+ ETWO 'S', 'E'
+ ECHR 'L'
+ ECHR 'F'
+ ECHR '.'
+ ECHR ' '
+ EJMP 19
+ ECHR 'I'
+ ECHR ' '
+ ECHR 'A'
+ ECHR 'M'
+ ECHR ' '
+ EJMP 19
+ ETWO 'T', 'H'
+ ECHR 'E'
+ ECHR ' '
+ EJMP 19
+ ECHR 'M'
+ ETWO 'E', 'R'
+ ECHR 'C'
+ ECHR 'H'
+ ETWO 'A', 'N'
+ ECHR 'T'
+ ECHR ' '
+ EJMP 19
+ ECHR 'P'
+ ECHR 'R'
+ ETWO 'I', 'N'
+ ETWO 'C', 'E'
+ ECHR ' '
+ ECHR 'O'
+ ECHR 'F'
+ ECHR ' '
+ EJMP 19
+ ETWO 'T', 'H'
+ ECHR 'R'
+ ECHR 'U'
+ ECHR 'N'
+ ECHR ' '
+ ETWO 'A', 'N'
+ ECHR 'D'
+ ECHR ' '
+ EJMP 19
+ ECHR 'I'
+ ECHR ' '
+ ECHR 'F'
+ ETWO 'I', 'N'
+ ECHR 'D'
+ ECHR ' '
+ ECHR 'M'
+ ECHR 'Y'
+ ETWO 'S', 'E'
+ ECHR 'L'
+ ECHR 'F'
+ ECHR ' '
+ ECHR 'F'
+ ETWO 'O', 'R'
+ ETWO 'C', 'E'
+ ECHR 'D'
+ ETOK 201
+ ETWO 'S', 'E'
+ ECHR 'L'
+ ECHR 'L'
+ ECHR ' '
+ ECHR 'M'
+ ECHR 'Y'
+ ECHR ' '
+ ECHR 'M'
+ ECHR 'O'
+ ETWO 'S', 'T'
+ ECHR ' '
+ ECHR 'T'
+ ETWO 'R', 'E'
+ ECHR 'A'
+ ECHR 'S'
+ ECHR 'U'
+ ECHR 'R'
+ ETWO 'E', 'D'
+ ECHR ' '
+ ECHR 'P'
+ ECHR 'O'
+ ECHR 'S'
+ ECHR 'S'
+ ETWO 'E', 'S'
+ ECHR 'S'
+ ECHR 'I'
+ ETWO 'O', 'N'
+ ETOK 204
+ ECHR 'I'
+ ECHR ' '
+ ECHR 'A'
+ ECHR 'M'
+ ECHR ' '
+ ECHR 'O'
+ ECHR 'F'
+ ECHR 'F'
+ ETWO 'E', 'R'
+ ETOK 195
+ ETOK 179
+ ECHR ','
+ ECHR ' '
+ ECHR 'F'
+ ETWO 'O', 'R'
+ ECHR ' '
+ ETOK 147
+ ECHR 'P'
+ ETWO 'A', 'L'
+ ECHR 'T'
+ ECHR 'R'
+ ECHR 'Y'
+ ECHR ' '
+ ECHR 'S'
+ ECHR 'U'
+ ECHR 'M'
+ ECHR ' '
+ ECHR 'O'
+ ECHR 'F'
+ ECHR ' '
+ ECHR 'J'
+ ECHR 'U'
+ ETWO 'S', 'T'
+ ECHR ' '
+ ECHR '5'
+ ECHR '0'
+ ECHR '0'
+ ECHR '0'
+ EJMP 19
+ ECHR 'C'
+ EJMP 19
+ ECHR 'R'
+ ECHR ' '
+ ETOK 147
+ ECHR 'R'
+ ETWO 'A', 'R'
+ ECHR 'E'
+ ETWO 'S', 'T'
+ ECHR ' '
+ ETWO 'T', 'H'
+ ETOK 195
+ ECHR ' '
+ ETWO 'I', 'N'
+ ECHR ' '
+ ETWO 'T', 'H'
+ ECHR 'E'
+ ECHR ' '
+ EJMP 19
+ ECHR 'K'
+ ETWO 'N', 'O'
+ ECHR 'W'
+ ECHR 'N'
+ ECHR ' '
+ EJMP 19
+ ECHR 'U'
+ ECHR 'N'
+ ECHR 'I'
+ ECHR 'V'
+ ETWO 'E', 'R'
+ ETWO 'S', 'E'
+ ETOK 204
+ ECHR 'W'
+ ETWO 'I', 'L'
+ ECHR 'L'
+ ECHR ' '
+ ETOK 179
+ ECHR ' '
+ ECHR 'T'
+ ECHR 'A'
+ ECHR 'K'
+ ECHR 'E'
+ ECHR ' '
+ ETWO 'I', 'T'
+ ETOK 206
+ EJMP 12
+ EJMP 15
+ EJMP 1
+ EJMP 8
+ EQUB VE
+
+                        \ --- End of replacement ------------------------------>
 
  ECHR ' '               \ Token 200:    " NAME? "
  ECHR 'N'               \
@@ -8892,34 +9184,38 @@ ENDIF
 \
 \ ******************************************************************************
 
-.RUPLA
+                        \ --- Mod: Code moved for BBC Micro B+: --------------->
 
- EQUB 211               \ System 211, Galaxy 0                 Teorge = Token  1
- EQUB 150               \ System 150, Galaxy 0, Mission 1        Xeer = Token  2
- EQUB 36                \ System  36, Galaxy 0, Mission 1    Reesdice = Token  3
- EQUB 28                \ System  28, Galaxy 0, Mission 1       Arexe = Token  4
- EQUB 253               \ System 253, Galaxy 1, Mission 1      Errius = Token  5
- EQUB 79                \ System  79, Galaxy 1, Mission 1      Inbibe = Token  6
- EQUB 53                \ System  53, Galaxy 1, Mission 1       Ausar = Token  7
- EQUB 118               \ System 118, Galaxy 1, Mission 1      Usleri = Token  8
- EQUB 100               \ System 100, Galaxy 2                 Arredi = Token  9
- EQUB 32                \ System  32, Galaxy 1, Mission 1      Bebege = Token 10
- EQUB 68                \ System  68, Galaxy 1, Mission 1      Cearso = Token 11
- EQUB 164               \ System 164, Galaxy 1, Mission 1      Dicela = Token 12
- EQUB 220               \ System 220, Galaxy 1, Mission 1      Eringe = Token 13
- EQUB 106               \ System 106, Galaxy 1, Mission 1      Gexein = Token 14
- EQUB 16                \ System  16, Galaxy 1, Mission 1      Isarin = Token 15
- EQUB 162               \ System 162, Galaxy 1, Mission 1    Letibema = Token 16
- EQUB 3                 \ System   3, Galaxy 1, Mission 1      Maisso = Token 17
- EQUB 107               \ System 107, Galaxy 1, Mission 1        Onen = Token 18
- EQUB 26                \ System  26, Galaxy 1, Mission 1      Ramaza = Token 19
- EQUB 192               \ System 192, Galaxy 1, Mission 1      Sosole = Token 20
- EQUB 184               \ System 184, Galaxy 1, Mission 1      Tivere = Token 21
- EQUB 5                 \ System   5, Galaxy 1, Mission 1      Veriar = Token 22
- EQUB 101               \ System 101, Galaxy 2, Mission 1      Xeveon = Token 23
- EQUB 193               \ System 193, Galaxy 1, Mission 1      Orarra = Token 24
- EQUB 41                \ System  41, Galaxy 2                 Anreer = Token 25
- EQUB 1                 \ System   7, Galaxy 16                  Lave = Token 26
+\\.RUPLA
+\\
+\\EQUB 211               \ System 211, Galaxy 0                 Teorge = Token  1
+\\EQUB 150               \ System 150, Galaxy 0, Mission 1        Xeer = Token  2
+\\EQUB 36                \ System  36, Galaxy 0, Mission 1    Reesdice = Token  3
+\\EQUB 28                \ System  28, Galaxy 0, Mission 1       Arexe = Token  4
+\\EQUB 253               \ System 253, Galaxy 1, Mission 1      Errius = Token  5
+\\EQUB 79                \ System  79, Galaxy 1, Mission 1      Inbibe = Token  6
+\\EQUB 53                \ System  53, Galaxy 1, Mission 1       Ausar = Token  7
+\\EQUB 118               \ System 118, Galaxy 1, Mission 1      Usleri = Token  8
+\\EQUB 100               \ System 100, Galaxy 2                 Arredi = Token  9
+\\EQUB 32                \ System  32, Galaxy 1, Mission 1      Bebege = Token 10
+\\EQUB 68                \ System  68, Galaxy 1, Mission 1      Cearso = Token 11
+\\EQUB 164               \ System 164, Galaxy 1, Mission 1      Dicela = Token 12
+\\EQUB 220               \ System 220, Galaxy 1, Mission 1      Eringe = Token 13
+\\EQUB 106               \ System 106, Galaxy 1, Mission 1      Gexein = Token 14
+\\EQUB 16                \ System  16, Galaxy 1, Mission 1      Isarin = Token 15
+\\EQUB 162               \ System 162, Galaxy 1, Mission 1    Letibema = Token 16
+\\EQUB 3                 \ System   3, Galaxy 1, Mission 1      Maisso = Token 17
+\\EQUB 107               \ System 107, Galaxy 1, Mission 1        Onen = Token 18
+\\EQUB 26                \ System  26, Galaxy 1, Mission 1      Ramaza = Token 19
+\\EQUB 192               \ System 192, Galaxy 1, Mission 1      Sosole = Token 20
+\\EQUB 184               \ System 184, Galaxy 1, Mission 1      Tivere = Token 21
+\\EQUB 5                 \ System   5, Galaxy 1, Mission 1      Veriar = Token 22
+\\EQUB 101               \ System 101, Galaxy 2, Mission 1      Xeveon = Token 23
+\\EQUB 193               \ System 193, Galaxy 1, Mission 1      Orarra = Token 24
+\\EQUB 41                \ System  41, Galaxy 2                 Anreer = Token 25
+\\EQUB 1                 \ System   7, Galaxy 16                  Lave = Token 26
+
+                        \ --- End of moved code ------------------------------->
 
 \ ******************************************************************************
 \
@@ -8960,34 +9256,38 @@ ENDIF
 \
 \ ******************************************************************************
 
-.RUGAL
+                        \ --- Mod: Code moved for BBC Micro B+: --------------->
 
- EQUB &80               \ System 211, Galaxy 0                 Teorge = Token  1
- EQUB &00               \ System 150, Galaxy 0, Mission 1        Xeer = Token  2
- EQUB &00               \ System  36, Galaxy 0, Mission 1    Reesdice = Token  3
- EQUB &00               \ System  28, Galaxy 0, Mission 1       Arexe = Token  4
- EQUB &01               \ System 253, Galaxy 1, Mission 1      Errius = Token  5
- EQUB &01               \ System  79, Galaxy 1, Mission 1      Inbibe = Token  6
- EQUB &01               \ System  53, Galaxy 1, Mission 1       Ausar = Token  7
- EQUB &01               \ System 118, Galaxy 1, Mission 1      Usleri = Token  8
- EQUB &82               \ System 100, Galaxy 2                 Arredi = Token  9
- EQUB &01               \ System  32, Galaxy 1, Mission 1      Bebege = Token 10
- EQUB &01               \ System  68, Galaxy 1, Mission 1      Cearso = Token 11
- EQUB &01               \ System 164, Galaxy 1, Mission 1      Dicela = Token 12
- EQUB &01               \ System 220, Galaxy 1, Mission 1      Eringe = Token 13
- EQUB &01               \ System 106, Galaxy 1, Mission 1      Gexein = Token 14
- EQUB &01               \ System  16, Galaxy 1, Mission 1      Isarin = Token 15
- EQUB &01               \ System 162, Galaxy 1, Mission 1    Letibema = Token 16
- EQUB &01               \ System   3, Galaxy 1, Mission 1      Maisso = Token 17
- EQUB &01               \ System 107, Galaxy 1, Mission 1        Onen = Token 18
- EQUB &01               \ System  26, Galaxy 1, Mission 1      Ramaza = Token 19
- EQUB &01               \ System 192, Galaxy 1, Mission 1      Sosole = Token 20
- EQUB &01               \ System 184, Galaxy 1, Mission 1      Tivere = Token 21
- EQUB &01               \ System   5, Galaxy 1, Mission 1      Veriar = Token 22
- EQUB &02               \ System 101, Galaxy 2, Mission 1      Xeveon = Token 23
- EQUB &01               \ System 193, Galaxy 1, Mission 1      Orarra = Token 24
- EQUB &82               \ System  41, Galaxy 2                 Anreer = Token 25
- EQUB &90               \ System   7, Galaxy 16                  Lave = Token 26
+\.RUGAL
+\
+\EQUB &80               \ System 211, Galaxy 0                 Teorge = Token  1
+\EQUB &00               \ System 150, Galaxy 0, Mission 1        Xeer = Token  2
+\EQUB &00               \ System  36, Galaxy 0, Mission 1    Reesdice = Token  3
+\EQUB &00               \ System  28, Galaxy 0, Mission 1       Arexe = Token  4
+\EQUB &01               \ System 253, Galaxy 1, Mission 1      Errius = Token  5
+\EQUB &01               \ System  79, Galaxy 1, Mission 1      Inbibe = Token  6
+\EQUB &01               \ System  53, Galaxy 1, Mission 1       Ausar = Token  7
+\EQUB &01               \ System 118, Galaxy 1, Mission 1      Usleri = Token  8
+\EQUB &82               \ System 100, Galaxy 2                 Arredi = Token  9
+\EQUB &01               \ System  32, Galaxy 1, Mission 1      Bebege = Token 10
+\EQUB &01               \ System  68, Galaxy 1, Mission 1      Cearso = Token 11
+\EQUB &01               \ System 164, Galaxy 1, Mission 1      Dicela = Token 12
+\EQUB &01               \ System 220, Galaxy 1, Mission 1      Eringe = Token 13
+\EQUB &01               \ System 106, Galaxy 1, Mission 1      Gexein = Token 14
+\EQUB &01               \ System  16, Galaxy 1, Mission 1      Isarin = Token 15
+\EQUB &01               \ System 162, Galaxy 1, Mission 1    Letibema = Token 16
+\EQUB &01               \ System   3, Galaxy 1, Mission 1      Maisso = Token 17
+\EQUB &01               \ System 107, Galaxy 1, Mission 1        Onen = Token 18
+\EQUB &01               \ System  26, Galaxy 1, Mission 1      Ramaza = Token 19
+\EQUB &01               \ System 192, Galaxy 1, Mission 1      Sosole = Token 20
+\EQUB &01               \ System 184, Galaxy 1, Mission 1      Tivere = Token 21
+\EQUB &01               \ System   5, Galaxy 1, Mission 1      Veriar = Token 22
+\EQUB &02               \ System 101, Galaxy 2, Mission 1      Xeveon = Token 23
+\EQUB &01               \ System 193, Galaxy 1, Mission 1      Orarra = Token 24
+\EQUB &82               \ System  41, Galaxy 2                 Anreer = Token 25
+\EQUB &90               \ System   7, Galaxy 16                  Lave = Token 26
+
+                        \ --- End of moved code ------------------------------->
 
 \ ******************************************************************************
 \
@@ -9660,32 +9960,36 @@ ENDIF
  ECHR 'D'
  EQUB VE
 
- EJMP 1                 \ Token 26:     "{all caps}WELCOME TO  THE SEVENTEENTH
- ECHR 'W'               \                GALAXY!"
- ECHR 'E'               \
- ECHR 'L'               \ Encoded as:   "{1}WELCOME[201] [147]<218><250>NTE<246>
- ECHR 'C'               \                <226> GA<249>XY!"
- ECHR 'O'
- ECHR 'M'
- ECHR 'E'
- ETOK 201
- ECHR ' '
- ETOK 147
- ETWO 'S', 'E'
- ETWO 'V', 'E'
- ECHR 'N'
- ECHR 'T'
- ECHR 'E'
- ETWO 'E', 'N'
- ETWO 'T', 'H'
- ECHR ' '
- ECHR 'G'
- ECHR 'A'
- ETWO 'L', 'A'
- ECHR 'X'
- ECHR 'Y'
- ECHR '!'
- EQUB VE
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\EJMP 1                 \ Token 26:     "{all caps}WELCOME TO  THE SEVENTEENTH
+\ECHR 'W'               \                GALAXY!"
+\ECHR 'E'               \
+\ECHR 'L'               \ Encoded as:   "{1}WELCOME[201] [147]<218><250>NTE<246>
+\ECHR 'C'               \                <226> GA<249>XY!"
+\ECHR 'O'
+\ECHR 'M'
+\ECHR 'E'
+\ETOK 201
+\ECHR ' '
+\ETOK 147
+\ETWO 'S', 'E'
+\ETWO 'V', 'E'
+\ECHR 'N'
+\ECHR 'T'
+\ECHR 'E'
+\ETWO 'E', 'N'
+\ETWO 'T', 'H'
+\ECHR ' '
+\ECHR 'G'
+\ECHR 'A'
+\ETWO 'L', 'A'
+\ECHR 'X'
+\ECHR 'Y'
+\ECHR '!'
+\EQUB VE
+
+                        \ --- End of removed code ----------------------------->
 
                         \ --- Mod: Code added for BBC Micro B+: --------------->
 
@@ -9703,11 +10007,9 @@ ENDIF
 
  EOR (SC),Y             \ Draw a pixel using EOR logic
 
-.DrawPixelSTA
-
- STA (SC),Y             \ Draw a pixel
-
- RTS                    \ Return from the subroutine
+ EQUB &2C               \ Skip the next instruction by turning it into
+                        \ &2C &91 &06, or BIT &0691, which does nothing apart
+                        \ from affect the flags
 
 .DrawPixelORA
 
@@ -9731,8 +10033,12 @@ ENDIF
  INY                    \ Draw the next pixel row, incrementing Y
  STA (SC),Y
 
- INY                    \ And draw the third pixel row, incrementing Y
- STA (SC),Y
+ INY                    \ And draw the third pixel row, incrementing Y and
+                        \ falling through into DrawPixelSTA
+
+.DrawPixelSTA
+
+ STA (SC),Y             \ Draw the pixel into screen memory
 
  RTS                    \ Return from the subroutine
 
