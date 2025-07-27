@@ -1,16 +1,19 @@
 
 ---------------------------------------
-Acornsoft Elite
+Acornsoft Elite (Compendium version)
 
-Version: BBC Micro B+ version of the
-         original BBC Master release
-Variant: Acornsoft SNG47 release
-Product: Acornsoft SNG47
+For the BBC Micro B+
 
-BBC Micro B+ conversion by Mark Moxon
+Based on the Acornsoft SNG47 release
+of Elite by Ian Bell and David Braben
+Copyright (c) Acornsoft 1985
+
+Contains the BBC Master version with
+flicker-free planet drawing and more,
+all backported by Mark Moxon
 
 See www.bbcelite.com for details
 
-Build: 2025-07-27 16:01:16
+Build: 2025-07-27 16:11:30
 ---------------------------------------
 
