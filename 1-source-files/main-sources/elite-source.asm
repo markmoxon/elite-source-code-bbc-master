@@ -3395,13 +3395,28 @@ IF _COMPACT
 
 ENDIF
 
- LDA VIA+&18            \ Fetch the ADC channel number into Y from bits 1-2 in
-\BMI JONO               \ the ADC status byte at SHEILA &18
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\LDA VIA+&18            \ Fetch the ADC channel number into Y from bits 1-2 in
+\\BMI JONO              \ the ADC status byte at SHEILA &18
+\AND #3                 \
+\TAY                    \ The BMI is commented out in the original source
+\
+\LDA VIA+&19            \ Fetch the high byte of the value on this ADC channel
+\                       \ to read the relevant joystick position
+
+
+                        \ --- And replaced by: -------------------------------->
+
+ LDA VIA+&C0            \ Fetch the ADC channel number into Y from bits 1-2 in
+\BMI JONO               \ the ADC status byte at SHEILA &C0
  AND #3                 \
  TAY                    \ The BMI is commented out in the original source
 
- LDA VIA+&19            \ Fetch the high byte of the value on this ADC channel
+ LDA VIA+&C1            \ Fetch the high byte of the value on this ADC channel
                         \ to read the relevant joystick position
+
+                        \ --- End of replacement ------------------------------>
 
  STA JOPOS,Y            \ Store this value in the appropriate JOPOS byte
 
@@ -3411,8 +3426,17 @@ ENDIF
  CMP #3                 \ instructions
  BCC P%+4
 
- LDA #0                 \ Set the ADC status byte at SHEILA &18 to 0
- STA VIA+&18
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\LDA #0                 \ Set the ADC status byte at SHEILA &18 to 0
+\STA VIA+&18
+
+                        \ --- And replaced by: -------------------------------->
+
+ LDA #0                 \ Set the ADC status byte at SHEILA &C0 to 0
+ STA VIA+&C0
+
+                        \ --- End of replacement ------------------------------>
 
 .jvec
 

@@ -80,7 +80,7 @@
      1142   00
 .ENTRY
      1143   A9 10      LDA #&10
-     1145   A2 00      LDX #&00
+     1145   A2 03      LDX #&03
      1147   20 F4 FF   JSR &FFF4
      114A   A9 C8      LDA #&C8
      114C   A2 01      LDX #&01
@@ -1233,17 +1233,17 @@ WP workspace from &900 to &A90 inclusive
      1318   8D 21 FE   STA &FE21
      131B   88         DEY
      131C   D0 F7      BNE &1315
-     131E   AD 18 FE   LDA &FE18
+     131E   AD C0 FE   LDA &FEC0
      1321   29 03      AND #&03
      1323   A8         TAY
-     1324   AD 19 FE   LDA &FE19
+     1324   AD C1 FE   LDA &FEC1
      1327   99 8D 0A   STA &0A8D,Y
      132A   C8         INY
      132B   98         TYA
      132C   C9 03      CMP #&03
      132E   90 02      BCC &1332
      1330   A9 00      LDA #&00
-     1332   8D 18 FE   STA &FE18
+     1332   8D C0 FE   STA &FEC0
 .jvec
      1335   68         PLA
      1336   A8         TAY

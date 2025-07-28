@@ -294,9 +294,19 @@ ENDIF
 
 .ENTRY
 
- LDA #16                \ Call OSBYTE with A = 16 and X = 0 to set the ADC to
- LDX #0                 \ sample no channels from the joystick/Bitstik
+                        \ --- Mod: Code removed for BBC Micro B+: ------------->
+
+\LDA #16                \ Call OSBYTE with A = 16 and X = 0 to set the ADC to
+\LDX #0                 \ sample no channels from the joystick/Bitstik
+\JSR OSBYTE
+
+                        \ --- And replaced by: -------------------------------->
+
+ LDA #16                \ Call OSBYTE with A = 16 and X = 3 to set the ADC to
+ LDX #3                 \ sample 3 channels from the joystick/Bitstik
  JSR OSBYTE
+
+                        \ --- End of replacement ------------------------------>
 
 IF _COMPACT
 
