@@ -50,7 +50,7 @@ IF _SNG47
 
  PUTFILE "3-assembled-output/M128Elt.bin", "M128Elt", &FF1100, &FF1143
  PUTFILE "3-assembled-output/BDATA.bin", "BDATA", &000000, &000000
- PUTFILE "3-assembled-output/BCODE.bin", "BCODE", &FF1100, &FF29AC
+ PUTFILE "3-assembled-output/BCODE.bin", "BCODE", &FF1100, &FF29A9
 
                         \ --- End of replacement ------------------------------>
 

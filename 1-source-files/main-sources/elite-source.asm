@@ -42839,6 +42839,14 @@ ENDIF
  BEQ DK152              \ keyboard rather than the joystick, so jump to DK152 to
                         \ skip reading the joystick
 
+                        \ --- Mod: Code added for BBC Micro B+: --------------->
+
+ LDA auto               \ If auto is non-zero, then the docking computer is
+ BNE DK152              \ currently activated, so jump to DK152 to
+                        \ skip reading the joystick
+
+                        \ --- End of added code ------------------------------->
+
 IF _SNG47
 
  LDA JOPOS              \ Fetch the high byte of the joystick X value
