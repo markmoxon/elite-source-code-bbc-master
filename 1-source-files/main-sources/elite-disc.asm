@@ -60,6 +60,13 @@ ELIF _COMPACT
  PUTFILE "3-assembled-output/BCODE.bin", "ELITE", &001300, &002C6C
 ENDIF
 
+                        \ --- Mod: Code added for BBC Micro B+: --------------->
+
  PUTFILE "1-source-files/other-files/E.MAX.bin", "E.MAX", &000000, &000000
+ PUTFILE "1-source-files/other-files/E.MISS1.bin", "E.MISS1", &000000, &000000
+ PUTFILE "1-source-files/other-files/E.MISS2.bin", "E.MISS2", &000000, &000000
+ PUTFILE "1-source-files/other-files/E.FIGHT.bin", "E.FIGHT", &000000, &000000
+
+                        \ --- End of added code ------------------------------->
 
  PUTFILE "3-assembled-output/README.txt", "README", &FFFFFF, &FFFFFF
