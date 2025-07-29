@@ -2969,13 +2969,13 @@ IF _COMPACT
 
 ENDIF
 
- LDA VIA+&18            \ Fetch the ADC channel number into Y from bits 1-2 in
+ LDA VIA+&18            \ Fetch the ADC channel number into Y from bits 0-1 of
 \BMI JONO               \ the ADC status byte at SHEILA &18
- AND #3                 \
+ AND #%00000011         \
  TAY                    \ The BMI is commented out in the original source
 
  LDA VIA+&19            \ Fetch the high byte of the value on this ADC channel
-                        \ to read the relevant joystick position
+                        \ at SHEILA &19 to read the relevant joystick position
 
  STA JOPOS,Y            \ Store this value in the appropriate JOPOS byte
 
@@ -2985,8 +2985,8 @@ ENDIF
  CMP #3                 \ instructions
  BCC P%+4
 
- LDA #0                 \ Set the ADC status byte at SHEILA &18 to 0
- STA VIA+&18
+ LDA #0                 \ Set the ADC status byte at SHEILA &18 to 0 to reset
+ STA VIA+&18            \ the data latch
 
 .jvec
 
