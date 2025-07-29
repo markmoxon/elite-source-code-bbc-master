@@ -9896,86 +9896,90 @@ ENDIF
 
  NEXT
 
-IF _MATCH_ORIGINAL_BINARIES
+\ ******************************************************************************
+\
+\       Name: SCTBX1
+\       Type: Variable
+\   Category: Drawing the screen
+\    Summary: Lookup table for converting a pixel x-coordinate to the bit number
+\             within the pixel row byte that corresponds to this pixel
+\
+\ ------------------------------------------------------------------------------
+\
+\ This routine is not used in this version of Elite. It is left over from the
+\ Apple II version.
+\
+\ ******************************************************************************
 
- EQUB &01, &02, &03, &04, &05, &06, &00, &01    \ These bytes appear to be
- EQUB &02, &03, &04, &05, &06, &00, &01, &02    \ unused and just contain random
- EQUB &03, &04, &05, &06, &00, &01, &02, &03    \ workspace noise left over from
- EQUB &04, &05, &06, &00, &01, &02, &03, &04    \ the BBC Micro assembly process
- EQUB &05, &06, &00, &01, &02, &03, &04, &05
- EQUB &06, &00, &01, &02, &03, &04, &05, &06
- EQUB &00, &01, &02, &03, &04, &05, &06, &00
- EQUB &01, &02, &03, &04, &05, &06, &00, &01
- EQUB &02, &03, &04, &05, &06, &00, &01, &02
- EQUB &03, &04, &05, &06, &00, &01, &02, &03
- EQUB &04, &05, &06, &00, &01, &02, &03, &04
- EQUB &05, &06, &00, &01, &02, &03, &04, &05
- EQUB &06, &00, &01, &02, &03, &04, &05, &06
- EQUB &00, &01, &02, &03, &04, &05, &06, &00
- EQUB &01, &02, &03, &04, &05, &06, &00, &01
- EQUB &02, &03, &04, &05, &06, &00, &01, &02
- EQUB &03, &04, &05, &06, &00, &01, &02, &03
- EQUB &04, &05, &06, &00, &01, &02, &03, &04
- EQUB &05, &06, &00, &01, &02, &03, &04, &05
- EQUB &06, &00, &01, &02, &03, &04, &05, &06
- EQUB &00, &01, &02, &03, &04, &05, &06, &00
- EQUB &01, &02, &03, &04, &05, &06, &00, &01
- EQUB &02, &03, &04, &05, &06, &00, &01, &02
- EQUB &03, &04, &05, &06, &00, &01, &02, &03
- EQUB &04, &05, &06, &00, &01, &02, &03, &04
- EQUB &05, &06, &00, &01, &02, &03, &04, &05
- EQUB &06, &00, &01, &02, &03, &04, &05, &06
- EQUB &00, &01, &02, &03, &04, &05, &06, &00
- EQUB &01, &02, &03, &04, &05, &06, &00, &01
- EQUB &02, &03, &04, &05, &06, &00, &01, &02
- EQUB &03, &04, &05, &06, &00, &01, &02, &03
- EQUB &04, &05, &06, &00, &01, &02, &03, &04
- EQUB &01, &01, &01, &01, &01, &01, &02, &02
- EQUB &02, &02, &02, &02, &02, &03, &03, &03
- EQUB &03, &03, &03, &03, &04, &04, &04, &04
- EQUB &04, &04, &04, &05, &05, &05, &05, &05
- EQUB &05, &05, &06, &06, &06, &06, &06, &06
- EQUB &06, &07, &07, &07, &07, &07, &07, &07
- EQUB &08, &08, &08, &08, &08, &08, &08, &09
- EQUB &09, &09, &09, &09, &09, &09, &0A, &0A
- EQUB &0A, &0A, &0A, &0A, &0A, &0B, &0B, &0B
- EQUB &0B, &0B, &0B, &0B, &0C, &0C, &0C, &0C
- EQUB &0C, &0C, &0C, &0D, &0D, &0D, &0D, &0D
- EQUB &0D, &0D, &0E, &0E, &0E, &0E, &0E, &0E
- EQUB &0E, &0F, &0F, &0F, &0F, &0F, &0F, &0F
- EQUB &10, &10, &10, &10, &10, &10, &10, &11
- EQUB &11, &11, &11, &11, &11, &11, &12, &12
- EQUB &12, &12, &12, &12, &12, &13, &13, &13
- EQUB &13, &13, &13, &13, &14, &14, &14, &14
- EQUB &14, &14, &14, &15, &15, &15, &15, &15
- EQUB &15, &15, &16, &16, &16, &16, &16, &16
- EQUB &16, &17, &17, &17, &17, &17, &17, &17
- EQUB &18, &18, &18, &18, &18, &18, &18, &19
- EQUB &19, &19, &19, &19, &19, &19, &1A, &1A
- EQUB &1A, &1A, &1A, &1A, &1A, &1B, &1B, &1B
- EQUB &1B, &1B, &1B, &1B, &1C, &1C, &1C, &1C
- EQUB &1C, &1C, &1C, &1D, &1D, &1D, &1D, &1D
- EQUB &1D, &1D, &1E, &1E, &1E, &1E, &1E, &1E
- EQUB &1E, &1F, &1F, &1F, &1F, &1F, &1F, &1F
- EQUB &20, &20, &20, &20, &20, &20, &20, &21
- EQUB &21, &21, &21, &21, &21, &21, &22, &22
- EQUB &22, &22, &22, &22, &22, &23, &23, &23
- EQUB &23, &23, &23, &23, &24, &24, &24, &24
- EQUB &24, &24, &24, &25, &25, &25, &25, &25
- EQUB &96, &97, &9A, &9B, &9D, &9E, &9F, &A6
- EQUB &A7, &AB, &AC, &AD, &AE, &AF, &B2, &B3
- EQUB &B4, &B5, &B6, &B7, &B9, &BA, &BB, &BC
- EQUB &BD, &BE, &BF, &CB, &CD, &CE, &CF, &D3
- EQUB &D6, &D7, &D9, &DA, &DB, &DC, &DD, &DE
- EQUB &DF, &E5, &E6, &E7, &E9, &EA, &EB, &EC
- EQUB &ED, &EE, &EF, &F2, &F3, &F4, &F5, &F6
- EQUB &F7, &F9, &FA, &FB, &FC, &FD, &FE, &FF
+.SCTBX1
 
-ELSE
+FOR I%, 0, 255
 
- SKIP 576               \ These bytes appear to be unused
+ EQUB (I% + 8) MOD 7
 
-ENDIF
+NEXT
+
+\ ******************************************************************************
+\
+\       Name: SCTBX2
+\       Type: Variable
+\   Category: Drawing the screen
+\    Summary: Lookup table for converting a pixel x-coordinate to the byte
+\             number in the pixel row that corresponds to this pixel
+\
+\ ------------------------------------------------------------------------------
+\
+\ This routine is not used in this version of Elite. It is left over from the
+\ Apple II version.
+\
+\ ******************************************************************************
+
+.SCTBX2
+
+FOR I%, 0, 255
+
+ EQUB (I% + 8) DIV 7
+
+NEXT
+
+\ ******************************************************************************
+\
+\       Name: wtable
+\       Type: Variable
+\   Category: Save and load
+\    Summary: 6-bit to 7-bit nibble conversion table
+\
+\ ------------------------------------------------------------------------------
+\
+\ This table is not used in this version of Elite. It is left over from the
+\ Apple II version.
+\
+\ ******************************************************************************
+
+.wtable
+
+ EQUD &9B9A9796         \ NIBL     DFB $96,$97,$9A
+ EQUD &A69F9E9D         \          DFB $9B,$9D,$9E
+ EQUD &ADACABA7         \          DFB $9F,$A6,$A7
+ EQUD &B3B2AFAE         \          DFB $AB,$AC,$AD
+ EQUD &B7B6B5B4         \          DFB $AE,$AF,$B2
+ EQUD &BCBBBAB9         \          DFB $B3,$B4,$B5
+ EQUD &CBBFBEBD         \          DFB $B6,$B7,$B9
+ EQUD &D3CFCECD         \          DFB $BA,$BB,$BC
+ EQUD &DAD9D7D6         \          DFB $BD,$BE,$BF
+ EQUD &DEDDDCDB         \          DFB $CB,$CD,$CE
+ EQUD &E7E6E5DF         \          DFB $CF,$D3,$D6
+ EQUD &ECEBEAE9         \          DFB $D7,$D9,$DA
+ EQUD &F2EFEEED         \          DFB $DB,$DC,$DD
+ EQUD &F6F5F4F3         \          DFB $DE,$DF,$E5
+ EQUD &FBFAF9F7         \          DFB $E6,$E7,$E9
+ EQUD &FFFEFDFC         \          DFB $EA,$EB,$EC
+                        \          DFB $ED,$EE,$EF
+                        \          DFB $F2,$F3,$F4
+                        \          DFB $F5,$F6,$F7
+                        \          DFB $F9,$FA,$FB
+                        \          DFB $FC,$FD,$FE
+                        \          DFB $FF
 
 \ ******************************************************************************
 \

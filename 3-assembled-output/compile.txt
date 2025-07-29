@@ -4380,6 +4380,7 @@ WP workspace from &E41 to &12A9 inclusive
      29FD   EF
      29FE   F5
      29FF   FA
+.SCTBX1
      2A00   01
      2A01   02
      2A02   03
@@ -4636,6 +4637,7 @@ WP workspace from &E41 to &12A9 inclusive
      2AFD   02
      2AFE   03
      2AFF   04
+.SCTBX2
      2B00   01
      2B01   01
      2B02   01
@@ -4892,70 +4894,23 @@ WP workspace from &E41 to &12A9 inclusive
      2BFD   25
      2BFE   25
      2BFF   25
-     2C00   96
-     2C01   97
-     2C02   9A
-     2C03   9B
-     2C04   9D
-     2C05   9E
-     2C06   9F
-     2C07   A6
-     2C08   A7
-     2C09   AB
-     2C0A   AC
-     2C0B   AD
-     2C0C   AE
-     2C0D   AF
-     2C0E   B2
-     2C0F   B3
-     2C10   B4
-     2C11   B5
-     2C12   B6
-     2C13   B7
-     2C14   B9
-     2C15   BA
-     2C16   BB
-     2C17   BC
-     2C18   BD
-     2C19   BE
-     2C1A   BF
-     2C1B   CB
-     2C1C   CD
-     2C1D   CE
-     2C1E   CF
-     2C1F   D3
-     2C20   D6
-     2C21   D7
-     2C22   D9
-     2C23   DA
-     2C24   DB
-     2C25   DC
-     2C26   DD
-     2C27   DE
-     2C28   DF
-     2C29   E5
-     2C2A   E6
-     2C2B   E7
-     2C2C   E9
-     2C2D   EA
-     2C2E   EB
-     2C2F   EC
-     2C30   ED
-     2C31   EE
-     2C32   EF
-     2C33   F2
-     2C34   F3
-     2C35   F4
-     2C36   F5
-     2C37   F6
-     2C38   F7
-     2C39   F9
-     2C3A   FA
-     2C3B   FB
-     2C3C   FC
-     2C3D   FD
-     2C3E   FE
-     2C3F   FF
+.wtable
+     2C00   96 97 9A 9B
+     2C04   9D 9E 9F A6
+     2C08   A7 AB AC AD
+     2C0C   AE AF B2 B3
+     2C10   B4 B5 B6 B7
+     2C14   B9 BA BB BC
+     2C18   BD BE BF CB
+     2C1C   CD CE CF D3
+     2C20   D6 D7 D9 DA
+     2C24   DB DC DD DE
+     2C28   DF E5 E6 E7
+     2C2C   E9 EA EB EC
+     2C30   ED EE EF F2
+     2C34   F3 F4 F5 F6
+     2C38   F7 F9 FA FB
+     2C3C   FC FD FE FF
 .UP
      2C40
 .COMC
