@@ -75,7 +75,7 @@ endif
 
 variant-number=1
 folder=sng47
-suffix=-bbc-b-plus-sng47
+suffix=-bbc-micro-b-plus-sng47
 boot=-boot M128Elt
 
 .PHONY:all

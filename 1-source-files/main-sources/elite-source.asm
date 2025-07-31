@@ -1562,10 +1562,6 @@
 \                       \ The spaces can be shared as our local bubble of
 \                       \ universe can support either the sun or a space
 \                       \ station, but not both
-\
-\.BUF
-\
-\SKIP 90                \ The line buffer used by DASC to print justified text
 
                         \ --- End of moved code ------------------------------->
 
@@ -1610,6 +1606,10 @@
                         \ movement
 
                         \ --- End of moved code ------------------------------->
+
+.BUF
+
+ SKIP 90                \ The line buffer used by DASC to print justified text
 
 .SX
 
@@ -11139,10 +11139,6 @@ ENDIF
                         \ The spaces can be shared as our local bubble of
                         \ universe can support either the sun or a space
                         \ station, but not both
-
-.BUF
-
- SKIP 150               \ The line buffer used by DASC to print justified text
 
                         \ --- End of replacement ------------------------------>
 
