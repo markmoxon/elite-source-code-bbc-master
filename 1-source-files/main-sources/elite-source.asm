@@ -1002,7 +1002,7 @@
 
                         \ --- And replaced by: -------------------------------->
 
- ORG &0900              \ Set the assembly address to &0B00
+ ORG &0900              \ Set the assembly address to &0900
 
                         \ --- End of replacement ------------------------------>
 
@@ -19732,17 +19732,8 @@ ENDIF
  STA RAT2               \ Set RAT2 = %10000000, so the yaw calls in HAL5 below
                         \ are negative
 
-                        \ --- Mod: Code removed for BBC Micro B+: ------------->
-
-\LDA #&0B               \ Set the ship line heap pointer in INWK(34 33) to point
-\STA INWK+34            \ to &0B00
-
-                        \ --- And replaced by: -------------------------------->
-
- LDA #&06               \ Set the ship line heap pointer in INWK(34 33) to point
- STA INWK+34            \ to &0600
-
-                        \ --- End of replacement ------------------------------>
+ LDA #&0B               \ Set the ship line heap pointer in INWK(34 33) to point
+ STA INWK+34            \ to &0B00
 
                         \ --- Mod: Code added for red enemy lasers: ----------->
 
