@@ -26,6 +26,8 @@ See the [introduction](#introduction) for more information, or jump straight int
 
 * [BBC Master Elite with music](#bbc-master-elite-with-music)
 
+* [BBC Master Elite on the BBC Micro B+](#bbc-master-elite-on-the-bbc-micro-b)
+
 * [Elite Compendium](#elite-compendium)
 
 * [Elite over Econet](#elite-over-econet)
@@ -148,6 +150,14 @@ The annotated source files in the `music` branch contain both the original Acorn
 The music itself is built as a sideways ROM using the code in the [elite-music repository](https://github.com/markmoxon/elite-music/).
 
 For more information on the music, see the [hacks section of the accompanying website](https://elite.bbcelite.com/hacks/bbc_elite_with_music.html).
+
+## BBC Master Elite on the BBC Micro B+
+
+This repository also includes a version of BBC Master Elite that will run on a BBC Micro B+. The BBC Micro B+ version is in a separate branch called `bbc-micro-b-plus`, and apart from the code differences for supporting the B+, this branch is identical to the main branch and the same build process applies.
+
+The annotated source files in the `bbc-micro-b-plus` branch contain both the original Acornsoft code and all of the modifications required to make BBC Micro Elite run on the Master, so you can look through the source to see exactly what's changed. Any code that I've removed from the original version is commented out in the source files, so when they are assembled they produce the B+-compatible binaries, while still containing details of all the modifications. You can find all the diffs by searching the sources for `Mod:`.
+
+For more information on the port to the BBC Micro B+, see the [hacks section of the accompanying website](https://elite.bbcelite.com/hacks/bbc_micro_b_plus_master_elite.html).
 
 ## Elite Compendium
 
