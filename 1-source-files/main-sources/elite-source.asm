@@ -2429,6 +2429,7 @@ ENDIF
 
  LDA VIA+&30            \ Set bit 7 of the ROM Select latch at SHEILA &30 to
  ORA #%10000000         \ switch the 12K of private RAM into &8000-&AFFF
+ STA &00F4
  STA VIA+&30
 
  RTS                    \ Return from the subroutine
@@ -2481,6 +2482,7 @@ ENDIF
 
  LDA VIA+&30            \ Set bit 7 of the ROM Select latch at SHEILA &30 to
  ORA #%10000000         \ switch the 12K of private RAM into &8000-&AFFF
+ STA &00F4
  STA VIA+&30
 
                         \ --- End of added code ------------------------------->
@@ -11636,6 +11638,7 @@ ENDIF
 
  LDA VIA+&30            \ Set bit 7 of the ROM Select latch at SHEILA &30 to
  ORA #%10000000         \ switch the 12K of private RAM into &8000-&AFFF
+ STA &00F4
  STA VIA+&30
 
  JMP S%                 \ Jump to S% to start the game
@@ -51251,6 +51254,7 @@ ENDIF
  LDA VIA+&30            \ Set bit 7 of the ROM Select latch at SHEILA &30 to
  STA romLatch           \ switch the 12K of private RAM into &8000-&AFFF,
  ORA #%10000000         \ storing the original value in romLatch
+ STA &00F4
  STA VIA+&30
 
  PLA                    \ Store the character to print from the stack
@@ -51258,6 +51262,7 @@ ENDIF
  JSR CHPR               \ Print the character in A
 
  LDA romLatch           \ Restore the original ROM Select latch
+ STA &00F4
  STA VIA+&30
 
  RTS                    \ Return from the subroutine
@@ -51849,3 +51854,6 @@ ENDIF
  PRINT "F% = ", ~F%
  PRINT "G% = ", ~G%
  PRINT "NA2% = ", ~NA2%
+
+ PRINT "Addresses for the execution address of BCODE in elite-disc.asm"
+ PRINT "ENTRY = ", ~ENTRY

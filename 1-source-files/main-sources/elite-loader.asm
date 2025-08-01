@@ -412,6 +412,7 @@ ENDIF
 
  LDA VIA+&30            \ Set bit 7 of the ROM Select latch at SHEILA &30 to
  ORA #%10000000         \ switch the 12K of private RAM into &8000-&AFFF
+ STA &00F4
  STA VIA+&30
 
  LDA #HI(privateRAM)    \ Set ZP(1 0) = privateRAM
@@ -513,6 +514,7 @@ ENDIF
 
  LDA VIA+&30            \ Set bit 7 of the ROM Select latch at SHEILA &30 to
  ORA #%10000000         \ switch the 12K of private RAM into &8000-&AFFF
+ STA &00F4
  STA VIA+&30
 
                         \ --- End of replacement ------------------------------>
