@@ -4,6 +4,7 @@ values = &90
 unique = &80
 RomSel = &FE30
 romNumber = &8E : REM Set to address of .musicRomNumber
+fromAddr = &80  : REM We can reuse unique block by this point
 
 PRINT"BBC Master Elite (B+128 version)"
 PRINT"================================"
@@ -77,6 +78,37 @@ STA &F4
 STA RomSel              \\ Restore original ROM
 CLI
 RTS
+
+.SRLOAD
+LDA &F4
+PHA
+LDA romNumber
+STA &F4
+STA &FE30
+.SR1
+LDY #0
+LDA (fromAddr),Y
+STA toBlock+4
+LDA #6
+LDX #toBlock MOD256
+LDY #toBlock DIV256
+JSR &FFF1
+INC fromAddr
+INC toBlock
+BNE SR1
+INC fromAddr+1
+INC toBlock+1
+LDA toBlock+1
+CMP #&C0
+BNE SR1
+PLA
+STA &F4
+STA &FE30
+RTS
+
+.toBlock
+EQUD &8000
+EQUD 0
 ]
 NEXT
 CALL CODE
@@ -87,8 +119,8 @@ IF N% > 1 THEN PRINT "s";
 REM IF N% > 0 THEN FOR X% = ?&90 TO 15 : PRINT;" ";X%?&90; : NEXT
 ?romNumber=?(&90+?&90):REM STORE RAM BANK USED SOMEWHERE IN ZERO PAGE
 PRINT'"Loading music into RAM bank ";?romNumber;"...";
-OSCLI "SRLOAD MUSIC 8000 "+STR$(?romNumber)
-P%=&70
+*LOAD MUSIC 3F00
+P%=&3F0F
 [OPT 0
 .platform       EQUB 128
 .addrDNOIZ      EQUW &0926
@@ -104,7 +136,7 @@ P%=&70
 .keyVolUp       EQUB &2E
 .end
 ]
-OSCLI "SRWRITE 0070+"+STR$~(end-platform)+" 800F "+STR$(?romNumber)
+!&80=&3F00 : CALL SRLOAD : REM Load ROM image into the correct bank
 PRINT CHR$130;"OK"
 PRINT'"Press any key to play Elite";
 A$=GET$
