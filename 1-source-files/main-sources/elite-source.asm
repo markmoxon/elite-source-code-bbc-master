@@ -2283,21 +2283,6 @@ ENDIF
                         \ channel 3 (the Bitstik rotation value), which gets
                         \ updated regularly by the IRQ1 interrupt handler
 
-                        \ --- Mod: Code added for docking fee: ---------------->
-
-.chargeDockingFee
-
- SKIP 1                 \ Records whether we have been charged a docking fee, so
-                        \ we don't get charged twice:
-                        \
-                        \   * 0 = we have not been charged a docking fee
-                        \
-                        \   * Non-zero = we have been charged a docking fee
-                        \
-                        \ The docking fee is 5.0 credits
-
-                        \ --- End of added code ------------------------------->
-
  PRINT "WP workspace from ", ~WP, "to ", ~P%-1, "inclusive"
 
 \ ******************************************************************************
@@ -12489,54 +12474,6 @@ ENDIF
  LDA KY19               \ If "C" is being pressed, and we have a docking
  AND DKCMP              \ computer fitted, keep going, otherwise jump down to
  BEQ MA68               \ MA68 to skip the following
-
-                        \ --- Mod: Code added for docking fee: ---------------->
-
-                        \ We now deduct a docking fee of 5.0 credits for using
-                        \ the docking computer
-
- LDA chargeDockingFee   \ If we have already been charged a docking fee
- BNE barb4              \ (chargeDockingFee is non-zero), then jump to barb4 to
-                        \ engage the docking computer without charging a docking
-                        \ fee
-
-                        \ Otherwise we charge the docking fee
-
- LDY #0                 \ Set (Y X) = 50, so the docking fee is 5.0 credits
- LDX #50
-
- JSR LCASH              \ Subtract (Y X) cash from the cash pot, but only if
-                        \ we have enough cash
-
- BCS barb3              \ If the C flag is set then we did have enough cash for
-                        \ the transaction, so jump to barb3 to skip the
-                        \ following instruction
-
-                        \ If we get here then we don't have enough cash for the
-                        \ docking fee, so make a beep and return from the
-                        \ subroutine without engaging the docking computer
-
- LDA #0                 \ Set auto to 0, so the docking computer is no longer
- STA auto               \ activated
-
- JMP BOOP               \ Call the BOOP routine to make a long, low beep, and
-                        \ return from the subroutine using a tail call
-
-.barb3
-
- DEC chargeDockingFee   \ Set chargeDockingFee to &FF so we don't charge another
-                        \ docking fee
-
- LDA #0                 \ Print control code 0 (current amount of cash and
- JSR MESS               \ newline) as an in-flight message, to show our balance
-                        \ after the docking fee has been paid
-
-.barb4
-
- LDA #1                 \ Set A to 1 to enable the docking computer and music in
-                        \ the following
-
-                        \ --- End of added code ------------------------------->
 
  STA auto               \ Set auto to the non-zero value of A, so the docking
                         \ computer is activated
@@ -37974,13 +37911,6 @@ ENDIF
 \STA TRIBCT             \ This instruction is commented out in the original
                         \ source; it is left over from the Commodore 64 version
                         \ of Elite and would reset the number of Trumbles
-
-                        \ --- Mod: Code added for docking fee: ---------------->
-
- STA chargeDockingFee   \ Set chargeDockingFee to 0 so the docking fee is marked
-                        \ as being not already paid
-
-                        \ --- End of added code ------------------------------->
 
  LDA #3                 \ Reset DELTA (speed) to 3
  STA DELTA
