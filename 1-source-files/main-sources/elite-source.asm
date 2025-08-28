@@ -38474,7 +38474,7 @@ ENDIF
                         \ handler
 
  LDA #&4C               \ Insert JMP IRQMusic into the LINSCN handler, replacing
- STA LINSCN+17          \ the STA VIA+&44 instruction, so the IRQMusic routine
+ STA LINSCN+17          \ the STA VIA+&45 instruction, so the IRQMusic routine
  LDA #LO(IRQMusic)      \ gets called on each vertical sync
  STA LINSCN+18
  LDA #HI(IRQMusic)
