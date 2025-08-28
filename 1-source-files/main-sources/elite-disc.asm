@@ -52,15 +52,16 @@
 
                         \ --- And replaced by: -------------------------------->
 
- PUTFILE "3-assembled-output/M128Elt.bin", "M128Elt", &FF1100, &FF1143
+ PUTFILE "3-assembled-output/M128Elt.bin", "M128ElM", &FF1100, &FF1143
  PUTFILE "3-assembled-output/BDATA.bin", "BDATA", &000000, &000000
- PUTFILE "3-assembled-output/BCODE.bin", "BCODE", &FF1100, &FF2917
+ PUTFILE "3-assembled-output/BCODE.bin", "MCODE", &FF1100, &FF2917
 
  PUTFILE "1-source-files/other-files/E.MAX.bin", "E.MAX", &000000, &000000
  PUTFILE "1-source-files/other-files/E.MISS1.bin", "E.MISS1", &000000, &000000
  PUTFILE "1-source-files/other-files/E.MISS2.bin", "E.MISS2", &000000, &000000
  PUTFILE "1-source-files/other-files/E.FIGHT.bin", "E.FIGHT", &000000, &000000
 
+ PUTFILE "1-source-files/boot-files/$.!BOOT.bin", "!BOOT", &FFFFFF, &FFFFFF
  PUTBASIC "1-source-files/music/load-music.bas", "ELITEM"
  PUTFILE "elite-music/elite-music.rom", "MUSIC", &008000, &008000
 

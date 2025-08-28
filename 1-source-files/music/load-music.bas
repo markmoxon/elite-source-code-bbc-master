@@ -5,8 +5,8 @@ unique = &80
 RomSel = &FE30
 romNumber = &8E : REM Set to address of .musicRomNumber
 
-PRINT"BBC Master Elite (Compendium version)"
-PRINT"====================================="
+PRINT"BBC Master Elite (B+128 version)"
+PRINT"================================"
 PRINT'"Based on the Acornsoft SNG47 release"
 PRINT"of Elite by Ian Bell and David Braben"
 PRINT"Copyright (c) Acornsoft 1986"
@@ -85,20 +85,18 @@ IF N%=0 THEN PRINT'"Can't run:";CHR$129;"no sideways RAM detected":END
 PRINT'"Detected ";16-?&90;" sideways RAM bank";
 IF N% > 1 THEN PRINT "s";
 REM IF N% > 0 THEN FOR X% = ?&90 TO 15 : PRINT;" ";X%?&90; : NEXT
-IF ?(&90+?&90) = 6 AND N% = 1 THEN PRINT", but Elite needs that one to run (RAM bank 6)":END
-IF ?(&90+?&90) = 6 AND N% > 1 THEN ?(&90+?&90) = ?(&90+?&90+1) : REM Skip bank 6
 ?romNumber=?(&90+?&90):REM STORE RAM BANK USED SOMEWHERE IN ZERO PAGE
 PRINT'"Loading music into RAM bank ";?romNumber;"...";
 OSCLI "SRLOAD MUSIC 8000 "+STR$(?romNumber)
 P%=&70
 [OPT 0
 .platform       EQUB 128
-.addrDNOIZ      EQUW &2C55
-.addrplay1      EQUW &2D71+1
-.addrDELAY      EQUW &1349
+.addrDNOIZ      EQUW &0926
+.addrplay1      EQUW &2A39+1
+.addrDELAY      EQUW &117D
 .addrSFX        EQUW 0
-.addrBEEP       EQUW &1354
-.addrVOL        EQUW &2C61
+.addrBEEP       EQUW &1188
+.addrVOL        EQUW &290D
 .keyE           EQUB &45
 .keyM           EQUB &4D
 .keyQ           EQUB &51
@@ -110,4 +108,4 @@ OSCLI "SRWRITE 0070+"+STR$~(end-platform)+" 800F "+STR$(?romNumber)
 PRINT CHR$130;"OK"
 PRINT'"Press any key to play Elite";
 A$=GET$
-*RUN M128Elt
+*RUN M128ElM

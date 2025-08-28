@@ -389,9 +389,19 @@
  SKIP 4                 \ Four 8-bit seeds for the random number generation
                         \ system implemented in the DORND routine
 
-.W
+                        \ --- Mod: Code removed for music: -------------------->
+
+\.W
+\
+\SKIP 1                 \ Temporary storage, used in a number of places
+
+                        \ --- And replaced by: -------------------------------->
+
+.XX4
 
  SKIP 1                 \ Temporary storage, used in a number of places
+
+                        \ --- End of replacement ------------------------------>
 
 .T1
 
@@ -751,6 +761,28 @@
  SKIP 1                 \ Temporary storage for saving the value of the Y
                         \ register, used in a number of places
 
+                        \ --- Mod: Code added for music: ---------------------->
+
+.musicWorkspace
+
+ SKIP 8                 \ Storage for the music player, &0092 to &0099 inclusive
+
+.musicRomNumber
+
+ SKIP 1                 \ The bank number of the sideways ROM slot containing
+                        \ the music player at &009A
+
+.musicStatus
+
+ SKIP 1                 \ A flag to determine whether to play the currently
+                        \ selected music:
+                        \
+                        \   * 0 = do not play the music
+                        \
+                        \   * Non-zero = do play the music
+
+                        \ --- End of added code ------------------------------->
+
 .XX17
 
  SKIP 1                 \ Temporary storage, used in BPRNT to store the number
@@ -840,6 +872,105 @@
                         \ for counters when drawing explosion clouds and partial
                         \ circles
 
+                        \ --- Mod: Code removed for music: -------------------->
+
+\.SWAP
+\
+\SKIP 1                 \ Temporary storage, used to store a flag that records
+\                       \ whether or not we had to swap a line's start and end
+\                       \ coordinates around when clipping the line in routine
+\                       \ LL145 (the flag is used in places like BLINE to swap
+\                       \ them back)
+\
+\.COL
+\
+\SKIP 1                 \ Temporary storage, used to store colour information
+\                       \ when drawing pixels in the dashboard
+\
+\.FLAG
+\
+\SKIP 1                 \ A flag that's used to define whether this is the first
+\                       \ call to the ball line routine in BLINE, so it knows
+\                       \ whether to wait for the second call before storing
+\                       \ segment data in the ball line heap
+
+                        \ --- End of removed code ----------------------------->
+
+.CNT
+
+ SKIP 1                 \ Temporary storage, typically used for storing the
+                        \ number of iterations required when looping
+
+                        \ --- Mod: Code removed for music: -------------------->
+
+\.CNT2
+\
+\SKIP 1                 \ Temporary storage, used in the planet-drawing routine
+\                       \ to store the segment number where the arc of a partial
+\                       \ circle should start
+\
+\.STP
+\
+\SKIP 1                 \ The step size for drawing circles
+\                       \
+\                       \ Circles in Elite are split up into 64 points, and the
+\                       \ step size determines how many points to skip with each
+\                       \ straight-line segment, so the smaller the step size,
+\                       \ the smoother the circle. The values used are:
+\                       \
+\                       \   * 2 for big planets and the circles on the charts
+\                       \   * 4 for medium planets and the launch tunnel
+\                       \   * 8 for small planets and the hyperspace tunnel
+\                       \
+\                       \ As the step size increases we move from smoother
+\                       \ circles at the top to more polygonal at the bottom.
+\                       \ See the CIRCLE2 routine for more details
+\
+\.XX4
+\
+\SKIP 1                 \ Temporary storage, used in a number of places
+\
+\.XX14
+\
+\SKIP 1                 \ This byte appears to be unused
+\
+\.RAT
+\
+\SKIP 1                 \ Used to store different signs depending on the current
+\                       \ space view, for use in calculating stardust movement
+\
+\.RAT2
+\
+\SKIP 1                 \ Temporary storage, used to store the pitch and roll
+\                       \ signs when moving objects and stardust
+\
+\.K2
+\
+\SKIP 4                 \ Temporary storage, used in a number of places
+
+                        \ --- And replaced by: -------------------------------->
+
+.COL
+
+ SKIP 1                 \ Temporary storage, used to store colour information
+                        \ when drawing pixels in the dashboard
+
+.RAT
+
+ SKIP 1                 \ Used to store different signs depending on the current
+                        \ space view, for use in calculating stardust movement
+
+.RAT2
+
+ SKIP 1                 \ Temporary storage, used to store the pitch and roll
+                        \ signs when moving objects and stardust
+
+.CNT2
+
+ SKIP 1                 \ Temporary storage, used in the planet-drawing routine
+                        \ to store the segment number where the arc of a partial
+                        \ circle should start
+
 .SWAP
 
  SKIP 1                 \ Temporary storage, used to store a flag that records
@@ -848,28 +979,44 @@
                         \ LL145 (the flag is used in places like BLINE to swap
                         \ them back)
 
-.COL
+                        \ --- End of replacement ------------------------------>
 
- SKIP 1                 \ Temporary storage, used to store colour information
-                        \ when drawing pixels in the dashboard
+ ORG &00D1              \ Set the assembly address to &00D1
 
-.FLAG
+.T
 
- SKIP 1                 \ A flag that's used to define whether this is the first
-                        \ call to the ball line routine in BLINE, so it knows
-                        \ whether to wait for the second call before storing
-                        \ segment data in the ball line heap
+ SKIP 1                 \ Temporary storage, used in a number of places
 
-.CNT
+.K3
 
- SKIP 1                 \ Temporary storage, typically used for storing the
-                        \ number of iterations required when looping
+ SKIP 0                 \ Temporary storage, used in a number of places
 
-.CNT2
+                        \ --- Mod: Code removed for music: -------------------->
 
- SKIP 1                 \ Temporary storage, used in the planet-drawing routine
-                        \ to store the segment number where the arc of a partial
-                        \ circle should start
+\.XX2
+\
+\SKIP 14                \ Temporary storage, used to store the visibility of the
+\                       \ ship's faces during the ship-drawing routine at LL9
+
+                        \ --- And replaced by: -------------------------------->
+
+.XX2
+
+ SKIP 8                 \ Temporary storage, used to store the visibility of the
+                        \ ship's faces during the ship-drawing routine at LL9
+
+.newzp
+
+ SKIP 1                 \ This is used by the STARS2 routine for storing the
+                        \ stardust particle's delta_x value
+
+.W
+
+ SKIP 1                 \ Temporary storage, used in a number of places
+
+.K2
+
+ SKIP 4                 \ Temporary storage, used in a number of places
 
 .STP
 
@@ -888,46 +1035,14 @@
                         \ circles at the top to more polygonal at the bottom.
                         \ See the CIRCLE2 routine for more details
 
-.XX4
+.FLAG
 
- SKIP 1                 \ Temporary storage, used in a number of places
+ SKIP 1                 \ A flag that's used to define whether this is the first
+                        \ call to the ball line routine in BLINE, so it knows
+                        \ whether to wait for the second call before storing
+                        \ segment data in the ball line heap
 
-.XX20
-
- SKIP 1                 \ Temporary storage, used in a number of places
-
-.XX14
-
- SKIP 1                 \ This byte appears to be unused
-
-.RAT
-
- SKIP 1                 \ Used to store different signs depending on the current
-                        \ space view, for use in calculating stardust movement
-
-.RAT2
-
- SKIP 1                 \ Temporary storage, used to store the pitch and roll
-                        \ signs when moving objects and stardust
-
-.K2
-
- SKIP 4                 \ Temporary storage, used in a number of places
-
- ORG &00D1              \ Set the assembly address to &00D1
-
-.T
-
- SKIP 1                 \ Temporary storage, used in a number of places
-
-.K3
-
- SKIP 0                 \ Temporary storage, used in a number of places
-
-.XX2
-
- SKIP 14                \ Temporary storage, used to store the visibility of the
-                        \ ship's faces during the ship-drawing routine at LL9
+                        \ --- End of replacement ------------------------------>
 
 .K4
 
@@ -2243,11 +2358,6 @@ ENDIF
                         \ of the in-flight message in MESS, so it can be erased
                         \ from the screen at the correct time
 
-.newzp
-
- SKIP 1                 \ This is used by the STARS2 routine for storing the
-                        \ stardust particle's delta_x value
-
 .LSNUM
 
  SKIP 1                 \ The pointer to the current position in the ship line
@@ -2261,6 +2371,11 @@ ENDIF
                         \ we are drawing in LL9, i.e. the number of lines in the
                         \ old ship that is currently shown on-screen and which
                         \ we need to erase
+
+.XX20
+
+ SKIP 1                 \ Temporary storage, used in a number of places
+
 
                         \ --- End of moved code ------------------------------->
 
@@ -11833,6 +11948,12 @@ ENDIF
 
 .DOENTRY
 
+                        \ --- Mod: Code added for music: ---------------------->
+
+ JSR StopMusic          \ Stop any music that is currently playing
+
+                        \ --- End of added code ------------------------------->
+
  JSR RES2               \ Reset a number of flight variables and workspaces
 
  JSR LAUN               \ Show the space station docking tunnel
@@ -12069,6 +12190,123 @@ ENDIF
 \EQUW &807F
 
                         \ --- End of removed code ----------------------------->
+
+\ ******************************************************************************
+\
+\       Name: IRQMusic
+\       Type: Subroutine
+\   Category: Music
+\    Summary: The IRQ handler for playing music
+\
+\ ******************************************************************************
+
+                        \ --- Mod: Code added for music: ---------------------->
+
+.IRQMusic
+
+ STA VIA+&45            \ Re-do the instruction we replaced when inserting this
+                        \ routine into the standard IRQ1 interrupt handler
+
+ LDA musicStatus        \ If the music status flag is zero, then music is
+ BEQ mirq1              \ disabled, so jump to mirq1 to skip playing the
+                        \ currently selected music
+
+ CLD                    \ Clear the Decimal flag in case it was set on entry to
+                        \ the interrupt handler (which will be the case if we
+                        \ are playing music while checking for key presses in
+                        \ the RDKEY-1 routine)
+
+ JSR PlayMusic+3        \ Play the currently selected music
+
+.mirq1
+
+ JMP LINSCN+20          \ Jump back to the normal interrupt handler
+
+                        \ --- End of added code ------------------------------->
+
+\ ******************************************************************************
+\
+\       Name: PlayMusic
+\       Type: Subroutine
+\   Category: Music
+\    Summary: Select, play or stop music
+\
+\ ------------------------------------------------------------------------------
+\
+\ Arguments:
+\
+\   A                   The action to perform:
+\
+\                         * 0 = Select the title music
+\
+\                         * 3 = Select the docking music
+\
+\                         * 6 = Play the currently selected music
+\
+\                         * 9 = Stop the currently selected music
+\
+\ Other entry points:
+\
+\   PlayMusic+3         Repeat the last action (typically used to continue
+\                       playing in the interrupt routine)
+\
+\ ******************************************************************************
+
+                        \ --- Mod: Code added for music: ---------------------->
+
+.PlayMusic
+
+ STA play1+1            \ Modify JSR to jump to &8000 + A
+
+ LDA &F4                \ Fetch the RAM copy of the currently selected ROM and
+ PHA                    \ store it on the stack
+
+ LDA musicRomNumber     \ Fetch the number of the music ROM and switch to it
+ STA &F4
+ STA &FE30
+
+ TYA                    \ Store X and Y on the stack
+ PHA
+ TXA
+ PHA
+
+.play1
+
+ JSR &8006              \ Call the relevant routine in the music ROM (this
+                        \ address is set to &80xx, where xx is the value of A
+                        \ that was passed to the routine)
+
+ PLA                    \ Retrieve X and Y from the stack
+ TAX
+ PLA
+ TAY
+
+ PLA                    \ Set the ROM number back to the value that we stored
+ STA &F4                \ above, to switch back to the previous ROM
+ STA &FE30
+
+ RTS                    \ Return from the subroutine
+
+                        \ --- End of added code ------------------------------->
+
+\ ******************************************************************************
+\
+\       Name: StopMusic
+\       Type: Subroutine
+\   Category: Music
+\    Summary: Stop any music that is currently playing
+\
+\ ******************************************************************************
+
+                        \ --- Mod: Code added for music: ---------------------->
+
+.StopMusic
+
+ LDA #9                 \ Stop any music that is currently playing and select
+ JMP PlayMusic          \ the docking music, returning from the subroutine using
+                        \ a tail call
+
+                        \ --- End of added code ------------------------------->
 
 \ ******************************************************************************
 \
@@ -12429,6 +12667,12 @@ ENDIF
 \JSR stopbd             \ This instruction is commented out in the original
                         \ source
 
+                        \ --- Mod: Code added for music: ---------------------->
+
+ JSR StopMusic          \ Stop any music that is currently playing
+
+                        \ --- End of added code ------------------------------->
+
 .MA78
 
  LDA KY13               \ If ESCAPE is being pressed and we have an escape pod
@@ -12477,6 +12721,13 @@ ENDIF
 
  STA auto               \ Set auto to the non-zero value of A, so the docking
                         \ computer is activated
+
+                        \ --- Mod: Code added for music: ---------------------->
+
+ STA musicStatus        \ Set the status flag to a non-zero value to indicate we
+                        \ are playing music, so the docking music starts playing
+
+                        \ --- End of added code ------------------------------->
 
 \EOR KLO+&29            \ These instructions are commented out in the original
 \BEQ MA68               \ source
@@ -12978,6 +13229,12 @@ ENDIF
 
 \JSR stopbd             \ This instruction is commented out in the original
                         \ source
+
+                        \ --- Mod: Code added for music: ---------------------->
+
+ JSR StopMusic          \ Stop any music that is currently playing
+
+                        \ --- End of added code ------------------------------->
 
  JMP DOENTRY            \ Go to the docking bay (i.e. show the ship hangar)
 
@@ -39785,6 +40042,20 @@ ENDIF
  JSR JAMESON            \ Call JAMESON to set the last saved commander to the
                         \ default "JAMESON" commander
 
+                        \ --- Mod: Code added for music: ---------------------->
+
+ LDA #161               \ Call OSBYTE 161 to fetch the configuration option for
+ LDX #16                \ the BELL volume, and if is it set to QUIET, halve the
+ JSR OSBYTE             \ default value of VOL from 7 to 3
+ TYA
+ AND #%00000010
+ BNE begn1
+ LSR VOL
+
+.begn1
+
+                        \ --- End of added code ------------------------------->
+
                         \ Fall through into TT170 to start the game
 
 \ ******************************************************************************
@@ -39862,6 +40133,32 @@ ENDIF
  LDA #3                 \ Set XC = 3 (set text cursor to column 3)
  STA XC
 
+                        \ --- Mod: Code added for music: ---------------------->
+
+ LDA #0                 \ Select the title music
+ JSR PlayMusic
+
+ LDA #6                 \ Modify the PlayMusic routine so it plays music on the
+ STA play1+1            \ next call
+
+ SEI                    \ Disable interrupts so we can update the interrupt
+                        \ handler
+
+ LDA #&4C               \ Insert JMP IRQMusic into the LINSCN handler, replacing
+ STA LINSCN+17          \ the STA VIA+&44 instruction, so the IRQMusic routine
+ LDA #LO(IRQMusic)      \ gets called on each vertical sync
+ STA LINSCN+18
+ LDA #HI(IRQMusic)
+ STA LINSCN+19
+
+ CLI                    \ Re-enable interrupts
+
+ LDA #&FF               \ Set the status flag to a non-zero value to indicate
+ STA musicStatus        \ we are playing music, so the title music starts
+                        \ playing
+
+                        \ --- End of added code ------------------------------->
+
 \JSR startat            \ This instruction is commented out in the original
                         \ source
 
@@ -39912,6 +40209,12 @@ ENDIF
  LDX #COU               \ 7 ("PRESS SPACE OR FIRE,{single cap}COMMANDER.{cr}
  LDY #100               \ {cr}"), with the ship at a distance of 100, returning
  JSR TITLE              \ with the internal number of the key pressed in A
+
+                        \ --- Mod: Code added for music: ---------------------->
+
+ JSR StopMusic          \ Stop the title music
+
+                        \ --- End of added code ------------------------------->
 
  JSR ping               \ Set the target system coordinates (QQ9, QQ10) to the
                         \ current system coordinates (QQ0, QQ1) we just loaded
@@ -41170,6 +41473,12 @@ ENDIF
 \ ******************************************************************************
 
 .SVE
+
+                        \ --- Mod: Code added for music: ---------------------->
+
+ JSR StopMusic          \ Stop any music that is currently playing
+
+                        \ --- End of added code ------------------------------->
 
  TSX                    \ Transfer the stack pointer to X and store it in
  STX stackpt            \ stackpt, so we can restore it in the NEWBRK routine
@@ -42937,14 +43246,18 @@ ENDIF
                         \ code of the key pressed in A and X (or 0 for no key
                         \ press)
 
- CPX #'Q'               \ If "Q" is not being pressed, skip to DK6
- BNE DK6
+                        \ --- Mod: Code removed for music: -------------------->
 
- LDX #&FF               \ "Q" is being pressed, so set DNOIZ to &FF to turn the
- STX DNOIZ              \ sound off
+\CPX #'Q'               \ If "Q" is not being pressed, skip to DK6
+\BNE DK6
+\
+\LDX #&FF               \ "Q" is being pressed, so set DNOIZ to &FF to turn the
+\STX DNOIZ              \ sound off
+\
+\LDX #'Q'               \ Set X to the ASCII for "Q" once again, so it doesn't
+\                       \ get changed by the above
 
- LDX #'Q'               \ Set X to the ASCII for "Q" once again, so it doesn't
-                        \ get changed by the above
+                        \ --- End of removed code ----------------------------->
 
 .DK6
 
@@ -42964,88 +43277,75 @@ ENDIF
 
  BNE DKL4               \ If not, loop back to check for the next toggle key
 
- LDA VOL                \ Fetch the current volume setting into A
+                        \ --- Mod: Code removed for music: -------------------->
 
- CPX #'.'               \ If "." is being pressed (i.e. the ">" key) then jump
- BEQ DOVOL1             \ to DOVOL1 to increase the volume
-
- CPX #','               \ If "," is not being pressed (i.e. the "<" key) then
- BNE DOVOL4             \ jump to DOVOL4 to skip the following
-
-                        \ --- Mod: Code removed for BBC Micro B+: ------------->
-
+\LDA VOL                \ Fetch the current volume setting into A
+\
+\CPX #'.'               \ If "." is being pressed (i.e. the ">" key) then jump
+\BEQ DOVOL1             \ to DOVOL1 to increase the volume
+\
+\CPX #','               \ If "," is not being pressed (i.e. the "<" key) then
+\BNE DOVOL4             \ jump to DOVOL4 to skip the following
+\
 \DEC A                  \ The volume down key is being pressed, so decrement the
 \                       \ volume level in A
 \
 \EQUB &24               \ Skip the next instruction by turning it into &24 &1A,
 \                       \ or BIT &001A, which does nothing apart from affect the
 \                       \ flags
-
-                        \ --- And replaced by: -------------------------------->
-
- SEC                    \ The volume down key is being pressed, so decrement the
- SBC #1                 \ volume level in A
-
- JMP DOVOL1+3           \ Skip the next two instructions
-
-                        \ --- End of replacement ------------------------------>
-
-.DOVOL1
-
-                        \ --- Mod: Code removed for BBC Micro B+: ------------->
-
+\
+\.DOVOL1
+\
 \INC A                  \ The volume up key is being pressed, so increment the
 \                       \ volume level in A
-
-                        \ --- And replaced by: -------------------------------->
-
- CLC                    \ The volume up key is being pressed, so increment the
- ADC #1                 \ volume level in A
-
-                        \ --- End of replacement ------------------------------>
-
- TAY                    \ Copy the new volume level to Y
-
- AND #%11111000         \ If any of bits 3-7 are set, skip to DOVOL3 as we have
- BNE DOVOL3             \ either increased the volume past the maximum volume of
-                        \ 7, or we have decreased it below 0 to -1, and in
-                        \ neither case do we want to change the volume as we are
-                        \ already at the maximum or minimum level
-
- STY VOL                \ Store the new volume level in VOL
-
-.DOVOL3
-
-                        \ --- Mod: Code removed for BBC Micro B+: ------------->
-
+\
+\TAY                    \ Copy the new volume level to Y
+\
+\AND #%11111000         \ If any of bits 3-7 are set, skip to DOVOL3 as we have
+\BNE DOVOL3             \ either increased the volume past the maximum volume of
+\                       \ 7, or we have decreased it below 0 to -1, and in
+\                       \ neither case do we want to change the volume as we are
+\                       \ already at the maximum or minimum level
+\
+\STY VOL                \ Store the new volume level in VOL
+\
+\.DOVOL3
+\
 \PHX                    \ Store X on the stack so we can retrieve it below after
 \                       \ making a beep
-
-                        \ --- And replaced by: -------------------------------->
-
- TXA                    \ Store X on the stack so we can retrieve it below after
- PHA                    \ making a beep
-
-                        \ --- End of replacement ------------------------------>
-
- JSR BEEP               \ Call the BEEP subroutine to make a short, high beep at
-                        \ the new volume level
-
- LDY #10                \ Wait for 10/50 of a second (0.2 seconds)
- JSR DELAY
-
-                        \ --- Mod: Code removed for BBC Micro B+: ------------->
-
+\
+\JSR BEEP               \ Call the BEEP subroutine to make a short, high beep at
+\                       \ the new volume level
+\
+\LDY #10                \ Wait for 10/50 of a second (0.2 seconds)
+\JSR DELAY
+\
 \PLX                    \ Restore the value of X we stored above
+\
+\.DOVOL4
 
                         \ --- And replaced by: -------------------------------->
 
- PLA                    \ Restore the value of X we stored above
- TAX
+ LDA #12                \ Process the "Q" and volume-related options
+ JSR PlayMusic
+
+ BCC skipMusicToggles   \ If no music-related options were changed, then the C
+                        \ flag will be clear, so jump to skipMusicToggles to
+                        \ skip the following
+
+ JSR BELL               \ Make a beep sound so we know something has happened
+
+ JSR DELAY              \ Wait for Y vertical syncs (Y is between 64 and 70, so
+                        \ this is always a bit longer than a second)
+
+ LDX #&51               \ Set X to &51, which is the internal key for "S" on the
+                        \ BBC Micro. This is set to ensure that X has the same
+                        \ value at this point as the BBC Micro version of this
+                        \ routine would
+
+.skipMusicToggles
 
                         \ --- End of replacement ------------------------------>
-
-.DOVOL4
 
                         \ --- Mod: Code added for Delta 14B: ------------------>
 

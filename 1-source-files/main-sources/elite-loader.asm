@@ -666,9 +666,9 @@ ENDIF
 
                         \ --- Mod: Code added for BBC Micro B+: --------------->
 
- .MESS4
+.MESS4
 
- EQUS "R.BCODE"         \ This is short for "*RUN BCODE"
+ EQUS "R.MCODE"         \ This is short for "*RUN MCODE"
  EQUB 13
 
                         \ --- End of added code ------------------------------->
