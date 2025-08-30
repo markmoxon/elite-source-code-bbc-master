@@ -4841,7 +4841,7 @@ UP workspace from &290D to &290D inclusive
      2941   A9 29      LDA #&29
      2943   8D 33 09   STA &0933
      2946   A9 7F      LDA #&7F
-     2948   A0 6E      LDY #&6E
+     2948   A0 70      LDY #&70
      294A   A2 19      LDX #&19
      294C   20 5F 29   JSR &295F
      294F   A9 FF      LDA #&FF
@@ -8536,7 +8536,7 @@ S.ELTB &32AF  &3B07  &1100  &32AF
 .FMLTU2
      43BE   29 1F      AND #&1F
      43C0   AA         TAX
-     43C1   BD FB 7E   LDA &7EFB,X
+     43C1   BD FD 7E   LDA &7EFD,X
      43C4   85 81      STA &81
      43C6   A5 40      LDA &40
 .FMLTU
@@ -8980,7 +8980,7 @@ S.ELTB &32AF  &3B07  &1100  &32AF
      468A   4A         LSR A
      468B   4A         LSR A
      468C   AA         TAX
-     468D   BD 1B 7F   LDA &7F1B,X
+     468D   BD 1D 7F   LDA &7F1D,X
 .ARSR1
      4690   60         RTS
 .LASLI
@@ -9035,14 +9035,14 @@ S.ELTB &32AF  &3B07  &1100  &32AF
      46FF   10 34      BPL &4735
      4701   A0 1A      LDY #&1A
 .PDL1
-     4703   B9 3A 7F   LDA &7F3A,Y
+     4703   B9 3C 7F   LDA &7F3C,Y
      4706   C5 92      CMP &92
      4708   D0 28      BNE &4732
-     470A   B9 54 7F   LDA &7F54,Y
+     470A   B9 56 7F   LDA &7F56,Y
      470D   29 7F      AND #&7F
      470F   CD 6E 0A   CMP &0A6E
      4712   D0 1E      BNE &4732
-     4714   B9 54 7F   LDA &7F54,Y
+     4714   B9 56 7F   LDA &7F56,Y
      4717   30 0C      BMI &4725
      4719   AD 5F 0A   LDA &0A5F
      471C   4A         LSR A
@@ -12001,7 +12001,7 @@ S.ELTD &4896  &55F3  &1100  &4896
      5C88   A5 9E      LDA &9E
      5C8A   29 1F      AND #&1F
      5C8C   AA         TAX
-     5C8D   BD FB 7E   LDA &7EFB,X
+     5C8D   BD FD 7E   LDA &7EFD,X
      5C90   85 81      STA &81
      5C92   A5 DE      LDA &DE
      5C94   20 C8 43   JSR &43C8
@@ -12019,7 +12019,7 @@ S.ELTD &4896  &55F3  &1100  &4896
      5CAC   69 10      ADC #&10
      5CAE   29 1F      AND #&1F
      5CB0   AA         TAX
-     5CB1   BD FB 7E   LDA &7EFB,X
+     5CB1   BD FD 7E   LDA &7EFD,X
      5CB4   85 81      STA &81
      5CB6   A5 DD      LDA &DD
      5CB8   20 C8 43   JSR &43C8
@@ -16701,7 +16701,7 @@ S.ELTG &6EB1  &786F  &1100  &6EB1
      7DAB   A0 10      LDY #&10
 .fill1
      7DAD   A9 80      LDA #&80
-     7DAF   20 C0 7E   JSR &7EC0
+     7DAF   20 C2 7E   JSR &7EC2
      7DB2   88         DEY
      7DB3   D0 F8      BNE &7DAD
      7DB5   A2 00      LDX #&00
@@ -16829,178 +16829,178 @@ S.ELTG &6EB1  &786F  &1100  &6EB1
 .CHPRV
      7E92   48         PHA
      7E93   AD 30 FE   LDA &FE30
-     7E96   8D AD 7E   STA &7EAD
+     7E96   8D AF 7E   STA &7EAF
      7E99   09 80      ORA #&80
      7E9B   85 F4      STA &F4
      7E9D   8D 30 FE   STA &FE30
      7EA0   68         PLA
      7EA1   20 03 1E   JSR &1E03
-     7EA4   AD AD 7E   LDA &7EAD
-     7EA7   85 F4      STA &F4
-     7EA9   8D 30 FE   STA &FE30
-     7EAC   60         RTS
+     7EA4   48         PHA
+     7EA5   AD AF 7E   LDA &7EAF
+     7EA8   85 F4      STA &F4
+     7EAA   8D 30 FE   STA &FE30
+     7EAD   68         PLA
+     7EAE   60         RTS
 .romLatch
-     7EAD   00
+     7EAF   00
 .b_table
-     7EAE   54
-     7EAF   32
-     7EB0   62
-     7EB1   68
-     7EB2   51
-     7EB3   80
-     7EB4   58
+     7EB0   54
+     7EB1   32
+     7EB2   62
+     7EB3   68
+     7EB4   51
      7EB5   80
-     7EB6   38
-     7EB7   64
-     7EB8   31
-     7EB9   52
-     7EBA   80
-     7EBB   80
-     7EBC   61
-     7EBD   34
+     7EB6   58
+     7EB7   80
+     7EB8   38
+     7EB9   64
+     7EBA   31
+     7EBB   52
+     7EBC   80
+     7EBD   80
+     7EBE   61
+     7EBF   34
 .b_13
-     7EBE   A9 00      LDA #&00
+     7EC0   A9 00      LDA #&00
 .b_14
-     7EC0   AA         TAX
-     7EC1   59 AD 7E   EOR &7EAD,Y
-     7EC4   F0 0D      BEQ &7ED3
-     7EC6   8D 60 FE   STA &FE60
-     7EC9   29 0F      AND #&0F
-     7ECB   2D 60 FE   AND &FE60
-     7ECE   F0 04      BEQ &7ED4
-     7ED0   8A         TXA
-     7ED1   30 EB      BMI &7EBE
+     7EC2   AA         TAX
+     7EC3   59 AF 7E   EOR &7EAF,Y
+     7EC6   F0 0D      BEQ &7ED5
+     7EC8   8D 60 FE   STA &FE60
+     7ECB   29 0F      AND #&0F
+     7ECD   2D 60 FE   AND &FE60
+     7ED0   F0 04      BEQ &7ED6
+     7ED2   8A         TXA
+     7ED3   30 EB      BMI &7EC0
 .b_quit
-     7ED3   60         RTS
+     7ED5   60         RTS
 .b_pressed
-     7ED4   C0 0A      CPY #&0A
-     7ED6   F0 0A      BEQ &7EE2
-     7ED8   C0 10      CPY #&10
-     7EDA   F0 0F      BEQ &7EEB
-     7EDC   A9 FF      LDA #&FF
-     7EDE   99 00 09   STA &0900,Y
-     7EE1   60         RTS
+     7ED6   C0 0A      CPY #&0A
+     7ED8   F0 0A      BEQ &7EE4
+     7EDA   C0 10      CPY #&10
+     7EDC   F0 0F      BEQ &7EED
+     7EDE   A9 FF      LDA #&FF
+     7EE0   99 00 09   STA &0900,Y
+     7EE3   60         RTS
 .b_front
-     7EE2   AE 68 09   LDX &0968
-     7EE5   F0 EC      BEQ &7ED3
-     7EE7   A2 20      LDX #&20
-     7EE9   D0 09      BNE &7EF4
+     7EE4   AE 68 09   LDX &0968
+     7EE7   F0 EC      BEQ &7ED5
+     7EE9   A2 20      LDX #&20
+     7EEB   D0 09      BNE &7EF6
 .b_rear
-     7EEB   AE 68 09   LDX &0968
-     7EEE   E0 01      CPX #&01
-     7EF0   F0 E1      BEQ &7ED3
-     7EF2   A2 71      LDX #&71
+     7EED   AE 68 09   LDX &0968
+     7EF0   E0 01      CPX #&01
+     7EF2   F0 E1      BEQ &7ED5
+     7EF4   A2 71      LDX #&71
 .b_return
-     7EF4   8E 00 09   STX &0900
-     7EF7   D8         CLD
-     7EF8   68         PLA
-     7EF9   68         PLA
-     7EFA   60         RTS
+     7EF6   8E 00 09   STX &0900
+     7EF9   D8         CLD
+     7EFA   68         PLA
+     7EFB   68         PLA
+     7EFC   60         RTS
 .SNE
-     7EFB   00
-     7EFC   19
-     7EFD   32
-     7EFE   4A
-     7EFF   62
-     7F00   79
-     7F01   8E
-     7F02   A2
-     7F03   B5
-     7F04   C6
-     7F05   D5
-     7F06   E2
-     7F07   ED
-     7F08   F5
-     7F09   FB
-     7F0A   FF
-     7F0B   FF
+     7EFD   00
+     7EFE   19
+     7EFF   32
+     7F00   4A
+     7F01   62
+     7F02   79
+     7F03   8E
+     7F04   A2
+     7F05   B5
+     7F06   C6
+     7F07   D5
+     7F08   E2
+     7F09   ED
+     7F0A   F5
+     7F0B   FB
      7F0C   FF
-     7F0D   FB
-     7F0E   F5
-     7F0F   ED
-     7F10   E2
-     7F11   D5
-     7F12   C6
-     7F13   B5
-     7F14   A2
-     7F15   8E
-     7F16   79
-     7F17   62
-     7F18   4A
-     7F19   32
-     7F1A   19
+     7F0D   FF
+     7F0E   FF
+     7F0F   FB
+     7F10   F5
+     7F11   ED
+     7F12   E2
+     7F13   D5
+     7F14   C6
+     7F15   B5
+     7F16   A2
+     7F17   8E
+     7F18   79
+     7F19   62
+     7F1A   4A
+     7F1B   32
+     7F1C   19
 .ACT
-     7F1B   00
-     7F1C   01
-     7F1D   03
-     7F1E   04
-     7F1F   05
-     7F20   06
-     7F21   08
-     7F22   09
-     7F23   0A
-     7F24   0B
-     7F25   0C
-     7F26   0D
-     7F27   0F
-     7F28   10
-     7F29   11
-     7F2A   12
-     7F2B   13
-     7F2C   14
-     7F2D   15
-     7F2E   16
-     7F2F   17
-     7F30   18
-     7F31   19
-     7F32   19
-     7F33   1A
-     7F34   1B
-     7F35   1C
-     7F36   1D
-     7F37   1D
-     7F38   1E
-     7F39   1F
-     7F3A   1F
+     7F1D   00
+     7F1E   01
+     7F1F   03
+     7F20   04
+     7F21   05
+     7F22   06
+     7F23   08
+     7F24   09
+     7F25   0A
+     7F26   0B
+     7F27   0C
+     7F28   0D
+     7F29   0F
+     7F2A   10
+     7F2B   11
+     7F2C   12
+     7F2D   13
+     7F2E   14
+     7F2F   15
+     7F30   16
+     7F31   17
+     7F32   18
+     7F33   19
+     7F34   19
+     7F35   1A
+     7F36   1B
+     7F37   1C
+     7F38   1D
+     7F39   1D
+     7F3A   1E
+     7F3B   1F
+     7F3C   1F
 .RUPLA
-     7F3B   D3
-     7F3C   96
-     7F3D   24
-     7F3E   1C
-     7F3F   FD
-     7F40   4F
-     7F41   35
-     7F42   76
-     7F43   64
-     7F44   20
-     7F45   44
-     7F46   A4
-     7F47   DC
-     7F48   6A
-     7F49   10
-     7F4A   A2
-     7F4B   03
-     7F4C   6B
-     7F4D   1A
-     7F4E   C0
-     7F4F   B8
-     7F50   05
-     7F51   65
-     7F52   C1
-     7F53   29
-     7F54   01
+     7F3D   D3
+     7F3E   96
+     7F3F   24
+     7F40   1C
+     7F41   FD
+     7F42   4F
+     7F43   35
+     7F44   76
+     7F45   64
+     7F46   20
+     7F47   44
+     7F48   A4
+     7F49   DC
+     7F4A   6A
+     7F4B   10
+     7F4C   A2
+     7F4D   03
+     7F4E   6B
+     7F4F   1A
+     7F50   C0
+     7F51   B8
+     7F52   05
+     7F53   65
+     7F54   C1
+     7F55   29
+     7F56   01
 .RUGAL
-     7F55   80
-     7F56   00
-     7F57   00
+     7F57   80
      7F58   00
-     7F59   01
-     7F5A   01
+     7F59   00
+     7F5A   00
      7F5B   01
      7F5C   01
-     7F5D   82
+     7F5D   01
      7F5E   01
-     7F5F   01
+     7F5F   82
      7F60   01
      7F61   01
      7F62   01
@@ -17012,23 +17012,25 @@ S.ELTG &6EB1  &786F  &1100  &6EB1
      7F68   01
      7F69   01
      7F6A   01
-     7F6B   02
+     7F6B   01
      7F6C   01
-     7F6D   82
-     7F6E   90
+     7F6D   02
+     7F6E   01
+     7F6F   82
+     7F70   90
 .F%
-     7F6F
+     7F71
 ELITE H
 Assembled at &786F 
-Ends at &7F6F 
-Code size is &700 
+Ends at &7F71 
+Code size is &702 
 Execute at &1100 
 Reload at &786F 
-S.ELTH &786F  &7F6F  &1100  &786F 
-S.BCODE &1100  &7F6F  &1100  &1100 
+S.ELTH &786F  &7F71  &1100  &786F 
+S.BCODE &1100  &7F71  &1100  &1100 
 Saving file '3-assembled-output/BCODE.unprot.bin'
 Addresses for the scramble routines in elite-checksum.py
-F% = &7F6F 
+F% = &7F71 
 G% = &2983 
 NA2% = &3203 
 Addresses for the execution address of BCODE in elite-disc.asm
