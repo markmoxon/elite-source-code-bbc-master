@@ -51187,7 +51187,7 @@ ENDIF
  STA &00F4
  STA VIA+&30
 
- PLA                    \ Store the character to print from the stack
+ PLA                    \ Retrieve the character to print from the stack
 
  JSR CHPR               \ Print the character in A
 
@@ -51197,7 +51197,7 @@ ENDIF
  STA &00F4
  STA VIA+&30
 
- PLA                    \ Store the character to print from the stack
+ PLA                    \ Retrieve the character to print from the stack
 
  RTS                    \ Return from the subroutine
 
