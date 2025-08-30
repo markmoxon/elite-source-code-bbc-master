@@ -51191,9 +51191,13 @@ ENDIF
 
  JSR CHPR               \ Print the character in A
 
+ PHA                    \ Store the character to print on the stack
+
  LDA romLatch           \ Restore the original ROM Select latch
  STA &00F4
  STA VIA+&30
+
+ PLA                    \ Store the character to print from the stack
 
  RTS                    \ Return from the subroutine
 
