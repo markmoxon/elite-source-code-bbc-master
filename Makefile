@@ -75,7 +75,7 @@ endif
 
 variant-number=1
 folder=sng47
-suffix=-bbc-micro-b-plus-sng47
+suffix=-bbc-micro-b-plus-music-sng47
 boot=-opt 3
 
 .PHONY:all
