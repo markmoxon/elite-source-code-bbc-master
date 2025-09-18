@@ -124,11 +124,11 @@ P%=&3F0F
 [OPT 0
 .platform       EQUB 128
 .addrDNOIZ      EQUW &0926
-.addrplay1      EQUW &2A39+1
-.addrDELAY      EQUW &117D
+.addrplay1      EQUW &2A36+1
+.addrDELAY      EQUW &117B
 .addrSFX        EQUW 0
-.addrBEEP       EQUW &1188
-.addrVOL        EQUW &290D
+.addrBEEP       EQUW &1186
+.addrVOL        EQUW &290B
 .keyE           EQUB &45
 .keyM           EQUB &4D
 .keyQ           EQUB &51
