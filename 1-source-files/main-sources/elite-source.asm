@@ -2412,7 +2412,7 @@ ENDIF
 
  JSR OSCLI              \ Call OSCLI to run the command
 
- LDA VIA+&30            \ Set bit 7 of the ROM Select latch at SHEILA &30 to
+ LDA &00F4              \ Set bit 7 of the ROM Select latch at SHEILA &30 to
  ORA #%10000000         \ switch the 12K of private RAM into &8000-&AFFF
  STA &00F4
  STA VIA+&30
@@ -2465,7 +2465,7 @@ ENDIF
 
                         \ --- Mod: Code added for BBC Micro B+: --------------->
 
- LDA VIA+&30            \ Set bit 7 of the ROM Select latch at SHEILA &30 to
+ LDA &00F4              \ Set bit 7 of the ROM Select latch at SHEILA &30 to
  ORA #%10000000         \ switch the 12K of private RAM into &8000-&AFFF
  STA &00F4
  STA VIA+&30
@@ -11621,7 +11621,7 @@ ENDIF
  JSR OSCLI              \ Call OSCLI to run the OS command in MESS3, which
                         \ changes the disc directory to E
 
- LDA VIA+&30            \ Set bit 7 of the ROM Select latch at SHEILA &30 to
+ LDA &00F4              \ Set bit 7 of the ROM Select latch at SHEILA &30 to
  ORA #%10000000         \ switch the 12K of private RAM into &8000-&AFFF
  STA &00F4
  STA VIA+&30
@@ -51181,7 +51181,7 @@ ENDIF
 
  PHA                    \ Store the character to print on the stack
 
- LDA VIA+&30            \ Set bit 7 of the ROM Select latch at SHEILA &30 to
+ LDA &00F4              \ Set bit 7 of the ROM Select latch at SHEILA &30 to
  STA romLatch           \ switch the 12K of private RAM into &8000-&AFFF,
  ORA #%10000000         \ storing the original value in romLatch
  STA &00F4
