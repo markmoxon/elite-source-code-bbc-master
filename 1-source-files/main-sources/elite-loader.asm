@@ -1,11 +1,11 @@
 \ ******************************************************************************
 \
-\ BBC MASTER ELITE LOADER SOURCE
+\ BBC MASTER ELITE GAME LOADER SOURCE
 \
 \ BBC Master Elite was written by Ian Bell and David Braben and is copyright
 \ Acornsoft 1986
 \
-\ The code on this site has been reconstructed from a disassembly of the version
+\ The code in this file has been reconstructed from a disassembly of the version
 \ released on Ian Bell's personal website at http://www.elitehomepage.org/
 \
 \ The commentary is copyright Mark Moxon, and any misunderstandings or mistakes
@@ -16,6 +16,10 @@
 \
 \ The deep dive articles referred to in this commentary can be found at
 \ https://elite.bbcelite.com/deep_dives
+\
+\ ------------------------------------------------------------------------------
+\
+\ This source file contains the loader for BBC Master Elite.
 \
 \ ------------------------------------------------------------------------------
 \
@@ -71,7 +75,7 @@
 \
 \ ******************************************************************************
 
- ORG &0002
+ ORG &0002              \ Set the assembly address to &0002
 
 IF _COMPACT
 
@@ -85,7 +89,7 @@ IF _COMPACT
 
 ENDIF
 
- ORG &0070
+ ORG &0070              \ Set the assembly address to &0070
 
 .ZP
 
@@ -107,7 +111,7 @@ ENDIF
 
  SKIP 1                 \ Temporary storage, used in a number of places
 
- ORG &00F4
+ ORG &00F4              \ Set the assembly address to &00F4
 
 .LATCH
 
@@ -120,7 +124,7 @@ ENDIF
 \
 \ ******************************************************************************
 
- ORG CODE%
+ ORG CODE%              \ Set the assembly address to CODE%
 
 \ ******************************************************************************
 \
@@ -129,7 +133,7 @@ ENDIF
 \   Category: Drawing the screen
 \    Summary: VDU commands for setting the square mode 1 screen
 \  Deep dive: The split-screen mode in BBC Micro Elite
-\             Drawing monochrome pixels in mode 4
+\             Drawing monochrome pixels on the BBC Micro
 \
 \ ------------------------------------------------------------------------------
 \
@@ -165,8 +169,7 @@ ENDIF
 \
 \ There is also an interrupt-driven routine that switches the bytes-per-pixel
 \ setting from that of mode 1 to that of mode 2, when the raster reaches the
-\ split between the space view and the dashboard. See the deep dive on "The
-\ split-screen mode" for details.
+\ split between the space view and the dashboard.
 \
 \ ******************************************************************************
 
@@ -723,7 +726,7 @@ ENDIF
                         \
                         \   x = random number from 0 to 255
                         \   y = random number from 0 to 255
-                        \   (x^2 + y^2) div 256 >= 17
+                        \   HI(x^2 + y^2) >= 17
                         \
                         \ which is what we want
 
@@ -1055,13 +1058,14 @@ ENDIF
                         \ points to the second page in this character row (i.e.
                         \ the right half of the row)
 
- TYA                    \ Set Y = Y AND %111
- AND #%00000111
- TAY
+ TYA                    \ Set Y = Y mod 8, which is the pixel row within the
+ AND #7                 \ character block at which we want to draw our pixel
+ TAY                    \ (as each character block has 8 rows)
 
- TXA                    \ Set X = X AND %111
- AND #%00000111
- TAX
+ TXA                    \ Set X = X mod 8, which is the horizontal pixel number
+ AND #7                 \ within the character block where the pixel lies (as
+ TAX                    \ each pixel line in the character block is 8 pixels
+                        \ wide)
 
  LDA TWOS,X             \ Fetch a pixel from TWOS and poke it into ZP+Y
  STA (ZP),Y

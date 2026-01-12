@@ -1,11 +1,11 @@
 \ ******************************************************************************
 \
-\ BBC MASTER ELITE GAME DATA FILE SOURCE
+\ BBC MASTER ELITE GAME DATA SOURCE
 \
 \ BBC Master Elite was written by Ian Bell and David Braben and is copyright
 \ Acornsoft 1986
 \
-\ The code on this site has been reconstructed from a disassembly of the version
+\ The code in this file has been reconstructed from a disassembly of the version
 \ released on Ian Bell's personal website at http://www.elitehomepage.org/
 \
 \ The commentary is copyright Mark Moxon, and any misunderstandings or mistakes
@@ -19,9 +19,18 @@
 \
 \ ------------------------------------------------------------------------------
 \
+\ This source file contains the game data for BBC Master Elite, including the
+\ ship blueprints and game text.
+\
+\ ------------------------------------------------------------------------------
+\
 \ This source file produces the following binary file:
 \
 \   * BDATA.bin
+\
+\ after reading in the following file:
+\
+\   * P.DIALS2P.bin
 \
 \ ******************************************************************************
 
@@ -53,11 +62,11 @@
 
 \ ******************************************************************************
 \
-\ ELITE GAME DATA FILE
+\ ELITE GAME DATA SOURCE
 \
 \ ******************************************************************************
 
- ORG CODE%
+ ORG CODE%              \ Set the assembly address to CODE%
 
 \ ******************************************************************************
 \
@@ -167,10 +176,7 @@
 \   * Bit 5: Innocent bystander (0 = normal, 1 = innocent bystander)
 \   * Bit 6: Cop flag (0 = not a cop, 1 = cop)
 \   * Bit 7: For spawned ships: ship been scooped or has docked
-\             For blueprints: this ship type has an escape pod fitted
-\
-\ See the deep dive on "Advanced tactics with the NEWB flags" for details of
-\ how this works.
+\            For blueprints: this ship type has an escape pod fitted
 \
 \ ******************************************************************************
 
@@ -330,16 +336,13 @@
 \   Category: Drawing ships
 \    Summary: Macro definition for adding vertices to ship blueprints
 \  Deep dive: Ship blueprints
+\             Drawing ships
 \
 \ ------------------------------------------------------------------------------
 \
 \ The following macro is used to build the ship blueprints:
 \
 \   VERTEX x, y, z, face1, face2, face3, face4, visibility
-\
-\ See the deep dive on "Ship blueprints" for details of how vertices are stored
-\ in the ship blueprints, and the deep dive on "Drawing ships" for information
-\ on how vertices are used to draw 3D wireframe ships.
 \
 \ ------------------------------------------------------------------------------
 \
@@ -402,6 +405,7 @@ ENDMACRO
 \   Category: Drawing ships
 \    Summary: Macro definition for adding edges to ship blueprints
 \  Deep dive: Ship blueprints
+\             Drawing ships
 \
 \ ------------------------------------------------------------------------------
 \
@@ -409,9 +413,10 @@ ENDMACRO
 \
 \   EDGE vertex1, vertex2, face1, face2, visibility
 \
-\ See the deep dive on "Ship blueprints" for details of how edges are stored
-\ in the ship blueprints, and the deep dive on "Drawing ships" for information
-\ on how edges are used to draw 3D wireframe ships.
+\ When stored in memory, bytes #2 and #3 contain the vertex numbers multiplied
+\ by 4, so we can use them as indices into the heap at XX3 to fetch the screen
+\ coordinates for each vertex, as they are stored as four bytes containing two
+\ 16-bit numbers (see part 10 of the LL9 routine for details).
 \
 \ ------------------------------------------------------------------------------
 \
@@ -444,16 +449,13 @@ ENDMACRO
 \   Category: Drawing ships
 \    Summary: Macro definition for adding faces to ship blueprints
 \  Deep dive: Ship blueprints
+\             Drawing ships
 \
 \ ------------------------------------------------------------------------------
 \
 \ The following macro is used to build the ship blueprints:
 \
 \   FACE normal_x, normal_y, normal_z, visibility
-\
-\ See the deep dive on "Ship blueprints" for details of how faces are stored
-\ in the ship blueprints, and the deep dive on "Drawing ships" for information
-\ on how faces are used to draw 3D wireframe ships.
 \
 \ ------------------------------------------------------------------------------
 \
@@ -506,6 +508,7 @@ ENDMACRO
 \   Category: Drawing ships
 \    Summary: Ship blueprint for a missile
 \  Deep dive: Ship blueprints
+\             Comparing ship specifications
 \
 \ ******************************************************************************
 
@@ -587,15 +590,15 @@ ENDMACRO
 .SHIP_MISSILE_FACES
 
     \ normal_x, normal_y, normal_z, visibility
- FACE      -64,        0,       16,         31    \ Face 0
- FACE        0,      -64,       16,         31    \ Face 1
- FACE       64,        0,       16,         31    \ Face 2
- FACE        0,       64,       16,         31    \ Face 3
- FACE       32,        0,        0,         31    \ Face 4
- FACE        0,      -32,        0,         31    \ Face 5
- FACE      -32,        0,        0,         31    \ Face 6
- FACE        0,       32,        0,         31    \ Face 7
- FACE        0,        0,     -176,         31    \ Face 8
+ FACE      -64,        0,       16,         31      \ Face 0
+ FACE        0,      -64,       16,         31      \ Face 1
+ FACE       64,        0,       16,         31      \ Face 2
+ FACE        0,       64,       16,         31      \ Face 3
+ FACE       32,        0,        0,         31      \ Face 4
+ FACE        0,      -32,        0,         31      \ Face 5
+ FACE      -32,        0,        0,         31      \ Face 6
+ FACE        0,       32,        0,         31      \ Face 7
+ FACE        0,        0,     -176,         31      \ Face 8
 
 \ ******************************************************************************
 \
@@ -604,6 +607,7 @@ ENDMACRO
 \   Category: Drawing ships
 \    Summary: Ship blueprint for a Coriolis space station
 \  Deep dive: Ship blueprints
+\             Comparing ship specifications
 \
 \ ******************************************************************************
 
@@ -688,20 +692,20 @@ ENDMACRO
 .SHIP_CORIOLIS_FACES
 
     \ normal_x, normal_y, normal_z, visibility
- FACE        0,        0,      160,         31    \ Face 0
- FACE      107,     -107,      107,         31    \ Face 1
- FACE      107,      107,      107,         31    \ Face 2
- FACE     -107,      107,      107,         31    \ Face 3
- FACE     -107,     -107,      107,         31    \ Face 4
- FACE        0,     -160,        0,         31    \ Face 5
- FACE      160,        0,        0,         31    \ Face 6
- FACE     -160,        0,        0,         31    \ Face 7
- FACE        0,      160,        0,         31    \ Face 8
- FACE     -107,     -107,     -107,         31    \ Face 9
- FACE      107,     -107,     -107,         31    \ Face 10
- FACE      107,      107,     -107,         31    \ Face 11
- FACE     -107,      107,     -107,         31    \ Face 12
- FACE        0,        0,     -160,         31    \ Face 13
+ FACE        0,        0,      160,         31      \ Face 0
+ FACE      107,     -107,      107,         31      \ Face 1
+ FACE      107,      107,      107,         31      \ Face 2
+ FACE     -107,      107,      107,         31      \ Face 3
+ FACE     -107,     -107,      107,         31      \ Face 4
+ FACE        0,     -160,        0,         31      \ Face 5
+ FACE      160,        0,        0,         31      \ Face 6
+ FACE     -160,        0,        0,         31      \ Face 7
+ FACE        0,      160,        0,         31      \ Face 8
+ FACE     -107,     -107,     -107,         31      \ Face 9
+ FACE      107,     -107,     -107,         31      \ Face 10
+ FACE      107,      107,     -107,         31      \ Face 11
+ FACE     -107,      107,     -107,         31      \ Face 12
+ FACE        0,        0,     -160,         31      \ Face 13
 
 \ ******************************************************************************
 \
@@ -710,6 +714,7 @@ ENDMACRO
 \   Category: Drawing ships
 \    Summary: Ship blueprint for an escape pod
 \  Deep dive: Ship blueprints
+\             Comparing ship specifications
 \
 \ ******************************************************************************
 
@@ -761,10 +766,10 @@ ENDMACRO
 .SHIP_ESCAPE_POD_FACES
 
     \ normal_x, normal_y, normal_z, visibility
- FACE       52,        0,     -122,         31    \ Face 0
- FACE       39,      103,       30,         31    \ Face 1
- FACE       39,     -103,       30,         31    \ Face 2
- FACE     -112,        0,        0,         31    \ Face 3
+ FACE       52,        0,     -122,         31      \ Face 0
+ FACE       39,      103,       30,         31      \ Face 1
+ FACE       39,     -103,       30,         31      \ Face 2
+ FACE     -112,        0,        0,         31      \ Face 3
 
 \ ******************************************************************************
 \
@@ -773,13 +778,14 @@ ENDMACRO
 \   Category: Drawing ships
 \    Summary: Ship blueprint for an alloy plate
 \  Deep dive: Ship blueprints
+\             Comparing ship specifications
 \
 \ ******************************************************************************
 
 .SHIP_PLATE
 
  EQUB 0 + (8 << 4)      \ Max. canisters on demise = 0
-                        \ Market item when scooped = 8 + 1 = 9 (Alloys)
+                        \ Market item when scooped = 8 + 1 = 9 (alloys)
  EQUW 10 * 10           \ Targetable area          = 10 * 10
 
  EQUB LO(SHIP_PLATE_EDGES - SHIP_PLATE)            \ Edges data offset (low)
@@ -822,7 +828,7 @@ ENDMACRO
 .SHIP_PLATE_FACES
 
     \ normal_x, normal_y, normal_z, visibility
- FACE        0,        0,        0,          0    \ Face 0
+ FACE        0,        0,        0,          0      \ Face 0
 
 \ ******************************************************************************
 \
@@ -831,6 +837,7 @@ ENDMACRO
 \   Category: Drawing ships
 \    Summary: Ship blueprint for a cargo canister
 \  Deep dive: Ship blueprints
+\             Comparing ship specifications
 \
 \ ******************************************************************************
 
@@ -896,13 +903,13 @@ ENDMACRO
 .SHIP_CANISTER_FACES
 
     \ normal_x, normal_y, normal_z, visibility
- FACE       96,        0,        0,         31    \ Face 0
- FACE        0,       41,       30,         31    \ Face 1
- FACE        0,      -18,       48,         31    \ Face 2
- FACE        0,      -51,        0,         31    \ Face 3
- FACE        0,      -18,      -48,         31    \ Face 4
- FACE        0,       41,      -30,         31    \ Face 5
- FACE      -96,        0,        0,         31    \ Face 6
+ FACE       96,        0,        0,         31      \ Face 0
+ FACE        0,       41,       30,         31      \ Face 1
+ FACE        0,      -18,       48,         31      \ Face 2
+ FACE        0,      -51,        0,         31      \ Face 3
+ FACE        0,      -18,      -48,         31      \ Face 4
+ FACE        0,       41,      -30,         31      \ Face 5
+ FACE      -96,        0,        0,         31      \ Face 6
 
 \ ******************************************************************************
 \
@@ -911,6 +918,7 @@ ENDMACRO
 \   Category: Drawing ships
 \    Summary: Ship blueprint for a boulder
 \  Deep dive: Ship blueprints
+\             Comparing ship specifications
 \
 \ ******************************************************************************
 
@@ -973,16 +981,16 @@ ENDMACRO
 .SHIP_BOULDER_FACES
 
     \ normal_x, normal_y, normal_z, visibility
- FACE      -15,       -3,        8,         31    \ Face 0
- FACE       -7,       12,       30,         31    \ Face 1
- FACE       32,      -47,       24,         31    \ Face 2
- FACE       -3,      -39,       -7,         31    \ Face 3
- FACE       -5,       -4,       -1,         31    \ Face 4
- FACE       49,       84,        8,         31    \ Face 5
- FACE      112,       21,      -21,         31    \ Face 6
- FACE       76,      -35,      -82,         31    \ Face 7
- FACE       22,       56,     -137,         31    \ Face 8
- FACE       40,      110,      -38,         31    \ Face 9
+ FACE      -15,       -3,        8,         31      \ Face 0
+ FACE       -7,       12,       30,         31      \ Face 1
+ FACE       32,      -47,       24,         31      \ Face 2
+ FACE       -3,      -39,       -7,         31      \ Face 3
+ FACE       -5,       -4,       -1,         31      \ Face 4
+ FACE       49,       84,        8,         31      \ Face 5
+ FACE      112,       21,      -21,         31      \ Face 6
+ FACE       76,      -35,      -82,         31      \ Face 7
+ FACE       22,       56,     -137,         31      \ Face 8
+ FACE       40,      110,      -38,         31      \ Face 9
 
 \ ******************************************************************************
 \
@@ -991,6 +999,7 @@ ENDMACRO
 \   Category: Drawing ships
 \    Summary: Ship blueprint for an asteroid
 \  Deep dive: Ship blueprints
+\             Comparing ship specifications
 \
 \ ******************************************************************************
 
@@ -1061,20 +1070,20 @@ ENDMACRO
 .SHIP_ASTEROID_FACES
 
     \ normal_x, normal_y, normal_z, visibility
- FACE        9,       66,       81,         31    \ Face 0
- FACE        9,      -66,       81,         31    \ Face 1
- FACE      -72,       64,       31,         31    \ Face 2
- FACE      -64,      -73,       47,         31    \ Face 3
- FACE       45,      -79,       65,         31    \ Face 4
- FACE      135,       15,       35,         31    \ Face 5
- FACE       38,       76,       70,         31    \ Face 6
- FACE      -66,       59,      -39,         31    \ Face 7
- FACE      -67,      -15,      -80,         31    \ Face 8
- FACE       66,      -14,      -75,         31    \ Face 9
- FACE      -70,      -80,      -40,         31    \ Face 10
- FACE       58,     -102,      -51,         31    \ Face 11
- FACE       81,        9,      -67,         31    \ Face 12
- FACE       47,       94,      -63,         31    \ Face 13
+ FACE        9,       66,       81,         31      \ Face 0
+ FACE        9,      -66,       81,         31      \ Face 1
+ FACE      -72,       64,       31,         31      \ Face 2
+ FACE      -64,      -73,       47,         31      \ Face 3
+ FACE       45,      -79,       65,         31      \ Face 4
+ FACE      135,       15,       35,         31      \ Face 5
+ FACE       38,       76,       70,         31      \ Face 6
+ FACE      -66,       59,      -39,         31      \ Face 7
+ FACE      -67,      -15,      -80,         31      \ Face 8
+ FACE       66,      -14,      -75,         31      \ Face 9
+ FACE      -70,      -80,      -40,         31      \ Face 10
+ FACE       58,     -102,      -51,         31      \ Face 11
+ FACE       81,        9,      -67,         31      \ Face 12
+ FACE       47,       94,      -63,         31      \ Face 13
 
 \ ******************************************************************************
 \
@@ -1083,6 +1092,7 @@ ENDMACRO
 \   Category: Drawing ships
 \    Summary: Ship blueprint for a splinter
 \  Deep dive: Ship blueprints
+\             Comparing ship specifications
 \
 \ ------------------------------------------------------------------------------
 \
@@ -1094,7 +1104,7 @@ ENDMACRO
 .SHIP_SPLINTER
 
  EQUB 0 + (11 << 4)     \ Max. canisters on demise = 0
-                        \ Market item when scooped = 11 + 1 = 12 (Minerals)
+                        \ Market item when scooped = 11 + 1 = 12 (minerals)
  EQUW 16 * 16           \ Targetable area          = 16 * 16
 
  EQUB LO(SHIP_ESCAPE_POD_EDGES - SHIP_SPLINTER)    \ Edges from escape pod
@@ -1129,10 +1139,10 @@ ENDMACRO
 .SHIP_SPLINTER_FACES
 
     \ normal_x, normal_y, normal_z, visibility
- FACE       35,        0,        4,         31    \ Face 0
- FACE        3,        4,        8,         31    \ Face 1
- FACE        1,        8,       12,         31    \ Face 2
- FACE       18,       12,        0,         31    \ Face 3
+ FACE       35,        0,        4,         31      \ Face 0
+ FACE        3,        4,        8,         31      \ Face 1
+ FACE        1,        8,       12,         31      \ Face 2
+ FACE       18,       12,        0,         31      \ Face 3
 
 \ ******************************************************************************
 \
@@ -1141,6 +1151,7 @@ ENDMACRO
 \   Category: Drawing ships
 \    Summary: Ship blueprint for a Shuttle
 \  Deep dive: Ship blueprints
+\             Comparing ship specifications
 \
 \ ******************************************************************************
 
@@ -1230,19 +1241,19 @@ ENDMACRO
 .SHIP_SHUTTLE_FACES
 
     \ normal_x, normal_y, normal_z, visibility
- FACE      -55,      -55,       40,         31    \ Face 0
- FACE        0,      -74,        4,         31    \ Face 1
- FACE      -51,      -51,       23,         31    \ Face 2
- FACE      -74,        0,        4,         31    \ Face 3
- FACE      -51,       51,       23,         31    \ Face 4
- FACE        0,       74,        4,         31    \ Face 5
- FACE       51,       51,       23,         31    \ Face 6
- FACE       74,        0,        4,         31    \ Face 7
- FACE       51,      -51,       23,         31    \ Face 8
- FACE        0,        0,     -107,         31    \ Face 9
- FACE      -41,       41,       90,         31    \ Face 10
- FACE       41,       41,       90,         31    \ Face 11
- FACE       55,      -55,       40,         31    \ Face 12
+ FACE      -55,      -55,       40,         31      \ Face 0
+ FACE        0,      -74,        4,         31      \ Face 1
+ FACE      -51,      -51,       23,         31      \ Face 2
+ FACE      -74,        0,        4,         31      \ Face 3
+ FACE      -51,       51,       23,         31      \ Face 4
+ FACE        0,       74,        4,         31      \ Face 5
+ FACE       51,       51,       23,         31      \ Face 6
+ FACE       74,        0,        4,         31      \ Face 7
+ FACE       51,      -51,       23,         31      \ Face 8
+ FACE        0,        0,     -107,         31      \ Face 9
+ FACE      -41,       41,       90,         31      \ Face 10
+ FACE       41,       41,       90,         31      \ Face 11
+ FACE       55,      -55,       40,         31      \ Face 12
 
 \ ******************************************************************************
 \
@@ -1251,6 +1262,7 @@ ENDMACRO
 \   Category: Drawing ships
 \    Summary: Ship blueprint for a Transporter
 \  Deep dive: Ship blueprints
+\             Comparing ship specifications
 \
 \ ******************************************************************************
 
@@ -1374,20 +1386,20 @@ ENDMACRO
 .SHIP_TRANSPORTER_FACES
 
     \ normal_x, normal_y, normal_z, visibility
- FACE        0,        0,     -103,         31    \ Face 0
- FACE     -111,       48,       -7,         31    \ Face 1
- FACE     -105,      -63,      -21,         31    \ Face 2
- FACE        0,      -34,        0,         31    \ Face 3
- FACE      105,      -63,      -21,         31    \ Face 4
- FACE      111,       48,       -7,         31    \ Face 5
- FACE        8,       32,        3,         31    \ Face 6
- FACE       -8,       32,        3,         31    \ Face 7
- FACE       -8,       34,       11,         19    \ Face 8
- FACE      -75,       32,       79,         31    \ Face 9
- FACE       75,       32,       79,         31    \ Face 10
- FACE        8,       34,       11,         19    \ Face 11
- FACE        0,       38,       17,         31    \ Face 12
- FACE        0,        0,      121,         31    \ Face 13
+ FACE        0,        0,     -103,         31      \ Face 0
+ FACE     -111,       48,       -7,         31      \ Face 1
+ FACE     -105,      -63,      -21,         31      \ Face 2
+ FACE        0,      -34,        0,         31      \ Face 3
+ FACE      105,      -63,      -21,         31      \ Face 4
+ FACE      111,       48,       -7,         31      \ Face 5
+ FACE        8,       32,        3,         31      \ Face 6
+ FACE       -8,       32,        3,         31      \ Face 7
+ FACE       -8,       34,       11,         19      \ Face 8
+ FACE      -75,       32,       79,         31      \ Face 9
+ FACE       75,       32,       79,         31      \ Face 10
+ FACE        8,       34,       11,         19      \ Face 11
+ FACE        0,       38,       17,         31      \ Face 12
+ FACE        0,        0,      121,         31      \ Face 13
 
 \ ******************************************************************************
 \
@@ -1396,6 +1408,7 @@ ENDMACRO
 \   Category: Drawing ships
 \    Summary: Ship blueprint for a Cobra Mk III
 \  Deep dive: Ship blueprints
+\             Comparing ship specifications
 \
 \ ******************************************************************************
 
@@ -1502,19 +1515,19 @@ ENDMACRO
 .SHIP_COBRA_MK_3_FACES
 
     \ normal_x, normal_y, normal_z, visibility
- FACE        0,       62,       31,         31    \ Face 0
- FACE      -18,       55,       16,         31    \ Face 1
- FACE       18,       55,       16,         31    \ Face 2
- FACE      -16,       52,       14,         31    \ Face 3
- FACE       16,       52,       14,         31    \ Face 4
- FACE      -14,       47,        0,         31    \ Face 5
- FACE       14,       47,        0,         31    \ Face 6
- FACE      -61,      102,        0,         31    \ Face 7
- FACE       61,      102,        0,         31    \ Face 8
- FACE        0,        0,      -80,         31    \ Face 9
- FACE       -7,      -42,        9,         31    \ Face 10
- FACE        0,      -30,        6,         31    \ Face 11
- FACE        7,      -42,        9,         31    \ Face 12
+ FACE        0,       62,       31,         31      \ Face 0
+ FACE      -18,       55,       16,         31      \ Face 1
+ FACE       18,       55,       16,         31      \ Face 2
+ FACE      -16,       52,       14,         31      \ Face 3
+ FACE       16,       52,       14,         31      \ Face 4
+ FACE      -14,       47,        0,         31      \ Face 5
+ FACE       14,       47,        0,         31      \ Face 6
+ FACE      -61,      102,        0,         31      \ Face 7
+ FACE       61,      102,        0,         31      \ Face 8
+ FACE        0,        0,      -80,         31      \ Face 9
+ FACE       -7,      -42,        9,         31      \ Face 10
+ FACE        0,      -30,        6,         31      \ Face 11
+ FACE        7,      -42,        9,         31      \ Face 12
 
 \ ******************************************************************************
 \
@@ -1523,6 +1536,7 @@ ENDMACRO
 \   Category: Drawing ships
 \    Summary: Ship blueprint for a Python
 \  Deep dive: Ship blueprints
+\             Comparing ship specifications
 \
 \ ******************************************************************************
 
@@ -1621,6 +1635,7 @@ ENDMACRO
 \   Category: Drawing ships
 \    Summary: Ship blueprint for a Boa
 \  Deep dive: Ship blueprints
+\             Comparing ship specifications
 \
 \ ******************************************************************************
 
@@ -1698,19 +1713,19 @@ ENDMACRO
 .SHIP_BOA_FACES
 
     \ normal_x, normal_y, normal_z, visibility
- FACE       43,       37,      -60,         31    \ Face 0
- FACE        0,      -45,      -89,         31    \ Face 1
- FACE      -43,       37,      -60,         31    \ Face 2
- FACE        0,       40,        0,         31    \ Face 3
- FACE       62,      -32,      -20,         31    \ Face 4
- FACE      -62,      -32,      -20,         31    \ Face 5
- FACE        0,       23,        6,         31    \ Face 6
- FACE      -23,      -15,        9,         31    \ Face 7
- FACE       23,      -15,        9,         31    \ Face 8
- FACE      -26,       13,       10,         31    \ Face 9
- FACE        0,      -31,       12,         31    \ Face 10
- FACE       26,       13,       10,         31    \ Face 11
- FACE        0,        0,     -107,         14    \ Face 12
+ FACE       43,       37,      -60,         31      \ Face 0
+ FACE        0,      -45,      -89,         31      \ Face 1
+ FACE      -43,       37,      -60,         31      \ Face 2
+ FACE        0,       40,        0,         31      \ Face 3
+ FACE       62,      -32,      -20,         31      \ Face 4
+ FACE      -62,      -32,      -20,         31      \ Face 5
+ FACE        0,       23,        6,         31      \ Face 6
+ FACE      -23,      -15,        9,         31      \ Face 7
+ FACE       23,      -15,        9,         31      \ Face 8
+ FACE      -26,       13,       10,         31      \ Face 9
+ FACE        0,      -31,       12,         31      \ Face 10
+ FACE       26,       13,       10,         31      \ Face 11
+ FACE        0,        0,     -107,         14      \ Face 12
 
 \ ******************************************************************************
 \
@@ -1719,6 +1734,7 @@ ENDMACRO
 \   Category: Drawing ships
 \    Summary: Ship blueprint for an Anaconda
 \  Deep dive: Ship blueprints
+\             Comparing ship specifications
 \
 \ ******************************************************************************
 
@@ -1799,18 +1815,18 @@ ENDMACRO
 .SHIP_ANACONDA_FACES
 
     \ normal_x, normal_y, normal_z, visibility
- FACE        0,      -51,      -49,         30    \ Face 0
- FACE      -51,       18,      -87,         30    \ Face 1
- FACE      -77,      -57,      -19,         30    \ Face 2
- FACE        0,      -90,       16,         31    \ Face 3
- FACE       77,      -57,      -19,         30    \ Face 4
- FACE       51,       18,      -87,         30    \ Face 5
- FACE        0,      111,      -20,         30    \ Face 6
- FACE      -97,       72,       24,         31    \ Face 7
- FACE     -108,      -68,       34,         31    \ Face 8
- FACE      108,      -68,       34,         31    \ Face 9
- FACE       97,       72,       24,         31    \ Face 10
- FACE        0,       94,       18,         31    \ Face 11
+ FACE        0,      -51,      -49,         30      \ Face 0
+ FACE      -51,       18,      -87,         30      \ Face 1
+ FACE      -77,      -57,      -19,         30      \ Face 2
+ FACE        0,      -90,       16,         31      \ Face 3
+ FACE       77,      -57,      -19,         30      \ Face 4
+ FACE       51,       18,      -87,         30      \ Face 5
+ FACE        0,      111,      -20,         30      \ Face 6
+ FACE      -97,       72,       24,         31      \ Face 7
+ FACE     -108,      -68,       34,         31      \ Face 8
+ FACE      108,      -68,       34,         31      \ Face 9
+ FACE       97,       72,       24,         31      \ Face 10
+ FACE        0,       94,       18,         31      \ Face 11
 
 \ ******************************************************************************
 \
@@ -1819,6 +1835,7 @@ ENDMACRO
 \   Category: Drawing ships
 \    Summary: Ship blueprint for a rock hermit (asteroid)
 \  Deep dive: Ship blueprints
+\             Comparing ship specifications
 \
 \ ------------------------------------------------------------------------------
 \
@@ -1873,6 +1890,7 @@ ENDMACRO
 \   Category: Drawing ships
 \    Summary: Ship blueprint for a Viper
 \  Deep dive: Ship blueprints
+\             Comparing ship specifications
 \
 \ ******************************************************************************
 
@@ -1948,13 +1966,13 @@ ENDMACRO
 .SHIP_VIPER_FACES
 
     \ normal_x, normal_y, normal_z, visibility
- FACE        0,       32,        0,         31    \ Face 0
- FACE      -22,       33,       11,         31    \ Face 1
- FACE       22,       33,       11,         31    \ Face 2
- FACE      -22,      -33,       11,         31    \ Face 3
- FACE       22,      -33,       11,         31    \ Face 4
- FACE        0,      -32,        0,         31    \ Face 5
- FACE        0,        0,      -48,         31    \ Face 6
+ FACE        0,       32,        0,         31      \ Face 0
+ FACE      -22,       33,       11,         31      \ Face 1
+ FACE       22,       33,       11,         31      \ Face 2
+ FACE      -22,      -33,       11,         31      \ Face 3
+ FACE       22,      -33,       11,         31      \ Face 4
+ FACE        0,      -32,        0,         31      \ Face 5
+ FACE        0,        0,      -48,         31      \ Face 6
 
 \ ******************************************************************************
 \
@@ -1963,6 +1981,7 @@ ENDMACRO
 \   Category: Drawing ships
 \    Summary: Ship blueprint for a Sidewinder
 \  Deep dive: Ship blueprints
+\             Comparing ship specifications
 \
 \ ******************************************************************************
 
@@ -2028,13 +2047,13 @@ ENDMACRO
 .SHIP_SIDEWINDER_FACES
 
     \ normal_x, normal_y, normal_z, visibility
- FACE        0,       32,        8,         31    \ Face 0
- FACE      -12,       47,        6,         31    \ Face 1
- FACE       12,       47,        6,         31    \ Face 2
- FACE        0,        0,     -112,         31    \ Face 3
- FACE      -12,      -47,        6,         31    \ Face 4
- FACE        0,      -32,        8,         31    \ Face 5
- FACE       12,      -47,        6,         31    \ Face 6
+ FACE        0,       32,        8,         31      \ Face 0
+ FACE      -12,       47,        6,         31      \ Face 1
+ FACE       12,       47,        6,         31      \ Face 2
+ FACE        0,        0,     -112,         31      \ Face 3
+ FACE      -12,      -47,        6,         31      \ Face 4
+ FACE        0,      -32,        8,         31      \ Face 5
+ FACE       12,      -47,        6,         31      \ Face 6
 
 \ ******************************************************************************
 \
@@ -2043,6 +2062,7 @@ ENDMACRO
 \   Category: Drawing ships
 \    Summary: Ship blueprint for a Mamba
 \  Deep dive: Ship blueprints
+\             Comparing ship specifications
 \
 \ ******************************************************************************
 
@@ -2136,11 +2156,11 @@ ENDMACRO
 .SHIP_MAMBA_FACES
 
     \ normal_x, normal_y, normal_z, visibility
- FACE        0,      -24,        2,         30    \ Face 0
- FACE        0,       24,        2,         30    \ Face 1
- FACE      -32,       64,       16,         30    \ Face 2
- FACE       32,       64,       16,         30    \ Face 3
- FACE        0,        0,     -127,         30    \ Face 4
+ FACE        0,      -24,        2,         30      \ Face 0
+ FACE        0,       24,        2,         30      \ Face 1
+ FACE      -32,       64,       16,         30      \ Face 2
+ FACE       32,       64,       16,         30      \ Face 3
+ FACE        0,        0,     -127,         30      \ Face 4
 
 \ ******************************************************************************
 \
@@ -2149,6 +2169,7 @@ ENDMACRO
 \   Category: Drawing ships
 \    Summary: Ship blueprint for a Krait
 \  Deep dive: Ship blueprints
+\             Comparing ship specifications
 \
 \ ******************************************************************************
 
@@ -2227,12 +2248,12 @@ ENDMACRO
 .SHIP_KRAIT_FACES
 
     \ normal_x, normal_y, normal_z, visibility
- FACE        3,       24,        3,         31    \ Face 0
- FACE        3,      -24,        3,         31    \ Face 1
- FACE       -3,      -24,        3,         31    \ Face 2
- FACE       -3,       24,        3,         31    \ Face 3
- FACE       38,        0,      -77,         31    \ Face 4
- FACE      -38,        0,      -77,         31    \ Face 5
+ FACE        3,       24,        3,         31      \ Face 0
+ FACE        3,      -24,        3,         31      \ Face 1
+ FACE       -3,      -24,        3,         31      \ Face 2
+ FACE       -3,       24,        3,         31      \ Face 3
+ FACE       38,        0,      -77,         31      \ Face 4
+ FACE      -38,        0,      -77,         31      \ Face 5
 
 \ ******************************************************************************
 \
@@ -2241,6 +2262,7 @@ ENDMACRO
 \   Category: Drawing ships
 \    Summary: Ship blueprint for an Adder
 \  Deep dive: Ship blueprints
+\             Comparing ship specifications
 \
 \ ******************************************************************************
 
@@ -2328,21 +2350,21 @@ ENDMACRO
 .SHIP_ADDER_FACES
 
     \ normal_x, normal_y, normal_z, visibility
- FACE        0,       39,       10,         31    \ Face 0
- FACE        0,      -39,       10,         31    \ Face 1
- FACE       69,       50,       13,         31    \ Face 2
- FACE       69,      -50,       13,         31    \ Face 3
- FACE       30,       52,        0,         31    \ Face 4
- FACE       30,      -52,        0,         31    \ Face 5
- FACE        0,        0,     -160,         31    \ Face 6
- FACE        0,        0,     -160,         31    \ Face 7
- FACE        0,        0,     -160,         31    \ Face 8
- FACE      -30,       52,        0,         31    \ Face 9
- FACE      -30,      -52,        0,         31    \ Face 10
- FACE      -69,       50,       13,         31    \ Face 11
- FACE      -69,      -50,       13,         31    \ Face 12
- FACE        0,       28,        0,         31    \ Face 13
- FACE        0,      -28,        0,         31    \ Face 14
+ FACE        0,       39,       10,         31      \ Face 0
+ FACE        0,      -39,       10,         31      \ Face 1
+ FACE       69,       50,       13,         31      \ Face 2
+ FACE       69,      -50,       13,         31      \ Face 3
+ FACE       30,       52,        0,         31      \ Face 4
+ FACE       30,      -52,        0,         31      \ Face 5
+ FACE        0,        0,     -160,         31      \ Face 6
+ FACE        0,        0,     -160,         31      \ Face 7
+ FACE        0,        0,     -160,         31      \ Face 8
+ FACE      -30,       52,        0,         31      \ Face 9
+ FACE      -30,      -52,        0,         31      \ Face 10
+ FACE      -69,       50,       13,         31      \ Face 11
+ FACE      -69,      -50,       13,         31      \ Face 12
+ FACE        0,       28,        0,         31      \ Face 13
+ FACE        0,      -28,        0,         31      \ Face 14
 
 \ ******************************************************************************
 \
@@ -2351,6 +2373,7 @@ ENDMACRO
 \   Category: Drawing ships
 \    Summary: Ship blueprint for a Gecko
 \  Deep dive: Ship blueprints
+\             Comparing ship specifications
 \
 \ ******************************************************************************
 
@@ -2420,15 +2443,15 @@ ENDMACRO
 .SHIP_GECKO_FACES
 
     \ normal_x, normal_y, normal_z, visibility
- FACE        0,       31,        5,         31    \ Face 0
- FACE        4,       45,        8,         31    \ Face 1
- FACE       25,     -108,       19,         31    \ Face 2
- FACE        0,      -84,       12,         31    \ Face 3
- FACE      -25,     -108,       19,         31    \ Face 4
- FACE       -4,       45,        8,         31    \ Face 5
- FACE      -88,       16,     -214,         31    \ Face 6
- FACE        0,        0,     -187,         31    \ Face 7
- FACE       88,       16,     -214,         31    \ Face 8
+ FACE        0,       31,        5,         31      \ Face 0
+ FACE        4,       45,        8,         31      \ Face 1
+ FACE       25,     -108,       19,         31      \ Face 2
+ FACE        0,      -84,       12,         31      \ Face 3
+ FACE      -25,     -108,       19,         31      \ Face 4
+ FACE       -4,       45,        8,         31      \ Face 5
+ FACE      -88,       16,     -214,         31      \ Face 6
+ FACE        0,        0,     -187,         31      \ Face 7
+ FACE       88,       16,     -214,         31      \ Face 8
 
 \ ******************************************************************************
 \
@@ -2437,6 +2460,7 @@ ENDMACRO
 \   Category: Drawing ships
 \    Summary: Ship blueprint for a Cobra Mk I
 \  Deep dive: Ship blueprints
+\             Comparing ship specifications
 \
 \ ******************************************************************************
 
@@ -2506,16 +2530,16 @@ ENDMACRO
 .SHIP_COBRA_MK_1_FACES
 
     \ normal_x, normal_y, normal_z, visibility
- FACE        0,       41,       10,         31    \ Face 0
- FACE        0,      -27,        3,         31    \ Face 1
- FACE       -8,       46,        8,         31    \ Face 2
- FACE      -12,      -57,       12,         31    \ Face 3
- FACE        8,       46,        8,         31    \ Face 4
- FACE       12,      -57,       12,         31    \ Face 5
- FACE        0,       49,        0,         31    \ Face 6
- FACE        0,        0,     -154,         31    \ Face 7
- FACE     -121,      111,      -62,         31    \ Face 8
- FACE      121,      111,      -62,         31    \ Face 9
+ FACE        0,       41,       10,         31      \ Face 0
+ FACE        0,      -27,        3,         31      \ Face 1
+ FACE       -8,       46,        8,         31      \ Face 2
+ FACE      -12,      -57,       12,         31      \ Face 3
+ FACE        8,       46,        8,         31      \ Face 4
+ FACE       12,      -57,       12,         31      \ Face 5
+ FACE        0,       49,        0,         31      \ Face 6
+ FACE        0,        0,     -154,         31      \ Face 7
+ FACE     -121,      111,      -62,         31      \ Face 8
+ FACE      121,      111,      -62,         31      \ Face 9
 
 \ ******************************************************************************
 \
@@ -2524,6 +2548,7 @@ ENDMACRO
 \   Category: Drawing ships
 \    Summary: Ship blueprint for a Worm
 \  Deep dive: Ship blueprints
+\             Comparing ship specifications
 \
 \ ******************************************************************************
 
@@ -2590,14 +2615,14 @@ ENDMACRO
 .SHIP_WORM_FACES
 
     \ normal_x, normal_y, normal_z, visibility
- FACE        0,       88,       70,         31    \ Face 0
- FACE        0,       69,       14,         31    \ Face 1
- FACE       70,       66,       35,         31    \ Face 2
- FACE      -70,       66,       35,         31    \ Face 3
- FACE       64,       49,       14,         31    \ Face 4
- FACE      -64,       49,       14,         31    \ Face 5
- FACE        0,        0,     -200,         31    \ Face 6
- FACE        0,      -80,        0,         31    \ Face 7
+ FACE        0,       88,       70,         31      \ Face 0
+ FACE        0,       69,       14,         31      \ Face 1
+ FACE       70,       66,       35,         31      \ Face 2
+ FACE      -70,       66,       35,         31      \ Face 3
+ FACE       64,       49,       14,         31      \ Face 4
+ FACE      -64,       49,       14,         31      \ Face 5
+ FACE        0,        0,     -200,         31      \ Face 6
+ FACE        0,      -80,        0,         31      \ Face 7
 
 \ ******************************************************************************
 \
@@ -2606,6 +2631,7 @@ ENDMACRO
 \   Category: Drawing ships
 \    Summary: Ship blueprint for a Cobra Mk III (pirate)
 \  Deep dive: Ship blueprints
+\             Comparing ship specifications
 \
 \ ------------------------------------------------------------------------------
 \
@@ -2680,6 +2706,7 @@ ENDMACRO
 \   Category: Drawing ships
 \    Summary: Ship blueprint for an Asp Mk II
 \  Deep dive: Ship blueprints
+\             Comparing ship specifications
 \
 \ ******************************************************************************
 
@@ -2767,18 +2794,18 @@ ENDMACRO
 .SHIP_ASP_MK_2_FACES
 
     \ normal_x, normal_y, normal_z, visibility
- FACE        0,      -35,        5,         31    \ Face 0
- FACE        8,      -38,       -7,         31    \ Face 1
- FACE       -8,      -38,       -7,         31    \ Face 2
- FACE        0,       24,       -1,         22    \ Face 3
- FACE        0,       43,       19,         31    \ Face 4
- FACE       -6,       28,       -2,         31    \ Face 5
- FACE        6,       28,       -2,         31    \ Face 6
- FACE       59,      -64,       31,         31    \ Face 7
- FACE      -59,      -64,       31,         31    \ Face 8
- FACE       80,       46,       50,         31    \ Face 9
- FACE      -80,       46,       50,         31    \ Face 10
- FACE        0,        0,      -90,         31    \ Face 11
+ FACE        0,      -35,        5,         31      \ Face 0
+ FACE        8,      -38,       -7,         31      \ Face 1
+ FACE       -8,      -38,       -7,         31      \ Face 2
+ FACE        0,       24,       -1,         22      \ Face 3
+ FACE        0,       43,       19,         31      \ Face 4
+ FACE       -6,       28,       -2,         31      \ Face 5
+ FACE        6,       28,       -2,         31      \ Face 6
+ FACE       59,      -64,       31,         31      \ Face 7
+ FACE      -59,      -64,       31,         31      \ Face 8
+ FACE       80,       46,       50,         31      \ Face 9
+ FACE      -80,       46,       50,         31      \ Face 10
+ FACE        0,        0,      -90,         31      \ Face 11
 
  EQUB &45, &4D          \ These bytes appear to be unused
  EQUB &41, &36
@@ -2790,6 +2817,7 @@ ENDMACRO
 \   Category: Drawing ships
 \    Summary: Ship blueprint for a Python (pirate)
 \  Deep dive: Ship blueprints
+\             Comparing ship specifications
 \
 \ ------------------------------------------------------------------------------
 \
@@ -2846,6 +2874,7 @@ ENDMACRO
 \   Category: Drawing ships
 \    Summary: Ship blueprint for a Fer-de-Lance
 \  Deep dive: Ship blueprints
+\             Comparing ship specifications
 \
 \ ******************************************************************************
 
@@ -2932,16 +2961,16 @@ ENDMACRO
 .SHIP_FER_DE_LANCE_FACES
 
     \ normal_x, normal_y, normal_z, visibility
- FACE        0,       24,        6,         28    \ Face 0
- FACE      -68,        0,       24,         31    \ Face 1
- FACE      -63,        0,      -37,         31    \ Face 2
- FACE        0,        0,     -104,         31    \ Face 3
- FACE       63,        0,      -37,         31    \ Face 4
- FACE       68,        0,       24,         31    \ Face 5
- FACE      -12,       46,      -19,         28    \ Face 6
- FACE        0,       45,      -22,         28    \ Face 7
- FACE       12,       46,      -19,         28    \ Face 8
- FACE        0,      -28,        0,         31    \ Face 9
+ FACE        0,       24,        6,         28      \ Face 0
+ FACE      -68,        0,       24,         31      \ Face 1
+ FACE      -63,        0,      -37,         31      \ Face 2
+ FACE        0,        0,     -104,         31      \ Face 3
+ FACE       63,        0,      -37,         31      \ Face 4
+ FACE       68,        0,       24,         31      \ Face 5
+ FACE      -12,       46,      -19,         28      \ Face 6
+ FACE        0,       45,      -22,         28      \ Face 7
+ FACE       12,       46,      -19,         28      \ Face 8
+ FACE        0,      -28,        0,         31      \ Face 9
 
 \ ******************************************************************************
 \
@@ -2950,6 +2979,7 @@ ENDMACRO
 \   Category: Drawing ships
 \    Summary: Ship blueprint for a Moray
 \  Deep dive: Ship blueprints
+\             Comparing ship specifications
 \
 \ ******************************************************************************
 
@@ -3023,15 +3053,15 @@ ENDMACRO
 .SHIP_MORAY_FACES
 
     \ normal_x, normal_y, normal_z, visibility
- FACE        0,       43,        7,         31    \ Face 0
- FACE      -10,       49,        7,         31    \ Face 1
- FACE       10,       49,        7,         31    \ Face 2
- FACE      -59,      -28,     -101,         24    \ Face 3
- FACE        0,      -52,      -78,         24    \ Face 4
- FACE       59,      -28,     -101,         24    \ Face 5
- FACE      -72,      -99,       50,         31    \ Face 6
- FACE        0,      -83,       30,         31    \ Face 7
- FACE       72,      -99,       50,         31    \ Face 8
+ FACE        0,       43,        7,         31      \ Face 0
+ FACE      -10,       49,        7,         31      \ Face 1
+ FACE       10,       49,        7,         31      \ Face 2
+ FACE      -59,      -28,     -101,         24      \ Face 3
+ FACE        0,      -52,      -78,         24      \ Face 4
+ FACE       59,      -28,     -101,         24      \ Face 5
+ FACE      -72,      -99,       50,         31      \ Face 6
+ FACE        0,      -83,       30,         31      \ Face 7
+ FACE       72,      -99,       50,         31      \ Face 8
 
 \ ******************************************************************************
 \
@@ -3040,6 +3070,7 @@ ENDMACRO
 \   Category: Drawing ships
 \    Summary: Ship blueprint for a Thargoid mothership
 \  Deep dive: Ship blueprints
+\             Comparing ship specifications
 \
 \ ******************************************************************************
 
@@ -3126,16 +3157,16 @@ ENDMACRO
 .SHIP_THARGOID_FACES
 
     \ normal_x, normal_y, normal_z, visibility
- FACE      103,      -60,       25,         31    \ Face 0
- FACE      103,      -60,      -25,         31    \ Face 1
- FACE      103,      -25,      -60,         31    \ Face 2
- FACE      103,       25,      -60,         31    \ Face 3
- FACE       64,        0,        0,         31    \ Face 4
- FACE      103,       60,      -25,         31    \ Face 5
- FACE      103,       60,       25,         31    \ Face 6
- FACE      103,       25,       60,         31    \ Face 7
- FACE      103,      -25,       60,         31    \ Face 8
- FACE      -48,        0,        0,         31    \ Face 9
+ FACE      103,      -60,       25,         31      \ Face 0
+ FACE      103,      -60,      -25,         31      \ Face 1
+ FACE      103,      -25,      -60,         31      \ Face 2
+ FACE      103,       25,      -60,         31      \ Face 3
+ FACE       64,        0,        0,         31      \ Face 4
+ FACE      103,       60,      -25,         31      \ Face 5
+ FACE      103,       60,       25,         31      \ Face 6
+ FACE      103,       25,       60,         31      \ Face 7
+ FACE      103,      -25,       60,         31      \ Face 8
+ FACE      -48,        0,        0,         31      \ Face 9
 
 \ ******************************************************************************
 \
@@ -3144,6 +3175,7 @@ ENDMACRO
 \   Category: Drawing ships
 \    Summary: Ship blueprint for a Thargon
 \  Deep dive: Ship blueprints
+\             Comparing ship specifications
 \
 \ ------------------------------------------------------------------------------
 \
@@ -3196,13 +3228,13 @@ ENDMACRO
 .SHIP_THARGON_FACES
 
     \ normal_x, normal_y, normal_z, visibility
- FACE      -36,        0,        0,         31    \ Face 0
- FACE       20,       -5,        7,         31    \ Face 1
- FACE       46,      -42,      -14,         31    \ Face 2
- FACE       36,        0,     -104,         31    \ Face 3
- FACE       46,       42,      -14,         31    \ Face 4
- FACE       20,        5,        7,         31    \ Face 5
- FACE       36,        0,        0,         31    \ Face 6
+ FACE      -36,        0,        0,         31      \ Face 0
+ FACE       20,       -5,        7,         31      \ Face 1
+ FACE       46,      -42,      -14,         31      \ Face 2
+ FACE       36,        0,     -104,         31      \ Face 3
+ FACE       46,       42,      -14,         31      \ Face 4
+ FACE       20,        5,        7,         31      \ Face 5
+ FACE       36,        0,        0,         31      \ Face 6
 
 \ ******************************************************************************
 \
@@ -3211,6 +3243,7 @@ ENDMACRO
 \   Category: Drawing ships
 \    Summary: Ship blueprint for a Constrictor
 \  Deep dive: Ship blueprints
+\             Comparing ship specifications
 \
 \ ******************************************************************************
 
@@ -3292,16 +3325,16 @@ ENDMACRO
 .SHIP_CONSTRICTOR_FACES
 
     \ normal_x, normal_y, normal_z, visibility
- FACE        0,       55,       15,         31    \ Face 0
- FACE      -24,       75,       20,         31    \ Face 1
- FACE       24,       75,       20,         31    \ Face 2
- FACE       44,       75,        0,         31    \ Face 3
- FACE      -44,       75,        0,         31    \ Face 4
- FACE      -44,       75,        0,         31    \ Face 5
- FACE        0,       53,        0,         31    \ Face 6
- FACE       44,       75,        0,         31    \ Face 7
- FACE        0,        0,     -160,         31    \ Face 8
- FACE        0,      -27,        0,         31    \ Face 9
+ FACE        0,       55,       15,         31      \ Face 0
+ FACE      -24,       75,       20,         31      \ Face 1
+ FACE       24,       75,       20,         31      \ Face 2
+ FACE       44,       75,        0,         31      \ Face 3
+ FACE      -44,       75,        0,         31      \ Face 4
+ FACE      -44,       75,        0,         31      \ Face 5
+ FACE        0,       53,        0,         31      \ Face 6
+ FACE       44,       75,        0,         31      \ Face 7
+ FACE        0,        0,     -160,         31      \ Face 8
+ FACE        0,      -27,        0,         31      \ Face 9
 
 \ ******************************************************************************
 \
@@ -3310,6 +3343,7 @@ ENDMACRO
 \   Category: Drawing ships
 \    Summary: Ship blueprint for a Cougar
 \  Deep dive: Ship blueprints
+\             Comparing ship specifications
 \             The elusive Cougar
 \
 \ ******************************************************************************
@@ -3395,12 +3429,12 @@ ENDMACRO
 .SHIP_COUGAR_FACES
 
     \ normal_x, normal_y, normal_z, visibility
- FACE      -16,       46,        4,         31    \ Face 0
- FACE      -16,      -46,        4,         31    \ Face 1
- FACE        0,      -27,        5,         31    \ Face 2
- FACE       16,      -46,        4,         31    \ Face 3
- FACE       16,       46,        4,         31    \ Face 4
- FACE        0,        0,     -160,         30    \ Face 5
+ FACE      -16,       46,        4,         31      \ Face 0
+ FACE      -16,      -46,        4,         31      \ Face 1
+ FACE        0,      -27,        5,         31      \ Face 2
+ FACE       16,      -46,        4,         31      \ Face 3
+ FACE       16,       46,        4,         31      \ Face 4
+ FACE        0,        0,     -160,         30      \ Face 5
 
 \ ******************************************************************************
 \
@@ -3409,6 +3443,7 @@ ENDMACRO
 \   Category: Drawing ships
 \    Summary: Ship blueprint for a Dodecahedron ("Dodo") space station
 \  Deep dive: Ship blueprints
+\             Comparing ship specifications
 \
 \ ******************************************************************************
 
@@ -3507,18 +3542,18 @@ ENDMACRO
 .SHIP_DODO_FACES
 
     \ normal_x, normal_y, normal_z, visibility
- FACE        0,        0,      196,         31    \ Face 0
- FACE      103,      142,       88,         31    \ Face 1
- FACE      169,      -55,       89,         31    \ Face 2
- FACE        0,     -176,       88,         31    \ Face 3
- FACE     -169,      -55,       89,         31    \ Face 4
- FACE     -103,      142,       88,         31    \ Face 5
- FACE        0,      176,      -88,         31    \ Face 6
- FACE      169,       55,      -89,         31    \ Face 7
- FACE      103,     -142,      -88,         31    \ Face 8
- FACE     -103,     -142,      -88,         31    \ Face 9
- FACE     -169,       55,      -89,         31    \ Face 10
- FACE        0,        0,     -196,         31    \ Face 11
+ FACE        0,        0,      196,         31      \ Face 0
+ FACE      103,      142,       88,         31      \ Face 1
+ FACE      169,      -55,       89,         31      \ Face 2
+ FACE        0,     -176,       88,         31      \ Face 3
+ FACE     -169,      -55,       89,         31      \ Face 4
+ FACE     -103,      142,       88,         31      \ Face 5
+ FACE        0,      176,      -88,         31      \ Face 6
+ FACE      169,       55,      -89,         31      \ Face 7
+ FACE      103,     -142,      -88,         31      \ Face 8
+ FACE     -103,     -142,      -88,         31      \ Face 9
+ FACE     -169,       55,      -89,         31      \ Face 10
+ FACE        0,        0,     -196,         31      \ Face 11
 
 \ ******************************************************************************
 \
@@ -3714,9 +3749,6 @@ ENDIF
 \
 \ To include an apostrophe, use a backtick character, as in CHAR '`'.
 \
-\ See the deep dive on "Printing text tokens" for details on how characters are
-\ stored in the recursive token table.
-\
 \ ------------------------------------------------------------------------------
 \
 \ Arguments:
@@ -3749,9 +3781,6 @@ ENDMACRO
 \
 \   TWOK 'x', 'y'       Insert two-letter token "xy"
 \
-\ See the deep dive on "Printing text tokens" for details on how two-letter
-\ tokens are stored in the recursive token table.
-\
 \ ------------------------------------------------------------------------------
 \
 \ Arguments:
@@ -3766,38 +3795,133 @@ ENDMACRO
 
 MACRO TWOK t, k
 
- IF t = 'A' AND k = 'L' : EQUB 128 EOR RE : ENDIF
- IF t = 'L' AND k = 'E' : EQUB 129 EOR RE : ENDIF
- IF t = 'X' AND k = 'E' : EQUB 130 EOR RE : ENDIF
- IF t = 'G' AND k = 'E' : EQUB 131 EOR RE : ENDIF
- IF t = 'Z' AND k = 'A' : EQUB 132 EOR RE : ENDIF
- IF t = 'C' AND k = 'E' : EQUB 133 EOR RE : ENDIF
- IF t = 'B' AND k = 'I' : EQUB 134 EOR RE : ENDIF
- IF t = 'S' AND k = 'O' : EQUB 135 EOR RE : ENDIF
- IF t = 'U' AND k = 'S' : EQUB 136 EOR RE : ENDIF
- IF t = 'E' AND k = 'S' : EQUB 137 EOR RE : ENDIF
- IF t = 'A' AND k = 'R' : EQUB 138 EOR RE : ENDIF
- IF t = 'M' AND k = 'A' : EQUB 139 EOR RE : ENDIF
- IF t = 'I' AND k = 'N' : EQUB 140 EOR RE : ENDIF
- IF t = 'D' AND k = 'I' : EQUB 141 EOR RE : ENDIF
- IF t = 'R' AND k = 'E' : EQUB 142 EOR RE : ENDIF
- IF t = 'A' AND k = '?' : EQUB 143 EOR RE : ENDIF
- IF t = 'E' AND k = 'R' : EQUB 144 EOR RE : ENDIF
- IF t = 'A' AND k = 'T' : EQUB 145 EOR RE : ENDIF
- IF t = 'E' AND k = 'N' : EQUB 146 EOR RE : ENDIF
- IF t = 'B' AND k = 'E' : EQUB 147 EOR RE : ENDIF
- IF t = 'R' AND k = 'A' : EQUB 148 EOR RE : ENDIF
- IF t = 'L' AND k = 'A' : EQUB 149 EOR RE : ENDIF
- IF t = 'V' AND k = 'E' : EQUB 150 EOR RE : ENDIF
- IF t = 'T' AND k = 'I' : EQUB 151 EOR RE : ENDIF
- IF t = 'E' AND k = 'D' : EQUB 152 EOR RE : ENDIF
- IF t = 'O' AND k = 'R' : EQUB 153 EOR RE : ENDIF
- IF t = 'Q' AND k = 'U' : EQUB 154 EOR RE : ENDIF
- IF t = 'A' AND k = 'N' : EQUB 155 EOR RE : ENDIF
- IF t = 'T' AND k = 'E' : EQUB 156 EOR RE : ENDIF
- IF t = 'I' AND k = 'S' : EQUB 157 EOR RE : ENDIF
- IF t = 'R' AND k = 'I' : EQUB 158 EOR RE : ENDIF
- IF t = 'O' AND k = 'N' : EQUB 159 EOR RE : ENDIF
+ IF t = 'A' AND k = 'L'
+  EQUB 128 EOR RE
+ ENDIF
+
+ IF t = 'L' AND k = 'E'
+  EQUB 129 EOR RE
+ ENDIF
+
+ IF t = 'X' AND k = 'E'
+  EQUB 130 EOR RE
+ ENDIF
+
+ IF t = 'G' AND k = 'E'
+  EQUB 131 EOR RE
+ ENDIF
+
+ IF t = 'Z' AND k = 'A'
+  EQUB 132 EOR RE
+ ENDIF
+
+ IF t = 'C' AND k = 'E'
+  EQUB 133 EOR RE
+ ENDIF
+
+ IF t = 'B' AND k = 'I'
+  EQUB 134 EOR RE
+ ENDIF
+
+ IF t = 'S' AND k = 'O'
+  EQUB 135 EOR RE
+ ENDIF
+
+ IF t = 'U' AND k = 'S'
+  EQUB 136 EOR RE
+ ENDIF
+
+ IF t = 'E' AND k = 'S'
+  EQUB 137 EOR RE
+ ENDIF
+
+ IF t = 'A' AND k = 'R'
+  EQUB 138 EOR RE
+ ENDIF
+
+ IF t = 'M' AND k = 'A'
+  EQUB 139 EOR RE
+ ENDIF
+
+ IF t = 'I' AND k = 'N'
+  EQUB 140 EOR RE
+ ENDIF
+
+ IF t = 'D' AND k = 'I'
+  EQUB 141 EOR RE
+ ENDIF
+
+ IF t = 'R' AND k = 'E'
+  EQUB 142 EOR RE
+ ENDIF
+
+ IF t = 'A' AND k = '?'
+  EQUB 143 EOR RE
+ ENDIF
+
+ IF t = 'E' AND k = 'R'
+  EQUB 144 EOR RE
+ ENDIF
+
+ IF t = 'A' AND k = 'T'
+  EQUB 145 EOR RE
+ ENDIF
+
+ IF t = 'E' AND k = 'N'
+  EQUB 146 EOR RE
+ ENDIF
+
+ IF t = 'B' AND k = 'E'
+  EQUB 147 EOR RE
+ ENDIF
+
+ IF t = 'R' AND k = 'A'
+  EQUB 148 EOR RE
+ ENDIF
+
+ IF t = 'L' AND k = 'A'
+  EQUB 149 EOR RE
+ ENDIF
+
+ IF t = 'V' AND k = 'E'
+  EQUB 150 EOR RE
+ ENDIF
+
+ IF t = 'T' AND k = 'I'
+  EQUB 151 EOR RE
+ ENDIF
+
+ IF t = 'E' AND k = 'D'
+  EQUB 152 EOR RE
+ ENDIF
+
+ IF t = 'O' AND k = 'R'
+  EQUB 153 EOR RE
+ ENDIF
+
+ IF t = 'Q' AND k = 'U'
+  EQUB 154 EOR RE
+ ENDIF
+
+ IF t = 'A' AND k = 'N'
+  EQUB 155 EOR RE
+ ENDIF
+
+ IF t = 'T' AND k = 'E'
+  EQUB 156 EOR RE
+ ENDIF
+
+ IF t = 'I' AND k = 'S'
+  EQUB 157 EOR RE
+ ENDIF
+
+ IF t = 'R' AND k = 'I'
+  EQUB 158 EOR RE
+ ENDIF
+
+ IF t = 'O' AND k = 'N'
+  EQUB 159 EOR RE
+ ENDIF
 
 ENDMACRO
 
@@ -3814,9 +3938,6 @@ ENDMACRO
 \ The following macro is used when building the recursive token table:
 \
 \   CONT n              Insert control code token {n}
-\
-\ See the deep dive on "Printing text tokens" for details on how characters are
-\ stored in the recursive token table.
 \
 \ ------------------------------------------------------------------------------
 \
@@ -3852,9 +3973,6 @@ ENDMACRO
 \
 \                         * Tokens 96-127 get stored as n
 \
-\ See the deep dive on "Printing text tokens" for details on how recursive
-\ tokens are stored in the recursive token table.
-\
 \ ------------------------------------------------------------------------------
 \
 \ Arguments:
@@ -3885,6 +4003,14 @@ ENDMACRO
 \   Category: Text
 \    Summary: The recursive token table for tokens 0-148
 \  Deep dive: Printing text tokens
+\
+\ ------------------------------------------------------------------------------
+\
+\ The encodings shown for each recursive text token use the following notation:
+\
+\   {n}           Control code              n = 0 to 13
+\   <n>           Two-letter token          n = 128 to 159
+\   [n]           Recursive token           n = 0 to 148
 \
 \ ******************************************************************************
 
@@ -5049,12 +5175,10 @@ ENDMACRO
   N = ABS(SIN((I% / 64) * 2 * PI))
 
   IF N >= 1
-   B% = 255
+   EQUB 255
   ELSE
-   B% = INT(256 * N + 0.5)
+   EQUB INT(256 * N + 0.5)
   ENDIF
-
-  EQUB B%
 
  NEXT
 
@@ -5110,6 +5234,14 @@ ENDMACRO
 
 \ ******************************************************************************
 \
+\ ELITE EXTENDED TEXT TOKEN FILE
+\
+\ ******************************************************************************
+
+.IANTOK
+
+\ ******************************************************************************
+\
 \       Name: EJMP
 \       Type: Macro
 \   Category: Text
@@ -5121,9 +5253,6 @@ ENDMACRO
 \ The following macro is used when building the extended token table:
 \
 \   EJMP n              Insert a jump to address n in the JMTB table
-\
-\ See the deep dive on "Printing extended text tokens" for details on how jump
-\ tokens are stored in the extended token table.
 \
 \ ------------------------------------------------------------------------------
 \
@@ -5154,9 +5283,6 @@ ENDMACRO
 \   ECHR 'x'            Insert ASCII character "x"
 \
 \ To include an apostrophe, use a backtick character, as in ECHR '`'.
-\
-\ See the deep dive on "Printing extended text tokens" for details on how
-\ characters are stored in the extended token table.
 \
 \ ------------------------------------------------------------------------------
 \
@@ -5190,9 +5316,6 @@ ENDMACRO
 \
 \   ETOK n              Insert extended recursive token [n]
 \
-\ See the deep dive on "Printing extended text tokens" for details on how
-\ recursive tokens are stored in the extended token table.
-\
 \ ------------------------------------------------------------------------------
 \
 \ Arguments:
@@ -5224,9 +5347,6 @@ ENDMACRO
 \
 \ The newline token can be entered using ETWO '-', '-'.
 \
-\ See the deep dive on "Printing extended text tokens" for details on how
-\ two-letter tokens are stored in the extended token table.
-\
 \ ------------------------------------------------------------------------------
 \
 \ Arguments:
@@ -5241,48 +5361,169 @@ ENDMACRO
 
 MACRO ETWO t, k
 
- IF t = '-' AND k = '-' : EQUB 215 EOR VE : ENDIF
- IF t = 'A' AND k = 'B' : EQUB 216 EOR VE : ENDIF
- IF t = 'O' AND k = 'U' : EQUB 217 EOR VE : ENDIF
- IF t = 'S' AND k = 'E' : EQUB 218 EOR VE : ENDIF
- IF t = 'I' AND k = 'T' : EQUB 219 EOR VE : ENDIF
- IF t = 'I' AND k = 'L' : EQUB 220 EOR VE : ENDIF
- IF t = 'E' AND k = 'T' : EQUB 221 EOR VE : ENDIF
- IF t = 'S' AND k = 'T' : EQUB 222 EOR VE : ENDIF
- IF t = 'O' AND k = 'N' : EQUB 223 EOR VE : ENDIF
- IF t = 'L' AND k = 'O' : EQUB 224 EOR VE : ENDIF
- IF t = 'N' AND k = 'U' : EQUB 225 EOR VE : ENDIF
- IF t = 'T' AND k = 'H' : EQUB 226 EOR VE : ENDIF
- IF t = 'N' AND k = 'O' : EQUB 227 EOR VE : ENDIF
+ IF t = '-' AND k = '-'
+  EQUB 215 EOR VE
+ ENDIF
 
- IF t = 'A' AND k = 'L' : EQUB 228 EOR VE : ENDIF
- IF t = 'L' AND k = 'E' : EQUB 229 EOR VE : ENDIF
- IF t = 'X' AND k = 'E' : EQUB 230 EOR VE : ENDIF
- IF t = 'G' AND k = 'E' : EQUB 231 EOR VE : ENDIF
- IF t = 'Z' AND k = 'A' : EQUB 232 EOR VE : ENDIF
- IF t = 'C' AND k = 'E' : EQUB 233 EOR VE : ENDIF
- IF t = 'B' AND k = 'I' : EQUB 234 EOR VE : ENDIF
- IF t = 'S' AND k = 'O' : EQUB 235 EOR VE : ENDIF
- IF t = 'U' AND k = 'S' : EQUB 236 EOR VE : ENDIF
- IF t = 'E' AND k = 'S' : EQUB 237 EOR VE : ENDIF
- IF t = 'A' AND k = 'R' : EQUB 238 EOR VE : ENDIF
- IF t = 'M' AND k = 'A' : EQUB 239 EOR VE : ENDIF
- IF t = 'I' AND k = 'N' : EQUB 240 EOR VE : ENDIF
- IF t = 'D' AND k = 'I' : EQUB 241 EOR VE : ENDIF
- IF t = 'R' AND k = 'E' : EQUB 242 EOR VE : ENDIF
- IF t = 'A' AND k = '?' : EQUB 243 EOR VE : ENDIF
- IF t = 'E' AND k = 'R' : EQUB 244 EOR VE : ENDIF
- IF t = 'A' AND k = 'T' : EQUB 245 EOR VE : ENDIF
- IF t = 'E' AND k = 'N' : EQUB 246 EOR VE : ENDIF
- IF t = 'B' AND k = 'E' : EQUB 247 EOR VE : ENDIF
- IF t = 'R' AND k = 'A' : EQUB 248 EOR VE : ENDIF
- IF t = 'L' AND k = 'A' : EQUB 249 EOR VE : ENDIF
- IF t = 'V' AND k = 'E' : EQUB 250 EOR VE : ENDIF
- IF t = 'T' AND k = 'I' : EQUB 251 EOR VE : ENDIF
- IF t = 'E' AND k = 'D' : EQUB 252 EOR VE : ENDIF
- IF t = 'O' AND k = 'R' : EQUB 253 EOR VE : ENDIF
- IF t = 'Q' AND k = 'U' : EQUB 254 EOR VE : ENDIF
- IF t = 'A' AND k = 'N' : EQUB 255 EOR VE : ENDIF
+ IF t = 'A' AND k = 'B'
+  EQUB 216 EOR VE
+ ENDIF
+
+ IF t = 'O' AND k = 'U'
+  EQUB 217 EOR VE
+ ENDIF
+
+ IF t = 'S' AND k = 'E'
+  EQUB 218 EOR VE
+ ENDIF
+
+ IF t = 'I' AND k = 'T'
+  EQUB 219 EOR VE
+ ENDIF
+
+ IF t = 'I' AND k = 'L'
+  EQUB 220 EOR VE
+ ENDIF
+
+ IF t = 'E' AND k = 'T'
+  EQUB 221 EOR VE
+ ENDIF
+
+ IF t = 'S' AND k = 'T'
+  EQUB 222 EOR VE
+ ENDIF
+
+ IF t = 'O' AND k = 'N'
+  EQUB 223 EOR VE
+ ENDIF
+
+ IF t = 'L' AND k = 'O'
+  EQUB 224 EOR VE
+ ENDIF
+
+ IF t = 'N' AND k = 'U'
+  EQUB 225 EOR VE
+ ENDIF
+
+ IF t = 'T' AND k = 'H'
+  EQUB 226 EOR VE
+ ENDIF
+
+ IF t = 'N' AND k = 'O'
+  EQUB 227 EOR VE
+ ENDIF
+
+ IF t = 'A' AND k = 'L'
+  EQUB 228 EOR VE
+ ENDIF
+
+ IF t = 'L' AND k = 'E'
+  EQUB 229 EOR VE
+ ENDIF
+
+ IF t = 'X' AND k = 'E'
+  EQUB 230 EOR VE
+ ENDIF
+
+ IF t = 'G' AND k = 'E'
+  EQUB 231 EOR VE
+ ENDIF
+
+ IF t = 'Z' AND k = 'A'
+  EQUB 232 EOR VE
+ ENDIF
+
+ IF t = 'C' AND k = 'E'
+  EQUB 233 EOR VE
+ ENDIF
+
+ IF t = 'B' AND k = 'I'
+  EQUB 234 EOR VE
+ ENDIF
+
+ IF t = 'S' AND k = 'O'
+  EQUB 235 EOR VE
+ ENDIF
+
+ IF t = 'U' AND k = 'S'
+  EQUB 236 EOR VE
+ ENDIF
+
+ IF t = 'E' AND k = 'S'
+  EQUB 237 EOR VE
+ ENDIF
+
+ IF t = 'A' AND k = 'R'
+  EQUB 238 EOR VE
+ ENDIF
+
+ IF t = 'M' AND k = 'A'
+  EQUB 239 EOR VE
+ ENDIF
+
+ IF t = 'I' AND k = 'N'
+  EQUB 240 EOR VE
+ ENDIF
+
+ IF t = 'D' AND k = 'I'
+  EQUB 241 EOR VE
+ ENDIF
+
+ IF t = 'R' AND k = 'E'
+  EQUB 242 EOR VE
+ ENDIF
+
+ IF t = 'A' AND k = '?'
+  EQUB 243 EOR VE
+ ENDIF
+
+ IF t = 'E' AND k = 'R'
+  EQUB 244 EOR VE
+ ENDIF
+
+ IF t = 'A' AND k = 'T'
+  EQUB 245 EOR VE
+ ENDIF
+
+ IF t = 'E' AND k = 'N'
+  EQUB 246 EOR VE
+ ENDIF
+
+ IF t = 'B' AND k = 'E'
+  EQUB 247 EOR VE
+ ENDIF
+
+ IF t = 'R' AND k = 'A'
+  EQUB 248 EOR VE
+ ENDIF
+
+ IF t = 'L' AND k = 'A'
+  EQUB 249 EOR VE
+ ENDIF
+
+ IF t = 'V' AND k = 'E'
+  EQUB 250 EOR VE
+ ENDIF
+
+ IF t = 'T' AND k = 'I'
+  EQUB 251 EOR VE
+ ENDIF
+
+ IF t = 'E' AND k = 'D'
+  EQUB 252 EOR VE
+ ENDIF
+
+ IF t = 'O' AND k = 'R'
+  EQUB 253 EOR VE
+ ENDIF
+
+ IF t = 'Q' AND k = 'U'
+  EQUB 254 EOR VE
+ ENDIF
+
+ IF t = 'A' AND k = 'N'
+  EQUB 255 EOR VE
+ ENDIF
 
 ENDMACRO
 
@@ -5301,9 +5542,6 @@ ENDMACRO
 \   ERND n              Insert recursive token [n]
 \
 \                         * Tokens 0-123 get stored as n + 91
-\
-\ See the deep dive on "Printing extended text tokens" for details on how
-\ random tokens are stored in the extended token table.
 \
 \ ------------------------------------------------------------------------------
 \
@@ -5340,9 +5578,6 @@ ENDMACRO
 \
 \                         * Tokens 96-127 get stored as n
 \
-\ See the deep dive on "Printing text tokens" for details on how recursive
-\ tokens are stored in the recursive token table.
-\
 \ ------------------------------------------------------------------------------
 \
 \ Arguments:
@@ -5373,6 +5608,15 @@ ENDMACRO
 \   Category: Text
 \    Summary: The first extended token table for recursive tokens 0-255 (DETOK)
 \  Deep dive: Extended text tokens
+\
+\ ------------------------------------------------------------------------------
+\
+\ The encodings shown for each extended text token use the following notation:
+\
+\   {n}           Jump token                n = 1 to 31
+\   [n?]          Random token              n = 91 to 128
+\   [n]           Recursive token           n = 129 to 215
+\   <n>           Two-letter token          n = 215 to 255
 \
 \ ******************************************************************************
 
@@ -7809,7 +8053,7 @@ ENDIF
  ECHR 'O'               \                {commander name}.{cr}
  ECHR 'O'               \                 {single cap}I{lower case} AM {single
  ECHR 'D'               \                cap}AGENT{single cap}BLAKE OF {single
- ECHR ' '               \                cap}NAVAL {single cap}INTELLEGENCE.{cr}
+ ECHR ' '               \                cap}NAVAL {single cap}INTELLIGENCE.{cr}
  ECHR 'D'               \                 {single cap}AS YOU KNOW, THE {single
  ECHR 'A'               \                cap}NAVY HAVE BEEN KEEPING THE {single
  ECHR 'Y'               \                cap}THARGOIDS OFF YOUR ASS OUT IN DEEP
@@ -8631,6 +8875,10 @@ ENDIF
 \
 \ See the PDESC routine for details of how extended system descriptions work.
 \
+\ This version of Elite contains an extended system description override for
+\ Lave that welcomes us to the seventeenth galaxy. This is never shown in-game,
+\ as the galaxy number in RUGAL has to be 16, and this cannot happen.
+\
 \ ******************************************************************************
 
 .RUPLA
@@ -8695,6 +8943,10 @@ ENDIF
 \
 \ See the PDESC routine for details of how extended system descriptions work.
 \
+\ This version of Elite contains an extended system description override for
+\ Lave that welcomes us to the seventeenth galaxy. This is never shown in-game,
+\ as the galaxy number in RUGAL has to be 16, and this cannot happen.
+\
 \ ******************************************************************************
 
 .RUGAL
@@ -8751,6 +9003,17 @@ ENDIF
 \     normal extended description if the criteria in RUPLA and RUGAL are met
 \
 \ See the PDESC routine for details of how extended system descriptions work.
+\
+\ The encodings shown for each extended text token use the following notation:
+\
+\   {n}           Jump token                n = 1 to 31
+\   [n?]          Random token              n = 91 to 128
+\   [n]           Recursive token           n = 129 to 215
+\   <n>           Two-letter token          n = 215 to 255
+\
+\ This version of Elite contains an extended system description override for
+\ Lave that welcomes us to the seventeenth galaxy. This is never shown in-game,
+\ as the galaxy number in RUGAL has to be 16, and this cannot happen.
 \
 \ ******************************************************************************
 

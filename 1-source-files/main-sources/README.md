@@ -6,7 +6,7 @@ This folder contains the annotated source code for the BBC Master version of Eli
 
   * [elite-source.asm](elite-source.asm) contains the main source for the game
 
-  * [elite-data.asm](elite-disc.asm) contains the game's data, such as ship blueprints and text
+  * [elite-data.asm](elite-data.asm) contains source for the game data, including the game text and ship blueprints
 
 * Other source files:
 
