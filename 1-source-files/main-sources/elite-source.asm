@@ -41685,10 +41685,8 @@ ENDIF
 \LDX #&FF               \ "Q" is being pressed, so set DNOIZ to &FF to turn the
 \STX DNOIZ              \ sound off
 \
-\LDX #&51               \ Set X to &51, which is the internal key for "S" on the
-\                       \ BBC Micro. This is set to ensure that X has the same
-\                       \ value at this point as the BBC Micro version of this
-\                       \ routine would
+\LDX #'Q'               \ Set X to the ASCII for "Q" once again, so it doesn't
+\                       \ get changed by the above
 
                         \ --- End of removed code ----------------------------->
 
