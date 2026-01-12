@@ -1,96 +1,22 @@
 MODE7
-tstaddr = &8008
-values = &90
-unique = &80
-RomSel = &FE30
-romNumber = &8E : REM Set to address of .musicRomNumber
-
-PRINT"Acornsoft Elite... with music!"
-PRINT"=============================="
-PRINT'"For the BBC Master 128"
-PRINT'"Based on the Acornsoft SNG47 release"
-PRINT"of Elite by Ian Bell and David Braben"
-PRINT"Copyright (c) Acornsoft 1986"
-PRINT'"Sound routines by Kieran Connell and"
-PRINT"Simon Morris"
-PRINT'"Original music by Aidan Bell and Julie"
-PRINT"Dunn (c) D. Braben and I. Bell 1985,"
-PRINT"ported from the C64 by Negative Charge"
-PRINT'"Elite integration by Mark Moxon"
-PRINT'"Sideways RAM detection and loading"
-PRINT"routines by Tricky and J.G.Harston"
-
-REM Find 16 values distinct from the 16 rom values and each other and save the original rom values
-DIM CODE &100
-FOR P = 0 TO 2 STEP 2
-P%=CODE
-[OPT P
-SEI
-LDA &F4                 \\ Store &F4 on stack
-PHA
-LDY #15                 \\ Unique values (-1) to find
-TYA                     \\ A can start anywhere less than 256-64 as it just needs to allow for enough numbers not to clash with rom, tst and uninitialised tst values
-.next_val
-LDX #15                 \\ Sideways bank
-ADC #1                  \\ Will inc mostly by 2, but doesn't matter
-.next_slot
-STX &F4
-STX RomSel
-CMP tstaddr
-BEQ next_val
-CMP unique,X            \\ Doesn't matter that we haven't checked these yet as it just excludes unnecessary values, but is safe
-BEQ next_val
-DEX
-BPL next_slot
-STA unique,Y
-LDX tstaddr
-STX values,Y
-DEY
-BPL next_val
-LDX #0                  \\ Try to swap each rom value with a unique test value
-.swap
-STX &F4
-STX RomSel              \\ Set RomSel as it will be needed to read, but is also sometimes used to select write
-LDA unique,X
-STA tstaddr
-INX
-CPX #16
-BNE swap
-LDY #16                 \\ Count matching values and restore old values - reverse order to swapping is safe
-LDX #15
-.tst_restore
-STX &F4
-STX RomSel
-LDA tstaddr
-CMP unique,X            \\ If it has changed, but is not this value, it will be picked up in a later bank
-BNE not_swr
-LDA values,X
-STA tstaddr
-DEY
-STX values,Y
-.not_swr
-DEX
-BPL tst_restore
-STY values
-PLA                     \\ Restore original value of &F4
-STA &F4
-STA RomSel              \\ Restore original ROM
-CLI
-RTS
-]
-NEXT
-CALL CODE
-N%=16-?&90
-IF N%=0 THEN PRINT'"Can't run:";CHR$129;"no sideways RAM detected":END
-PRINT'"Detected ";16-?&90;" sideways RAM bank";
-IF N% > 1 THEN PRINT "s";
-REM IF N% > 0 THEN FOR X% = ?&90 TO 15 : PRINT;" ";X%?&90; : NEXT
-IF ?(&90+?&90) = 6 AND N% = 1 THEN PRINT", but Elite needs that one to run (RAM bank 6)":END
-IF ?(&90+?&90) = 6 AND N% > 1 THEN ?(&90+?&90) = ?(&90+?&90+1) : REM Skip bank 6
-?romNumber=?(&90+?&90):REM STORE RAM BANK USED SOMEWHERE IN ZERO PAGE
-PRINT'"Loading music into RAM bank ";?romNumber;"...";
-OSCLI "SRLOAD MUSIC 8000 "+STR$(?romNumber)
-P%=&70
+DIM CODE% &100
+bank=&70
+temp=&71
+addrBlock=&72
+fromAddr=&80
+romNumber=&8E : REM Address of .musicRomNumber
+master%=TRUE
+:
+PROCtitle
+PROCfindSRAM
+PROCloadROM
+PROCpatch
+PROCloadSRAM
+*RUN M128Elt
+END
+:
+DEF PROCpatch
+P%=&3C0F
 [OPT 0
 .platform       EQUB 128
 .addrDNOIZ      EQUW &2C55
@@ -106,8 +32,217 @@ P%=&70
 .keyVolUp       EQUB &2E
 .end
 ]
-OSCLI "SRWRITE 0070+"+STR$~(end-platform)+" 800F "+STR$(?romNumber)
+ENDPROC
+:
+DEF PROCtitle
+PRINT"Acornsoft Elite... with music!"
+PRINT"=============================="
+PRINT
+PRINT"For the BBC Master 128"
+PRINT
+PRINT"Based on the Acornsoft SNG47 release"
+PRINT"of Elite by Ian Bell and David Braben"
+PRINT"Copyright (c) Acornsoft 1986"
+PRINT
+PRINT"Sound routines by Kieran Connell and"
+PRINT"Simon Morris"
+PRINT
+PRINT"Original music by Aidan Bell and Julie"
+PRINT"Dunn (c) D. Braben and I. Bell 1985,"
+PRINT"ported from the C64 by Negative Charge"
+PRINT
+PRINT"Elite integration by Mark Moxon"
+ENDPROC
+:
+DEF PROCloadROM
+IF ?bank>15 THEN PRINT'"Can't run:";CHR$129;"no sideways RAM detected":END
+PRINT'"Loading music into RAM bank ";?bank;"...";
+*LOAD MUSIC 3C00
+ENDPROC
+:
+DEF PROCloadSRAM
+!fromAddr=&3C00
+CALL SRLoad
 PRINT CHR$130;"OK"
 PRINT'"Press any key to play Elite";
 A$=GET$
-*RUN M128Elt
+*FX138,0,32
+ENDPROC
+:
+DEF PROCfindSRAM
+FOR pass%=0 TO 2 STEP 2
+P%=CODE%
+[OPT pass%
+
+ LDX #&00           \ Set A = ?&00F4
+ LDY #&F4
+ JSR GetByteXY
+
+ PHA                \ Store A on stack
+
+ LDA #0             \ Try each ROM, starting from bank 0
+ STA bank
+
+.mloop
+
+ JSR PageBankA      \ Page in bank A
+
+ LDX #&80           \ Set A = ?&8007 (copyright offset)
+ LDY #&07           \
+ JSR GetByteXY      \ Also sets addrBlock+1 = &80
+
+ STA addrBlock      \ Set addrBlock(1 0) to copyright address
+
+ LDA #0             \ Set temp = index into copyright string
+ STA temp
+
+.cloop
+
+ JSR GetByte        \ Fetch next copyright byte from ROM
+
+ LDY temp           \ If no copyright match, go to emptyBank
+ CMP copyright,Y
+ BNE emptyBank
+
+ INC temp           \ Move adresses to next character
+ INC addrBlock
+
+ INY                \ Loop through all four characters
+ CPY #4
+ BNE cloop
+
+ BEQ nextBank       \ Bank is occupied so move on to next bank (JMP)
+
+.emptyBank
+
+ LDX #&80           \ Set A = ?&8008 (the byte to use for RAM test)
+ LDY #&08
+ JSR GetByteXY
+
+ STA temp           \ Store original value in temp
+
+ EOR #&FF           \ Set ?&8008 = ~A
+ JSR SetByte
+
+ JSR GetByte        \ Set A = ?&8008
+
+ CMP temp           \ If &8008 is unchanged, move on to next bank
+ BEQ nextBank
+
+ JSR SetByte        \ Set ?&8008 = A to restore contents of &8008
+
+ JMP done           \ Return the bank number in A
+
+.nextBank
+
+ INC bank           \ Move on to next bank
+
+ LDA bank           \ Fetch next bank number to check
+
+ OPT FNmaster       \ Skip bank 6 if this is a Master
+
+ CMP #16            \ Loop back to check next bank until all done
+ BCC mloop
+
+.done
+
+ PLA                \ Page in original bank
+ JSR PageBankA
+
+ LDA bank           \ Set ?romNumber = bank and return
+ LDX #0
+ LDY #romNumber
+ JMP SetByteXY
+
+.SRLoad
+
+ LDX #&00           \ Set A = ?&00F4
+ LDY #&F4
+ JSR GetByteXY
+
+ PHA                \ Store A on stack
+
+ LDA bank           \ Page in SRAM bank
+ JSR PageBankA
+
+ LDX #&80           \ Set addrBlock(1 0) = &8000
+ LDY #&00
+ STX addrBlock+1
+ STY addrBlock
+
+.sloop
+
+ LDY #0             \ Set ?addrBlock(1 0) = ?fromAddr(1 0)
+ LDA (fromAddr),Y
+ JSR SetByte
+
+ INC fromAddr       \ Loop back to copy one page
+ INC addrBlock
+ BNE sloop
+
+ INC fromAddr+1     \ Loop back to copy next page until &C000
+ INC addrBlock+1
+ LDA addrBlock+1
+ CMP #&C0
+ BNE sloop
+
+ BEQ done           \ Restore original bank (JMP)
+
+.copyright
+
+ EQUB 0
+ EQUS "(C)"
+
+.PageBankA
+
+ PHA                \ Set ?&00F4 = A
+ LDX #&00
+ LDY #&F4
+ JSR SetByteXY
+
+ PLA                \ Set ?&FE30 = A
+ LDX #&FE
+ LDY #&30
+ JMP SetByteXY
+
+.SetByteXY
+
+ STX addrBlock+1    \ Set Address
+ STY addrBlock
+
+.SetByte
+
+ STA addrBlock+4    \ Store byte
+ LDA #6
+ LDX #addrBlock MOD256
+ LDY #addrBlock DIV256
+ JMP &FFF1
+
+.GetByteXY
+
+ STX addrBlock+1    \ Set Address
+ STY addrBlock
+
+.GetByte
+
+ LDA #5             \ Fetch byte
+ LDX #addrBlock MOD256
+ LDY #addrBlock DIV256
+ JSR &FFF1
+ LDA addrBlock+4
+ RTS
+]
+NEXT
+CALL CODE%
+ENDPROC
+:
+DEF FNmaster
+IF master% PROCnotBank6
+=pass%
+:
+DEF PROCnotBank6
+[OPT pass%
+ CMP #6             \ Do not use bank 6 (Elite uses it)
+ BEQ nextBank
+]
+ENDPROC
