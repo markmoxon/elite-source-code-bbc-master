@@ -18,19 +18,19 @@ from __future__ import print_function
 import sys
 
 argv = sys.argv
-Encrypt = True
+encrypt = True
 release = 1
 
 for arg in argv[1:]:
     if arg == "-u":
-        Encrypt = False
+        encrypt = False
     if arg == "-rel1":
         release = 1
     if arg == "-rel2":
         release = 2
 
 print("Master Elite Checksum")
-print("Encryption = ", Encrypt)
+print("Encryption = ", encrypt)
 
 # Configuration variables for scrambling code and calculating checksums
 #
@@ -89,18 +89,16 @@ for i in range(CH, 0, -1):
 
 print("Commander checksum = ", hex(CH))
 
-# Must have Commander checksum otherwise game will lock
-
-if Encrypt:
-    data_block[commander_start + commander_offset] = CH ^ 0xA9
-    data_block[commander_start + commander_offset + 1] = CH
+data_block[commander_start + commander_offset] = CH ^ 0xA9
+data_block[commander_start + commander_offset + 1] = CH
 
 # Encrypt game code
 
-for n in range(scramble_from, scramble_to):
-    data_block[n - load_address] = (data_block[n - load_address] + data_block[n + 1 - load_address]) % 256
+if encrypt:
+    for n in range(scramble_from, scramble_to):
+        data_block[n - load_address] = (data_block[n - load_address] + data_block[n + 1 - load_address]) % 256
 
-data_block[scramble_to - load_address] = (data_block[scramble_to - load_address] + seed) % 256
+    data_block[scramble_to - load_address] = (data_block[scramble_to - load_address] + seed) % 256
 
 # Write output file for BCODE
 
@@ -125,10 +123,11 @@ elite_file = open("3-assembled-output/BDATA.unprot.bin", "rb")
 data_block.extend(elite_file.read())
 elite_file.close()
 
-for n in range(scramble_from, scramble_to):
-    data_block[n - load_address] = (data_block[n - load_address] + data_block[n + 1 - load_address]) % 256
+if encrypt:
+    for n in range(scramble_from, scramble_to):
+        data_block[n - load_address] = (data_block[n - load_address] + data_block[n + 1 - load_address]) % 256
 
-data_block[scramble_to - load_address] = (data_block[scramble_to - load_address] + seed) % 256
+    data_block[scramble_to - load_address] = (data_block[scramble_to - load_address] + seed) % 256
 
 # Write output file for BDATA
 
