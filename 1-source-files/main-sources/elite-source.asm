@@ -1,11 +1,11 @@
 \ ******************************************************************************
 \
-\ BBC MASTER ELITE GAME SOURCE
+\ BBC MASTER ELITE MAIN GAME SOURCE
 \
 \ BBC Master Elite was written by Ian Bell and David Braben and is copyright
 \ Acornsoft 1986
 \
-\ The code on this site has been reconstructed from a disassembly of the version
+\ The code in this file has been reconstructed from a disassembly of the version
 \ released on Ian Bell's personal website at http://www.elitehomepage.org/
 \
 \ The commentary is copyright Mark Moxon, and any misunderstandings or mistakes
@@ -16,6 +16,10 @@
 \
 \ The deep dive articles referred to in this commentary can be found at
 \ https://elite.bbcelite.com/deep_dives
+\
+\ ------------------------------------------------------------------------------
+\
+\ This source file contains the main game code for BBC Master Elite.
 \
 \ ------------------------------------------------------------------------------
 \
@@ -128,6 +132,10 @@
 
  Y = 96                 \ The centre y-coordinate of the 256 x 192 space view
 
+ GCYT = 24              \ The y-coordinate of the top of the Long-range Chart
+
+ GCYB = GCYT + 128      \ The y-coordinate of the bottom of the Long-range chart
+
  f0 = &80               \ Internal key number for red key f0 (Launch, Front)
 
  f1 = &81               \ Internal key number for red key f1 (Buy Cargo, Rear)
@@ -182,7 +190,7 @@
 
  sobeep  = 1            \ Sound 1  = Short, high beep
 
- soclick = 2            \ Sound 2  = This sound is not defined or used
+ soclick = 2            \ Sound 2  = This sound is not used
 
  solaser = 3            \ Sound 3  = Lasers fired by us 1
 
@@ -233,6 +241,12 @@
  VE = &57               \ The obfuscation byte used to hide the extended tokens
                         \ table from crackers viewing the binary code
 
+ KEY1 = &19             \ The seed for encrypting the game code from DOENTRY to
+                        \ F%
+
+ KEY2 = &62             \ The seed for encrypting the game data from XX21 to
+                        \ &BBFF
+
  LL = 30                \ The length of lines (in characters) of justified text
                         \ in the extended tokens system
 
@@ -242,9 +256,8 @@
  IRQ1V = &0204          \ The IRQ1V vector that we intercept to implement the
                         \ split-screen mode
 
- WRCHV = &020E          \ The WRCHV vector that we intercept to implement our
-                        \ own custom OSWRCH commands for communicating over the
-                        \ Tube
+ WRCHV = &020E          \ The WRCHV vector that we intercept with our custom
+                        \ text printing routine
 
  LS% = &0800            \ The start of the descending ship line heap
 
@@ -326,14 +339,14 @@ ENDIF
 \
 \       Name: ZP
 \       Type: Workspace
-\    Address: &0000 to &00B0
+\    Address: &0000 to &00E3
 \   Category: Workspaces
 \    Summary: Lots of important variables are stored in the zero page workspace
 \             as it is quicker and more space-efficient to access memory here
 \
 \ ******************************************************************************
 
- ORG &0000
+ ORG &0000              \ Set the assembly address to &0000
 
 .ZP
 
@@ -409,6 +422,7 @@ ENDIF
                         \ Elite draws on-screen by poking bytes directly into
                         \ screen memory, and SC(1 0) is typically set to the
                         \ address of the character block containing the pixel
+                        \ we want to draw
 
 .SCH
 
@@ -425,7 +439,7 @@ ENDIF
                         \
                         \ A value of 0 denotes the leftmost column and 32 the
                         \ rightmost column, but because the top part of the
-                        \ screen (the space view) has a white border that
+                        \ screen (the space view) has a border box that
                         \ clashes with columns 0 and 32, text is only shown
                         \ in columns 1-31
 
@@ -446,7 +460,7 @@ ENDIF
                         \ just before the screen splits
                         \
                         \ A value of 0 denotes the top row, but because the
-                        \ top part of the screen has a white border that clashes
+                        \ top part of the screen has a border box that clashes
                         \ with row 0, text is always shown at row 1 or greater
 
 .QQ17
@@ -650,7 +664,7 @@ ENDIF
 .X1
 
  SKIP 1                 \ Temporary storage, typically used for x-coordinates in
-                        \ line-drawing routines
+                        \ the line-drawing routines
 
 .Y1
 
@@ -660,7 +674,7 @@ ENDIF
 .X2
 
  SKIP 1                 \ Temporary storage, typically used for x-coordinates in
-                        \ line-drawing routines
+                        \ the line-drawing routines
 
 .Y2
 
@@ -712,16 +726,12 @@ ENDIF
 
  SKIP 1                 \ The ball line heap pointer, which contains the number
                         \ of the first free byte after the end of the LSX2 and
-                        \ LSY2 heaps (see the deep dive on "The ball line heap"
-                        \ for details)
+                        \ LSY2 heaps
 
 .QQ15
 
  SKIP 6                 \ The three 16-bit seeds for the selected system, i.e.
                         \ the one in the crosshairs in the Short-range Chart
-                        \
-                        \ See the deep dives on "Galaxy and system seeds" and
-                        \ "Twisting the system seeds" for more details
 
 .K5
 
@@ -809,14 +819,13 @@ ENDIF
  SKIP 1                 \ The type of the current view:
                         \
                         \   0   = Space view
-                        \   1   = Title screen
+                        \         Death screen
+                        \   1   = Data on System screen (red key f6)
                         \         Get commander name ("@", save/load commander)
                         \         In-system jump just arrived ("J")
-                        \         Data on System screen (red key f6)
                         \   2   = Buy Cargo screen (red key f1)
                         \   3   = Mis-jump just arrived (witchspace)
                         \   4   = Sell Cargo screen (red key f2)
-                        \   6   = Death screen
                         \   8   = Status Mode screen (red key f8)
                         \         Inventory screen (red key f9)
                         \   13  = Rotating ship view (title or mission screen)
@@ -842,9 +851,7 @@ ENDIF
  SKIP 1                 \ The main loop counter
                         \
                         \ This counter determines how often certain actions are
-                        \ performed within the main loop. See the deep dive on
-                        \ "Scheduling tasks with the main loop counter" for more
-                        \ details
+                        \ performed within the main loop
 
 .TYPE
 
@@ -1064,10 +1071,7 @@ ENDIF
                         \ access and manipulate ship data, so to make this an
                         \ efficient exercise, the ship data is first copied from
                         \ the ship data blocks at K% into INWK (or, when new
-                        \ ships are spawned, from the blueprints at XX21). See
-                        \ the deep dive on "Ship data blocks" for details of
-                        \ what each of the bytes in the INWK data block
-                        \ represents
+                        \ ships are spawned, from the blueprints at XX21)
 
 .XX19
 
@@ -1083,9 +1087,7 @@ ENDIF
                         \ hunter, a pirate, currently hostile, in the process of
                         \ docking, inside the hold having been scooped, and so
                         \ on. The default values for each ship type are taken
-                        \ from the table at E%, and you can find out more detail
-                        \ in the deep dive on "Advanced tactics with the NEWB
-                        \ flags"
+                        \ from the table at E%
 
 .JSTX
 
@@ -1131,15 +1133,13 @@ ENDIF
                         \ enables Elite to scan for concurrent key presses of
                         \ the primary flight keys, plus a secondary flight key
                         \
-                        \ See the deep dive on "The key logger" for more details
-                        \
                         \ If a key is being pressed that is not in the keyboard
                         \ table at KYTB, it can be stored here (as seen in
                         \ routine DK4, for example)
 
 .KY17
 
- SKIP 1                 \ "E" is being pressed
+ SKIP 1                 \ "E" is being pressed (activate E.C.M.)
                         \
                         \   * 0 = no
                         \
@@ -1147,7 +1147,7 @@ ENDIF
 
 .KY14
 
- SKIP 1                 \ "T" is being pressed
+ SKIP 1                 \ "T" is being pressed (target missile)
                         \
                         \   * 0 = no
                         \
@@ -1155,7 +1155,7 @@ ENDIF
 
 .KY15
 
- SKIP 1                 \ "U" is being pressed
+ SKIP 1                 \ "U" is being pressed (unarm missile)
                         \
                         \   * 0 = no
                         \
@@ -1163,7 +1163,7 @@ ENDIF
 
 .KY20
 
- SKIP 1                 \ "P" is being pressed
+ SKIP 1                 \ "P" is being pressed (deactivate docking computer)
                         \
                         \   * 0 = no
                         \
@@ -1171,7 +1171,7 @@ ENDIF
 
 .KY7
 
- SKIP 1                 \ "A" is being pressed
+ SKIP 1                 \ "A" is being pressed (fire lasers)
                         \
                         \   * 0 = no
                         \
@@ -1182,7 +1182,7 @@ ENDIF
 
 .KY5
 
- SKIP 1                 \ "X" is being pressed
+ SKIP 1                 \ "X" is being pressed (pull up)
                         \
                         \   * 0 = no
                         \
@@ -1190,7 +1190,7 @@ ENDIF
 
 .KY18
 
- SKIP 1                 \ "J" is being pressed
+ SKIP 1                 \ "J" is being pressed (in-system jump)
                         \
                         \   * 0 = no
                         \
@@ -1198,7 +1198,7 @@ ENDIF
 
 .KY6
 
- SKIP 1                 \ "S" is being pressed
+ SKIP 1                 \ "S" is being pressed (pitch down)
                         \
                         \   * 0 = no
                         \
@@ -1206,7 +1206,7 @@ ENDIF
 
 .KY19
 
- SKIP 1                 \ "C" is being pressed
+ SKIP 1                 \ "C" is being pressed (activate docking computer)
                         \
                         \   * 0 = no
                         \
@@ -1214,7 +1214,7 @@ ENDIF
 
 .KY12
 
- SKIP 1                 \ TAB is being pressed
+ SKIP 1                 \ TAB is being pressed (energy bomb)
                         \
                         \   * 0 = no
                         \
@@ -1222,7 +1222,7 @@ ENDIF
 
 .KY2
 
- SKIP 1                 \ Space is being pressed
+ SKIP 1                 \ Space is being pressed (speed up)
                         \
                         \   * 0 = no
                         \
@@ -1230,7 +1230,7 @@ ENDIF
 
 .KY16
 
- SKIP 1                 \ "M" is being pressed
+ SKIP 1                 \ "M" is being pressed (fire missile)
                         \
                         \   * 0 = no
                         \
@@ -1238,7 +1238,7 @@ ENDIF
 
 .KY3
 
- SKIP 1                 \ "<" is being pressed
+ SKIP 1                 \ "<" is being pressed (roll left)
                         \
                         \   * 0 = no
                         \
@@ -1246,7 +1246,7 @@ ENDIF
 
 .KY4
 
- SKIP 1                 \ ">" is being pressed
+ SKIP 1                 \ ">" is being pressed (roll right)
                         \
                         \   * 0 = no
                         \
@@ -1254,7 +1254,7 @@ ENDIF
 
 .KY1
 
- SKIP 1                 \ "?" is being pressed
+ SKIP 1                 \ "?" is being pressed (slow down)
                         \
                         \   * 0 = no
                         \
@@ -1262,7 +1262,7 @@ ENDIF
 
 .KY13
 
- SKIP 1                 \ ESCAPE is being pressed
+ SKIP 1                 \ ESCAPE is being pressed (launch escape pod)
                         \
                         \   * 0 = no
                         \
@@ -1313,38 +1313,23 @@ ENDIF
                         \   * 5 = Rich Agricultural
                         \   * 6 = Average Agricultural
                         \   * 7 = Poor Agricultural
-                        \
-                        \ See the deep dive on "Generating system data" for more
-                        \ information on economies
 
 .QQ4
 
  SKIP 1                 \ The selected system's government (0-7)
-                        \
-                        \ See the deep dive on "Generating system data" for more
-                        \ details of the various government types
 
 .QQ5
 
  SKIP 1                 \ The selected system's tech level (0-14)
-                        \
-                        \ See the deep dive on "Generating system data" for more
-                        \ information on tech levels
 
 .QQ6
 
  SKIP 2                 \ The selected system's population in billions * 10
                         \ (1-71), so the maximum population is 7.1 billion
-                        \
-                        \ See the deep dive on "Generating system data" for more
-                        \ details on population levels
 
 .QQ7
 
  SKIP 2                 \ The selected system's productivity in M CR (96-62480)
-                        \
-                        \ See the deep dive on "Generating system data" for more
-                        \ details about productivity levels
 
 .QQ8
 
@@ -1377,7 +1362,7 @@ ENDIF
                         \ which is 20 (#NOST) for normal space, and 3 for
                         \ witchspace
 
- PRINT "Zero page variables from ", ~ZP, " to ", ~P%
+ PRINT "ZP workspace from ", ~ZP, "to ", ~P%-1, "inclusive"
 
 \ ******************************************************************************
 \
@@ -1394,7 +1379,7 @@ ENDIF
 \
 \ ******************************************************************************
 
- ORG &0100
+ ORG &0100              \ Set the assembly address to &0100
 
 .XX3
 
@@ -1405,7 +1390,7 @@ ENDIF
 \
 \       Name: K%
 \       Type: Workspace
-\    Address: &0400 to &05BA
+\    Address: &0400 to &05BB
 \   Category: Workspaces
 \    Summary: Ship data blocks and ship line heaps
 \  Deep dive: Ship data blocks
@@ -1416,21 +1401,19 @@ ENDIF
 \ Contains ship data for all the ships, planets, suns and space stations in our
 \ local bubble of universe.
 \
-\ The blocks are pointed to by the lookup table at location UNIV. The first 720
-\ bytes of the K% workspace hold ship data on up to 20 ships, with 37 (NI%)
+\ The blocks are pointed to by the lookup table at location UNIV. The first 444
+\ bytes of the K% workspace hold ship data on up to 12 ships, with 37 (NI%)
 \ bytes per ship.
-\
-\ See the deep dive on "Ship data blocks" for details on ship data blocks, and
-\ the deep dive on "The local bubble of universe" for details of how Elite
-\ stores the local universe in K%, FRIN and UNIV.
 \
 \ ******************************************************************************
 
- ORG &0400
+ ORG &0400              \ Set the assembly address to &0400
 
 .K%
 
  SKIP NOSH * NI%        \ Ship data blocks and ship line heap
+
+ PRINT "K% workspace from ", ~K%, "to ", ~P%-1, "inclusive"
 
 \ ******************************************************************************
 \
@@ -1442,7 +1425,7 @@ ENDIF
 \
 \ ******************************************************************************
 
- ORG &0E41
+ ORG &0E41              \ Set the assembly address to &0E41
 
 .WP
 
@@ -1458,10 +1441,6 @@ ENDIF
                         \ (the last slot is effectively used as a null
                         \ terminator when shuffling the slots down in the
                         \ KILLSHP routine)
-                        \
-                        \ See the deep dive on "The local bubble of universe"
-                        \ for details of how Elite stores the local universe in
-                        \ FRIN, UNIV and K%
 
 .MANY
 
@@ -1470,9 +1449,6 @@ ENDIF
                         \
                         \ The number of ships of type X in the local bubble is
                         \ stored at MANY+X
-                        \
-                        \ See the deep dive on "Ship blueprints" for a list of
-                        \ ship types
 
 .SSPR
 
@@ -1666,13 +1642,11 @@ ENDIF
 
 .LSX2
 
- SKIP 256               \ The ball line heap for storing x-coordinates (see the
-                        \ deep dive on "The ball line heap" for details)
+ SKIP 256               \ The ball line heap for storing x-coordinates
 
 .LSY2
 
- SKIP 256               \ The ball line heap for storing y-coordinates (see the
-                        \ deep dive on "The ball line heap" for details)
+ SKIP 256               \ The ball line heap for storing y-coordinates
 
 .LSO
 
@@ -1847,9 +1821,6 @@ ENDIF
                         \ left (rolling each byte within itself) to get the
                         \ seeds for the next galaxy, so after eight galactic
                         \ jumps, the seeds roll around to the first galaxy again
-                        \
-                        \ See the deep dives on "Galaxy and system seeds" and
-                        \ "Twisting the system seeds" for more details
 
 .CASH
 
@@ -1874,10 +1845,6 @@ ENDIF
 .COK
 
  SKIP 1                 \ Flags used to generate the competition code
-                        \
-                        \ See the deep dive on "The competition code" for
-                        \ details of these flags and how they are used in
-                        \ generating and decoding the competition code
 
 .GCNT
 
@@ -2058,9 +2025,7 @@ ENDIF
                         \   * AVL+7 contains the amount of computers (item 7)
                         \
                         \ See QQ23 for a list of market item numbers and their
-                        \ storage units, and the deep dive on "Market item
-                        \ prices and availability" for details of the algorithm
-                        \ used for calculating each item's availability
+                        \ storage units
 
 .QQ26
 
@@ -2068,8 +2033,7 @@ ENDIF
                         \
                         \ This value is set to a new random number for each
                         \ change of system, so we can add a random factor into
-                        \ the calculations for market prices (for details of how
-                        \ this is used, see the deep dive on "Market prices")
+                        \ the calculations for market prices
 
 .TALLY
 
@@ -2084,23 +2048,27 @@ ENDIF
                         \
                         \ If the high byte in TALLY+1 is 0 then we have between
                         \ 0 and 255 kills, so our rank is Harmless, Mostly
-                        \ Harmless, Poor, Average or Above Average, according to
-                        \ the value of the low byte in TALLY:
+                        \ Harmless, Poor, Average Above Average or Competent,
+                        \ according to the value of the low byte in TALLY:
                         \
-                        \   Harmless        = %00000000 to %00000011 = 0 to 3
-                        \   Mostly Harmless = %00000100 to %00000111 = 4 to 7
-                        \   Poor            = %00001000 to %00001111 = 8 to 15
-                        \   Average         = %00010000 to %00011111 = 16 to 31
-                        \   Above Average   = %00100000 to %11111111 = 32 to 255
+                        \   Harmless         %00000000 to %00000111 = 0 to 7
+                        \   Mostly Harmless  %00001000 to %00001111 = 8 to 15
+                        \   Poor             %00010000 to %00011111 = 16 to 31
+                        \   Average          %00100000 to %00111111 = 32 to 63
+                        \   Above Average    %01000000 to %01111111 = 64 to 127
+                        \   Competent        %10000000 to %11111111 = 128 to 255
+                        \
+                        \ Note that the Competent range also covers kill counts
+                        \ from 256 to 511, as follows
                         \
                         \ If the high byte in TALLY+1 is non-zero then we are
                         \ Competent, Dangerous, Deadly or Elite, according to
-                        \ the high byte in TALLY+1:
+                        \ the value of TALLY(1 0):
                         \
-                        \   Competent       = 1           = 256 to 511 kills
-                        \   Dangerous       = 2 to 9      = 512 to 2559 kills
-                        \   Deadly          = 10 to 24    = 2560 to 6399 kills
-                        \   Elite           = 25 and up   = 6400 kills and up
+                        \   Competent   (1 0) to (1 255)   = 256 to 511 kills
+                        \   Dangerous   (2 0) to (9 255)   = 512 to 2559 kills
+                        \   Deadly      (10 0) to (24 255) = 2560 to 6399 kills
+                        \   Elite       (25 0) and up      = 6400 kills and up
                         \
                         \ You can see the rating calculation in the STATUS
                         \ subroutine
@@ -2145,7 +2113,11 @@ ENDIF
 
 .dialc
 
- SKIP 14                \ These bytes appear to be unused
+ SKIP 14                \ These bytes are unused in this version of Elite
+                        \
+                        \ They are left over from the Apple II version, where
+                        \ they are used to store the current colour of the
+                        \ dashboard indicators
 
 .QQ24
 
@@ -2169,9 +2141,6 @@ ENDIF
                         \   * 5 = Rich Agricultural
                         \   * 6 = Average Agricultural
                         \   * 7 = Poor Agricultural
-                        \
-                        \ See the deep dive on "Generating system data" for more
-                        \ information on economies
 
 .QQ29
 
@@ -2180,16 +2149,10 @@ ENDIF
 .gov
 
  SKIP 1                 \ The current system's government type (0-7)
-                        \
-                        \ See the deep dive on "Generating system data" for
-                        \ details of the various government types
 
 .tek
 
  SKIP 1                 \ The current system's tech level (0-14)
-                        \
-                        \ See the deep dive on "Generating system data" for more
-                        \ information on tech levels
 
 .SLSP
 
@@ -2205,9 +2168,6 @@ ENDIF
 
  SKIP 6                 \ The three 16-bit seeds for the current system, i.e.
                         \ the one we are currently in
-                        \
-                        \ See the deep dives on "Galaxy and system seeds" and
-                        \ "Twisting the system seeds" for more details
 
 .safehouse
 
@@ -2239,7 +2199,7 @@ ENDIF
                         \ channel 3 (the Bitstik rotation value), which gets
                         \ updated regularly by the IRQ1 interrupt handler
 
- PRINT "WP workspace from  ", ~WP," to ", ~P%
+ PRINT "WP workspace from ", ~WP, "to ", ~P%-1, "inclusive"
 
 \ ******************************************************************************
 \
@@ -2247,7 +2207,7 @@ ENDIF
 \
 \ ******************************************************************************
 
- ORG CODE%
+ ORG CODE%              \ Set the assembly address to CODE%
 
  LOAD_A% = LOAD%
 
@@ -2289,10 +2249,11 @@ ENDIF
 \
 \ Palette data is given as a set of bytes, with each byte mapping a logical
 \ colour to a physical one. In each byte, the logical colour is given in bits
-\ 4-7 and the physical colour in bits 0-3. See p.379 of the Advanced User Guide
-\ for details of how palette mapping works, as in modes 1 and 2 we have to do
-\ multiple palette commands to change the colours correctly, and the physical
-\ colour value is EOR'd with 7, just to make things even more confusing.
+\ 4-7 and the physical colour in bits 0-3. See page 379 of the "Advanced User
+\ Guide for the BBC Micro" by Bray, Dickens and Holmes for details of how
+\ palette mapping works, as in modes 1 and 2 we have to do multiple palette
+\ commands to change the colours correctly, and the physical colour value is
+\ EOR'd with 7, just to make things even more confusing.
 \
 \ ******************************************************************************
 
@@ -2371,19 +2332,18 @@ ENDIF
 
  STZ DL                 \ Set DL to 0
 
-{
-.DELL1                  \ This label is a duplicate of a label in the DELT
-                        \ routine (which is why we need to surround it with
-                        \ braces, as BeebAsm doesn't allow us to redefine
-                        \ labels, unlike BBC BASIC)
+.DELL1K                 \ This label is a duplicate of a label in the DELT
+                        \ routine
+                        \
+                        \ In the original source this label is DELL1, but
+                        \ because BeebAsm doesn't allow us to redefine labels,
+                        \ I have renamed it to DELL1K
 
  LDA DL                 \ Loop round these two instructions until DL is no
- BEQ DELL1              \ longer 0 (DL gets set to 30 in the LINSCN routine,
+ BEQ DELL1K             \ longer 0 (DL gets set to 30 in the LINSCN routine,
                         \ which is run when vertical sync has occurred on the
                         \ video system, so DL will change to a non-zero value
                         \ at the start of each screen refresh)
-
-}
 
  RTS                    \ Return from the subroutine
 
@@ -2541,7 +2501,7 @@ ENDIF
 \       Name: SOFLUSH
 \       Type: Subroutine
 \   Category: Sound
-\    Summary: Reset the sound buffer and turn off all sound channels
+\    Summary: Reset the sound buffers and turn off all sound channels
 \
 \ ******************************************************************************
 
@@ -2683,14 +2643,22 @@ ENDIF
  INX                    \ SOPR+1 >= SOPR+2, so increment X to 2
 
 \JSR SOUS4              \ These instructions are commented out in the original
-\BCC SOUR1              \ source
+\                       \ source
+\BCC SOUR1
+\
 \DEX
-\BIT SOUR1 \SEV!!
+\
+\BIT SOUR1
+\
 \LDA SFXPR,Y
 \AND #&10
 \BEQ SOUS9
+\
 \RTS
-\fall into SOUS4 since this facility not needed
+\
+\fall into SOUS4 since
+\this facility not
+\needed
 
 .SOUS4
 
@@ -2865,8 +2833,9 @@ ENDIF
 
 \ ******************************************************************************
 \
-\       Name: SOFLG
-\       Type: Variable
+\       Name: Sound variables
+\       Type: Workspace
+\    Address: &144D to &1491
 \   Category: Sound
 \    Summary: The sound buffer where the data to be sent to the sound chip is
 \             processed
@@ -2875,31 +2844,78 @@ ENDIF
 
 .SOFLG
 
- SKIP 3
+ EQUB 0                 \ Sound buffer for sound effect flags
+ EQUB 0                 \
+ EQUB 0                 \ SOFLG,Y contains the following:
+                        \
+                        \   * Bits 0-5: sound effect number + 1 of the sound
+                        \               currently being made on voice Y
+                        \
+                        \   * Bit 7 is set if this is a new sound being made,
+                        \     rather than one that is in progress
 
 .SOCNT
 
- SKIP 3
+ EQUB 0                 \ Sound buffer for sound effect counters
+ EQUB 0                 \
+ EQUB 0                 \ SOCNT,Y contains the counter of the sound currently
+                        \ being made on voice Y
+                        \
+                        \ The counter decrements each frame, and when it reaches
+                        \ zero, the sound effect has finished
+                        \
+                        \ These values come from the SFXCNT table
 
 .SOVOL
 
- SKIP 3
+ EQUB 0                 \ Sound buffer for volume levels
+ EQUB 0                 \
+ EQUB 0                 \ SOVOL,Y contains the volume of the sound currently
+                        \ being made on voice Y
+                        \
+                        \ These values come from bits 1-3 of the SFXPR table
 
 .SOVCH
 
- SKIP 3
+ EQUB 0                 \ Sound buffer for the volume change rate
+ EQUB 0                 \
+ EQUB 0                 \ SOVCH,Y contains the volume change rate of the sound
+                        \ currently being made on voice Y
+                        \
+                        \ The sound's volume gets reduced by one every SOVCH,Y
+                        \ frames
+                        \
+                        \ These values come from the SFXVCH table
 
 .SOPR
 
- SKIP 3
+ EQUB 0                 \ Sound buffer for sound effect priorities
+ EQUB 0                 \
+ EQUB 0                 \ SOPR,Y contains the priority of the sound currently
+                        \ being made on voice Y
+                        \
+                        \ These values come from the SFXPR table
 
 .SOFRCH
 
- SKIP 3
+ EQUB 0                 \ Sound buffer for frequency change values
+ EQUB 0                 \
+ EQUB 0                 \ SOFRCH,Y contains the frequency change to be applied
+                        \ to the sound currently being made on voice Y in each
+                        \ frame
+                        \
+                        \ These values come from the SFXFRCH table
 
 .SOFRQ
 
- SKIP 3
+ EQUB 0                 \ Sound buffer for sound effect frequencies
+ EQUB 0                 \
+ EQUB 0                 \ SOFRQ,Y contains the frequency of the sound currently
+                        \ being made on voice Y
+                        \
+                        \ These values come from the SFXFQ table, and have the
+                        \ frequency change from the SFXFRCH table applied in
+                        \ each frame
 
 \ ******************************************************************************
 \
@@ -3041,8 +3057,7 @@ ENDIF
 \
 \ ------------------------------------------------------------------------------
 \
-\ The main interrupt handler, which implements Elite's split-screen mode (see
-\ the deep dive on "The split-screen mode in BBC Micro Elite" for details).
+\ The main interrupt handler, which implements Elite's split-screen mode.
 \
 \ IRQ1V is set to point to IRQ1 by the loading process.
 \
@@ -3108,13 +3123,13 @@ IF _COMPACT
 
 ENDIF
 
- LDA VIA+&18            \ Fetch the ADC channel number into Y from bits 1-2 in
+ LDA VIA+&18            \ Fetch the ADC channel number into Y from bits 0-1 of
 \BMI JONO               \ the ADC status byte at SHEILA &18
- AND #3                 \
+ AND #%00000011         \
  TAY                    \ The BMI is commented out in the original source
 
  LDA VIA+&19            \ Fetch the high byte of the value on this ADC channel
-                        \ to read the relevant joystick position
+                        \ at SHEILA &19 to read the relevant joystick position
 
  STA JOPOS,Y            \ Store this value in the appropriate JOPOS byte
 
@@ -3124,8 +3139,8 @@ ENDIF
  CMP #3                 \ instructions
  BCC P%+4
 
- LDA #0                 \ Set the ADC status byte at SHEILA &18 to 0
- STA VIA+&18
+ LDA #0                 \ Set the ADC status byte at SHEILA &18 to 0 to reset
+ STA VIA+&18            \ the data latch
 
 .jvec
 
@@ -3315,7 +3330,7 @@ ENDIF
 \       Type: Subroutine
 \   Category: Utility routines
 \    Summary: Release the NMI workspace (&00A0 to &00A7) so the MOS can use it
-\             and store the top part of zero page in the the buffer at &3000
+\             and store the top part of zero page in the buffer at &3000
 \
 \ ******************************************************************************
 
@@ -3577,9 +3592,9 @@ ENDIF
 \
 \ Arguments:
 \
-\   A                   The internal number of the key to check (see p.142 of
-\                       the Advanced User Guide for a list of internal key
-\                       numbers)
+\   A                   The internal number of the key to check (see page 142 of
+\                       the "Advanced User Guide for the BBC Micro" by Bray,
+\                       Dickens and Holmes for a list of internal key numbers)
 \
 \ ------------------------------------------------------------------------------
 \
@@ -3690,8 +3705,7 @@ ENDIF
 
                         \ Now, we convert the x_hi coordinate of the ship into
                         \ the screen x-coordinate of the dot on the scanner,
-                        \ using the following (see the deep dive on "The 3D
-                        \ scanner" for an explanation):
+                        \ using the following:
                         \
                         \   X1 = 123 + (x_sign x_hi)
 
@@ -3718,13 +3732,15 @@ ENDIF
  STA X1                 \ and if the result is odd, subtract 1 to make it even
 
  TAX                    \ Set X = X1 - 2
- DEX
- DEX
+ DEX                    \
+ DEX                    \ So X contains the x-coordinate that's two pixels to
+                        \ left of the top of the stick, so we can draw the dot
+                        \ at the end of the stick by simply drawing a dot at
+                        \ x-coordinate X at the correct end of the stick
 
                         \ Next, we convert the z_hi coordinate of the ship into
                         \ the y-coordinate of the base of the ship's stick,
-                        \ like this (see the deep dive on "The 3D scanner" for
-                        \ an explanation):
+                        \ like this:
                         \
                         \   SC = 220 - (z_sign z_hi) / 4
                         \
@@ -3756,8 +3772,7 @@ ENDIF
  STA Y2                 \ range 205 to 235, with a higher z_hi giving a lower Y2
 
                         \ Now for the stick height, which we calculate using the
-                        \ following (see the deep dive on "The 3D scanner" for
-                        \ an explanation):
+                        \ following:
                         \
                         \ A = - (y_sign y_hi) / 2
 
@@ -3822,8 +3837,8 @@ ENDIF
  STY VIA+&34            \ SHEILA &34 to switch screen memory into &3000-&7FFF
 
  JSR CPIXK              \ Call CPIXK to draw a single-height dash at the
-                        \ y-coordinate in A, and return the dash's right pixel
-                        \ byte in R, which we use below
+                        \ y-coordinate in A, to draw the ship dot, and return
+                        \ the dash's right pixel byte in R, which we use below
 
  LDA Y1                 \ Fetch the y-coordinate back into A, which was stored
                         \ in Y1 by the call to CPIX2
@@ -4085,7 +4100,7 @@ ENDIF
 
 \ ******************************************************************************
 \
-\       Name: LOIN (Part 1 of 7)
+\       Name: LOINQ (Part 1 of 7)
 \       Type: Subroutine
 \   Category: Drawing lines
 \    Summary: Draw a line: Calculate the line gradient in the form of deltas
@@ -4120,11 +4135,11 @@ ENDIF
 
  JMP HLOIN3             \ This instruction doesn't appear to be used anywhere
 
-                        \ In the cassette and disc versions of Elite, LL30 and
-                        \ LOIN are synonyms for the same routine, presumably
-                        \ because the two developers each had their own line
-                        \ routines to start with, and then chose one of them for
-                        \ the final game
+                        \ In the BBC Micro cassette and disc versions of Elite,
+                        \ LL30 and LOIN are synonyms for the same routine,
+                        \ presumably because the two developers each had their
+                        \ own line routines to start with, and then chose one of
+                        \ them for the final game
                         \
                         \ In the BBC Master version, there are two different
                         \ routines: LOINQ draws a one-segment line, while LOIN
@@ -4189,7 +4204,7 @@ ENDIF
 
 \ ******************************************************************************
 \
-\       Name: LOIN (Part 2 of 7)
+\       Name: LOINQ (Part 2 of 7)
 \       Type: Subroutine
 \   Category: Drawing lines
 \    Summary: Draw a line: Line has a shallow gradient, step right along x-axis
@@ -4344,7 +4359,7 @@ ENDIF
 
 \ ******************************************************************************
 \
-\       Name: LOIN (Part 3 of 7)
+\       Name: LOINQ (Part 3 of 7)
 \       Type: Subroutine
 \   Category: Drawing lines
 \    Summary: Draw a shallow line going right and up or left and down
@@ -4363,30 +4378,30 @@ ENDIF
 \     first pixel
 \
 \ This routine looks complex, but that's because the loop that's used in the
-\ cassette and disc versions has been unrolled to speed it up. The algorithm is
-\ unchanged, it's just a lot longer.
+\ BBC Micro cassette and disc versions has been unrolled to speed it up. The
+\ algorithm is unchanged, it's just a lot longer.
 \
 \ ******************************************************************************
 
  LDA #%10001000         \ Modify the value in the LDA instruction at LI100 below
  AND COL                \ to contain a pixel mask for the first pixel in the
- STA LI100+1            \ 4-pixel byte, in the colour COL, so that it draws in
-                        \ the correct colour
+ STA LI100+1            \ four-pixel byte, in the colour COL, so that it draws
+                        \ in the correct colour
 
  LDA #%01000100         \ Modify the value in the LDA instruction at LI110 below
  AND COL                \ to contain a pixel mask for the second pixel in the
- STA LI110+1            \ 4-pixel byte, in the colour COL, so that it draws in
-                        \ the correct colour
+ STA LI110+1            \ four-pixel byte, in the colour COL, so that it draws
+                        \ in the correct colour
 
  LDA #%00100010         \ Modify the value in the LDA instruction at LI120 below
  AND COL                \ to contain a pixel mask for the third pixel in the
- STA LI120+1            \ 4-pixel byte, in the colour COL, so that it draws in
-                        \ the correct colour
+ STA LI120+1            \ four-pixel byte, in the colour COL, so that it draws
+                        \ in the correct colour
 
  LDA #%00010001         \ Modify the value in the LDA instruction at LI130 below
  AND COL                \ to contain a pixel mask for the fourth pixel in the
- STA LI130+1            \ 4-pixel byte, in the colour COL, so that it draws in
-                        \ the correct colour
+ STA LI130+1            \ four-pixel byte, in the colour COL, so that it draws
+                        \ in the correct colour
 
                         \ We now work our way along the line from left to right,
                         \ using X as a decreasing counter, and at each count we
@@ -4419,6 +4434,8 @@ ENDIF
  BNE LI130+6            \ If we get here then R must be 3, so jump to LI130+6 to
                         \ skip plotting any of the pixels, but making sure we
                         \ join the routine just after the plotting instructions
+                        \ (this BNE is effectively a JMP as we just passed
+                        \ through a BEQ)
 
 .LI190
 
@@ -4446,10 +4463,10 @@ ENDIF
 
 .LI100
 
- LDA #%10001000         \ Set a mask in A to the first pixel in the 4-pixel byte
-                        \ (note that this value is modified by the code at the
-                        \ start of this section to be a bit mask for the colour
-                        \ in COL)
+ LDA #%10001000         \ Set a mask in A to the first pixel in the four-pixel
+                        \ byte (note that this value is modified by the code at
+                        \ the start of this section to be a bit mask for the
+                        \ colour in COL)
 
  EOR (SC),Y             \ Store A into screen memory at SC(1 0), using EOR
  STA (SC),Y             \ logic so it merges with whatever is already on-screen
@@ -4476,7 +4493,7 @@ ENDIF
 
 .LI110
 
- LDA #%01000100         \ Set a mask in A to the second pixel in the 4-pixel
+ LDA #%01000100         \ Set a mask in A to the second pixel in the four-pixel
                         \ byte (note that this value is modified by the code at
                         \ the start of this section to be a bit mask for the
                         \ colour in COL)
@@ -4504,10 +4521,10 @@ ENDIF
 
 .LI120
 
- LDA #%00100010         \ Set a mask in A to the third pixel in the 4-pixel byte
-                        \ (note that this value is modified by the code at the
-                        \ start of this section to be a bit mask for the colour
-                        \ in COL)
+ LDA #%00100010         \ Set a mask in A to the third pixel in the four-pixel
+                        \ byte (note that this value is modified by the code at
+                        \ the start of this section to be a bit mask for the
+                        \ colour in COL)
 
  EOR (SC),Y             \ Store A into screen memory at SC(1 0), using EOR
  STA (SC),Y             \ logic so it merges with whatever is already on-screen
@@ -4532,7 +4549,7 @@ ENDIF
 
 .LI130
 
- LDA #%00010001         \ Set a mask in A to the fourth pixel in the 4-pixel
+ LDA #%00010001         \ Set a mask in A to the fourth pixel in the four-pixel
                         \ byte (note that this value is modified by the code at
                         \ the start of this section to be a bit mask for the
                         \ colour in COL)
@@ -4625,7 +4642,7 @@ ENDIF
 
 \ ******************************************************************************
 \
-\       Name: LOIN (Part 4 of 7)
+\       Name: LOINQ (Part 4 of 7)
 \       Type: Subroutine
 \   Category: Drawing lines
 \    Summary: Draw a shallow line going right and down or left and up
@@ -4644,8 +4661,8 @@ ENDIF
 \     first pixel
 \
 \ This routine looks complex, but that's because the loop that's used in the
-\ cassette and disc versions has been unrolled to speed it up. The algorithm is
-\ unchanged, it's just a lot longer.
+\ BBC Micro cassette and disc versions has been unrolled to speed it up. The
+\ algorithm is unchanged, it's just a lot longer.
 \
 \ ******************************************************************************
 
@@ -4653,23 +4670,23 @@ ENDIF
 
  LDA #%10001000         \ Modify the value in the LDA instruction at LI200 below
  AND COL                \ to contain a pixel mask for the first pixel in the
- STA LI200+1            \ 4-pixel byte, in the colour COL, so that it draws in
-                        \ the correct colour
+ STA LI200+1            \ four-pixel byte, in the colour COL, so that it draws
+                        \ in the correct colour
 
  LDA #%01000100         \ Modify the value in the LDA instruction at LI210 below
  AND COL                \ to contain a pixel mask for the second pixel in the
- STA LI210+1            \ 4-pixel byte, in the colour COL, so that it draws in
-                        \ the correct colour
+ STA LI210+1            \ four-pixel byte, in the colour COL, so that it draws
+                        \ in the correct colour
 
  LDA #%00100010         \ Modify the value in the LDA instruction at LI220 below
  AND COL                \ to contain a pixel mask for the third pixel in the
- STA LI220+1            \ 4-pixel byte, in the colour COL, so that it draws in
-                        \ the correct colour
+ STA LI220+1            \ four-pixel byte, in the colour COL, so that it draws
+                        \ in the correct colour
 
  LDA #%00010001         \ Modify the value in the LDA instruction at LI230 below
  AND COL                \ to contain a pixel mask for the fourth pixel in the
- STA LI230+1            \ 4-pixel byte, in the colour COL, so that it draws in
-                        \ the correct colour
+ STA LI230+1            \ four-pixel byte, in the colour COL, so that it draws
+                        \ in the correct colour
 
  LDA SC                 \ Set SC(1 0) = SC(1 0) - 248
  SBC #248
@@ -4694,6 +4711,11 @@ ENDIF
                         \ character block with a simple BEQ rather than checking
                         \ whether it's reached 8, so this appears to be a code
                         \ optimisation
+                        \
+                        \ If it helps, you can think of Y as being a negative
+                        \ number that we are incrementing towards zero as we
+                        \ move along the line - we just need to alter the value
+                        \ of SC so that SC(1 0) + Y points to the right address
 
                         \ We now work our way along the line from left to right,
                         \ using X as a decreasing counter, and at each count we
@@ -4726,6 +4748,8 @@ ENDIF
  BNE LI230+6            \ If we get here then R must be 3, so jump to LI230+6 to
                         \ skip plotting any of the pixels, but making sure we
                         \ join the routine just after the plotting instructions
+                        \ (this BNE is effectively a JMP as we just passed
+                        \ through a BEQ)
 
 .LI191
 
@@ -4750,15 +4774,15 @@ ENDIF
 
  BNE LI230              \ If we get here then R must be 3, so jump to LI130 to
                         \ start plotting from the fourth pixel in this byte
-                        \ (this BNE is effectively a JMP as by now R is never
-                        \ zero)
+                        \ (this BNE is effectively a JMP as we just passed
+                        \ through a BEQ)
 
 .LI200
 
- LDA #%10001000         \ Set a mask in A to the first pixel in the 4-pixel byte
-                        \ (note that this value is modified by the code at the
-                        \ start of this section to be a bit mask for the colour
-                        \ in COL)
+ LDA #%10001000         \ Set a mask in A to the first pixel in the four-pixel
+                        \ byte (note that this value is modified by the code at
+                        \ the start of this section to be a bit mask for the
+                        \ colour in COL)
 
  EOR (SC),Y             \ Store A into screen memory at SC(1 0), using EOR
  STA (SC),Y             \ logic so it merges with whatever is already on-screen
@@ -4783,7 +4807,7 @@ ENDIF
 
 .LI210
 
- LDA #%01000100         \ Set a mask in A to the second pixel in the 4-pixel
+ LDA #%01000100         \ Set a mask in A to the second pixel in the four-pixel
                         \ byte (note that this value is modified by the code at
                         \ the start of this section to be a bit mask for the
                         \ colour in COL)
@@ -4811,10 +4835,10 @@ ENDIF
 
 .LI220
 
- LDA #%00100010         \ Set a mask in A to the third pixel in the 4-pixel byte
-                        \ (note that this value is modified by the code at the
-                        \ start of this section to be a bit mask for the colour
-                        \ in COL)
+ LDA #%00100010         \ Set a mask in A to the third pixel in the four-pixel
+                        \ byte (note that this value is modified by the code at
+                        \ the start of this section to be a bit mask for the
+                        \ colour in COL)
 
  EOR (SC),Y             \ Store A into screen memory at SC(1 0), using EOR
  STA (SC),Y             \ logic so it merges with whatever is already on-screen
@@ -4839,7 +4863,7 @@ ENDIF
 
 .LI230
 
- LDA #%00010001         \ Set a mask in A to the fourth pixel in the 4-pixel
+ LDA #%00010001         \ Set a mask in A to the fourth pixel in the four-pixel
                         \ byte (note that this value is modified by the code at
                         \ the start of this section to be a bit mask for the
                         \ colour in COL)
@@ -4932,7 +4956,7 @@ ENDIF
 
 \ ******************************************************************************
 \
-\       Name: LOIN (Part 5 of 7)
+\       Name: LOINQ (Part 5 of 7)
 \       Type: Subroutine
 \   Category: Drawing lines
 \    Summary: Draw a line: Line has a steep gradient, step up along y-axis
@@ -5008,7 +5032,7 @@ ENDIF
  TAX                    \ each pixel line in the character block is 4 pixels
                         \ wide)
 
- LDA TWOS,X             \ Fetch a 1-pixel byte from TWOS where pixel X is set,
+ LDA TWOS,X             \ Fetch a one-pixel byte from TWOS where pixel X is set,
  STA R                  \ and store it in R
 
                         \ The following section calculates:
@@ -5091,7 +5115,7 @@ ENDIF
 
 \ ******************************************************************************
 \
-\       Name: LOIN (Part 6 of 7)
+\       Name: LOINQ (Part 6 of 7)
 \       Type: Subroutine
 \   Category: Drawing lines
 \    Summary: Draw a steep line going up and left or down and right
@@ -5110,8 +5134,8 @@ ENDIF
 \     first pixel
 \
 \ This routine looks complex, but that's because the loop that's used in the
-\ cassette and disc versions has been unrolled to speed it up. The algorithm is
-\ unchanged, it's just a lot longer.
+\ BBC Micro cassette and disc versions has been unrolled to speed it up. The
+\ algorithm is unchanged, it's just a lot longer.
 \
 \ ******************************************************************************
 
@@ -5218,8 +5242,8 @@ ENDIF
                         \ into the C flag, then jump to LI301 to plot the pixel
                         \ on the next character row up
 
- LDA #%10001000         \ Set a mask in R to the first pixel in the 4-pixel byte
- STA R
+ LDA #%10001000         \ Set a mask in R to the first pixel in the four-pixel
+ STA R                  \ byte
 
  LDA SC                 \ Add 8 to SC, so SC(1 0) now points to the next
  ADC #7                 \ character along to the right (the C flag is set as we
@@ -5250,8 +5274,8 @@ ENDIF
                         \ into the C flag, then jump to LI302 to plot the pixel
                         \ on the next character row up
 
- LDA #%10001000         \ Set a mask in R to the first pixel in the 4-pixel byte
- STA R
+ LDA #%10001000         \ Set a mask in R to the first pixel in the four-pixel
+ STA R                  \ byte
 
  LDA SC                 \ Add 8 to SC, so SC(1 0) now points to the next
  ADC #7                 \ character along to the right (the C flag is set as we
@@ -5282,8 +5306,8 @@ ENDIF
                         \ into the C flag, then jump to LI303 to plot the pixel
                         \ on the next character row up
 
- LDA #%10001000         \ Set a mask in R to the first pixel in the 4-pixel byte
- STA R
+ LDA #%10001000         \ Set a mask in R to the first pixel in the four-pixel
+ STA R                  \ byte
 
  LDA SC                 \ Add 8 to SC, so SC(1 0) now points to the next
  ADC #7                 \ character along to the right (the C flag is set as we
@@ -5314,8 +5338,8 @@ ENDIF
                         \ into the C flag, then jump to LI304 to plot the pixel
                         \ on the next character row up
 
- LDA #%10001000         \ Set a mask in R to the first pixel in the 4-pixel byte
- STA R
+ LDA #%10001000         \ Set a mask in R to the first pixel in the four-pixel
+ STA R                  \ byte
 
  LDA SC                 \ Add 8 to SC, so SC(1 0) now points to the next
  ADC #7                 \ character along to the right (the C flag is set as we
@@ -5553,7 +5577,7 @@ ENDIF
 
  LDA #%10001000         \ Otherwise we need to move over to the next character
  STA R                  \ along, so set a mask in R to the first pixel in the
-                        \ 4-pixel byte
+                        \ four-pixel byte
 
  LDA SC                 \ Add 8 to SC, so SC(1 0) now points to the next
  ADC #7                 \ character along to the right (the C flag is set as we
@@ -5586,8 +5610,8 @@ ENDIF
                         \ into the C flag, then jump to LI305 to plot the pixel
                         \ on the next character row up
 
- LDA #%10001000         \ Set a mask in R to the first pixel in the 4-pixel byte
- STA R
+ LDA #%10001000         \ Set a mask in R to the first pixel in the four-pixel
+ STA R                  \ byte
 
  LDA SC                 \ Add 8 to SC, so SC(1 0) now points to the next
  ADC #7                 \ character along to the right (the C flag is set as we
@@ -5616,8 +5640,8 @@ ENDIF
                         \ into the C flag, then jump to LI306 to plot the pixel
                         \ on the next character row up
 
- LDA #%10001000         \ Set a mask in R to the first pixel in the 4-pixel byte
- STA R
+ LDA #%10001000         \ Set a mask in R to the first pixel in the four-pixel
+ STA R                  \ byte
 
  LDA SC                 \ Add 8 to SC, so SC(1 0) now points to the next
  ADC #7                 \ character along to the right (the C flag is set as we
@@ -5646,8 +5670,8 @@ ENDIF
                         \ into the C flag, then jump to LI307 to plot the pixel
                         \ on the next character row up
 
- LDA #%10001000         \ Set a mask in R to the first pixel in the 4-pixel byte
- STA R
+ LDA #%10001000         \ Set a mask in R to the first pixel in the four-pixel
+ STA R                  \ byte
 
  LDA SC                 \ Add 8 to SC, so SC(1 0) now points to the next
  ADC #7                 \ character along to the right (the C flag is set as we
@@ -5667,7 +5691,7 @@ ENDIF
 
 \ ******************************************************************************
 \
-\       Name: LOIN (Part 7 of 7)
+\       Name: LOINQ (Part 7 of 7)
 \       Type: Subroutine
 \   Category: Drawing lines
 \    Summary: Draw a steep line going up and right or down and left
@@ -5686,8 +5710,8 @@ ENDIF
 \     first pixel
 \
 \ This routine looks complex, but that's because the loop that's used in the
-\ cassette and disc versions has been unrolled to speed it up. The algorithm is
-\ unchanged, it's just a lot longer.
+\ BBC Micro cassette and disc versions has been unrolled to speed it up. The
+\ algorithm is unchanged, it's just a lot longer.
 \
 \ ******************************************************************************
 
@@ -5698,7 +5722,9 @@ ENDIF
 
  TYA                    \ Fetch bits 0-2 of the y-coordinate, so Y contains the
  AND #7                 \ y-coordinate mod 8
- TAY
+ TAY                    \
+                        \ So Y is the pixel row within the character block where
+                        \ we want to start drawing
 
  BNE P%+5               \ If Y = 0, jump to LI407+8 to start plotting from the
  JMP LI407+8            \ pixel above the top row of this character block
@@ -5749,7 +5775,9 @@ ENDIF
 
  TYA                    \ Fetch bits 0-2 of the y-coordinate, so Y contains the
  AND #7                 \ y-coordinate mod 8
- TAY
+ TAY                    \
+                        \ So Y is the pixel row within the character block where
+                        \ we want to start drawing
 
  BNE P%+5               \ If Y = 0, jump to LI407 to start plotting from row 0
  JMP LI407              \ of this character block
@@ -5798,7 +5826,7 @@ ENDIF
 
  LDA #%00010001         \ Otherwise we need to move over to the next character
  STA R                  \ block to the left, so set a mask in R to the fourth
-                        \ pixel in the 4-pixel byte
+                        \ pixel in the four-pixel byte
 
  LDA SC                 \ Subtract 8 from SC, so SC(1 0) now points to the
  SBC #8                 \ previous character along to the left
@@ -5829,7 +5857,7 @@ ENDIF
 
  LDA #%00010001         \ Otherwise we need to move over to the next character
  STA R                  \ block to the left, so set a mask in R to the fourth
-                        \ pixel in the 4-pixel byte
+                        \ pixel in the four-pixel byte
 
  LDA SC                 \ Subtract 8 from SC, so SC(1 0) now points to the
  SBC #8                 \ previous character along to the left
@@ -5860,7 +5888,7 @@ ENDIF
 
  LDA #%00010001         \ Otherwise we need to move over to the next character
  STA R                  \ block to the left, so set a mask in R to the fourth
-                        \ pixel in the 4-pixel byte
+                        \ pixel in the four-pixel byte
 
  LDA SC                 \ Subtract 8 from SC, so SC(1 0) now points to the
  SBC #8                 \ previous character along to the left
@@ -5891,7 +5919,7 @@ ENDIF
 
  LDA #%00010001         \ Otherwise we need to move over to the next character
  STA R                  \ block to the left, so set a mask in R to the fourth
-                        \ pixel in the 4-pixel byte
+                        \ pixel in the four-pixel byte
 
  LDA SC                 \ Subtract 8 from SC, so SC(1 0) now points to the
  SBC #8                 \ previous character along to the left
@@ -6128,7 +6156,7 @@ ENDIF
 
  LDA #%00010001         \ Otherwise we need to move over to the next character
  STA R                  \ block to the left, so set a mask in R to the fourth
-                        \ pixel in the 4-pixel byte
+                        \ pixel in the four-pixel byte
 
  LDA SC                 \ Subtract 8 from SC, so SC(1 0) now points to the
  SBC #8                 \ previous character along to the left
@@ -6161,7 +6189,7 @@ ENDIF
 
  LDA #%00010001         \ Otherwise we need to move over to the next character
  STA R                  \ block to the left, so set a mask in R to the fourth
-                        \ pixel in the 4-pixel byte
+                        \ pixel in the four-pixel byte
 
  LDA SC                 \ Subtract 8 from SC, so SC(1 0) now points to the
  SBC #8                 \ previous character along to the left
@@ -6190,7 +6218,7 @@ ENDIF
 
  LDA #%00010001         \ Otherwise we need to move over to the next character
  STA R                  \ block to the left, so set a mask in R to the fourth
-                        \ pixel in the 4-pixel byte
+                        \ pixel in the four-pixel byte
 
  LDA SC                 \ Subtract 8 from SC, so SC(1 0) now points to the
  SBC #8                 \ previous character along to the left
@@ -6219,7 +6247,7 @@ ENDIF
 
  LDA #%00010001         \ Otherwise we need to move over to the next character
  STA R                  \ block to the left, so set a mask in R to the fourth
-                        \ pixel in the 4-pixel byte
+                        \ pixel in the four-pixel byte
 
  LDA SC                 \ Subtract 8 from SC, so SC(1 0) now points to the
  SBC #8                 \ previous character along to the left
@@ -6240,16 +6268,13 @@ ENDIF
 \       Type: Subroutine
 \   Category: Drawing lines
 \    Summary: Draw a horizontal line from (X1, Y1) to (X2, Y1)
-\  Deep dive: Drawing colour pixels in mode 5
+\  Deep dive: Drawing colour pixels on the BBC Micro
 \
 \ ------------------------------------------------------------------------------
 \
 \ This routine draws a horizontal orange line in the space view.
 \
 \ We do not draw a pixel at the right end of the line.
-\
-\ To understand how this routine works, you might find it helpful to read the
-\ deep dive on "Drawing colour pixels in mode 5".
 \
 \ ------------------------------------------------------------------------------
 \
@@ -6400,10 +6425,10 @@ ENDIF
 
 .HLL1
 
- LDA COL                \ Store a full-width 4-pixel horizontal line of colour
- EOR (SC),Y             \ COL in SC(1 0) so that it draws the line on-screen,
- STA (SC),Y             \ using EOR logic so it merges with whatever is already
-                        \ on-screen
+ LDA COL                \ Store a full-width four-pixel horizontal line of
+ EOR (SC),Y             \ colour COL in SC(1 0) so that it draws the line
+ STA (SC),Y             \ on-screen, using EOR logic so it merges with whatever
+                        \ is already on-screen
 
  TYA                    \ Set Y = Y + 8 so (SC),Y points to the next character
  ADC #8                 \ block along, on the same pixel row as before
@@ -6584,7 +6609,7 @@ ENDIF
 \       Name: orange
 \       Type: Variable
 \   Category: Drawing pixels
-\    Summary: Lookup table for 2-pixel mode 1 orange pixels for the sun
+\    Summary: Lookup table for two-pixel mode 1 orange pixels for the sun
 \
 \ ------------------------------------------------------------------------------
 \
@@ -6647,7 +6672,14 @@ ENDIF
 \
 \   Y1                  The y-coordinate offset
 \
-\   ZZ                  The distance of the point (further away = smaller point)
+\   ZZ                  The distance of the point, with bigger distances drawing
+\                       smaller points:
+\
+\                         * ZZ < 80           Double-height four-pixel square
+\
+\                         * 80 <= ZZ <= 143   Single-height two-pixel dash
+\
+\                         * ZZ > 143          Single-height one-pixel dot
 \
 \ ******************************************************************************
 
@@ -6660,7 +6692,7 @@ ENDIF
  TXA                    \ Set SYL+Y to X, the low byte of the result
  STA SYL,Y
 
-                        \ Fall through into PIX1 to draw the stardust particle
+                        \ Fall through into PIXEL2 to draw the stardust particle
                         \ at (X1,Y1)
 
 \ ******************************************************************************
@@ -6684,7 +6716,14 @@ ENDIF
 \   Y1                  The y-coordinate offset (positive means up the screen
 \                       from the centre, negative means down the screen)
 \
-\   ZZ                  The distance of the point (further away = smaller point)
+\   ZZ                  The distance of the point, with bigger distances drawing
+\                       smaller points:
+\
+\                         * ZZ < 80           Double-height four-pixel square
+\
+\                         * 80 <= ZZ <= 143   Single-height two-pixel dash
+\
+\                         * ZZ > 143          Single-height one-pixel dot
 \
 \ ******************************************************************************
 
@@ -6709,7 +6748,7 @@ ENDIF
  LDA Y1                 \ Fetch the y-coordinate offset into A and clear the
  AND #%01111111         \ sign bit, so A = |Y1|
 
- CMP #96                \ If |Y1| >= 96 then it's off the screen (as 96 is half
+ CMP #Y                 \ If |Y1| >= #Y then it's off the screen (as #Y is half
  BCS PXR1               \ the screen height), so return from the subroutine (as
                         \ PXR1 contains an RTS)
 
@@ -6724,10 +6763,10 @@ ENDIF
 
 .PX22
 
- STA T                  \ Set A = 97 - Y1
- LDA #97                \
- SBC T                  \ So if Y is positive we display the point up from the
-                        \ centre at y-coordinate 97, while a negative Y means
+ STA T                  \ Set A = #Y + 1 - Y1
+ LDA #Y+1               \
+ SBC T                  \ So if Y1 is positive we display the point up from the
+                        \ centre at y-coordinate 97, while a negative Y1 means
                         \ down from the centre
 
                         \ Fall through into PIXEL to draw the stardust at the
@@ -6738,14 +6777,14 @@ ENDIF
 \       Name: PIXEL
 \       Type: Subroutine
 \   Category: Drawing pixels
-\    Summary: Draw a 1-pixel dot, 2-pixel dash or 4-pixel square
-\  Deep dive: Drawing colour pixels in mode 5
+\    Summary: Draw a one-pixel dot, two-pixel dash or four-pixel square
+\  Deep dive: Drawing colour pixels on the BBC Micro
 \
 \ ------------------------------------------------------------------------------
 \
 \ Draw a point at screen coordinate (X, A) with the point size determined by the
-\ distance in ZZ. This applies to the top part of the screen (the 4-colour mode
-\ 5 portion).
+\ distance in ZZ. This applies to the top part of the screen (the four-colour
+\ mode 5 portion).
 \
 \ ------------------------------------------------------------------------------
 \
@@ -6755,7 +6794,14 @@ ENDIF
 \
 \   A                   The screen y-coordinate of the point to draw
 \
-\   ZZ                  The distance of the point (further away = smaller point)
+\   ZZ                  The distance of the point, with bigger distances drawing
+\                       smaller points:
+\
+\                         * ZZ < 80           Double-height four-pixel square
+\
+\                         * 80 <= ZZ <= 143   Single-height two-pixel dash
+\
+\                         * ZZ > 143          Single-height one-pixel dot
 \
 \ ------------------------------------------------------------------------------
 \
@@ -6773,7 +6819,8 @@ ENDIF
 
 .PIXEL
 
- STY T1                 \ Store Y in T1
+ STY T1                 \ Store Y in T1 so we can restore it at the end of the
+                        \ subroutine
 
  LDY #%00001111         \ Set bits 1 and 2 of the Access Control Register at
  STY VIA+&34            \ SHEILA &34 to switch screen memory into &3000-&7FFF
@@ -6807,9 +6854,9 @@ ENDIF
                         \ the first memory page for the row... so we need to
                         \ increment SC+1 to point to the correct page
 
- TYA                    \ Set Y to just bits 0-2 of the y-coordinate, which will
- AND #%00000111         \ be the number of the pixel row we need to draw into
- TAY                    \ within the character block
+ TYA                    \ Set Y = Y mod 8, which is the pixel row within the
+ AND #7                 \ character block at which we want to draw the pixel
+ TAY                    \ (as each character block has 8 rows)
 
  TXA                    \ Copy bits 0-1 of the x-coordinate to bits 0-1 of X,
  AND #%00000011         \ which will now be in the range 0-3, and will contain
@@ -6821,8 +6868,8 @@ ENDIF
  BCC PX2                \ pretty close, so jump to PX2 to draw a four-pixel
                         \ square
 
- LDA TWOS2,X            \ Fetch a mode 1 2-pixel byte with the pixels set as in
- AND COL                \ X, and AND with the colour byte we fetched into COL
+ LDA TWOS2,X            \ Fetch a mode 1 two-pixel byte with the pixels set as
+ AND COL                \ in X, and AND with the colour byte we fetched into COL
                         \ so that pixel takes on the colour we want to draw
                         \ (i.e. A is acting as a mask on the colour byte)
 
@@ -6841,11 +6888,11 @@ ENDIF
 
 .PX2
 
-                        \ If we get here, we need to plot a 4-pixel square in
+                        \ If we get here, we need to plot a four-pixel square in
                         \ in the correct colour for this pixel's distance
 
- LDA TWOS2,X            \ Fetch a mode 1 2-pixel byte with the pixels set as in
- AND COL                \ X, and AND with the colour byte we fetched into COL
+ LDA TWOS2,X            \ Fetch a mode 1 two-pixel byte with the pixels set as
+ AND COL                \ in X, and AND with the colour byte we fetched into COL
                         \ so that pixel takes on the colour we want to draw
                         \ (i.e. A is acting as a mask on the colour byte)
 
@@ -6863,8 +6910,8 @@ ENDIF
 
                         \ We now draw our second dash
 
- LDA TWOS2,X            \ Fetch a mode 1 2-pixel byte with the pixels set as in
- AND COL                \ X, and AND with the colour byte we fetched into COL
+ LDA TWOS2,X            \ Fetch a mode 1 two-pixel byte with the pixels set as
+ AND COL                \ in X, and AND with the colour byte we fetched into COL
                         \ so that pixel takes on the colour we want to draw
                         \ (i.e. A is acting as a mask on the colour byte)
 
@@ -6888,10 +6935,10 @@ ENDIF
 \
 \ ------------------------------------------------------------------------------
 \
-\ The following table contains colour bytes for 2-pixel mode 1 pixels, with the
-\ index into the table representing distance. Closer pixels are at the top, so
-\ the closest pixels are cyan/red, then yellow, then red, then red/yellow, then
-\ yellow.
+\ The following table contains colour bytes for two-pixel mode 1 pixels, with
+\ the index into the table representing distance. Closer pixels are at the top,
+\ so the closest pixels are cyan/red, then yellow, then red, then red/yellow,
+\ then yellow.
 \
 \ That said, this table is only used with odd distance values, as set in the
 \ parasite's PIXEL3 routine, so in practice the four distances are yellow, red,
@@ -7032,17 +7079,17 @@ ENDIF
 
  CLC                    \ Clear the C flag
 
- TYA                    \ Set Y to just bits 0-2 of the y-coordinate, which will
- AND #%00000111         \ be the number of the pixel row we need to draw into
- TAY                    \ within the character block
+ TYA                    \ Set Y to the y-coordinate mod 8, which will be the
+ AND #7                 \ number of the pixel row we need to draw within the
+ TAY                    \ character block
 
  LDA X1                 \ Copy bit 1 of X1 to bit 1 of X. X will now be either
  AND #%00000010         \ 0 or 2, and will be double the pixel number in the
  TAX                    \ character row for the left pixel in the dash (so 0
-                        \ means the left pixel in the 2-pixel character row,
+                        \ means the left pixel in the two-pixel character row,
                         \ while 2 means the right pixel)
 
- LDA CTWOS,X            \ Fetch a mode 2 1-pixel byte with the pixel position
+ LDA CTWOS,X            \ Fetch a mode 2 one-pixel byte with the pixel position
  AND COL                \ at X/2, and AND with the colour byte so that pixel
                         \ takes on the colour we want to draw (i.e. A is acting
                         \ as a mask on the colour byte)
@@ -7051,7 +7098,7 @@ ENDIF
  STA (SC),Y             \ remove it later without ruining the background that's
                         \ already on-screen
 
- LDA CTWOS+2,X          \ Fetch a mode 2 1-pixel byte with the pixel position
+ LDA CTWOS+2,X          \ Fetch a mode 2 one-pixel byte with the pixel position
                         \ at (X+1)/2, so we can draw the right pixel of the dash
 
  BPL CP1                \ The CTWOS table has 2 extra rows at the end of it that
@@ -7070,11 +7117,11 @@ ENDIF
  INC SC+1               \ the high byte of SC(1 0), as this means we just moved
                         \ into the right half of the screen row
 
- LDA CTWOS+2,X          \ Re-fetch the mode 2 1-pixel byte, as we just overwrote
-                        \ A (the byte will still be the fifth or sixth byte from
-                        \ the table, which is correct as we want to draw the
-                        \ leftmost pixel in the next character along as the
-                        \ dash's right pixel)
+ LDA CTWOS+2,X          \ Re-fetch the mode 2 one-pixel byte, as we just
+                        \ overwrote A (the byte will still be the fifth or sixth
+                        \ byte from the table, which is correct as we want to
+                        \ draw the leftmost pixel in the next character along as
+                        \ the dash's right pixel)
 
 .CP1
 
@@ -7403,7 +7450,7 @@ ENDIF
  STA SCH                \ that contains the missile indicators (i.e. the bottom
                         \ row of the screen)
 
- TYA                    \ Set A to the correct colour, which is a 2-pixel wide
+ TYA                    \ Set A to the correct colour, which is a two-pixel wide
                         \ mode 2 character row byte in the specified colour
 
  LDY #5                 \ We now want to draw this line five times to do the
@@ -7412,9 +7459,10 @@ ENDIF
 
 .MBL1
 
- STA (SC),Y             \ Draw the 3-pixel row, and as we do not use EOR logic,
-                        \ this will overwrite anything that is already there
-                        \ (so drawing a black missile will delete what's there)
+ STA (SC),Y             \ Draw the three-pixel row, and as we do not use EOR
+                        \ logic, this will overwrite anything that is already
+                        \ there (so drawing a black missile will delete what's
+                        \ there)
 
  DEY                    \ Decrement the counter for the next row
 
@@ -7440,9 +7488,10 @@ ENDIF
 
 .MBL2
 
- STA (SC),Y             \ Draw the 1-pixel row, and as we do not use EOR logic,
-                        \ this will overwrite anything that is already there
-                        \ (so drawing a black missile will delete what's there)
+ STA (SC),Y             \ Draw the one-pixel row, and as we do not use EOR
+                        \ logic, this will overwrite anything that is already
+                        \ there (so drawing a black missile will delete what's
+                        \ there)
 
  DEY                    \ Decrement the counter for the next row
 
@@ -7562,7 +7611,7 @@ ENDIF
 
  STA R                  \ Also store the page number in R
 
- LDA P                  \ Set the low byte of SC(1 0) to the y-coordinate mod 7,
+ LDA P                  \ Set the low byte of SC(1 0) to the y-coordinate mod 8,
  AND #7                 \ which determines the pixel row in the character block
  STA SC                 \ we need to draw in (as each character row is 8 pixels
                         \ high), so SC(1 0) now points to the address of the
@@ -7583,8 +7632,9 @@ ENDIF
 
  LDA #%01000000         \ Now to draw the same line but from the right edge of
                         \ the screen, so set a pixel mask in A to check the
-                        \ second pixel of the last byte, so we skip the 2-pixel
-                        \ screen border at the right edge of the screen
+                        \ second pixel of the last byte, so we skip the
+                        \ two-pixel screen border at the right edge of the
+                        \ screen
 
  LDY #248               \ Set Y = 248 so the call to HAS3 starts drawing the
                         \ line in the last byte of the screen row, at the right
@@ -7611,7 +7661,8 @@ ENDIF
                         \ character in that second half
 
  LDA #%10001000         \ We want to start drawing from the first pixel, so we
-                        \ set a mask in A to the first pixel in the 4-pixel byte
+                        \ set a mask in A to the first pixel in the four-pixel
+                        \ byte
 
  JSR HAL3               \ Call HAL3, which draws a line from the halfway point
                         \ across the right half of the screen, going right until
@@ -7629,7 +7680,8 @@ ENDIF
                         \ character in that first half
 
  LDA #%00010000         \ We want to start drawing from the last pixel, so we
-                        \ set a mask in A to the last pixel in the 4-pixel byte
+                        \ set a mask in A to the last pixel in the four-pixel
+                        \ byte
 
  JSR HAS3               \ Call HAS3, which draws a line from the halfway point
                         \ across the left half of the screen, going left until
@@ -7678,10 +7730,11 @@ ENDIF
                         \ correct character block on the top screen row for this
                         \ x-coordinate
 
- LDX #%10001000         \ Set a mask in X to the first pixel in the 4-pixel byte
+ LDX #%10001000         \ Set a mask in X to the first pixel in the four-pixel
+                        \ byte
 
  LDY #1                 \ We are going to start drawing the line from the second
-                        \ pixel from the top (to avoid drawing on the 1-pixel
+                        \ pixel from the top (to avoid drawing on the one-pixel
                         \ border), so set Y to 1 to point to the second row in
                         \ the first character block
 
@@ -7778,7 +7831,7 @@ ENDIF
 
  LDA #%00100010         \ Set A to the pixel pattern for a mode 1 character row
                         \ byte with the third pixel set, so we start drawing the
-                        \ horizontal line just to the right of the 2-pixel
+                        \ horizontal line just to the right of the two-pixel
                         \ border along the edge of the screen
 
 .HAL2
@@ -7819,7 +7872,7 @@ ENDIF
  TAY
 
  LDA #%10001000         \ Reset the pixel mask in A to the first pixel in the
-                        \ new 4-pixel character block
+                        \ new four-pixel character block
 
  BCC HAL2               \ If the above addition didn't overflow, jump back to
                         \ HAL2 to keep drawing the line in the next character
@@ -7879,7 +7932,7 @@ ENDIF
  TAY
 
  LDA #%10001000         \ Reset the pixel mask in A to the first pixel in the
-                        \ new 4-pixel character block
+                        \ new four-pixel character block
 
  BCC HAL3               \ If the above addition didn't overflow, jump back to
                         \ HAL3 to keep drawing the line in the next character
@@ -7938,7 +7991,8 @@ ENDIF
  SBC #8                 \ to the next character block to the left
  TAY
 
- LDA #%00010000         \ Set a mask in A to the last pixel in the 4-pixel byte
+ LDA #%00010000         \ Set a mask in A to the last pixel in the four-pixel
+                        \ byte
 
  BCS HAS3               \ If the above subtraction didn't underflow, jump back
                         \ to HAS3 to keep drawing the line in the next character
@@ -8021,14 +8075,14 @@ ENDIF
 \       Name: cls
 \       Type: Subroutine
 \   Category: Drawing the screen
-\    Summary: Clear the top part of the screen and draw a white border
+\    Summary: Clear the top part of the screen and draw a border box
 \
 \ ******************************************************************************
 
 .cls
 
  JSR TTX66              \ Call TTX66 to clear the top part of the screen and
-                        \ draw a white border
+                        \ draw a border box
 
  JMP RR4                \ Jump to RR4 to restore X and Y from the stack and A
                         \ from K3, and return from the subroutine using a tail
@@ -8036,22 +8090,22 @@ ENDIF
 
 \ ******************************************************************************
 \
-\       Name: TT67X
+\       Name: TT67K
 \       Type: Subroutine
 \   Category: Text
 \    Summary: Print a newline
 \
 \ ******************************************************************************
 
-.TT67X
+.TT67K
 
                         \ This does the same as the existing TT67 routine, which
                         \ is also present in this source, so it isn't clear why
                         \ this duplicate exists
                         \
-                        \ In the original source, this version also has the name
-                        \ TT67, but because BeebAsm doesn't allow us to redefine
-                        \ labels, this one has been renamed TT67X
+                        \ In the original source this label is TT67, but
+                        \ because BeebAsm doesn't allow us to redefine labels,
+                        \ I have renamed it to TT67K
 
  LDA #12                \ Set A to a carriage return character
 
@@ -8129,7 +8183,7 @@ ENDIF
                         \ flags
 
  CPY #255               \ If QQ17 = 255 then printing is disabled, so jump to
- BEQ RR4S               \ RR4S (via the JMP in RR4S) to restore the registers
+ BEQ RR4S               \ RR4 (via the JMP in RR4S) to restore the registers
                         \ and return from the subroutine using a tail call
 
 IF _COMPACT
@@ -8424,7 +8478,7 @@ ENDIF
 IF _SNG47
 
  JSR TTX66              \ Otherwise we are off the bottom of the screen, so
-                        \ clear the screen and draw a white border
+                        \ clear the screen and draw a border box
 
  LDA #%00001111         \ Set bits 1 and 2 of the Access Control Register at
  STA VIA+&34            \ SHEILA &34 to switch screen memory into &3000-&7FFF
@@ -8513,7 +8567,7 @@ ENDIF
 
 .RRL1
 
-                        \ We print the character's 8-pixel row in two parts,
+                        \ We print the character's eight-pixel row in two parts,
                         \ starting with the first four pixels (one byte of
                         \ screen memory), and then the second four (a second
                         \ byte of screen memory)
@@ -8606,18 +8660,18 @@ ENDIF
 \       Name: TTX66
 \       Type: Subroutine
 \   Category: Drawing the screen
-\    Summary: Clear the top part of the screen and draw a white border
+\    Summary: Clear the top part of the screen and draw a border box
 \
 \ ------------------------------------------------------------------------------
 \
-\ Clear the top part of the screen (the space view) and draw a white border
+\ Clear the top part of the screen (the space view) and draw a border box
 \ along the top and sides.
 \
 \ ------------------------------------------------------------------------------
 \
 \ Other entry points:
 \
-\   BOX                 Just draw the white border along the top and sides
+\   BOX                 Just draw the border box along the top and sides
 \
 \ ******************************************************************************
 
@@ -8696,13 +8750,15 @@ ENDIF
                         \   (255, 0) to (255, 191)
                         \   (254, 0) to (254, 191)
                         \
-                        \ So that's a 2-pixel wide vertical border along the
+                        \ So that's a two-pixel wide vertical border along the
                         \ left edge of the upper part of the screen, and a
-                        \ 2-pixel wide vertical border along the right edge
- LDA COL                \ Set locations &4000 &41F8 to %00001111, as otherwise
- STA &4000              \ the top-left and top-right corners will be black (as
- STA &41F8              \ the lines overlap at the corners, and the EOR logic
-                        \ used by LOIN will otherwise make them black)
+                        \ two-pixel wide vertical border along the right edge
+
+ LDA COL                \ Set locations &4000 and &41F8 to the correct colour,
+ STA &4000              \ as otherwise the top-left and top-right corners will
+ STA &41F8              \ be black (as the lines overlap at the corners, and
+                        \ the EOR logic used by LOINQ will otherwise make them
+                        \ black)
 
  PLA                    \ Restore the original colour that we stored above
  STA COL
@@ -8813,7 +8869,7 @@ ENDIF
 \       Name: CLYNS
 \       Type: Subroutine
 \   Category: Drawing the screen
-\    Summary: Clear the bottom three text rows of the mode 4 screen
+\    Summary: Clear the bottom three text rows of the space view
 \
 \ ******************************************************************************
 
@@ -8835,7 +8891,7 @@ ENDIF
  LDA #20                \ Move the text cursor to row 20, near the bottom of
  STA YC                 \ the screen
 
- JSR TT67X              \ Print a newline
+ JSR TT67K              \ Print a newline
 
  LDA #%00001111         \ Set bits 1 and 2 of the Access Control Register at
  STA VIA+&34            \ SHEILA &34 to switch screen memory into &3000-&7FFF
@@ -8884,21 +8940,21 @@ ENDIF
                         \ is 8 bytes), so we put this in Y to act as a byte
                         \ counter, as before
 
-{
-.EE3                    \ This label is a duplicate of a label in TT23 (which is
-                        \ why we need to surround it with braces, as BeebAsm
-                        \ doesn't allow us to redefine labels, unlike BBC
-                        \ BASIC)
+.EE3K                   \ This label is a duplicate of a label in the TT23
+                        \ routine
+                        \
+                        \ In the original source this label is EE3, but
+                        \ because BeebAsm doesn't allow us to redefine labels,
+                        \ I have renamed it to EE3K
 
  STA (SC),Y             \ Zero the Y-th byte from SC(1 0), which clears it by
                         \ setting it to colour 0, black
 
  DEY                    \ Decrement the byte counter in Y
 
- BNE EE3                \ Loop back to EE2 to blank the next byte to the left,
+ BNE EE3K               \ Loop back to EE3K to blank the next byte to the left,
                         \ until we have done one page's worth (from byte #247 to
                         \ #1)
-}
 
  INC SC+1               \ We have now blanked a whole text row, so increment
                         \ SC+1 so that SC(1 0) points to the next row
@@ -9335,10 +9391,10 @@ ENDIF
 \                       threshold is in pixels, so it should have a value from
 \                       0-16, as each bar indicator is 16 pixels wide
 \
-\   K                   The colour to use when A is a high value, as a 2-pixel
+\   K                   The colour to use when A is a high value, as a two-pixel
 \                       mode 2 character row byte
 \
-\   K+1                 The colour to use when A is a low value, as a 2-pixel
+\   K+1                 The colour to use when A is a low value, as a two-pixel
 \                       mode 2 character row byte
 \
 \   SC(1 0)             The screen address of the first character block in the
@@ -9412,18 +9468,18 @@ ENDIF
  BCC DL2                \ indicator, which is less than a full character's
                         \ width, so jump down to DL2 to do this
 
- SBC #2                 \ Otherwise we can draw a 2-pixel wide block, so
+ SBC #2                 \ Otherwise we can draw a two-pixel wide block, so
  STA Q                  \ subtract 2 from Q so it contains the amount of the
                         \ indicator that's left to draw after this character
 
  LDA R                  \ Fetch the shape of the indicator row that we need to
                         \ display from R, so we can use it as a mask when
                         \ painting the indicator. It will be &FF at this point
-                        \ (i.e. a full 4-pixel row)
+                        \ (i.e. a full four-pixel row)
 
 .DL5
 
- AND COL                \ Fetch the 2-pixel mode 2 colour byte from COL, and
+ AND COL                \ Fetch the two-pixel mode 2 colour byte from COL, and
                         \ only keep pixels that have their equivalent bits set
                         \ in the mask byte in A
 
@@ -9473,7 +9529,7 @@ ENDIF
  AND #%10101010         \ which has the effect of shifting zeroes from the left
                         \ into each two-bit segment (i.e. xx xx xx xx becomes
                         \ x0 x0 x0 x0, which blanks out the last column in the
-                        \ 2-pixel mode 2 character block)
+                        \ two-pixel mode 2 character block)
 
  DEC Q                  \ Decrement the counter for the number of columns to
                         \ blank out
@@ -9577,19 +9633,19 @@ ENDIF
                         \ drawing blank characters after this one until we reach
                         \ the end of the indicator row
 
- LDA CTWOS,X            \ CTWOS is a table of ready-made 1-pixel mode 2 bytes,
+ LDA CTWOS,X            \ CTWOS is a table of ready-made one-pixel mode 2 bytes,
                         \ just like the TWOS and TWOS2 tables for mode 1 (see
                         \ the PIXEL routine for details of how they work). This
-                        \ fetches a mode 2 1-pixel byte with the pixel position
-                        \ at X, so the pixel is at the offset that we want for
-                        \ our vertical bar
+                        \ fetches a mode 2 one-pixel byte with the pixel
+                        \ position at X, so the pixel is at the offset that we
+                        \ want for our vertical bar
 
- AND #WHITE2            \ The 2-pixel mode 2 byte in #WHITE2 represents two
+ AND #WHITE2            \ The two-pixel mode 2 byte in #WHITE2 represents two
                         \ pixels of colour %0111 (7), which is white in both
                         \ dashboard palettes. We AND this with A so that we only
                         \ keep the pixel that matches the position of the
                         \ vertical bar (i.e. A is acting as a mask on the
-                        \ 2-pixel colour byte)
+                        \ two-pixel colour byte)
 
  BNE DLL12              \ Jump to DLL12 to skip the code for drawing a blank,
                         \ and move on to drawing the indicator (this BNE is
@@ -9645,59 +9701,126 @@ ENDIF
 \   Category: Maths (Arithmetic)
 \    Summary: Calculate (A X) = (A P) + (S R)
 \
+\  Deep dive: Adding sign-magnitude numbers
+\
+\ ------------------------------------------------------------------------------
+\
+\ Add two 16-bit sign-magnitude numbers together, calculating:
+\
+\   (A X) = (A P) + (S R)
+\
+\ This is an exact duplicate of the ADD routine, which is also present in this
+\ source, so it isn't clear why this duplicate exists.
+\
 \ ******************************************************************************
 
 .ADDK
 
- STA T1                 \ This is an exact duplicate of the ADD routine, which
- AND #%10000000         \ is also present in this source, so it isn't clear why
- STA T                  \ this duplicate exists
- EOR S                  \
- BMI MU8K               \ See the ADD routine for an explanation of the code
- LDA R
- CLC
- ADC P
+ STA T1                 \ Store argument A in T1
+
+ AND #%10000000         \ Extract the sign (bit 7) of A and store it in T
+ STA T
+
+ EOR S                  \ EOR bit 7 of A with S. If they have different bit 7s
+ BMI MU8K               \ (i.e. they have different signs) then bit 7 in the
+                        \ EOR result will be 1, which means the EOR result is
+                        \ negative. So the AND, EOR and BMI together mean "jump
+                        \ to MU8K if A and S have different signs"
+
+                        \ If we reach here, then A and S have the same sign, so
+                        \ we can add them and set the sign to get the result
+
+ LDA R                  \ Add the least significant bytes together into X:
+ CLC                    \
+ ADC P                  \   X = P + R
  TAX
- LDA S
- ADC T1
- ORA T
- RTS
+
+ LDA S                  \ Add the most significant bytes together into A. We
+ ADC T1                 \ stored the original argument A in T1 earlier, so we
+                        \ can do this with:
+                        \
+                        \   A = A  + S + C
+                        \     = T1 + S + C
+
+ ORA T                  \ If argument A was negative (and therefore S was also
+                        \ negative) then make sure result A is negative by
+                        \ OR'ing the result with the sign bit from argument A
+                        \ (which we stored in T)
+
+ RTS                    \ Return from the subroutine
 
 .MU8K
 
- LDA S
- AND #%01111111
+                        \ If we reach here, then A and S have different signs,
+                        \ so we can subtract their absolute values and set the
+                        \ sign to get the result
+
+ LDA S                  \ Clear the sign (bit 7) in S and store the result in
+ AND #%01111111         \ U, so U now contains |S|
  STA U
- LDA P
- SEC
- SBC R
+
+ LDA P                  \ Subtract the least significant bytes into X:
+ SEC                    \
+ SBC R                  \   X = P - R
  TAX
- LDA T1
- AND #%01111111
- SBC U
- BCS MU9K
- STA U
- TXA
- EOR #&FF
- ADC #1
- TAX
- LDA #0
- SBC U
- ORA #%10000000
+
+ LDA T1                 \ Restore the A of the argument (A P) from T1 and
+ AND #%01111111         \ clear the sign (bit 7), so A now contains |A|
+
+ SBC U                  \ Set A = |A| - |S|
+
+                        \ At this point we have |A P| - |S R| in (A X), so we
+                        \ need to check whether the subtraction above was the
+                        \ right way round (i.e. that we subtracted the smaller
+                        \ absolute value from the larger absolute value)
+
+ BCS MU9K               \ If |A| >= |S|, our subtraction was the right way
+                        \ round, so jump to MU9K to set the sign
+
+                        \ If we get here, then |A| < |S|, so our subtraction
+                        \ above was the wrong way round (we actually subtracted
+                        \ the larger absolute value from the smaller absolute
+                        \ value). So let's subtract the result we have in (A X)
+                        \ from zero, so that the subtraction is the right way
+                        \ round
+
+ STA U                  \ Store A in U
+
+ TXA                    \ Set X = 0 - X using two's complement (to negate a
+ EOR #&FF               \ number in two's complement, you can invert the bits
+ ADC #1                 \ and add one - and we know the C flag is clear as we
+ TAX                    \ didn't take the BCS branch above, so the ADC will do
+                        \ the correct addition)
+
+ LDA #0                 \ Set A = 0 - A, which we can do this time using a
+ SBC U                  \ subtraction with the C flag clear
+
+ ORA #%10000000         \ We now set the sign bit of A, so that the EOR on the
+                        \ next line will give the result the opposite sign to
+                        \ argument A (as T contains the sign bit of argument
+                        \ A). This is the same as giving the result the same
+                        \ sign as argument S (as A and S have different signs),
+                        \ which is what we want, as S has the larger absolute
+                        \ value
 
 .MU9K
 
- EOR T
- RTS
+ EOR T                  \ If we get here from the BCS above, then |A| >= |S|,
+                        \ so we want to give the result the same sign as
+                        \ argument A, so if argument A was negative, we flip
+                        \ the sign of the result with an EOR (to make it
+                        \ negative)
+
+ RTS                    \ Return from the subroutine
 
 IF _MATCH_ORIGINAL_BINARIES
 
  IF _SNG47
 
-  EQUB &41, &23, &6D, &65, &6D, &3A, &53, &54  \ These bytes appear to be
-  EQUB &41, &6C, &61, &74, &63, &68, &3A, &52  \ unused and just contain random
-  EQUB &54, &53, &0D, &13, &74, &09, &5C, &2E  \ workspace noise left over from
-  EQUB &2E, &2E, &2E, &0D, &18, &60, &05, &20  \ the BBC Micro assembly process
+  EQUB &41, &23, &6D, &65, &6D, &3A, &53, &54   \ These bytes appear to be
+  EQUB &41, &6C, &61, &74, &63, &68, &3A, &52   \ unused and just contain random
+  EQUB &54, &53, &0D, &13, &74, &09, &5C, &2E   \ workspace noise left over from
+  EQUB &2E, &2E, &2E, &0D, &18, &60, &05, &20   \ the BBC Micro assembly process
   EQUB &0D, &1A, &F4, &21, &5C, &2E, &2E, &2E
   EQUB &2E, &2E, &2E, &2E, &2E, &2E, &2E, &42
   EQUB &61, &79, &20, &56, &69, &65, &77, &2E
@@ -9762,7 +9885,7 @@ ENDIF
 \
 \ ******************************************************************************
 
- FONT% = P% DIV 256
+ FONT% = HI(P%)
 
  INCBIN "1-source-files/fonts/P.FONT.bin"
 
@@ -9836,9 +9959,7 @@ ELSE
 
  FOR I%, 1, 255
 
-  B% = INT(&2000 * LOG(I%) / LOG(2) + 0.5)
-
-  EQUB B% DIV 256
+  EQUB HI(INT(&2000 * LOG(I%) / LOG(2) + 0.5))
 
  NEXT
 
@@ -9916,9 +10037,7 @@ ELSE
 
  FOR I%, 1, 255
 
-  B% = INT(&2000 * LOG(I%) / LOG(2) + 0.5)
-
-  EQUB B% MOD 256
+  EQUB LO(INT(&2000 * LOG(I%) / LOG(2) + 0.5))
 
  NEXT
 
@@ -9945,156 +10064,128 @@ ENDIF
 
 .alogh
 
-IF _MATCH_ORIGINAL_BINARIES
-
- EQUB &01, &01, &01, &01, &01, &01, &01, &01
- EQUB &01, &01, &01, &01, &01, &01, &01, &01
- EQUB &01, &01, &01, &01, &01, &01, &01, &01
- EQUB &01, &01, &01, &01, &01, &01, &01, &01
- EQUB &02, &02, &02, &02, &02, &02, &02, &02
- EQUB &02, &02, &02, &02, &02, &02, &02, &02
- EQUB &02, &02, &02, &03, &03, &03, &03, &03
- EQUB &03, &03, &03, &03, &03, &03, &03, &03
- EQUB &04, &04, &04, &04, &04, &04, &04, &04
- EQUB &04, &04, &04, &05, &05, &05, &05, &05
- EQUB &05, &05, &05, &06, &06, &06, &06, &06
- EQUB &06, &06, &07, &07, &07, &07, &07, &07
- EQUB &08, &08, &08, &08, &08, &08, &09, &09
- EQUB &09, &09, &09, &0A, &0A, &0A, &0A, &0B
- EQUB &0B, &0B, &0B, &0C, &0C, &0C, &0C, &0D
- EQUB &0D, &0D, &0E, &0E, &0E, &0E, &0F, &0F
- EQUB &10, &10, &10, &11, &11, &11, &12, &12
- EQUB &13, &13, &13, &14, &14, &15, &15, &16
- EQUB &16, &17, &17, &18, &18, &19, &19, &1A
- EQUB &1A, &1B, &1C, &1C, &1D, &1D, &1E, &1F
- EQUB &20, &20, &21, &22, &22, &23, &24, &25
- EQUB &26, &26, &27, &28, &29, &2A, &2B, &2C
- EQUB &2D, &2E, &2F, &30, &31, &32, &33, &34
- EQUB &35, &36, &38, &39, &3A, &3B, &3D, &3E
- EQUB &40, &41, &42, &44, &45, &47, &48, &4A
- EQUB &4C, &4D, &4F, &51, &52, &54, &56, &58
- EQUB &5A, &5C, &5E, &60, &62, &64, &67, &69
- EQUB &6B, &6D, &70, &72, &75, &77, &7A, &7D
- EQUB &80, &82, &85, &88, &8B, &8E, &91, &94
- EQUB &98, &9B, &9E, &A2, &A5, &A9, &AD, &B1
- EQUB &B5, &B8, &BD, &C1, &C5, &C9, &CE, &D2
- EQUB &D7, &DB, &E0, &E5, &EA, &EF, &F5, &FA
-
-ELSE
-
  FOR I%, 0, 255
 
-  EQUB INT(2^((I% / 2 + 128) / 16) + 0.5) DIV 256
+  EQUB HI(INT(2^((I% / 2 + 128) / 16) + 0.5))
 
  NEXT
 
-ENDIF
+\ ******************************************************************************
+\
+\       Name: SCTBX1
+\       Type: Variable
+\   Category: Drawing the screen
+\    Summary: Lookup table for converting a pixel x-coordinate to the bit number
+\             within the pixel row byte that corresponds to this pixel
+\
+\ ------------------------------------------------------------------------------
+\
+\ This routine is not used in this version of Elite. It is left over from the
+\ Apple II version.
+\
+\ ******************************************************************************
 
-IF _MATCH_ORIGINAL_BINARIES
+.SCTBX1
 
- EQUB &01, &02, &03, &04, &05, &06, &00, &01   \ These bytes appear to be
- EQUB &02, &03, &04, &05, &06, &00, &01, &02   \ unused and just contain random
- EQUB &03, &04, &05, &06, &00, &01, &02, &03   \ workspace noise left over from
- EQUB &04, &05, &06, &00, &01, &02, &03, &04   \ the BBC Micro assembly process
- EQUB &05, &06, &00, &01, &02, &03, &04, &05
- EQUB &06, &00, &01, &02, &03, &04, &05, &06
- EQUB &00, &01, &02, &03, &04, &05, &06, &00
- EQUB &01, &02, &03, &04, &05, &06, &00, &01
- EQUB &02, &03, &04, &05, &06, &00, &01, &02
- EQUB &03, &04, &05, &06, &00, &01, &02, &03
- EQUB &04, &05, &06, &00, &01, &02, &03, &04
- EQUB &05, &06, &00, &01, &02, &03, &04, &05
- EQUB &06, &00, &01, &02, &03, &04, &05, &06
- EQUB &00, &01, &02, &03, &04, &05, &06, &00
- EQUB &01, &02, &03, &04, &05, &06, &00, &01
- EQUB &02, &03, &04, &05, &06, &00, &01, &02
- EQUB &03, &04, &05, &06, &00, &01, &02, &03
- EQUB &04, &05, &06, &00, &01, &02, &03, &04
- EQUB &05, &06, &00, &01, &02, &03, &04, &05
- EQUB &06, &00, &01, &02, &03, &04, &05, &06
- EQUB &00, &01, &02, &03, &04, &05, &06, &00
- EQUB &01, &02, &03, &04, &05, &06, &00, &01
- EQUB &02, &03, &04, &05, &06, &00, &01, &02
- EQUB &03, &04, &05, &06, &00, &01, &02, &03
- EQUB &04, &05, &06, &00, &01, &02, &03, &04
- EQUB &05, &06, &00, &01, &02, &03, &04, &05
- EQUB &06, &00, &01, &02, &03, &04, &05, &06
- EQUB &00, &01, &02, &03, &04, &05, &06, &00
- EQUB &01, &02, &03, &04, &05, &06, &00, &01
- EQUB &02, &03, &04, &05, &06, &00, &01, &02
- EQUB &03, &04, &05, &06, &00, &01, &02, &03
- EQUB &04, &05, &06, &00, &01, &02, &03, &04
- EQUB &01, &01, &01, &01, &01, &01, &02, &02
- EQUB &02, &02, &02, &02, &02, &03, &03, &03
- EQUB &03, &03, &03, &03, &04, &04, &04, &04
- EQUB &04, &04, &04, &05, &05, &05, &05, &05
- EQUB &05, &05, &06, &06, &06, &06, &06, &06
- EQUB &06, &07, &07, &07, &07, &07, &07, &07
- EQUB &08, &08, &08, &08, &08, &08, &08, &09
- EQUB &09, &09, &09, &09, &09, &09, &0A, &0A
- EQUB &0A, &0A, &0A, &0A, &0A, &0B, &0B, &0B
- EQUB &0B, &0B, &0B, &0B, &0C, &0C, &0C, &0C
- EQUB &0C, &0C, &0C, &0D, &0D, &0D, &0D, &0D
- EQUB &0D, &0D, &0E, &0E, &0E, &0E, &0E, &0E
- EQUB &0E, &0F, &0F, &0F, &0F, &0F, &0F, &0F
- EQUB &10, &10, &10, &10, &10, &10, &10, &11
- EQUB &11, &11, &11, &11, &11, &11, &12, &12
- EQUB &12, &12, &12, &12, &12, &13, &13, &13
- EQUB &13, &13, &13, &13, &14, &14, &14, &14
- EQUB &14, &14, &14, &15, &15, &15, &15, &15
- EQUB &15, &15, &16, &16, &16, &16, &16, &16
- EQUB &16, &17, &17, &17, &17, &17, &17, &17
- EQUB &18, &18, &18, &18, &18, &18, &18, &19
- EQUB &19, &19, &19, &19, &19, &19, &1A, &1A
- EQUB &1A, &1A, &1A, &1A, &1A, &1B, &1B, &1B
- EQUB &1B, &1B, &1B, &1B, &1C, &1C, &1C, &1C
- EQUB &1C, &1C, &1C, &1D, &1D, &1D, &1D, &1D
- EQUB &1D, &1D, &1E, &1E, &1E, &1E, &1E, &1E
- EQUB &1E, &1F, &1F, &1F, &1F, &1F, &1F, &1F
- EQUB &20, &20, &20, &20, &20, &20, &20, &21
- EQUB &21, &21, &21, &21, &21, &21, &22, &22
- EQUB &22, &22, &22, &22, &22, &23, &23, &23
- EQUB &23, &23, &23, &23, &24, &24, &24, &24
- EQUB &24, &24, &24, &25, &25, &25, &25, &25
- EQUB &96, &97, &9A, &9B, &9D, &9E, &9F, &A6
- EQUB &A7, &AB, &AC, &AD, &AE, &AF, &B2, &B3
- EQUB &B4, &B5, &B6, &B7, &B9, &BA, &BB, &BC
- EQUB &BD, &BE, &BF, &CB, &CD, &CE, &CF, &D3
- EQUB &D6, &D7, &D9, &DA, &DB, &DC, &DD, &DE
- EQUB &DF, &E5, &E6, &E7, &E9, &EA, &EB, &EC
- EQUB &ED, &EE, &EF, &F2, &F3, &F4, &F5, &F6
- EQUB &F7, &F9, &FA, &FB, &FC, &FD, &FE, &FF
+FOR I%, 0, 255
 
-ELSE
+ EQUB (I% + 8) MOD 7
 
- SKIP 576               \ These bytes appear to be unused
+NEXT
 
-ENDIF
+\ ******************************************************************************
+\
+\       Name: SCTBX2
+\       Type: Variable
+\   Category: Drawing the screen
+\    Summary: Lookup table for converting a pixel x-coordinate to the byte
+\             number in the pixel row that corresponds to this pixel
+\
+\ ------------------------------------------------------------------------------
+\
+\ This routine is not used in this version of Elite. It is left over from the
+\ Apple II version.
+\
+\ ******************************************************************************
+
+.SCTBX2
+
+FOR I%, 0, 255
+
+ EQUB (I% + 8) DIV 7
+
+NEXT
+
+\ ******************************************************************************
+\
+\       Name: wtable
+\       Type: Variable
+\   Category: Save and load
+\    Summary: 6-bit to 7-bit nibble conversion table
+\
+\ ------------------------------------------------------------------------------
+\
+\ This table is not used in this version of Elite. It is left over from the
+\ Apple II version.
+\
+\ ******************************************************************************
+
+.wtable
+
+ EQUD &9B9A9796         \ NIBL     DFB $96,$97,$9A
+ EQUD &A69F9E9D         \          DFB $9B,$9D,$9E
+ EQUD &ADACABA7         \          DFB $9F,$A6,$A7
+ EQUD &B3B2AFAE         \          DFB $AB,$AC,$AD
+ EQUD &B7B6B5B4         \          DFB $AE,$AF,$B2
+ EQUD &BCBBBAB9         \          DFB $B3,$B4,$B5
+ EQUD &CBBFBEBD         \          DFB $B6,$B7,$B9
+ EQUD &D3CFCECD         \          DFB $BA,$BB,$BC
+ EQUD &DAD9D7D6         \          DFB $BD,$BE,$BF
+ EQUD &DEDDDCDB         \          DFB $CB,$CD,$CE
+ EQUD &E7E6E5DF         \          DFB $CF,$D3,$D6
+ EQUD &ECEBEAE9         \          DFB $D7,$D9,$DA
+ EQUD &F2EFEEED         \          DFB $DB,$DC,$DD
+ EQUD &F6F5F4F3         \          DFB $DE,$DF,$E5
+ EQUD &FBFAF9F7         \          DFB $E6,$E7,$E9
+ EQUD &FFFEFDFC         \          DFB $EA,$EB,$EC
+                        \          DFB $ED,$EE,$EF
+                        \          DFB $F2,$F3,$F4
+                        \          DFB $F5,$F6,$F7
+                        \          DFB $F9,$FA,$FB
+                        \          DFB $FC,$FD,$FE
+                        \          DFB $FF
 
 \ ******************************************************************************
 \
 \       Name: UP
 \       Type: Workspace
+\    Address: &2C40 to &2C61
 \   Category: Workspaces
 \    Summary: Configuration variables
 \
 \ ******************************************************************************
 
+.UP
+
+ SKIP 0                 \ The start of the UP workspace
+
 .COMC
 
  SKIP 1                 \ The colour of the dot on the compass
                         \
+                        \   * #WHITE2 = the object in the compass is in front of
+                        \     us, so the dot is white
+                        \
+                        \   * #GREEN2 = the object in the compass is behind us,
+                        \     so the dot is green
 
 .dials
 
- EQUD 0                 \ These bytes appear to be unused
- EQUD 0
- EQUD 0
- EQUW 0
+ SKIP 14                \ These bytes appear to be unused
 
 .mscol
 
- EQUD 0                 \ This byte appears to be unused
+ SKIP 4                 \ This byte appears to be unused
 
 .CATF
 
@@ -10116,7 +10207,7 @@ ENDIF
 
 .DFLAG
 
- EQUB 0                 \ This byte appears to be unused
+ SKIP 1                 \ This byte appears to be unused
 
 .DNOIZ
 
@@ -10165,8 +10256,8 @@ ENDIF
                         \
                         \ This needs to be turned on for manual mis-jumps to be
                         \ possible. To do a manual mis-jump, first toggle the
-                        \ author display by pausing the game (COPY) and pressing
-                        \ "X", and during the next hyperspace, hold down CTRL to
+                        \ author display by pausing the game and pressing "X",
+                        \ and during the next hyperspace, hold down CTRL to
                         \ force a mis-jump. See routine ee5 for the "AND PATG"
                         \ instruction that implements this logic
 
@@ -10219,7 +10310,7 @@ ENDIF
  SKIP 1                 \ The configuration setting for toggle key "U", which
                         \ isn't actually used but is still updated by pressing
                         \ "U" while the game is paused. This is a configuration
-                        \ option from some non-BBC versions of Elite that lets
+                        \ option from the Apple II version of Elite that lets
                         \ you switch between lower-case and upper-case text
 
 .DISK
@@ -10227,8 +10318,8 @@ ENDIF
  SKIP 1                 \ The configuration setting for toggle key "T", which
                         \ isn't actually used but is still updated by pressing
                         \ "T" while the game is paused. This is a configuration
-                        \ option from some non-BBC versions of Elite that lets
-                        \ you switch between tape and disc
+                        \ option from the Commodore 64 version of Elite that
+                        \ lets you switch between tape and disc
 
 .BSTK
 
@@ -10266,6 +10357,8 @@ ENDIF
                         \
                         \ This is controlled by the "<" and ">" keys while the
                         \ game is paused, and the default level is 7
+
+ PRINT "UP workspace from ", ~UP, "to ", ~P%-1, "inclusive"
 
 \ ******************************************************************************
 \
@@ -10321,8 +10414,8 @@ ENDIF
 \ ------------------------------------------------------------------------------
 \
 \ The main game code and data are encrypted. This routine decrypts the game code
-\ in two parts: the main game code between DOENTRY and F%, and the game data
-\ between XX21 and the end of the game data at &BFFF.
+\ in two parts: the main game code between G% and F%, and the game data between
+\ XX21 and the end of the game data at &B1FF.
 \
 \ In the BeebAsm version, the encryption is done by elite-checksum.py, but in
 \ the original this would have been done by the BBC BASIC build scripts.
@@ -10331,19 +10424,29 @@ ENDIF
 
 .DEEOR
 
- LDA #LO(DOENTRY-1)     \ Set FRIN(1 0) = DEEORS-1 as the low address of the
- STA FRIN               \ decryption block, so we decrypt from just after the
- LDA #HI(DOENTRY-1)     \ DEEORS routine
+ LDA #LO(G%-1)          \ Set FRIN(1 0) = G%-1 as the low address of the
+ STA FRIN               \ decryption block, so we decrypt from the start of the
+ LDA #HI(G%-1)          \ DOENTRY routine
  STA FRIN+1
 
  LDA #HI(F%-1)          \ Set (A Y) to F% as the high address of the decryption
  LDY #LO(F%-1)          \ block, so we decrypt to the end of the main game code
                         \ at F%
 
- LDX #&19               \ Set X = &19 as the decryption seed (the value used to
+ LDX #KEY1              \ Set X = KEY1 as the decryption seed (the value used to
                         \ encrypt the code, which is done in elite-checksum.py)
 
+IF _REMOVE_CHECKSUMS
+
+ NOP                    \ If we have disabled checksums, skip the call to DEEORS
+ NOP                    \ and return from the subroutine to skip the second call
+ RTS                    \ below
+
+ELSE
+
  JSR DEEORS             \ Call DEEORS to decrypt between DOENTRY and F%
+
+ENDIF
 
  LDA #LO(XX21-1)        \ Set FRIN(1 0) = XX21-1 as the low address of the
  STA FRIN               \ decryption block
@@ -10353,7 +10456,7 @@ ENDIF
  LDA #&B1               \ Set (A Y) = &B1FF as the high address of the
  LDY #&FF               \ decryption block
 
- LDX #&62               \ Set X = &62 as the decryption seed (the value used to
+ LDX #KEY2              \ Set X = KEY2 as the decryption seed (the value used to
                         \ encrypt the code, which is done in elite-checksum.py)
 
                         \ Fall through into DEEORS to decrypt between XX21 and
@@ -10430,9 +10533,18 @@ ENDIF
 
                         \ --- End of replacement ------------------------------>
 
+\ ******************************************************************************
+\
+\       Name: G%
+\       Type: Variable
+\   Category: Utility routines
+\    Summary: Denotes the start of the main game code, from ELITE A to ELITE H
+\
+\ ******************************************************************************
+
 .G%
 
-                        \ The game code is scrambled from here to F% (or, as the
+ SKIP 0                 \ The game code is scrambled from here to F% (or, as the
                         \ original source code puts it, "mutilated")
 
 \ ******************************************************************************
@@ -10482,17 +10594,20 @@ ENDIF
  BNE EN1                \ completed), skip to EN1
 
  LDA TALLY+1            \ If the high byte of TALLY is zero (so we have a combat
- BEQ EN4                \ rank below Competent), jump to EN4 as we are not yet
-                        \ good enough to qualify for a mission
+ BEQ EN4                \ rank below Competent, or we are Competent but have not
+                        \ yet earned a grand total of at least 256 kill points),
+                        \ jump to EN4 as we are not yet good enough to qualify
+                        \ for a mission
 
  LDA GCNT               \ Fetch the galaxy number into A, and if any of bits 1-7
  LSR A                  \ are set (i.e. A > 1), jump to EN4 as mission 1 can
  BNE EN4                \ only be triggered in the first two galaxies
 
- JMP BRIEF              \ If we get here, mission 1 hasn't started, we have
-                        \ reached a combat rank of Competent, and we are in
-                        \ galaxy 0 or 1 (shown in-game as galaxy 1 or 2), so
-                        \ it's time to start mission 1 by calling BRIEF
+ JMP BRIEF              \ If we get here then mission 1 hasn't started, we have
+                        \ reached a combat rank of at least Competent plus 128
+                        \ kill points, and we are in galaxy 0 or 1 (shown
+                        \ in-game as galaxy 1 or 2), so it's time to start
+                        \ mission 1 by calling BRIEF
 
 .EN1
 
@@ -10591,10 +10706,13 @@ ENDIF
 \LDA CASH+2             \ These instructions are commented out in the original
 \CMP #&C4               \ source
 \BCC EN6
+\
 \LDA TP
 \AND #&10
 \BNE EN6
+\
 \JMP TBRIEF
+\
 \.EN6
 
                         \ --- Mod: Code added for Trumbles: ------------------->
@@ -10629,15 +10747,35 @@ ENDIF
                         \ so jump to BAY to go to the docking bay (i.e. show the
                         \ Status Mode screen)
 
+\ ******************************************************************************
+\
+\       Name: TRIBDIR
+\       Type: Variable
+\   Category: Missions
+\    Summary: The low byte of the four 16-bit directions in which Trumble
+\             sprites can move
+\
+\ ******************************************************************************
+
 \.TRIBDIR               \ These instructions are commented out in the original
 \                       \ source
 \EQUB 0
 \EQUB 1
 \EQUB &FF
 \EQUB 0
+
+\ ******************************************************************************
 \
-\.TRIBDIRH
+\       Name: TRIBDIRH
+\       Type: Variable
+\   Category: Missions
+\    Summary: The high byte of the four 16-bit directions in which Trumble
+\             sprites can move
 \
+\ ******************************************************************************
+
+\.TRIBDIRH              \ These instructions are commented out in the original
+\                       \ source
 \EQUB 0
 \EQUB 0
 \EQUB &FF
@@ -10655,10 +10793,6 @@ ENDIF
 \EQUW &807F
 
                         \ --- End of removed code ----------------------------->
-
-\.MVTRIBS               \ These instructions are commented out in the original
-\.MVTR1                 \ source
-\.nominus
 
 \ ******************************************************************************
 \
@@ -11002,8 +11136,7 @@ ENDIF
 \   * Scan for flight keys and process the results
 \
 \ Flight keys are logged in the key logger at location KY1 onwards, with a
-\ non-zero value in the relevant location indicating a key press. See the deep
-\ dive on "The key logger" for more details.
+\ non-zero value in the relevant location indicating a key press.
 \
 \ The key presses that are processed are as follows:
 \
@@ -11201,12 +11334,14 @@ ENDIF
 
 \EOR KLO+&29            \ These instructions are commented out in the original
 \BEQ MA68               \ source
+\
 \STA auto
+\
 \JSR startbd
+\
+\kill phantom Cs
 
 .MA68
-
-\kill phantom Cs        \ This comment appears in the original source
 
  LDA #0                 \ Set LAS = 0, to switch the laser off while we do the
  STA LAS                \ following logic
@@ -11267,8 +11402,10 @@ ENDIF
 
  AND #%11111010         \ LASCT will be set to 0 for beam lasers, and to the
  STA LASCT              \ laser power AND %11111010 for pulse lasers, which
-                        \ comes to 10 (as pulse lasers have a power of 15). See
-                        \ MA23 below for more on laser pulsing and LASCT
+                        \ comes to 10 for pulse lasers (as pulse lasers have a
+                        \ power of 15) or 50 for mining lasers (as mining
+                        \ lasers hava a power of 50). See MA23 in part 16 for
+                        \ more on laser pulsing and LASCT
 
 \ ******************************************************************************
 \
@@ -11652,9 +11789,6 @@ ENDIF
 \
 \   * Process docking with a space station
 \
-\ For details on the various docking checks in this routine, see the deep dive
-\ on "Docking checks".
-\
 \ ------------------------------------------------------------------------------
 \
 \ Other entry points:
@@ -11695,6 +11829,8 @@ ENDIF
  BCC MA62
 
 .GOIN
+
+                        \ If we arrive here, we just docked successfully
 
 \JSR stopbd             \ This instruction is commented out in the original
                         \ source
@@ -11887,9 +12023,7 @@ ENDIF
 
  CMP #(Armlas AND 127)  \ If the laser is not a military laser, jump to MA14+2
  BNE MA14+2             \ to skip the following, as only military lasers have
-                        \ any effect on the Constrictor or Cougar (or the Elite
-                        \ logo, should you ever bump into one of those out there
-                        \ in the black...)
+                        \ any effect on the Constrictor or Cougar
 
  LSR LAS                \ Divide the laser power of the current view by 4, so
  LSR LAS                \ the damage inflicted on the super-ship is a quarter of
@@ -11944,8 +12078,9 @@ ENDIF
 
  STA INWK+35            \ Store the hit ship's updated energy in ship byte #35
 
- LDA TYPE               \ Call ANGRY to make this ship hostile, now that we
- JSR ANGRY              \ have hit it
+ LDA TYPE               \ Call ANGRY to make the target ship or station hostile,
+ JSR ANGRY              \ and if this is a ship, wake up its AI and give it a
+                        \ kick of speed
 
 \ ******************************************************************************
 \
@@ -12106,7 +12241,7 @@ ENDIF
 
 .MA77
 
- LDA MCNT               \ Fetch the main loop counter and calculate MCNT mod 7,
+ LDA MCNT               \ Fetch the main loop counter and calculate MCNT mod 8,
  AND #7                 \ jumping to MA22 if it is non-zero (so the following
  BNE MA22               \ code only runs every 8 iterations of the main loop)
 
@@ -12342,7 +12477,10 @@ ENDIF
                         \ fair distance from the planet, so jump to MA23 as we
                         \ haven't crashed into the planet
 
- SBC #36                \ Subtract 36 from x_hi^2 + y_hi^2 + z_hi^2
+ SBC #36                \ Subtract 37 from x_hi^2 + y_hi^2 + z_hi^2
+                        \
+                        \ The SBC subtracts 37 as we just passed through a BCS
+                        \ so we know the C flag is clear
                         \
                         \ When we do the 3D Pythagoras calculation, we only use
                         \ the high bytes of the coordinates, so that's x_hi,
@@ -12361,7 +12499,9 @@ ENDIF
                         \ So for the planet, the equivalent figure to test the
                         \ sum of the _hi bytes against is 36, so A now contains
                         \ the high byte of our altitude above the planet
-                        \ surface, squared
+                        \ surface, squared, with an extra 1 subtracted so the
+                        \ test in the next instruction will ensure we crash
+                        \ even if we are exactly one planet radius away
 
  BCC MA28               \ If A < 0 then jump to MA28 as we have crashed into
                         \ the planet
@@ -12426,25 +12566,39 @@ ENDIF
                         \ jump to MA23 to skip the following, as we are too far
                         \ from the sun for scooping or temperature changes
 
- JSR MAS3               \ Set A = x_hi^2 + y_hi^2 + z_hi^2, so using Pythagoras
-                        \ we now know that A now contains the square of the
-                        \ distance between our ship (at the origin) and the
-                        \ heart of the sun at (x_hi, y_hi, z_hi)
+ JSR MAS3               \ Set (A ?) = x_hi^2 + y_hi^2 + z_hi^2, so using
+                        \ Pythagoras we now know that A now contains the high
+                        \ byte of the square of the distance between our ship
+                        \ (at the origin) and the heart of the sun at coordinate
+                        \ (x_hi, y_hi, z_hi)
+                        \
+                        \ If the calculation overflows so it doesn't fit into
+                        \ one byte, then A is set to &FF and the C flag is set
 
  EOR #%11111111         \ Invert A, so A is now small if we are far from the
                         \ sun and large if we are close to the sun, in the
                         \ range 0 = far away to &FF = extremely close, ouch,
                         \ hot, hot, hot!
 
- ADC #30                \ Add the minimum cabin temperature of 30, so we get
-                        \ one of the following:
+ ADC #30                \ Add the minimum cabin temperature of 30, plus the C
+                        \ flag, so we get one of the following:
                         \
-                        \   * If the C flag is clear, A contains the cabin
-                        \     temperature, ranging from 30 to 255, that's hotter
-                        \     the closer we are to the sun
                         \
-                        \   * If the C flag is set, the addition has rolled over
-                        \     and the cabin temperature is over 255
+                        \   * If the MAS3 calculation overflowed then we are a
+                        \     long way from the sun, A will be zero and the C
+                        \     flag will be set, so this addition sets A = 31
+                        \     and clears the C flag
+                        \
+                        \   * If the result of the MAS3 calculation fitted into
+                        \     one byte, then A will be in the range 0 to 255 and
+                        \     the C flag will be clear, so this addition has a
+                        \     result in the range 0 to 285, with the higher
+                        \     values overflowing the addition and setting the
+                        \     C flag
+                        \
+                        \ So the C flag is set if the cabin temperature is too
+                        \ hot to handle, and if it's clear then A contains the
+                        \ cabin temperature
 
  STA CABTMP             \ Store the updated cabin temperature
 
@@ -12456,15 +12610,20 @@ ENDIF
 
 \CMP #&F0               \ These instructions are commented out in the original
 \BCC nokilltr           \ source
+\
 \LDA #5
 \JSR SETL1
+\
 \LDA VIC+&15
 \AND #&3
 \STA VIC+&15
+\
 \LDA #4
 \JSR SETL1
+\
 \LSR TRIBBLE+1
 \ROR TRIBBLE
+\
 \.nokilltr
 
                         \ --- Mod: Code added for Trumbles: ------------------->
@@ -12689,7 +12848,7 @@ ENDIF
 
  LDA #0                 \ Call SFS1 to spawn the specified cargo from the now
  JSR SFS1               \ deceased parent ship, giving the spawned canister an
-                        \ AI flag of 0 (no AI, no E.C.M., non-hostile)
+                        \ AI flag of 0 (no AI, zero aggression, no E.C.M.)
 
  DEC CNT                \ Decrease the loop counter
 
@@ -13865,8 +14024,8 @@ ENDIF
  EQUW MT27              \ Token 27: Print mission captain's name (217-219)
  EQUW MT28              \ Token 28: Print mission 1 location hint (220-221)
  EQUW MT29              \ Token 29: Column 6, white text, lower case in words
- EQUW FILEPR            \ Token 30: Display currently selected media (disc/tape)
- EQUW OTHERFILEPR       \ Token 31: Display the non-selected media (disc/tape)
+ EQUW FILEPR            \ Token 30: Display currently selected media (disk/tape)
+ EQUW OTHERFILEPR       \ Token 31: Display the non-selected media (disk/tape)
  EQUW DASC              \ Token 32: Unused
 
 \ ******************************************************************************
@@ -13909,8 +14068,12 @@ ENDIF
 \
 \ ------------------------------------------------------------------------------
 \
-\ Two-letter token lookup table for tokens 128-159. See the deep dive on
-\ "Printing text tokens" for details of how the two-letter token system works.
+\ Two-letter token lookup table for tokens 128-159.
+\
+\ These two-letter tokens can also be used in the extended text token system, by
+\ adding 100 to the token number. So the extended two-letter token 228 is "AL",
+\ the same as the standard two-letter token 128. In this system, the last four
+\ tokens are not available, as they would have numbers greater than 255.
 \
 \ ******************************************************************************
 
@@ -14016,7 +14179,7 @@ ENDIF
 
 .CHK2
 
- EQUB 0
+ EQUB 0                 \ Placeholder for the checksum in byte #74
 
 \ ******************************************************************************
 \
@@ -14039,10 +14202,11 @@ ENDIF
 
 .CHK
 
- EQUB 0
+ EQUB 0                 \ Placeholder for the checksum in byte #75
 
 \.CHK3                  \ These instructions are commented out in the original
-\EQUB 0                 \ source
+\                       \ source
+\EQUB 0
 
  SKIP 12                \ These bytes appear to be unused, though the first byte
                         \ in this block is included in the commander file (it
@@ -14097,9 +14261,9 @@ ENDIF
 
  EQUS "JAMESON"         \ The current commander name, which defaults to JAMESON
  EQUB 13                \
-                        \ The commander name can be up to 7 characters (the DFS
-                        \ limit for filenames), and is terminated by a carriage
-                        \ return
+                        \ The commander name can be up to seven characters (the
+                        \ DFS limit for filenames), and is terminated by a
+                        \ carriage return
 
                         \ NA%+8 is the start of the commander data block
                         \
@@ -14221,12 +14385,13 @@ ENDIF
 
  EQUB &AA               \ The CHK2 checksum value for the default commander
 
+\.CHK3                  \ These instructions are commented out in the original
+\                       \ source
+\EQUB CH3X%
+
 \.CHK                   \ This label is commented out in the original source
 
  EQUB &03               \ The CHK checksum value for the default commander
-
-\.CHK3                  \ These instructions are commented out in the original
-\EQUB CH3X%             \ source
 
  SKIP 12                \ These bytes appear to be unused, though the first byte
                         \ in this block is included in the commander file (it
@@ -14298,7 +14463,7 @@ ENDIF
 
 .scacol
 
- EQUB 0
+ EQUB 0                 \ This byte appears to be unused
 
  EQUB YELLOW2           \ Missile
  EQUB GREEN2            \ Coriolis space station
@@ -14333,9 +14498,8 @@ ENDIF
  EQUB CYAN2             \ Constrictor
  EQUB 0                 \ Cougar
 
- EQUB CYAN2             \ This byte appears to be unused
-
- EQUD 0                 \ These bytes appear to be unused
+ EQUB CYAN2             \ These bytes appear to be unused
+ EQUD 0
 
 \ ******************************************************************************
 \
@@ -14370,12 +14534,7 @@ ENDIF
 \   Category: Universe
 \    Summary: Table of pointers to the local universe's ship data blocks
 \  Deep dive: The local bubble of universe
-\
-\ ------------------------------------------------------------------------------
-\
-\ See the deep dive on "Ship data blocks" for details on ship data blocks, and
-\ the deep dive on "The local bubble of universe" for details of how Elite
-\ stores the local universe in K%, FRIN and UNIV.
+\             Ship data blocks
 \
 \ ******************************************************************************
 
@@ -14493,7 +14652,7 @@ ENDIF
 \ ------------------------------------------------------------------------------
 \
 \ This draws a line from (2, A) to (254, A), which is almost screen-wide and
-\ fits in nicely between the white borders without clashing with it.
+\ fits in nicely between the border boxes without clashing with it.
 \
 \ ------------------------------------------------------------------------------
 \
@@ -15143,8 +15302,8 @@ ENDIF
                         \   2 = left
                         \   3 = right
 
- BEQ STARS1             \ If this 0, jump to STARS1 to process the stardust for
-                        \ the front view
+ BEQ STARS1             \ If this is view 0, jump to STARS1 to process the
+                        \ stardust for the front view
 
  DEX                    \ If this is view 2 or 3, jump to STARS2 (via ST11) to
  BNE ST11               \ process the stardust for the left or right views
@@ -15187,7 +15346,7 @@ ENDIF
 \   7. x = x + 2 * (beta * y / 256) ^ 2
 \   8. y = y - beta * 256
 \
-\ For more information see the deep dive on "Stardust in the front view".
+\ For more information see the associated deep dive.
 \
 \ ******************************************************************************
 
@@ -15410,10 +15569,10 @@ ENDIF
                         \ which is result 7 above
 
  LDA YY                 \ Set (S R) = YY(1 0) = y
- STA R
- LDA YY+1
-\JSR MAD                \ These instructions are commented out in the original
-\STA S                  \ source
+ STA R                  \
+ LDA YY+1               \ The call to MAD and the two store instructions are
+\JSR MAD                \ commented out in the original source
+\STA S
 \STX R
  STA S
 
@@ -15518,6 +15677,7 @@ ENDIF
 \       Type: Subroutine
 \   Category: Stardust
 \    Summary: Process the stardust for the rear view
+\  Deep dive: Stardust in the front view
 \
 \ ------------------------------------------------------------------------------
 \
@@ -15543,7 +15703,7 @@ ENDIF
 \   7. x = x + 2 * (beta * y / 256) ^ 2
 \   8. y = y - beta * 256
 \
-\ For more information see the deep dive on "Stardust in the front view".
+\ For more information see the associated deep dive.
 \
 \ ******************************************************************************
 
@@ -16030,7 +16190,7 @@ ENDIF
 \ Given a value in Y that points to the start of a ship data block as an offset
 \ from K%, calculate the following:
 \
-\   A = x_hi^2 + y_hi^2 + z_hi^2
+\   (A ?) = x_hi^2 + y_hi^2 + z_hi^2
 \
 \ returning A = &FF if the calculation overflows a one-byte result. The K%
 \ workspace contains the ship data blocks, so the offset in Y must be 0 or a
@@ -16045,9 +16205,15 @@ ENDIF
 \
 \ Returns
 \
-\   A                   A = x_hi^2 + y_hi^2 + z_hi^2
+\   A                   The high byte of x_hi^2 + y_hi^2 + z_hi^2
 \
-\                       A = &FF if the calculation overflows a one-byte result
+\   C flag              The overflow status (i.e. did the result fit into one
+\                       byte):
+\
+\                         * Clear if the calculation didn't overflow
+\
+\                         * Set if the calculation overflowed (in which case A
+\                           is set to &FF)
 \
 \ ******************************************************************************
 
@@ -16072,7 +16238,8 @@ ENDIF
  JSR SQUA2
 
  ADC R                  \ Add A (high byte of third result) to R, so R now
-                        \ contains the sum of x_hi^2 + y_hi^2 + z_hi^2
+                        \ contains the high byte of the entire sum, i.e. of
+                        \ x_hi^2 + y_hi^2 + z_hi^2
 
  BCC P%+4               \ If there is no carry, skip the following instruction
                         \ to return straight from the subroutine
@@ -16100,7 +16267,7 @@ ENDIF
  LDA #205               \ Print extended token 205 ("DOCKED") and return from
  JSR DETOK              \ the subroutine using a tail call
 
- JSR TT67X              \ Print a newline
+ JSR TT67K              \ Print a newline
 
  JMP st6+3              \ Jump down to st6+3, to print recursive token 125 and
                         \ continue to the rest of the Status Mode screen
@@ -16119,10 +16286,10 @@ ENDIF
                         \ The high bytes of the top tier ratings are as follows,
                         \ so this a relatively simple calculation:
                         \
-                        \   Competent       = 1 to 2
-                        \   Dangerous       = 2 to 9
-                        \   Deadly          = 10 to 24
-                        \   Elite           = 25 and up
+                        \   Competent = 1
+                        \   Dangerous = 2 to 9
+                        \   Deadly    = 10 to 24
+                        \   Elite     = 25 and up
 
  LDX #9                 \ Set X to 9 for an Elite rating
 
@@ -16147,9 +16314,9 @@ ENDIF
 
 .STATUS
 
- LDA #8                 \ Clear the top part of the screen, draw a white border,
- JSR TRADEMODE          \ and set up a printable trading screen with a view type
-                        \ in QQ11 of 8 (Status Mode screen)
+ LDA #8                 \ Clear the top part of the screen, draw a border box,
+ JSR TRADEMODE          \ and set up a trading screen with a view type in QQ11
+                        \ of 8 (Status Mode screen)
 
  JSR TT111              \ Select the system closest to galactic coordinates
                         \ (QQ9, QQ10)
@@ -16170,7 +16337,10 @@ ENDIF
                         \ and draw a horizontal line at pixel row 19 to box
                         \ in the title
 
- LDA #15                \ Set A to token 129 ("{sentence case}DOCKED")
+ LDA #15                \ This instruction is left over from the cassette
+                        \ version, where it sets the token number for the
+                        \ "DOCKED" text, but it has no effect in this version
+                        \ as the "DOCKED" text is now an extended token
 
  LDY QQ12               \ Fetch the docked status from QQ12, and if we are
  BNE wearedocked        \ docked, jump to wearedocked
@@ -16239,31 +16409,32 @@ ENDIF
  JSR spc                \ space
 
  LDA TALLY+1            \ Fetch the high byte of the kill tally, and if it is
- BNE st4                \ not zero, then we have more than 256 kills, so jump
-                        \ to st4 to work out whether we are Competent,
+ BNE st4                \ not zero, then we have more than 256 kill points, so
+                        \ jump to st4 to work out whether we are Competent,
                         \ Dangerous, Deadly or Elite
 
-                        \ Otherwise we have fewer than 256 kills, so we are one
-                        \ of Harmless, Mostly Harmless, Poor, Average or Above
-                        \ Average
+                        \ Otherwise we have fewer than 256 kill pointss, so we
+                        \ are one of Harmless, Mostly Harmless, Poor, Average,
+                        \ Above Average or Competent
 
  TAX                    \ Set X to 0 (as A is 0)
 
- LDA TALLY              \ Set A = lower byte of tally / 4
- LSR A
- LSR A
+ LDA TALLY              \ Set A to the lower byte of tally, with bits 0 and 1
+ LSR A                  \ shifted off to the right, so we can now analyse bits
+ LSR A                  \ 2 to 7 by shifting A to the right one bit at a time
 
                         \ We now loop through bits 2 to 7, shifting each of them
                         \ off the end of A until there are no set bits left, and
-                        \ incrementing X for each shift, so at the end of the
+                        \ incrementing X before each shift, so at the end of the
                         \ process, X contains the position of the leftmost 1 in
                         \ A. Looking at the rank values in TALLY:
                         \
-                        \   Harmless        = %00000000 to %00000011
-                        \   Mostly Harmless = %00000100 to %00000111
-                        \   Poor            = %00001000 to %00001111
-                        \   Average         = %00010000 to %00011111
-                        \   Above Average   = %00100000 to %11111111
+                        \   Harmless        = %00000000 to %00000111
+                        \   Mostly Harmless = %00001000 to %00001111
+                        \   Poor            = %00010000 to %00011111
+                        \   Average         = %00100000 to %00111111
+                        \   Above Average   = %01000000 to %01111111
+                        \   Competent       = %10000000 to %11111111
                         \
                         \ we can see that the values returned by this process
                         \ are:
@@ -16273,8 +16444,9 @@ ENDIF
                         \   Poor            = 3
                         \   Average         = 4
                         \   Above Average   = 5
+                        \   Competent       = 6
 
- INX                    \ Increment X for each shift
+ INX                    \ Increment X to count the number of shifts
 
  LSR A                  \ Shift A to the right
 
@@ -16765,7 +16937,7 @@ ENDIF
 \ so the biggest number we can print is 99,999,999,999. This maximum number
 \ plus 1 is 100,000,000,000, which in hexadecimal is:
 \
-\   & 17 48 76 E8 00
+\   17 48 76 E8 00
 \
 \ The TENS variable contains the lowest four bytes in this number, with the
 \ most significant byte first, i.e. 48 76 E8 00. This value is used in the
@@ -16857,8 +17029,8 @@ ENDIF
                         \ number (0 0 Y X)
 
                         \ Finally we fall through into BPRNT to print out the
-                        \ number in K to K+3, which now contains (Y X), to 3
-                        \ digits (as U = 3), using the same C flag as when pr2
+                        \ number in K to K+3, which now contains (Y X), to A
+                        \ digits (as U = A), using the same C flag as when pr2
                         \ was called to control the decimal point
 
 \ ******************************************************************************
@@ -16875,9 +17047,6 @@ ENDIF
 \ Print the 32-bit number stored in K(0 1 2 3) to a specific number of digits,
 \ left-padding with spaces for numbers with fewer digits (so lower numbers are
 \ right-aligned). Optionally include a decimal point.
-\
-\ See the deep dive on "Printing decimal numbers" for details of the algorithm
-\ used in this routine.
 \
 \ ------------------------------------------------------------------------------
 \
@@ -17912,13 +18081,15 @@ ENDIF
 \LDA TRIBBLE            \ These instructions are commented out in the original
 \ORA TRIBBLE+1          \ source
 \BEQ nosurviv           \
-\JSR DORND              \ They ensure that in games with the Trumble mission,
-\AND #7                 \ at least one Trumble will hitch a ride in the escape
-\ORA #1                 \ pod (so using an escape pod is not a solution to the
-\STA TRIBBLE            \ trouble with Trumbles)
-\LDA #0                 \
-\STA TRIBBLE+1          \ The Master version does not contains the Trumble
-\.nosurviv              \ mission, so the code is disabled
+\                       \ They ensure that in games with the Trumble mission,
+\JSR DORND              \ at least one Trumble will hitch a ride in the escape
+\AND #7                 \ pod (so using an escape pod is not a solution to the
+\ORA #1                 \ trouble with Trumbles)
+\STA TRIBBLE            \
+\LDA #0                 \ This version of Elite does not contain the Trumble
+\STA TRIBBLE+1          \ mission, so the code is disabled
+\
+\.nosurviv
 
                         \ --- Mod: Code added for Trumbles: ------------------->
 
@@ -18217,7 +18388,7 @@ ENDIF
  JSR DOVDU19            \ which is yellow (colour 1), red (colour 2) and cyan
                         \ (colour 3)
 
- LDA #0                 \ Clear the top part of the screen, draw a white border,
+ LDA #0                 \ Clear the top part of the screen, draw a border box,
  JSR TT66               \ and set the current view type in QQ11 to 0 (space
                         \ view)
 
@@ -18663,13 +18834,21 @@ ENDIF
 .TA87
 
  LDA INWK+32            \ Set X to bits 1-6 of the missile's AI flag in ship
- AND #%01111111         \ byte #32, so bits 0-4 of X are the target's slot
- LSR A                  \ number, and bit 5 is set (as the missile is hostile)
- TAX                    \ so X is fairly random and in the range 32-43 (as the
-                        \ maximum slot number is 11)
+ AND #%01111111         \ byte #32, so that bits 0-4 of X are the target's slot
+ LSR A                  \ number, and bit 5 is clear (as the missile is ours)
+ TAX                    \
+                        \ So X contains the slot number of the target ship
                         \
-                        \ The value of X is used to determine the number of kill
-                        \ points awarded for the destruction of the missile
+                        \ We should now fetch the ship type from slot X, so we
+                        \ can pass the ship type to EXNO2 to add the correct
+                        \ number of kill points to award for this type of ship,
+                        \ but instead we're passing the slot number to EXNO2
+                        \
+                        \ This is a bug that means we will be allocated a fairly
+                        \ random number of kill points when destroying a ship
+                        \ with a missile; this bug was fixed in the NES version,
+                        \ but it affects the Commodore 64, Apple II and BBC
+                        \ Master versions of Elite
 
 .TA353
 
@@ -18722,6 +18901,7 @@ ENDIF
 \   Category: Tactics
 \    Summary: Apply tactics: Escape pod, station, lone Thargon, safe-zone pirate
 \  Deep dive: Program flow of the tactics routine
+\             Aggression and hostility in ship tactics
 \
 \ ------------------------------------------------------------------------------
 \
@@ -18834,10 +19014,8 @@ ENDIF
 
 .TN5
 
-                        \ We only call the tactics routine for the space station
-                        \ when it is hostile, so if we get here then this is the
-                        \ station, and we already know it's hostile, so we need
-                        \ to spawn some cops
+                        \ If we get here then this is the space station and it
+                        \ is hostile, so we need to spawn some cops
 
  JSR DORND              \ Set A and X to random numbers
 
@@ -18853,7 +19031,7 @@ ENDIF
 .TN6
 
  LDA #%11110001         \ Set the AI flag to give the ship E.C.M., enable AI and
-                        \ make it very aggressive (60 out of 63)
+                        \ make it very aggressive (56 out of 63)
 
  JMP SFS1               \ Jump to SFS1 to spawn the ship, returning from the
                         \ subroutine using a tail call
@@ -18868,8 +19046,8 @@ ENDIF
  CMP #200               \ If A < 200 (78% chance), return from the subroutine
  BCC TA22               \ (as TA22 contains an RTS)
 
- LDX #0                 \ Set byte #32 to %00000000 to disable AI, aggression
- STX INWK+32            \ and E.C.M.
+ LDX #0                 \ Set byte #32 to %00000000 to disable AI, zero the
+ STX INWK+32            \ aggression level and remove E.C.M.
 
  LDX #%00100100         \ Set the ship's NEWB flags to %00100100 so the ship we
  STX NEWB               \ spawn below will inherit the default values from E% as
@@ -18884,10 +19062,12 @@ ENDIF
                         \ or Gecko
 
  JSR TN6                \ Call TN6 to spawn this ship with E.C.M., AI and a high
-                        \ aggression (56 out of 63)
+                        \ aggression (56 out of 63), though we override this in
+                        \ the next instructions
 
- LDA #0                 \ Set byte #32 to %00000000 to disable AI, aggression
- STA INWK+32            \ and E.C.M. (for the rock hermit)
+ LDA #0                 \ Set byte #32 to %00000000 to disable AI, zero the
+ STA INWK+32            \ aggression level and remove E.C.M. (for the rock
+                        \ hermit)
 
  RTS                    \ Return from the subroutine
 
@@ -18908,6 +19088,7 @@ ENDIF
 \   Category: Tactics
 \    Summary: Apply tactics: Calculate dot product to determine ship's aim
 \  Deep dive: Program flow of the tactics routine
+\             Aggression and hostility in ship tactics
 \
 \ ------------------------------------------------------------------------------
 \
@@ -19011,7 +19192,7 @@ ENDIF
 
 .TN3
 
- LSR A                  \ Extract bit 2 of the ship's NEWB flags into the C flag
+ LSR A                  \ Extract bit 3 of the ship's NEWB flags into the C flag
  BCC TN4                \ and jump to TN4 if it is clear (i.e. if this ship is
                         \ not a pirate)
 
@@ -19021,8 +19202,8 @@ ENDIF
                         \ If we get here then this is a pirate and we are inside
                         \ the space station safe zone
 
- LDA INWK+32            \ Set bits 0 and 7 of the AI flag in byte #32 (has AI
- AND #%10000001         \ enabled and has an E.C.M.)
+ LDA INWK+32            \ Clear bits 1 to 6 of the AI flag in byte #32 (to set
+ AND #%10000001         \ the aggression level to zero)
  STA INWK+32
 
 .TN4
@@ -19167,8 +19348,9 @@ ENDIF
  LDY #36                \ Update the NEWB flags in the ship's data block
  STA (INF),Y
 
- LDA #0                 \ Set the AI flag to 0 to disable AI, hostility and
- STA INWK+32            \ E.C.M., so the ship's a sitting duck
+ LDA #%00000000         \ Set the AI flag to 0 to disable AI, set aggression to
+ STA INWK+32            \ zero and disable any E.C.M., so the ship's a sitting
+                        \ duck
 
  JMP SESCP              \ Jump to SESCP to spawn an escape pod from the ship,
                         \ returning from the subroutine using a tail call
@@ -19349,6 +19531,7 @@ ENDIF
 \   Category: Tactics
 \    Summary: Apply tactics: Set pitch, roll, and acceleration
 \  Deep dive: Program flow of the tactics routine
+\             Aggression and hostility in ship tactics
 \
 \ ------------------------------------------------------------------------------
 \
@@ -19391,23 +19574,40 @@ ENDIF
 
  JSR DORND              \ Set A and X to random numbers
 
- ORA #%10000000         \ Set bit 7 of A, so A is at least 128
+ ORA #%10000000         \ Set bit 7 of A, so the following comparison ignores
+                        \ the AI flag in bit 7 (as we already know bit 7 is set
+                        \ in byte #32)
 
  CMP INWK+32            \ If A >= byte #32 (the ship's AI flag) then jump down
  BCS TA15               \ to TA15 so it heads away from us
 
-                        \ We get here if A < byte #32, and the chances of this
-                        \ being true are greater with high values of byte #32,
-                        \ as long as they are at least 128
+                        \ We get here if byte #32 > A, where byte #32 is
+                        \ composed of the following:
                         \
-                        \ In other words, higher byte #32 values increase the
+                        \   * Bit 7 set = AI is enabled
+                        \
+                        \   * Bits 1-6 = aggression level (0 to 63)
+                        \
+                        \   * Bit 0 set = ship has E.C.M.
+                        \
+                        \ We set bit 7 of A above, so if we get here we know the
+                        \ ship has AI enabled, and the comparison then boils
+                        \ down to the following:
+                        \
+                        \   Aggression level * 2 + E.C.M. > random number 0-127
+                        \
+                        \ In other words, higher aggression levels increase the
                         \ chances of a ship changing direction to head towards
                         \ us - or, to put it another way, ships with higher
-                        \ byte #32 values of 128 or more are spoiling for a
-                        \ fight
+                        \ aggression levels are spoiling for a fight, with
+                        \ E.C.M. making them even more aggressive
                         \
-                        \ Thargoids have byte #32 set to 255, which explains
-                        \ an awful lot
+                        \ Thargoids and missiles both have an aggression level
+                        \ of 63 out of 63, which explains an awful lot
+                        \
+                        \ Interestingly, escape pods also have a maximum
+                        \ agression level, but in this case it makes them fly
+                        \ towards the planet rather than towards us
 
 .TA20
 
@@ -20457,7 +20657,7 @@ ENDIF
 \
 \ ------------------------------------------------------------------------------
 \
-\ This is used in two places:
+\ This is used in three places:
 \
 \   * When we launch a missile, in which case the missile is the ship that is
 \     launched ahead of us
@@ -20565,7 +20765,9 @@ ENDIF
 
  LDA FRIN,X             \ Fetch the ship type of the missile's target into A
 
- JSR ANGRY              \ Call ANGRY to make the target ship hostile
+ JSR ANGRY              \ Call ANGRY to make the target ship or station hostile,
+                        \ and if this is a ship, wake up its AI and give it a
+                        \ kick of speed
 
  LDY #0                 \ We have just launched a missile, so we need to remove
  JSR ABORT              \ missile lock and hide the leftmost indicator on the
@@ -20585,13 +20787,16 @@ ENDIF
 \       Name: ANGRY
 \       Type: Subroutine
 \   Category: Tactics
-\    Summary: Make a ship hostile
+\    Summary: Make a ship or station hostile, and if this is a ship then enable
+\             the ship's AI and give it a kick of speed
+\  Deep dive: Aggression and hostility in ship tactics
 \
 \ ------------------------------------------------------------------------------
 \
-\ All this routine does is set the ship's hostile flag, start it turning and
-\ give it a kick of acceleration - later calls to TACTICS will make the ship
-\ start to attack us.
+\ This routine makes a ship or station angry by setting the hostile flag in
+\ NEWB, and for ships it also means enabling the ship's AI and giving it a kick
+\ of turning acceleration. Later calls to TACTICS may make the ship start to
+\ attack us if it has a high enough aggression level.
 \
 \ ------------------------------------------------------------------------------
 \
@@ -20623,11 +20828,12 @@ ENDIF
  LDA (INF),Y
 
  BEQ HI1                \ If the AI flag is zero then this ship has no AI and
-                        \ it can't get hostile, so return from the subroutine
-                        \ (as HI1 contains an RTS)
+                        \ zero aggression, so return from the subroutine (as
+                        \ HI1 contains an RTS)
 
  ORA #%10000000         \ Otherwise set bit 7 (AI enabled) to ensure AI is
- STA (INF),Y            \ definitely enabled
+ STA (INF),Y            \ definitely enabled, so the ship can start acting
+                        \ according to its aggression level
 
  LDY #28                \ Set the ship's byte #28 (acceleration) to 2, so it
  LDA #2                 \ speeds up
@@ -20692,6 +20898,7 @@ ENDIF
 \       Type: Subroutine
 \   Category: Flight
 \    Summary: Spawn an escape pod from the current (parent) ship
+\  Deep dive: Aggression and hostility in ship tactics
 \
 \ ------------------------------------------------------------------------------
 \
@@ -20704,10 +20911,22 @@ ENDIF
 
  LDX #ESC               \ Set X to the ship type for an escape pod
 
- LDA #%11111110         \ Set A to an AI flag that has AI enabled, is hostile,
-                        \ but has no E.C.M.
+ LDA #%11111110         \ Set A to use as an AI flag that has AI enabled, an
+                        \ aggression level of 63 out of 63, and no E.C.M.
+                        \
+                        \ When spawning an escape pod, this high agression level
+                        \ makes the pod turn towards the planet rather than
+                        \ towards us
+                        \
+                        \ This instruction is also used as an entry point to
+                        \ spawn missile (when calling via the SFS1-2 entry
+                        \ point), in which case the missile has AI (bit 7 set),
+                        \ is hostile (bit 6 set) and has been launched (bit 0
+                        \ clear); the target slot number is set to 31, but this
+                        \ is ignored as the hostile flag means we are the target
 
-                        \ Fall through into SFS1 to spawn the escape pod
+                        \ Fall through into SFS1 to spawn the escape pod or
+                        \ missile
 
 \ ******************************************************************************
 \
@@ -20755,8 +20974,11 @@ ENDIF
 \
 \ Other entry points:
 \
-\   SFS1-2              Add a missile to the local bubble that has AI enabled,
-\                       is hostile, but has no E.C.M.
+\   SFS1-2              Used to add a missile to the local bubble that that has
+\                       AI (bit 7 set), is hostile (bit 6 set) and has been
+\                       launched (bit 0 clear); the target slot number is set to
+\                       31, but this is ignored as the hostile flags means we
+\                       are the target
 \
 \ ******************************************************************************
 
@@ -21065,7 +21287,7 @@ ENDIF
  LDA QQ11               \ Store the current view type in QQ11 on the stack
  PHA
 
- LDA #0                 \ Clear the top part of the screen, draw a white border,
+ LDA #0                 \ Clear the top part of the screen, draw a border box,
  JSR TT66               \ and set the current view type in QQ11 to 0 (the space
                         \ view)
 
@@ -21158,7 +21380,7 @@ ENDIF
 \   5. x = x - alpha * x * y
 \   6. y = y + alpha * y * y + alpha
 \
-\ For more information see the deep dive on "Stardust in the side views".
+\ For more information see the associated deep dive.
 \
 \ ------------------------------------------------------------------------------
 \
@@ -21961,8 +22183,7 @@ ENDIF
 \   (A P) = P * X
 \
 \ This uses the same shift-and-add approach as MULT1, but it's simpler as we
-\ are dealing with unsigned numbers in P and X. See the deep dive on
-\ "Shift-and-add multiplication" for a discussion of how this algorithm works.
+\ are dealing with unsigned numbers in P and X.
 \
 \ ******************************************************************************
 
@@ -21980,8 +22201,10 @@ ENDIF
 
  TAX                    \ Copy A into X. There is a comment in the original
                         \ source here that says "just in case", which refers to
-                        \ the MU11 routine in the cassette and disc versions,
-                        \ which set X to 0 (as they use X as a loop counter).
+                        \ the MU11 routine in the BBC Micro cassette and disc
+                        \ versions, which set X to 0 (as they use X as a loop
+                        \ counter)
+                        \
                         \ The version here doesn't use a loop, but this
                         \ instruction makes sure the unrolled version returns
                         \ the same results as the loop versions, just in case
@@ -21991,12 +22214,13 @@ ENDIF
                         \ and C flag = bit 0 of P
 
                         \ We now repeat the following four instruction block
-                        \ eight times, one for each bit in P. In the cassette
-                        \ and disc versions of Elite the following is done with
-                        \ a loop, but it is marginally faster to unroll the loop
-                        \ and have eight copies of the code, though it does take
-                        \ up a bit more memory (though that isn't a concern when
-                        \ you have a 6502 Second Processor)
+                        \ eight times, one for each bit in P. In the BBC Micro
+                        \ cassette and disc versions of Elite the following is
+                        \ done with a loop, but it is marginally faster to
+                        \ unroll the loop and have eight copies of the code,
+                        \ though it does take up a bit more memory (though that
+                        \ isn't a big concern when you have a 6502 Second
+                        \ Processor)
 
  BCC P%+4               \ If C (i.e. bit 0 of P) is set, do the
  ADC T                  \ addition for this bit of P:
@@ -22111,9 +22335,8 @@ ENDIF
 \
 \   A = A * Q / 256
 \
-\ The Master and 6502 Second Processor versions use logarithms to speed up the
-\ multiplication process. See the deep dive on "Multiplication using logarithms"
-\ for more details.
+\ The advanced versions of Elite use logarithms to speed up the multiplication
+\ process.
 \
 \ ------------------------------------------------------------------------------
 \
@@ -22127,7 +22350,7 @@ ENDIF
 .FMLTU
 
  STX P                  \ Store X in P so we can preserve it through the call to
-                        \ FMULTU
+                        \ FMLTU
 
  STA widget             \ Store A in widget, so now widget = argument A
 
@@ -22407,8 +22630,10 @@ ENDIF
 
  TAX                    \ Copy A into X. There is a comment in the original
                         \ source here that says "just in case", which refers to
-                        \ the MULT1 routine in the cassette and disc versions,
-                        \ which set X to 0 (as they use X as a loop counter).
+                        \ the MULT1 routine in the BBC Micro cassette and disc
+                        \ versions, which set X to 0 (as they use X as a loop
+                        \ counter)
+                        \
                         \ The version here doesn't use a loop, but this
                         \ instruction makes sure the unrolled version returns
                         \ the same results as the loop versions, just in case
@@ -22416,27 +22641,35 @@ ENDIF
 
 \.MUL4                  \ These instructions are commented out in the original
 \                       \ source. They contain the original loop version of the
-\BCC P%+4               \ code that's used in the disc and cassette versions
-\ADC T1
+\BCC P%+4               \ code that's used in the BBC Micro cassette and disc
+\ADC T1                 \ versions
+\
 \ROR A
 \ROR P
+\
 \DEX
+\
 \BNE MUL4
+\
 \LSR A
 \ROR P
+\
 \ORA T
+\
 \RTS
 \
 \.mu10
+\
 \STA P
+\
 \RTS
 
                         \ We now repeat the following four instruction block
                         \ seven times, one for each remaining bit in P. In the
-                        \ cassette and disc versions of Elite the following is
-                        \ done with a loop, but it is marginally faster to
-                        \ unroll the loop and have seven copies of the code,
-                        \ though it does take up a bit more memory
+                        \ BBC Micro cassette and disc versions of Elite the
+                        \ following is done with a loop, but it is marginally
+                        \ faster to unroll the loop and have seven copies of
+                        \ the code, though it does take up a bit more memory
 
  BCC P%+4               \ If C (i.e. the next bit from P) is set, do the
  ADC T1                 \ addition for this bit of P:
@@ -22946,12 +23179,13 @@ ENDIF
 \.DVL4                  \ This label is commented out in the original source
 
                         \ We now repeat the following five instruction block
-                        \ eight times, one for each bit in P. In the cassette
-                        \ and disc versions of Elite the following is done with
-                        \ a loop, but it is marginally faster to unroll the loop
-                        \ and have eight copies of the code, though it does take
-                        \ up a bit more memory (though that isn't a concern when
-                        \ you have a 6502 Second Processor)
+                        \ eight times, one for each bit in P. In the BBC Micro
+                        \ cassette and disc versions of Elite the following is
+                        \ done with a loop, but it is marginally faster to
+                        \ unroll the loop and have eight copies of the code,
+                        \ though it does take up a bit more memory (though that
+                        \ isn't a big concern when you have a 6502 Second
+                        \ Processor)
 
  ROL A                  \ Shift A to the left
 
@@ -23865,22 +24099,22 @@ ENDIF
                         \ every time we call PDESC, so set a counter in X for
                         \ copying 4 bytes
 
-{
-.PDL1                   \ This label is a duplicate of the label above (which is
-                        \ why we need to surround it with braces, as BeebAsm
-                        \ doesn't allow us to redefine labels, unlike BBC BASIC)
+.PDL1K                  \ This label is a duplicate of the label above
+                        \
+                        \ In the original source this label is PDL1, but
+                        \ because BeebAsm doesn't allow us to redefine labels,
+                        \ I have renamed it to PDL1K
 
  LDA QQ15+2,X           \ Copy QQ15+2 to QQ15+5 (s1 and s2) to RAND to RAND+3
  STA RAND,X
 
  DEX                    \ Decrement the loop counter
 
- BPL PDL1               \ Loop back to PDL1 until we have copied all
+ BPL PDL1K              \ Loop back to PDL1K until we have copied all
 
  LDA #5                 \ Set A = 5, so we print extended token 5 in the next
                         \ instruction ("{lower case}{justify}{single cap}[86-90]
                         \ IS [140-144].{cr}{left align}"
-}
 
 .PD4
 
@@ -24046,17 +24280,24 @@ ENDIF
 \ ******************************************************************************
 
 \.TBRIEF                \ These instructions are commented out in the original
-\LDA TP                 \ source
-\ORA #&10
+\                       \ source (they are the checks for the Trumble mission,
+\LDA TP                 \ which is not present in the Master version)
+\ORA #%00010000
 \STA TP
+\
 \LDA #199
 \JSR DETOK
+\
 \JSR YESNO
+\
 \BCC BAYSTEP
+\
 \LDY #HI(50000)
 \LDX #LO(50000)
 \JSR LCASH
+\
 \INC TRIBBLE
+\
 \JMP BAY
 
                         \ --- Mod: Code added for Trumbles: ------------------->
@@ -24138,7 +24379,7 @@ ENDIF
  STA INWK+7             \ Set z_hi = 1, the distance at which we show the
                         \ rotating ship
 
- LDA #13                \ Clear the top part of the screen, draw a white border,
+ LDA #13                \ Clear the top part of the screen, draw a border box,
  JSR TT66               \ and set the current view type in QQ11 to 13 (rotating
                         \ ship view)
 
@@ -24237,8 +24478,8 @@ ENDIF
  JSR DETOK              \ to row 10, white, lower case}{white}{all caps}INCOMING
                         \ MESSAGE"
 
- LDY #100               \ Delay for 100 vertical syncs (100/50 = 2 seconds) and
- JMP DELAY              \ return from the subroutine using a tail call
+ LDY #100               \ Wait for 100/50 of a second (2 seconds) and return
+ JMP DELAY              \ from the subroutine using a tail call
 
 \ ******************************************************************************
 \
@@ -24273,7 +24514,7 @@ ENDIF
  LDA #0                 \ Set the ship's AI flag to 0 (no AI) so it doesn't get
  STA INWK+31            \ any ideas of its own
 
- LDA #1                 \ Clear the top part of the screen, draw a white border,
+ LDA #1                 \ Clear the top part of the screen, draw a border box,
  JSR TT66               \ and set the current view type in QQ11 to 1
 
  JSR LL9                \ Draw the ship on screen to redisplay it
@@ -24313,15 +24554,6 @@ ENDIF
 \    Summary: Move to row 6, switch to white text, and switch to lower case when
 \             printing extended tokens
 \  Deep dive: Extended text tokens
-\
-\ ------------------------------------------------------------------------------
-\
-\ This routine sets the following:
-\
-\   * YC = 6 (move to row 6)
-\
-\ Then it calls WHITETEXT to switch to white text, before jumping to MT13 to
-\ switch to lower case when printing extended tokens.
 \
 \ ******************************************************************************
 
@@ -24394,8 +24626,8 @@ ENDIF
 
 .PAUSE2
 
- JSR RDKEY              \ Scan the keyboard for a key press and return the
-                        \ ASCII code of the key pressed in X (or 0 for no key
+ JSR RDKEY              \ Scan the keyboard for a key press and return the ASCII
+                        \ code of the key pressed in A and X (or 0 for no key
                         \ press)
 
  BNE PAUSE2             \ If a key was already being held down when we entered
@@ -24570,17 +24802,20 @@ ENDIF
 \       Name: SCALEY
 \       Type: Subroutine
 \   Category: Maths (Geometry)
-\    Summary: Scale the y-coordinate in A
+\    Summary: Scale the y-coordinate in A to 0.5 * A
 \
 \ ------------------------------------------------------------------------------
 \
 \ This routine (and the related SCALEY2 and SCALEX routines) are called from
-\ various places in the code to scale the value in A. This scaling can be
-\ changed by changing these routines (for example, by changing an RTS to an LSR
-\ A). This code is left over from the conversion to other platforms, where
-\ the scale factor might need to be different.
+\ various places in the code to scale the value in A. This code is different in
+\ the Apple II and BBC Master versions, and allows coordinates to be scaled
+\ correctly on different platforms.
 \
-\ The original source contains the comment "SCALE Scans by 3/4 to fit in".
+\ In the Master version, the only scaling routine that does anything is SCALEY,
+\ which halves the y-coordinates in the Long-range Chart (as the galaxy is half
+\ as tall as it is wide). The other routines are left over from the Apple II
+\ version, which uses them to scale the system charts to fit into its smaller
+\ screen size.
 \
 \ ******************************************************************************
 
@@ -24588,20 +24823,30 @@ ENDIF
 
  LSR A                  \ Halve the value in A
 
+                        \ Fall through into SCALEY2 to return from the
+                        \ subroutine
+
 \ ******************************************************************************
 \
 \       Name: SCALEY2
 \       Type: Subroutine
 \   Category: Maths (Geometry)
-\    Summary: Scale the y-coordinate in A
+\    Summary: Scale the y-coordinate in A (leave it unchanged)
 \
 \ ------------------------------------------------------------------------------
 \
 \ This routine (and the related SCALEY and SCALEX routines) are called from
-\ various places in the code to scale the value in A. This scaling can be
-\ changed by changing these routines (for example, by changing an RTS to an LSR
-\ A). This code is left over from the conversion to other platforms, where
-\ the scale factor might need to be different.
+\ various places in the code to scale the value in A. This code is different in
+\ the Apple II and BBC Master versions, and allows coordinates to be scaled
+\ correctly on different platforms.
+\
+\ The original source contains the comment "SCALE Scans by 3/4 to fit in".
+\
+\ In the Master version, the only scaling routine that does anything is SCALEY,
+\ which halves the y-coordinates in the Long-range Chart (as the galaxy is half
+\ as tall as it is wide). The other routines are left over from the Apple II
+\ version, which uses them to scale the system charts to fit into its smaller
+\ screen size.
 \
 \ ******************************************************************************
 
@@ -24614,15 +24859,20 @@ ENDIF
 \       Name: SCALEX
 \       Type: Subroutine
 \   Category: Maths (Geometry)
-\    Summary: Scale the x-coordinate in A
+\    Summary: Scale the x-coordinate in A (leave it unchanged)
 \
 \ ------------------------------------------------------------------------------
 \
 \ This routine (and the related SCALEY and SCALEY2 routines) are called from
-\ various places in the code to scale the value in A. This scaling can be
-\ changed by changing these routines (for example, by changing an RTS to an LSR
-\ A). This code is left over from the conversion to other platforms, where
-\ the scale factor might need to be different.
+\ various places in the code to scale the value in A. This code is different in
+\ the Apple II and BBC Master versions, and allows coordinates to be scaled
+\ correctly on different platforms.
+\
+\ In the Master version, the only scaling routine that does anything is SCALEY,
+\ which halves the y-coordinates in the Long-range Chart (as the galaxy is half
+\ as tall as it is wide). The other routines are left over from the Apple II
+\ version, which uses them to scale the system charts to fit into its smaller
+\ screen size.
 \
 \ ******************************************************************************
 
@@ -24635,21 +24885,22 @@ ENDIF
 \       Name: DVLOIN
 \       Type: Subroutine
 \   Category: Drawing lines
-\    Summary: Draw a horizontal line from (A, 24) to (A, 152)
+\    Summary: Draw a vertical line from (A, GCYT) to (A, GCYB)
 \
 \ ------------------------------------------------------------------------------
 \
-\ This routine is not used in this version of Elite.
+\ This routine is from the Apple II version of Elite and is not used in the BBC
+\ Master version.
 \
 \ ******************************************************************************
 
 .DVLOIN
 
- STA X1                 \ Draw a horizontal line from (A, 24) to (A, 152)
+ STA X1                 \ Draw a vertical line from (A, GCYT) to (A, GCYB)
  STA X2
- LDA #24
+ LDA #GCYT
  STA Y1
- LDA #152
+ LDA #GCYB
  STA Y2
  JMP LOIN
 
@@ -24889,7 +25140,7 @@ ENDIF
 \
 \ ------------------------------------------------------------------------------
 \
-\ Clear the top part of the screen, draw a white border, set the palette for
+\ Clear the top part of the screen, draw a border box, set the palette for
 \ trading screens, and set the current view type in QQ11 to A.
 \
 \ ------------------------------------------------------------------------------
@@ -24910,7 +25161,7 @@ ENDIF
 
 .TRADEMODE
 
- JSR TT66               \ Clear the top part of the screen, draw a white border,
+ JSR TT66               \ Clear the top part of the screen, draw a border box,
                         \ and set the current view type in QQ11 to A
 
  JSR FLKB               \ Call FLKB to flush the keyboard buffer
@@ -25219,9 +25470,9 @@ ENDIF
 
 .TT25
 
- LDA #1                 \ Clear the top part of the screen, draw a white border,
- JSR TRADEMODE          \ and set up a printable trading screen with a view type
-                        \ in QQ11 of 1
+ LDA #1                 \ Clear the top part of the screen, draw a border box,
+ JSR TRADEMODE          \ and set up a trading screen with a view type in QQ11
+                        \ of 1
 
  LDA #9                 \ Move the text cursor to column 9
  STA XC
@@ -25315,18 +25566,18 @@ ENDIF
  INX                    \ is stored in the range 0-14 but the displayed range
                         \ should be 1-15
 
- CLC                    \ Call pr2 to print the technology level as a 3-digit
- JSR pr2                \ number without a decimal point (by clearing the C
-                        \ flag)
+ CLC                    \ Call pr2 to print the technology level as a
+ JSR pr2                \ three-digit number without a decimal point (by
+                        \ clearing the C flag)
 
  JSR TTX69              \ Print a paragraph break and set Sentence Case
 
  LDA #192               \ Print recursive token 32 ("POPULATION") followed by a
  JSR TT68               \ colon
 
- SEC                    \ Call pr2 to print the population as a 3-digit number
- LDX QQ6                \ with a decimal point (by setting the C flag), so the
- JSR pr2                \ number printed will be population / 10
+ SEC                    \ Call pr2 to print the population as a three-digit
+ LDX QQ6                \ number with a decimal point (by setting the C flag),
+ JSR pr2                \ so the number printed will be population / 10
 
  LDA #198               \ Print recursive token 38 (" BILLION"), followed by a
  JSR TT60               \ paragraph break and Sentence Case
@@ -25628,12 +25879,13 @@ ENDIF
 \       Type: Subroutine
 \   Category: Charts
 \    Summary: Show the Long-range Chart (red key f4)
+\  Deep dive: A sense of scale
 \
 \ ******************************************************************************
 
 .TT22
 
- LDA #64                \ Clear the top part of the screen, draw a white border,
+ LDA #64                \ Clear the top part of the screen, draw a border box,
  JSR TT66               \ and set the current view type in QQ11 to 32 (Long-
                         \ range Chart)
 
@@ -25657,10 +25909,11 @@ ENDIF
                         \ title and act as the top frame of the chart, and move
                         \ the text cursor down one line
 
- LDA #153               \ Move the text cursor down one line and draw a
- JSR NLIN5              \ screen-wide horizontal line at pixel row 153 for the
-                        \ bottom edge of the chart, so the chart itself is 128
-                        \ pixels high, starting on row 24 and ending on row 153
+ LDA #GCYB+1            \ Move the text cursor down one line and draw a
+ JSR NLIN5              \ screen-wide horizontal line at pixel row GCYB+1 (153)
+                        \ for the bottom edge of the chart, so the chart itself
+                        \ is 128 pixels high, starting on row 24 and ending on
+                        \ row 153
 
  JSR TT14               \ Call TT14 to draw a circle with crosshairs at the
                         \ current system's galactic coordinates
@@ -25696,20 +25949,20 @@ ENDIF
                         \
                         \ The call to SCALEY simply does an LSR A, but having
                         \ this call instruction here would enable different
-                        \ scaling to be applied by altering the SCALE routines.
-                        \ This code is left over from the conversion to other
-                        \ platforms, where the scale factor might need to be
-                        \ different
+                        \ scaling to be applied by altering the SCALE routines
+                        \
+                        \ This code is left over from the Apple II version,
+                        \ where the scale factor is different
 
- CLC                    \ Add 24 to the halved y-coordinate in A (as the top of
- ADC #24                \ the chart is on pixel row 24, just below the line we
-                        \ drew on row 23 above)
+ CLC                    \ Add GCYT to the halved y-coordinate in A (so the top
+ ADC #GCYT              \ of the chart is on pixel row GCYT, just below the line
+                        \ we drew on row 23 above)
 
  JSR PIXEL              \ Call PIXEL to draw a point at (X, A), with the size of
                         \ the point dependent on the distance specified in ZZ
-                        \ (so a high value of ZZ will produce a 1-pixel point,
-                        \ a medium value will produce a 2-pixel dash, and a
-                        \ small value will produce a 4-pixel square)
+                        \ (so a high value of ZZ will produce a one-pixel point,
+                        \ a medium value will produce a two-pixel dash, and a
+                        \ small value will produce a four-pixel square)
 
  JSR TT20               \ We want to move on to the next system, so call TT20
                         \ to twist the three 16-bit seeds in QQ15
@@ -25726,19 +25979,20 @@ ENDIF
  STA QQ19               \ The call to SCALEX has no effect as it only contains
                         \ an RTS, but having this call instruction here would
                         \ enable different scaling to be applied by altering
-                        \ the SCALE routines. This code is left over from the
-                        \ conversion to other platforms, where the scale factor
-                        \ might need to be different
+                        \ the SCALE routines
+                        \
+                        \ This code is left over from the Apple II version,
+                        \ where the scale factor is different
 
  LDA QQ10               \ Set QQ19+1 to the selected system's y-coordinate,
  JSR SCALEY             \ halved to fit it into the chart
  STA QQ19+1             \
                         \ The call to SCALEY simply does an LSR A, but having
                         \ this call instruction here would enable different
-                        \ scaling to be applied by altering the SCALE routines.
-                        \ This code is left over from the conversion to other
-                        \ platforms, where the scale factor might need to be
-                        \ different
+                        \ scaling to be applied by altering the SCALE routines
+                        \
+                        \ This code is left over from the Apple II version,
+                        \ where the scale factor is different
 
  LDA #4                 \ Set QQ19+2 to size 4 for the crosshairs size
  STA QQ19+2
@@ -25775,7 +26029,7 @@ ENDIF
 
 .TT15
 
- LDA #24                \ Set A to 24, which we will use as the minimum
+ LDA #GCYT              \ Set A to GCYT, which we will use as the minimum
                         \ screen indent for the crosshairs (i.e. the minimum
                         \ distance from the top-left corner of the screen)
 
@@ -25812,22 +26066,8 @@ ENDIF
 
 .TT84
 
-                        \ In the following, the authors have used XX15 for
-                        \ temporary storage. XX15 shares location with X1, Y1,
-                        \ X2 and Y2, so in the following, you can consider
-                        \ the variables like this:
-                        \
-                        \   XX15   is the same as X1
-                        \   XX15+1 is the same as Y1
-                        \   XX15+2 is the same as X2
-                        \   XX15+3 is the same as Y2
-                        \
-                        \ Presumably this routine was written at a different
-                        \ time to the line-drawing routine, before the two
-                        \ workspaces were merged to save space
-
- STA XX15               \ Set XX15 (X1) = A (the x-coordinate of the left edge
-                        \ of the crosshairs)
+ STA X1                 \ Set X1 = A (the x-coordinate of the left edge of the
+                        \ crosshairs)
 
  LDA QQ19               \ Set A = crosshairs x-coordinate + crosshairs size
  CLC                    \ to get the x-coordinate of the right edge of the
@@ -25849,13 +26089,13 @@ ENDIF
 
 .TT85
 
- STA XX15+2             \ Set XX15+2 (X2) = A (the x-coordinate of the right
-                        \ edge of the crosshairs)
+ STA X2                 \ Set X2 = A (the x-coordinate of the right edge of the
+                        \ crosshairs)
 
- LDA QQ19+1             \ Set XX15+1 (Y1) = crosshairs y-coordinate + indent
- CLC                    \ to get the y-coordinate of the centre of the
- ADC QQ19+5             \ crosshairs
- STA XX15+1
+ LDA QQ19+1             \ Set Y1 = crosshairs y-coordinate + indent to get the
+ CLC                    \ y-coordinate of the centre of the crosshairs
+ ADC QQ19+5
+ STA Y1
 
  JSR HLOIN3             \ Call HLOIN3 to draw a line from (X1, Y1) to (X2, Y1)
 
@@ -25871,16 +26111,16 @@ ENDIF
 
 .TT86
 
- CLC                    \ Set XX15+1 (Y1) = A + indent to get the y-coordinate
- ADC QQ19+5             \ of the top edge of the indented crosshairs
- STA XX15+1
+ CLC                    \ Set Y1 = A + indent to get the y-coordinate of the top
+ ADC QQ19+5             \ edge of the indented crosshairs
+ STA Y1
 
  LDA QQ19+1             \ Set A = crosshairs y-coordinate + crosshairs size
  CLC                    \ + indent to get the y-coordinate of the bottom edge
  ADC QQ19+2             \ of the indented crosshairs
  ADC QQ19+5
 
- CMP #152               \ If A < 152 then skip the following, as the crosshairs
+ CMP #GCYB              \ If A < GCYB then skip the following, as the crosshairs
  BCC TT87               \ won't spill out of the bottom of the screen
 
  LDX QQ11               \ A >= 152, so we need to check whether this will fit in
@@ -25889,24 +26129,24 @@ ENDIF
  BMI TT87               \ If this is the Short-range Chart then the y-coordinate
                         \ is fine, so skip to TT87
 
- LDA #152               \ Otherwise this is the Long-range Chart, so we need to
-                        \ clip the crosshairs at a maximum y-coordinate of 152
+ LDA #GCYB              \ Otherwise this is the Long-range Chart, so we need to
+                        \ clip the crosshairs at a maximum y-coordinate of GCYB
 
 .TT87
 
- STA XX15+3             \ Set XX15+3 (Y2) = A (the y-coordinate of the bottom
-                        \ edge of the crosshairs)
+ STA Y2                 \ Set Y2 = A (the y-coordinate of the bottom edge of the
+                        \ crosshairs)
 
- LDA QQ19               \ Set XX15 (X1) = the x-coordinate of the centre of the
- STA XX15               \ crosshairs
+ LDA QQ19               \ Set X1 = the x-coordinate of the centre of the
+ STA X1                 \ crosshairs
 
- STA XX15+2             \ Set XX15+2 (X2) = the x-coordinate of the centre of
-                        \ the crosshairs
+ STA X2                 \ Set X2 = the x-coordinate of the centre of the
+                        \ crosshairs
 
- JMP LOIN               \ Draw a vertical line (X1, Y1) to (X2, Y2), which will
-                        \ draw from the top edge of the crosshairs to the bottom
-                        \ edge, through the centre of the crosshairs, returning
-                        \ from the subroutine using a tail call
+ JMP LOIN               \ Draw a vertical line from (X1, Y1) to (X2, Y2), which
+                        \ will draw from the top edge of the crosshairs to the
+                        \ bottom edge, through the centre of the crosshairs,
+                        \ and returning from the subroutine using a tail call
 
 \ ******************************************************************************
 \
@@ -25944,9 +26184,10 @@ ENDIF
                         \ The call to SCALEY2 has no effect as it only contains
                         \ an RTS, but having this call instruction here would
                         \ enable different scaling to be applied by altering
-                        \ the SCALE routines. This code is left over from the
-                        \ conversion to other platforms, where the scale factor
-                        \ might need to be different
+                        \ the SCALE routines
+                        \
+                        \ This code is left over from the Apple II version,
+                        \ where the scale factor is different
 
  JMP TT128              \ Jump to TT128 to draw a circle with the centre at the
                         \ same coordinates as the crosshairs, (QQ19, QQ19+1),
@@ -25968,10 +26209,10 @@ ENDIF
  STA K                  \
                         \ The call to SCALEY simply does an LSR A, but having
                         \ this call instruction here would enable different
-                        \ scaling to be applied by altering the SCALE routines.
-                        \ This code is left over from the conversion to other
-                        \ platforms, where the scale factor might need to be
-                        \ different
+                        \ scaling to be applied by altering the SCALE routines
+                        \
+                        \ This code is left over from the Apple II version,
+                        \ where the scale factor is different
 
  LDA QQ0                \ Set QQ19 to the x-coordinate of the current system,
  JSR SCALEX             \ which will be the centre of the circle and crosshairs
@@ -25980,9 +26221,10 @@ ENDIF
                         \ The call to SCALEX has no effect as it only contains
                         \ an RTS, but having this call instruction here would
                         \ enable different scaling to be applied by altering
-                        \ the SCALE routines. This code is left over from the
-                        \ conversion to other platforms, where the scale factor
-                        \ might need to be different
+                        \ the SCALE routines
+                        \
+                        \ This code is left over from the Apple II version,
+                        \ where the scale factor is different
 
  LDA QQ1                \ Set QQ19+1 to the y-coordinate of the current system,
  JSR SCALEY             \ halved because the galactic chart is half as high as
@@ -26001,9 +26243,9 @@ ENDIF
  JSR TT15               \ Draw the set of crosshairs defined in QQ19, which will
                         \ be drawn 24 pixels to the right of QQ19+1
 
- LDA QQ19+1             \ Add 24 to the y-coordinate of the crosshairs in QQ19+1
- CLC                    \ so that the centre of the circle matches the centre
- ADC #24                \ of the crosshairs
+ LDA QQ19+1             \ Add GCYT to the y-coordinate of the crosshairs in
+ CLC                    \ QQ19+1 so that the centre of the circle matches the
+ ADC #GCYT              \ centre of the crosshairs
  STA QQ19+1
 
                         \ Fall through into TT128 to draw a circle with the
@@ -26078,9 +26320,9 @@ ENDIF
 
 .TT219
 
- LDA #2                 \ Clear the top part of the screen, draw a white border,
- JSR TRADEMODE          \ and set up a printable trading screen with a view type
-                        \ in QQ11 of 2 (Buy Cargo screen)
+ LDA #2                 \ Clear the top part of the screen, draw a border box,
+ JSR TRADEMODE          \ and set up a trading screen with a view type in QQ11
+                        \ of 2 (Buy Cargo screen)
 
  JSR TT163              \ Print the column headers for the prices table
 
@@ -26124,8 +26366,7 @@ ENDIF
 .TT224
 
  JSR CLYNS              \ Clear the bottom three text rows of the upper screen,
-                        \ and move the text cursor to column 1 on row 21, i.e.
-                        \ the start of the top row of the three bottom rows
+                        \ and move the text cursor to the first cleared row
 
  LDA #204               \ Print recursive token 44 ("QUANTITY OF ")
  JSR TT27
@@ -26152,15 +26393,13 @@ ENDIF
  LDX #12                \ Perhaps they were left behind when code was moved from
  STX T1                 \ here into gnum, and weren't deleted?
 
-{
-.TT223                  \ This label is a duplicate of a label in gnum (which is
-                        \ why we need to surround it with braces, as BeebAsm
-                        \ doesn't allow us to redefine labels, unlike BBC
-                        \ BASIC). This could be a remnant if the code in gnum
-                        \ was originally here, but got moved into the gnum
-                        \ subroutine without removing the original
-
-}
+.TT223K                 \ This label is a duplicate of a label in the gnum
+                        \ routine, so this could also be a remnant from code
+                        \ that got moved into the gnum subroutine
+                        \
+                        \ In the original source this label is TT223, but
+                        \ because BeebAsm doesn't allow us to redefine labels,
+                        \ I have renamed it to TT223K
 
  JSR gnum               \ Call gnum to get a number from the keyboard, which
                         \ will be the quantity of this item we want to purchase,
@@ -26301,7 +26540,7 @@ ENDIF
 \
 \ Other entry points:
 \
-\   OUT                 The OUTX routine jumps back here after printing the key
+\   OUT                 The OUTK routine jumps back here after printing the key
 \                       that was just pressed
 \
 \ ******************************************************************************
@@ -26340,8 +26579,8 @@ ENDIF
 
  BCC OUT                \ If A < 0, jump to OUT to load the current number and
                         \ return from the subroutine, as the key pressed was
-                        \ RETURN (or some other ncharacter with a value less
-                        \ than ASCII "0")
+                        \ RETURN (or some other character with a value less than
+                        \ ASCII "0")
 
  CMP #10                \ If A >= 10, jump to BAY2 to display the Inventory
  BCS BAY2               \ screen, as the key pressed was a letter or other
@@ -26355,8 +26594,8 @@ ENDIF
                         \ source, and has a comment "tribs"
 
  CMP #26                \ If A >= 26, where A is the number entered so far, then
- BCS OUTX               \ adding a further digit will make it bigger than 256,
-                        \ so jump to OUTX to print the key that was just pressed
+ BCS OUTK               \ adding a further digit will make it bigger than 256,
+                        \ so jump to OUTK to print the key that was just pressed
                         \ before jumping to OUT below with the C flag still set
 
  ASL A                  \ Set A = (A * 2) + (A * 8) = A * 10
@@ -26367,7 +26606,7 @@ ENDIF
 
  ADC S                  \ Add the pressed digit to A
 
- BCS OUTX               \ If the addition overflowed, then jump to OUTX to print
+ BCS OUTK               \ If the addition overflowed, then jump to OUTK to print
                         \ the key that was just pressed before jumping to OUT
                         \ below with the C flag still set
 
@@ -26380,7 +26619,7 @@ ENDIF
                         \ BEQ is needed because the BCS below would jump to OUT
                         \ if R >= QQ25, which we don't want)
 
- BCS OUTX               \ If the result in R > QQ25, jump to OUTX to print
+ BCS OUTK               \ If the result in R > QQ25, jump to OUTK to print
                         \ the key that was just pressed before jumping to OUT
                         \ below with the C flag still set
 
@@ -26449,14 +26688,14 @@ ENDIF
 
 \ ******************************************************************************
 \
-\       Name: OUTX
+\       Name: OUTK
 \       Type: Subroutine
 \   Category: Text
 \    Summary: Print the character in Q before returning to gnum
 \
 \ ******************************************************************************
 
-.OUTX
+.OUTK
 
  LDA Q                  \ Print the character in Q, which is the key that was
  JSR DASC               \ just pressed in the gnum routine
@@ -26478,9 +26717,9 @@ ENDIF
 
 .TT208
 
- LDA #4                 \ Clear the top part of the screen, draw a white border,
- JSR TRADEMODE          \ and set up a printable trading screen with a view type
-                        \ in QQ11 of 4 (Sell Cargo screen)
+ LDA #4                 \ Clear the top part of the screen, draw a border box,
+ JSR TRADEMODE          \ and set up a trading screen with a view type in QQ11
+                        \ of 4 (Sell Cargo screen)
 
  LDA #10                \ Move the text cursor to column 10
  STA XC
@@ -26723,9 +26962,9 @@ ENDIF
 
 .TT213
 
- LDA #8                 \ Clear the top part of the screen, draw a white border,
- JSR TRADEMODE          \ and set up a printable trading screen with a view type
-                        \ in QQ11 of 4 (Inventory screen)
+ LDA #8                 \ Clear the top part of the screen, draw a border box,
+ JSR TRADEMODE          \ and set up a trading screen with a view type in QQ11
+                        \ of 4 (Inventory screen)
 
  LDA #11                \ Move the text cursor to column 11 to print the screen
  STA XC                 \ title
@@ -26775,7 +27014,8 @@ ENDIF
 .TT214
 
 \.TT214                 \ These instructions are commented out in the original
-\PHA                    \ source
+\                       \ source
+\PHA
 \JSR TT162
 \PLA
 
@@ -26905,9 +27145,10 @@ ENDIF
  STA QQ19               \ The call to SCALEX has no effect as it only contains
                         \ an RTS, but having this call instruction here would
                         \ enable different scaling to be applied by altering
-                        \ the SCALE routines. This code is left over from the
-                        \ conversion to other platforms, where the scale factor
-                        \ might need to be different
+                        \ the SCALE routines
+                        \
+                        \ This code is left over from the Apple II version,
+                        \ where the scale factor is different
 
  LDA QQ10               \ Halve the crosshairs y-coordinate and store it in QQ19
  JSR SCALEY             \ (we halve it because the Long-range Chart is half as
@@ -26915,10 +27156,10 @@ ENDIF
                         \
                         \ The call to SCALEY simply does an LSR A, but having
                         \ this call instruction here would enable different
-                        \ scaling to be applied by altering the SCALE routines.
-                        \ This code is left over from the conversion to other
-                        \ platforms, where the scale factor might need to be
-                        \ different
+                        \ scaling to be applied by altering the SCALE routines
+                        \
+                        \ This code is left over from the Apple II version,
+                        \ where the scale factor is different
 
  LDA #4                 \ Set QQ19+2 to 4 denote crosshairs of size 4
  STA QQ19+2
@@ -27051,9 +27292,10 @@ ENDIF
  STA QQ19               \ The call to SCALEY2 has no effect as it only contains
                         \ an RTS, but having this call instruction here would
                         \ enable different scaling to be applied by altering
-                        \ the SCALE routines. This code is left over from the
-                        \ conversion to other platforms, where the scale factor
-                        \ might need to be different
+                        \ the SCALE routines
+                        \
+                        \ This code is left over from the Apple II version,
+                        \ where the scale factor is different
 
  LDA QQ10               \ Set A = QQ10 - QQ1, the vertical distance between the
  SEC                    \ crosshairs (QQ10) and the current system (QQ1)
@@ -27084,9 +27326,10 @@ ENDIF
                         \ The call to SCALEY2 has no effect as it only contains
                         \ an RTS, but having this call instruction here would
                         \ enable different scaling to be applied by altering
-                        \ the SCALE routines. This code is left over from the
-                        \ conversion to other platforms, where the scale factor
-                        \ might need to be different
+                        \ the SCALE routines
+                        \
+                        \ This code is left over from the Apple II version,
+                        \ where the scale factor is different
 
  LDA #8                 \ Set QQ19+2 to 8 denote crosshairs of size 8
  STA QQ19+2
@@ -27109,7 +27352,7 @@ ENDIF
 
 .TT23
 
- LDA #128               \ Clear the top part of the screen, draw a white border,
+ LDA #128               \ Clear the top part of the screen, draw a border box,
  JSR TT66               \ and set the current view type in QQ11 to 128 (Short-
                         \ range Chart)
 
@@ -27188,9 +27431,9 @@ ENDIF
 .TT184
 
  CMP #29                \ If the horizontal distance in A is >= 29, then this
- BCS TT187S             \ system is too far away from the current system to
+ BCS TT187s             \ system is too far away from the current system to
                         \ appear in the Short-range Chart, so jump to TT187 via
-                        \ TT187S to move on to the next system
+                        \ TT187s to move on to the next system
 
  LDA QQ15+1             \ Set A = s0_hi - QQ1, the vertical distance between
  SEC                    \ (s1_hi, s0_hi) and (QQ0, QQ1)
@@ -27206,9 +27449,9 @@ ENDIF
 .TT186
 
  CMP #40                \ If the vertical distance in A is >= 40, then this
- BCS TT187S             \ system is too far away from the current system to
+ BCS TT187s             \ system is too far away from the current system to
                         \ appear in the Short-range Chart, so jump to TT187 via
-                        \ TT187S to move on to the next system
+                        \ TT187s to move on to the next system
 
                         \ This system should be shown on the Short-range Chart,
                         \ so now we need to work out where the label should go,
@@ -27233,9 +27476,10 @@ ENDIF
                         \ The call to SCALEY2 has no effect as it only contains
                         \ an RTS, but having this call instruction here would
                         \ enable different scaling to be applied by altering
-                        \ the SCALE routines. This code is left over from the
-                        \ conversion to other platforms, where the scale factor
-                        \ might need to be different
+                        \ the SCALE routines
+                        \
+                        \ This code is left over from the Apple II version,
+                        \ where the scale factor is different
 
  LSR A                  \ Move the text cursor to column x-delta / 2 + 1
  LSR A                  \ which will be in the range 1-10
@@ -27260,14 +27504,16 @@ ENDIF
                         \ The call to SCALEY2 has no effect as it only contains
                         \ an RTS, but having this call instruction here would
                         \ enable different scaling to be applied by altering
-                        \ the SCALE routines. This code is left over from the
-                        \ conversion to other platforms, where the scale factor
-                        \ might need to be different
+                        \ the SCALE routines
+                        \
+                        \ This code is left over from the Apple II version,
+                        \ where the scale factor is different
 
- LSR A                  \ Set Y = K4 / 8, so Y contains the number of the text
- LSR A                  \ row that contains this system
- LSR A
- TAY
+ LSR A                  \ Set Y = A >> 3
+ LSR A                  \       = K4 div 8
+ LSR A                  \
+ TAY                    \ So Y now contains the number of the character row
+                        \ that contains this system
 
                         \ Now to see if there is room for this system's label.
                         \ Ideally we would print the system name on the same
@@ -27329,14 +27575,14 @@ ENDIF
  CMP #70                \ jump to TT187 to skip showing the system as it is too
                         \ far away from the current system
 
-.TT187S
+.TT187s
 
  BCS TT187              \ If we get here from the instruction above, we jump to
                         \ TT187 if QQ8(1 0) >= 70, so we only show systems that
                         \ are within distance 70 (i.e. 7 light years) of the
                         \ current system
                         \
-                        \ If we jump here from elsewhere with a BCS TT187S, we
+                        \ If we jump here from elsewhere with a BCS TT187s, we
                         \ jump straight on to TT187
 
  LDA #&FF               \ Store &FF in INWK+Y, to denote that this row is now
@@ -27405,6 +27651,7 @@ ENDIF
 
 \LDA #0                 \ These instructions are commented out in the original
 \STA dontclip           \ source
+\
 \LDA #2*Y-1
 \STA Yx2M1
 
@@ -27764,8 +28011,7 @@ ENDIF
 .dockEd
 
  JSR CLYNS              \ Clear the bottom three text rows of the upper screen,
-                        \ and move the text cursor to column 1 on row 21, i.e.
-                        \ the start of the top row of the three bottom rows
+                        \ and move the text cursor to the first cleared row
 
  LDA #15                \ Move the text cursor to column 15 (the middle of the
  STA XC                 \ screen), setting A to 15 at the same time for the
@@ -28588,9 +28834,9 @@ ENDIF
 
 .TT167
 
- LDA #16                \ Clear the top part of the screen, draw a white border,
- JSR TRADEMODE          \ and set up a printable trading screen with a view type
-                        \ in QQ11 of 32 (Market Price screen)
+ LDA #16                \ Clear the top part of the screen, draw a border box,
+ JSR TRADEMODE          \ and set up a trading screen with a view type in QQ11
+                        \ of 32 (Market Price screen)
 
  LDA #5                 \ Move the text cursor to column 5
  STA XC
@@ -28886,21 +29132,22 @@ ENDIF
 \   Category: Universe
 \    Summary: Spawn a Thargoid ship and a Thargon companion
 \  Deep dive: Fixing ship positions
+\             Aggression and hostility in ship tactics
 \
 \ ******************************************************************************
 
 .GTHG
 
- JSR Ze                 \ Call Ze to initialise INWK
+ JSR Ze                 \ Call Ze to initialise INWK to a fairly aggressive
+                        \ ship (though we increase this below)
                         \
                         \ Note that because Ze uses the value of X returned by
                         \ DORND, and X contains the value of A returned by the
                         \ previous call to DORND, this does not set the new ship
-                        \ to a totally random location. See the deep dive on
-                        \ "Fixing ship positions" for details
+                        \ to a totally random location
 
  LDA #%11111111         \ Set the AI flag in byte #32 so that the ship has AI,
- STA INWK+32            \ is extremely and aggressively hostile, and has E.C.M.
+ STA INWK+32            \ an aggression level of 63 out of 63, and E.C.M.
 
  LDA #THG               \ Call NWSHP to add a new Thargoid ship to our local
  JSR NWSHP              \ bubble of universe
@@ -28919,7 +29166,7 @@ ENDIF
 \ ------------------------------------------------------------------------------
 \
 \ Process a mis-jump into witchspace (which happens very rarely). Witchspace has
-\ a strange, almost dust-free aspect to it, and it is populated by hostile
+\ a strange, almost dust-free aspect to it, and it is populated by aggressive
 \ Thargoids. Using our escape pod will be fatal, and our position on the
 \ galactic chart is in-between systems. It is a scary place...
 \
@@ -28949,7 +29196,7 @@ ENDIF
 \JSR CATLOD             \ This instruction is commented out in the original
                         \ source
 
- LDA #3                 \ Clear the top part of the screen, draw a white border,
+ LDA #3                 \ Clear the top part of the screen, draw a border box,
  JSR TT66               \ and set the current view type in QQ11 to 3
 
  JSR LL164              \ Call LL164 to show the hyperspace tunnel and make the
@@ -29020,7 +29267,7 @@ ENDIF
  LDA QQ11               \ If the current view is not a space view, jump to ee5
  BNE ee5                \ to skip the following
 
- JSR TT66               \ Clear the top part of the screen, draw a white border,
+ JSR TT66               \ Clear the top part of the screen, draw a border box,
                         \ and set the current view type in QQ11 to 0 (space
                         \ view)
 
@@ -29073,13 +29320,14 @@ ENDIF
                         \ sun
 
 \JSR CATLOD             \ These instructions are commented out in the original
-\JSR LOMOD              \ source
+\                       \ source
+\JSR LOMOD
 
  LDA QQ11               \ If the current view in QQ11 is not a space view (0) or
  AND #%00111111         \ one of the charts (64 or 128), return from the
  BNE RTS111             \ subroutine (as RTS111 contains an RTS)
 
- JSR TTX66              \ Otherwise clear the screen and draw a white border
+ JSR TTX66              \ Otherwise clear the screen and draw a border box
 
  LDA QQ11               \ If the current view is one of the charts, jump to
  BNE TT114              \ TT114 (from which we jump to the correct routine to
@@ -29379,7 +29627,7 @@ ENDIF
 
 .EQSHP
 
- LDA #32                \ Clear the top part of the screen, draw a white border,
+ LDA #32                \ Clear the top part of the screen, draw a border box,
  JSR TRADEMODE          \ and set up a printable trading screen with a view type
                         \ in QQ11 of 32 (Equip Ship screen)
 
@@ -29470,8 +29718,7 @@ ENDIF
  BCC EQL1               \ list of equipment available at this station
 
  JSR CLYNS              \ Clear the bottom three text rows of the upper screen,
-                        \ and move the text cursor to column 1 on row 21, i.e.
-                        \ the start of the top row of the three bottom rows
+                        \ and move the text cursor to the first cleared row
 
  LDA #127               \ Print recursive token 127 ("ITEM") followed by a
  JSR prq                \ question mark
@@ -29608,7 +29855,7 @@ ENDIF
 
 .et5
 
- LDY #111               \ Set Y to recursive token 107 ("FUEL SCOOPS")
+ LDY #111               \ Set Y to recursive token 111 ("FUEL SCOOPS")
 
  CMP #6                 \ If A is not 6 (i.e. the item we've just bought is not
  BNE et6                \ a fuel scoop), skip to et6
@@ -29806,8 +30053,8 @@ ENDIF
 
  JSR BEEP               \ Call the BEEP subroutine to make a short, high beep
 
- LDY #25                \ Delay for 25 vertical syncs (25/50 = 0.5 second) and
- JMP DELAY              \ return from the subroutine using a tail call
+ LDY #25                \ Wait for 25/50 of a second (0.5 second) and return
+ JMP DELAY              \ from the subroutine using a tail call
 
 \ ******************************************************************************
 \
@@ -29936,7 +30183,7 @@ ENDIF
  BCC P%+7               \ screen to prevent the view menu from clashing with the
                         \ longer equipment menu available in higher tech systems
 
- LDA #32                \ Clear the top part of the screen, draw a white border,
+ LDA #32                \ Clear the top part of the screen, draw a border box,
  JSR TT66               \ and set the current view type in QQ11 to 32 (Equip
                         \ Ship screen)
 
@@ -29969,8 +30216,7 @@ ENDIF
  BCC qv1                \ view in the menu
 
  JSR CLYNS              \ Clear the bottom three text rows of the upper screen,
-                        \ and move the text cursor to column 1 on row 21, i.e.
-                        \ the start of the top row of the three bottom rows
+                        \ and move the text cursor to the first cleared row
 
 .qv2
 
@@ -30009,7 +30255,7 @@ ENDIF
 \
 \ Set the system closest to galactic coordinates (QQ9, QQ10) as the selected
 \ system, redraw the crosshairs on the chart accordingly (if they are being
-\ shown), and, if this is not a space view, clear the bottom three text rows of
+\ shown), and if this is not the space view, clear the bottom three text rows of
 \ the screen.
 \
 \ ******************************************************************************
@@ -30027,10 +30273,8 @@ ENDIF
                         \ system
 
  JMP CLYNS              \ Clear the bottom three text rows of the upper screen,
-                        \ and move the text cursor to column 1 on row 21, i.e.
-                        \ the start of the top row of the three bottom rows
-
-                        \ Return from the subroutine using a tail call
+                        \ move the text cursor to the first cleared row, and
+                        \ return from the subroutine using a tail call
 
 \ ******************************************************************************
 \
@@ -30058,11 +30302,11 @@ ENDIF
 \ ******************************************************************************
 
 \.ref2                  \ These instructions are commented out in the original
-\LDY #187               \ source, but they would jump to pres in the EQSHP
-\JMP pres               \ routine with Y = 187, which would show the error:
-\Belgium                \ "LASER PRESENT" (this code was part of the refund
-                        \ bug in the disc version of Elite, which is why it is
-                        \ commented out)
+\                       \ source, but they would jump to pres in the EQSHP
+\LDY #187               \ routine with Y = 187, which would show the error:
+\JMP pres               \ "LASER PRESENT" (this code was part of the refund
+\                       \ bug in the BBC Micro disc version of Elite, which
+\Belgium                \ is why it is commented out)
                         \
                         \ There is also a comment in the original source - the
                         \ solitary word "Belgium"
@@ -30083,8 +30327,9 @@ ENDIF
 \CMP T1                 \ These instructions are commented out in the original
 \BEQ ref2               \ source, but they would jump to ref2 above if we were
                         \ trying to replace a laser with one of the same type
-                        \ (this code was part of the refund bug in the disc
-                        \ version of Elite, which is why it is commented out)
+                        \ (this code was part of the refund bug in the BBC Micro
+                        \ disc version of Elite, which is why it is commented
+                        \ out)
 
  LDY #4                 \ If the current laser has power #POW (pulse laser),
  CMP #POW               \ jump to ref1 with Y = 4 (the item number of a pulse
@@ -30589,7 +30834,7 @@ ENDIF
                         \ and return from the subroutine using a tail call
 
  DEX                    \ If token = 4, this is control code 4 (commander
- BEQ cmn                \ name), so jump to cmm to print the commander name
+ BEQ cmn                \ name), so jump to cmn to print the commander name
                         \ and return from the subroutine using a tail call
 
  DEX                    \ If token = 5, this is control code 5 (fuel, newline,
@@ -31148,29 +31393,20 @@ ENDIF
 \       Name: SWAPPZERO
 \       Type: Subroutine
 \   Category: Utility routines
-\    Summary: An unused routine that swaps bytes in zero page
+\    Summary: An unused routine that swaps bytes in and out of zero page
 \
 \ ******************************************************************************
 
 .SWAPPZERO
 
-IF _SNG47
-
- LDX #&15               \ This routine starts copying zero page from &0015 and
-                        \ up, using X as an index
-
-ELIF _COMPACT
-
- LDX #&16               \ This routine starts copying zero page from &0016 and
-                        \ up, using X as an index
-
-ENDIF
+ LDX #K3+1              \ This routine starts copying zero page from the byte
+                        \ after K3 and up, using X as an index
 
 .SWPZL
 
- LDA ZP,X               \ These instructions have no effect, though they look
- LDY ZP,X               \ like they may have been used to swap two sets of bytes
- STA ZP,X               \ within zero page
+ LDA ZP,X               \ These instructions have no effect, as they simply swap
+ LDY ZP,X               \ a byte with itself
+ STA ZP,X
  STY ZP,X
 
  INX                    \ Increment the loop counter
@@ -31508,7 +31744,7 @@ ENDIF
                         \           = x +/- random * cloud size
 
  BNE EX4                \ If A is non-zero, the particle is off-screen as the
-                        \ coordinate is bigger than 255), so jump to EX11 to do
+                        \ coordinate is bigger than 255), so jump to EX4 to do
                         \ the next particle
 
                         \ Otherwise X contains a random x-coordinate within the
@@ -31622,14 +31858,17 @@ ENDIF
 \       Name: exlook
 \       Type: Variable
 \   Category: Drawing ships
-\    Summary: An unused block of explosion data
+\    Summary: A table to shift X left by one place when X is 0 or 1
 \
 \ ******************************************************************************
 
 .exlook
 
- EQUB 0                 \ These bytes appear to be unused
- EQUB 2
+ EQUB %00               \ Looking up exlook,X will return X shifted left by one
+ EQUB %10               \ place, where X is 0 or 1
+                        \
+                        \ This is not used in this version of Elite; it is left
+                        \ over from the Commodore 64 version of Elite
 
 \ ******************************************************************************
 \
@@ -31685,6 +31924,7 @@ ENDIF
 \       Type: Subroutine
 \   Category: Universe
 \    Summary: Set up various aspects of arriving in a new system
+\  Deep dive: A sense of scale
 \
 \ ------------------------------------------------------------------------------
 \
@@ -32049,8 +32289,9 @@ ENDIF
 \
 \ ******************************************************************************
 
- DEX                    \ Increment the shield value so that it doesn't go past
-                        \ a maximum of 255
+ DEX                    \ If we get here then we just incremented the shield
+                        \ value back around to zero, so decrement it back down
+                        \ to 255 so it stays at the maximum value of 255
 
  RTS                    \ Return from the subroutine
 
@@ -32060,7 +32301,8 @@ ENDIF
 
  BEQ SHD-2              \ If the shield value is 0 then this means it was 255
                         \ before, which is the maximum value, so jump to SHD-2
-                        \ to bring it back down to 258 and return
+                        \ to bring it back down to 255 and return without
+                        \ draining our energy banks
 
                         \ Otherwise fall through into DENGY to drain our energy
                         \ to pay for all this shield charging
@@ -32206,8 +32448,8 @@ ENDIF
 
  LDX #8                 \ First we need to copy the space station's coordinates
                         \ into K3, so set a counter to copy the first 9 bytes
-                        \ (the 3-byte x, y and z coordinates) from the station's
-                        \ data block at K% + NI% into K3
+                        \ (the three-byte x, y and z coordinates) from the
+                        \ station's data block at K% + NI% into K3
 
 .SPL1
 
@@ -32469,8 +32711,8 @@ ENDIF
 
  JSR SPBLB              \ Light up the space station bulb on the dashboard
 
- LDX #%10000001         \ Set the AI flag in byte #32 to %10000001 (hostile,
- STX INWK+32            \ no AI, has an E.C.M.)
+ LDX #%10000001         \ Set the AI flag in byte #32 to %10000001 (AI enabled,
+ STX INWK+32            \ has an E.C.M.)
 
  LDX #0                 \ Set pitch counter to 0 (no pitch, roll only)
  STX INWK+30
@@ -32768,7 +33010,7 @@ ENDIF
 .NW2
 
  STA FRIN,X             \ Store the ship type in the X-th byte of FRIN, so the
-                        \ this slot is now shown as occupied in the index table
+                        \ slot is now shown as occupied in the index table
 
  TAX                    \ Copy the ship type into X
 
@@ -32778,7 +33020,7 @@ ENDIF
  CPX #HER               \ If the ship type is a rock hermit, jump to gangbang
  BEQ gangbang           \ to increase the junk count
 
- CPX #JL                \ If JL <= X < JH, i.e. the type of ship we killed in X
+ CPX #JL                \ If JL <= X < JH, i.e. the type of ship we added in X
  BCC NW7                \ is junk (escape pod, alloy plate, cargo canister,
  CPX #JH                \ asteroid, splinter, Shuttle or Transporter), then keep
  BCS NW7                \ going, otherwise jump to NW7
@@ -32872,7 +33114,15 @@ ENDIF
 \
 \ Arguments:
 \
-\   Y                   The new status of the leftmost missile indicator
+\   Y                   The new colour of the missile indicator:
+\
+\                         * &00 = black (no missile)
+\
+\                         * #RED2 = red (armed and locked)
+\
+\                         * #YELLOW2 = yellow/white (armed)
+\
+\                         * #GREEN2 = green (disarmed)
 \
 \ ******************************************************************************
 
@@ -34203,8 +34453,7 @@ ENDIF
 \                       vertical distance between the line we're drawing and the
 \                       centre of the new sun. As we draw lines and move up the
 \                       screen, we either decrement (bottom half) or increment
-\                       (top half) this value. See the deep dive on "Drawing the
-\                       sun" to see a diagram that shows V in action
+\                       (top half) this value
 \
 \   V+1                 This determines which half of the new sun we are drawing
 \                       as we work our way up the screen, line by line:
@@ -35556,7 +35805,7 @@ ENDIF
 .TT17
 
  LDA QQ11               \ If this not the space view, skip the following three
- BNE TT17afterall       \ instructions to move onto the SHIFT key logic
+ BNE TT17afterall       \ instructions to move onto the cursor key logic
 
  JSR DOKEY              \ This is the space view, so scan the keyboard for
                         \ flight controls and pause keys, (or the equivalent on
@@ -35710,7 +35959,7 @@ ENDIF
                         \
                         \   A = round(A / 16) - 4
                         \
-                        \ This set A to a value between -4 and +4, given an
+                        \ This sets A to a value between -4 and +4, given an
                         \ initial value ranging from 1 to 255 with 128 as
                         \ the centre point
 
@@ -35842,7 +36091,7 @@ ENDIF
 
 .KS1
 
- LDX XSAV               \ Store the current ship's slot number in XSAV
+ LDX XSAV               \ Fetch the current ship's slot number from XSAV
 
  JSR KILLSHP            \ Call KILLSHP to remove the ship in slot X from our
                         \ local bubble of universe
@@ -36512,7 +36761,8 @@ ENDIF
  STA MCNT               \ Reset MCNT (the main loop counter) to 0
 
 \STA TRIBCT             \ This instruction is commented out in the original
-                        \ source
+                        \ source; it is left over from the Commodore 64 version
+                        \ of Elite and would reset the number of Trumbles
 
  LDA #3                 \ Reset DELTA (speed) to 3
  STA DELTA
@@ -36531,8 +36781,8 @@ ENDIF
 
                         \ --- End of removed code ----------------------------->
 
- LDA #191               \ Set Yx2M1 to 191, the number of pixel lines in the
- STA Yx2M1              \ space view
+ LDA #2*Y-1             \ Set Yx2M1 to the number of pixel lines in the space
+ STA Yx2M1              \ view
 
  LDA SSPR               \ Fetch the "space station present" flag, and if we are
  BEQ P%+5               \ not inside the safe zone, skip the next instruction
@@ -36695,8 +36945,7 @@ ENDIF
 .clynsneed
 
  JSR CLYNS              \ Clear the bottom three text rows of the upper screen,
-                        \ and move the text cursor to column 1 on row 21, i.e.
-                        \ the start of the top row of the three bottom rows
+                        \ and move the text cursor to the first cleared row
 
  JMP me3                \ Jump back into the main spawning loop at me3
 
@@ -36705,8 +36954,9 @@ ENDIF
 \       Name: Ze
 \       Type: Subroutine
 \   Category: Universe
-\    Summary: Initialise the INWK workspace to a hostile ship
+\    Summary: Initialise the INWK workspace to a fairly aggressive ship
 \  Deep dive: Fixing ship positions
+\             Aggression and hostility in ship tactics
 \
 \ ------------------------------------------------------------------------------
 \
@@ -36719,14 +36969,13 @@ ENDIF
 \
 \   * Give the ship a 4% chance of having E.C.M.
 \
-\   * Set the ship to hostile, with AI enabled
+\   * Set the ship's aggression level to at least 32 out of 63, with AI enabled
 \
 \ This routine also sets A, X, T1 and the C flag to random values.
 \
 \ Note that because this routine uses the value of X returned by DORND, and X
 \ contains the value of A returned by the previous call to DORND, this routine
-\ does not necessarily set the new ship to a totally random location. See the
-\ deep dive on "Fixing ship positions" for details.
+\ does not necessarily set the new ship to a totally random location.
 \
 \ ******************************************************************************
 
@@ -36756,8 +37005,8 @@ ENDIF
  ROL A                  \ Set bit 0 of A to the C flag (i.e. there's a 4%
                         \ chance of this ship having E.C.M.)
 
- ORA #%11000000         \ Set bits 6 and 7 of A, so the ship is hostile (bit 6
-                        \ and has AI (bit 7)
+ ORA #%11000000         \ Set bits 6 and 7 of A, so the ship has AI (bit 7) and
+                        \ an aggression level of at least 32 out of 63
 
  STA INWK+32            \ Store A in the AI flag of this ship
 
@@ -36823,6 +37072,7 @@ ENDIF
 \    Summary: Spawn a trader (a Cobra Mk III, Python, Boa or Anaconda)
 \  Deep dive: Program flow of the main game loop
 \             Ship data blocks
+\             Aggression and hostility in ship tactics
 \
 \ ------------------------------------------------------------------------------
 \
@@ -36834,9 +37084,8 @@ ENDIF
 \ This section covers the following:
 \
 \   * Spawn a trader, i.e. a Cobra Mk III, Python, Boa or Anaconda, with a 50%
-\     chance of it having a missile, a 50% chance of it having an E.C.M., a 50%
-\     chance of it docking and being aggressive if attacked, a speed between 16
-\     and 31, and a gentle clockwise roll
+\     chance of it having an E.C.M., a 50% chance of it docking, a random
+\     aggression level, a speed between 16 and 31, and a gentle clockwise roll
 \
 \ We call this from within the main loop.
 \
@@ -36856,9 +37105,25 @@ ENDIF
                         \ clockwise roll (as bit 7 is clear), and a 1 in 127
                         \ chance of it having no damping
 
- ROL INWK+31            \ Set bit 0 of the ship's missile count randomly (as the
-                        \ C flag was set), giving the ship either no missiles or
-                        \ one missile
+ ROL INWK+31            \ This instruction would appear to set bit 0 of the
+                        \ ship's missile count randomly (as the C flag was set),
+                        \ giving the ship either no missiles or one missile
+                        \
+                        \ However, INWK+31 is overwritten in the call to the
+                        \ NWSHP routine below, where it is set to the number of
+                        \ missiles from the ship blueprint, and the value of the
+                        \ C flag is not used, so this instruction actually has
+                        \ no effect
+                        \
+                        \ Interestingly, the original source code for the NWSPS
+                        \ routine also has an instruction that sets INWK+31 and
+                        \ which gets overwritten when it falls through into
+                        \ NWSHP, but in this case the instruction is commented
+                        \ out in the source. Perhaps the original version of
+                        \ NWSHP didn't set the missile count and instead relied
+                        \ on the calling code to set it, and when the authors
+                        \ changed it, they commented out the INWK+31 instruction
+                        \ in NWSPS and forgot about this one. Who knows?
 
  AND #31                \ Set the ship speed to our random number, set to a
  ORA #16                \ minimum of 16 and a maximum of 31
@@ -36872,19 +37137,18 @@ ENDIF
                         \ If we get here then we are going to spawn a ship that
                         \ is minding its own business and trying to dock
 
- LDA INWK+32            \ Set bits 6 and 7 of the ship's AI flag, to make it
- ORA #%11000000         \ aggressive if attacked, and enable its AI
- STA INWK+32
+ LDA INWK+32            \ Set bits 6 and 7 of A, so the ship has AI (bit 7) and
+ ORA #%11000000         \ an aggression level of at least 32 out of 63 (this
+ STA INWK+32            \ makes the ship more likely to turn towards its target,
+                        \ which in this case is the space station, as we are
+                        \ about to set the ship flags so it is docking)
 
  LDX #%00010000         \ Set bit 4 of the ship's NEWB flags, to indicate that
  STX NEWB               \ this ship is docking
 
 .nodo
 
- AND #2                 \ If we jumped here with a random value of A from the
-                        \ BMI above, then this reduces A to a random value of
-                        \ either 0 or 2; if we didn't take the BMI and made the
-                        \ ship hostile, then A will be 0
+ AND #2                 \ This reduces A to a random value of either 0 or 2
 
  ADC #CYL               \ Set A = A + C + #CYL
                         \
@@ -36971,9 +37235,9 @@ ENDIF
                         \ hunters)
                         \
                         \ If we are in that 13%, then 50% of the time this will
-                        \ be a Cobra Mk III trader, and the other 50% of the
-                        \ time it will either be an asteroid (98.5% chance) or,
-                        \ very rarely, a cargo canister (1.5% chance)
+                        \ be a trader, and the other 50% of the time it will
+                        \ either be an asteroid (98.5% chance) or, very rarely,
+                        \ a cargo canister (1.5% chance)
 
  LDA MJ                 \ If we are in witchspace following a mis-jump, skip the
  BNE ytq                \ following by jumping down to MLOOP (via ytq above)
@@ -37002,8 +37266,7 @@ ENDIF
                         \ Note that because we use the value of X returned by
                         \ DORND, and X contains the value of A returned by the
                         \ previous call to DORND, this does not set the new ship
-                        \ to a totally random location. See the deep dive on
-                        \ "Fixing ship positions" for details
+                        \ to a totally random location
 
  AND #%10000000         \ Set x_sign = bit 7 of x_lo
  STA INWK+2
@@ -37074,10 +37337,10 @@ ENDIF
 
  AND #1                 \ Reduce A to a random number that's 0 or 1
 
- ADC #OIL               \ Set A = #OIL + A + C, so there's a tiny chance of us
-                        \ spawning a cargo canister (#OIL) and an even chance of
-                        \ us spawning either a boulder (#OIL + 1) or an asteroid
-                        \ (#OIL + 2)
+ ADC #OIL               \ Set A = #OIL + A + C, so there's a 2% chance of us
+                        \ spawning a cargo canister (#OIL), a 50% chance of
+                        \ us spawning a boulder (#OIL + 1), and a 48% chance of
+                        \ us spawning an asteroid (#OIL + 2)
 
 .whips
 
@@ -37132,14 +37395,13 @@ ENDIF
 
  STA T                  \ Store our badness level in T
 
- JSR Ze                 \ Call Ze to initialise INWK to a potentially hostile
+ JSR Ze                 \ Call Ze to initialise INWK to a fairly aggressive
                         \ ship, and set A and X to random values
                         \
                         \ Note that because Ze uses the value of X returned by
                         \ DORND, and X contains the value of A returned by the
                         \ previous call to DORND, this does not set the new ship
-                        \ to a totally random location. See the deep dive on
-                        \ "Fixing ship positions" for details
+                        \ to a totally random location
 
  CMP #136               \ If the random number in A = 136 (0.4% chance), jump
  BEQ fothg              \ to fothg in part 4 to spawn either a Thargoid or, very
@@ -37171,6 +37433,7 @@ ENDIF
 \             Ship data blocks
 \             Fixing ship positions
 \             The elusive Cougar
+\             Aggression and hostility in ship tactics
 \
 \ ------------------------------------------------------------------------------
 \
@@ -37237,14 +37500,13 @@ ENDIF
                         \ Now to spawn a lone bounty hunter, a Thargoid or a
                         \ group of pirates
 
- JSR Ze                 \ Call Ze to initialise INWK to a potentially hostile
+ JSR Ze                 \ Call Ze to initialise INWK to a fairly aggressive
                         \ ship, and set A and X to random values
                         \
                         \ Note that because Ze uses the value of X returned by
                         \ DORND, and X contains the value of A returned by the
                         \ previous call to DORND, this does not set the new ship
-                        \ to a totally random location. See the deep dive on
-                        \ "Fixing ship positions" for details
+                        \ to a totally random location
 
  CMP #100               \ If the random number in A >= 100 (61% chance), jump
  BCS mt1                \ to mt1 to spawn pirates, otherwise keep going to
@@ -37308,7 +37570,7 @@ ENDIF
                         \ Constrictor's system, so skip to NOCON
 
  LDA #%11111001         \ Set the AI flag of this ship so that it has E.C.M.,
- STA INWK+32            \ has a very high aggression level of 28 out of 31, is
+ STA INWK+32            \ has a very high aggression level of 60 out of 63, is
                         \ hostile, and has AI enabled - nasty stuff!
 
  LDA TP                 \ Fetch bits 0 and 1 of TP, which contain the status of
@@ -37344,8 +37606,8 @@ ENDIF
  ROL A                  \ Set bit 0 of A to the C flag (i.e. there's a 22%
                         \ chance of this ship having E.C.M.)
 
- ORA #%11000000         \ Set bits 6 and 7 of A, so the ship is hostile (bit 6)
-                        \ and has AI (bit 7)
+ ORA #%11000000         \ Set bits 6 and 7 of A, so the ship has AI (bit 7) and
+                        \ an aggression level of at least 32 out of 63
 
  STA INWK+32            \ Store A in the AI flag of this ship
 
@@ -37393,8 +37655,14 @@ ENDIF
  LDA #18                \ Give the ship we're about to spawn a speed of 27
  STA INWK+27
 
- LDA #%01111001         \ Give it an E.C.M., and make it hostile and pretty
- STA INWK+32            \ aggressive (though don't give it AI)
+ LDA #%01111001         \ Give it an E.C.M. and an aggression level of 60 out of
+ STA INWK+32            \ 63, but don't enable its AI, so the ship will sit
+                        \ still in space unless it is hit, at which point it
+                        \ will defend itself vigorously
+                        \
+                        \ This ensures the Cougar behaves like a ship with a
+                        \ cloaking device that hides it from the scanner, so it
+                        \ minds its own business until it's discovered
 
  LDA #COU               \ Set the ship type to a Cougar and jump up to focoug
  BNE focoug             \ to spawn it
@@ -37659,9 +37927,9 @@ ENDIF
 \
 \ Arguments:
 \
-\   A                   The internal key number of the key pressed (see p.142 of
-\                       the Advanced User Guide for a list of internal key
-\                       numbers)
+\   A                   The internal key number of the key pressed (see page 142
+\                       of the "Advanced User Guide for the BBC Micro" by Bray,
+\                       Dickens and Holmes for a list of internal key numbers)
 \
 \   X                   The amount to move the crosshairs in the x-axis
 \
@@ -37730,7 +37998,7 @@ ENDIF
  BNE P%+5               \ Buy Cargo screen, returning from the subroutine using
  JMP TT219              \ a tail call
 
- CMP #&40               \ If "@" was not pressed, skip to nosave
+ CMP #'@'               \ If "@" was not pressed, skip to nosave
  BNE nosave
 
  JSR SVE                \ "@" was pressed, so call SVE to show the disc access
@@ -37751,10 +38019,10 @@ ENDIF
 
 .INSP
 
- CMP #f1                \ If red key f1 was pressed, jump to BVIEW
+ CMP #f1                \ If red key f1 was pressed, jump to chview1
  BEQ chview1
 
- CMP #f2                \ If red key f2 was pressed, jump to LVIEW
+ CMP #f2                \ If red key f2 was pressed, jump to chview2
  BEQ chview2
 
  CMP #f3                \ If red key f3 was not pressed, jump to LABEL_3 to keep
@@ -37797,10 +38065,10 @@ ENDIF
 
 .NWDAV5
 
- CMP #&44               \ If "D" was pressed, jump to T95 to print the distance
+ CMP #'D'               \ If "D" was pressed, jump to T95 to print the distance
  BEQ T95                \ to a system (if we are in one of the chart screens)
 
- CMP #&46               \ If "F" was not pressed, jump down to HME1, otherwise
+ CMP #'F'               \ If "F" was not pressed, jump down to HME1, otherwise
  BNE HME1               \ keep going to process searching for systems
 
  LDA QQ12               \ If QQ12 = 0 (we are not docked), we can't search for
@@ -37829,7 +38097,7 @@ ENDIF
  LDA T1                 \ Restore the original value of A (the key that's been
                         \ pressed) from T1
 
- CMP #&4F               \ If "O" was pressed, do the following three jumps,
+ CMP #'O'               \ If "O" was pressed, do the following three jumps,
  BNE ee2                \ otherwise skip to ee2 to continue
 
  JSR TT103              \ Draw small crosshairs at coordinates (QQ9, QQ10),
@@ -37976,6 +38244,7 @@ ENDIF
 \       Type: Subroutine
 \   Category: Maths (Geometry)
 \    Summary: Compare x_hi, y_hi and z_hi with 224
+\  Deep dive: A sense of scale
 \
 \ ------------------------------------------------------------------------------
 \
@@ -38124,7 +38393,7 @@ ENDIF
 
  LDA (&FD),Y            \ Fetch the Y-th byte of the block pointed to by
                         \ (&FD &FE), so that's the Y-th character of the message
-                        \ pointed to by the MOS error message pointer
+                        \ pointed to by the error message pointer
 
  BNE BRBRLOOP           \ If the fetched character is non-zero, loop back to the
                         \ JSR OSWRCH above to print the it, and keep looping
@@ -38164,7 +38433,7 @@ ENDIF
  LDX #24                \ Set the screen to only show 24 text rows, which hides
  JSR DET1               \ the dashboard, setting A to 6 in the process
 
- LDA #13                \ Clear the top part of the screen, draw a white border,
+ LDA #13                \ Clear the top part of the screen, draw a border box,
  JSR TT66               \ and set the current view type in QQ11 to 13 (which
                         \ is not a space view, though I'm not quite sure why
                         \ this value is chosen, as it gets overwritten by the
@@ -38173,7 +38442,7 @@ ENDIF
  STZ QQ11               \ Set QQ11 to 0, so from here on we are using a space
                         \ view
 
- JSR BOX                \ Call BOX to redraw the same white border (BOX is part
+ JSR BOX                \ Call BOX to redraw the same border box (BOX is part
                         \ of TT66), which removes the border as it is drawn
                         \ using EOR logic
 
@@ -38192,7 +38461,7 @@ ENDIF
 
 .D1
 
- JSR Ze                 \ Call Ze to initialise INWK to a potentially hostile
+ JSR Ze                 \ Call Ze to initialise INWK to a fairly aggressive
                         \ ship, and set A and X to random values
 
  LSR A                  \ Set A = A / 4, so A is now between 0 and 63, and
@@ -38200,7 +38469,7 @@ ENDIF
  STA INWK
 
  LDY #0                 \ Set the following to 0: x_hi, y_hi, z_hi and the AI
- STY INWK+1             \ flag (no AI or E.C.M. and not hostile)
+ STY INWK+1             \ flag (no AI or E.C.M. and zero aggression)
  STY INWK+4
  STY INWK+7
  STY INWK+32
@@ -38447,6 +38716,8 @@ ENDIF
 \ ------------------------------------------------------------------------------
 \
 \ BRKV is set to point to BR1 by the loading process.
+\
+\ ------------------------------------------------------------------------------
 \
 \ Other entry points:
 \
@@ -38697,12 +38968,14 @@ ENDIF
 .tZ
 
  ORA #%00001000         \ Set bit 3 of A to denote that this is the Master
-                        \ version
+                        \ version (which is the same flag as the Apple II
+                        \ version)
 
  STA COK                \ Store the updated competition flags in COK
 
 \JSR CHECK2             \ These instructions are commented out in the original
-\CMP CHK3               \ source
+\                       \ source
+\CMP CHK3
 \BNE doitagain
 
  RTS                    \ Return from the subroutine
@@ -38760,7 +39033,7 @@ ENDIF
  LDA #32                \ Set the mode 1 palette to yellow (colour 1), white
  JSR DOVDU19            \ (colour 2) and cyan (colour 3)
 
- LDA #13                \ Clear the top part of the screen, draw a white border,
+ LDA #13                \ Clear the top part of the screen, draw a border box,
  JSR TT66               \ and set the current view type in QQ11 to 13 (rotating
                         \ ship view)
 
@@ -38902,7 +39175,9 @@ IF _SNG47
 
 ENDIF
 
- JSR RDKEY              \ Scan the keyboard for a key press
+ JSR RDKEY              \ Scan the keyboard for a key press and return the ASCII
+                        \ code of the key pressed in A and X (or 0 for no key
+                        \ press)
 
  BEQ TLL2               \ If no key was pressed, loop back up to move/rotate
                         \ the ship and check again for a key press
@@ -38973,19 +39248,38 @@ ENDIF
 
  RTS                    \ Return from the subroutine
 
+\ ******************************************************************************
+\
+\       Name: CHECK2
+\       Type: Subroutine
+\   Category: Save and load
+\    Summary: Calculate the third checksum for the last saved commander data
+\             block (Commodore 64 and Apple II versions only)
+\
+\ ******************************************************************************
+
 .CHECK2
 
 \LDX #NT%-3             \ These instructions are commented out in the original
-\CLC                    \ source
+\                       \ source (they are from the Commodore 64 and Apple II
+\CLC                    \ versions, and implement the third commander checksum
+\                       \ which the Master version doesn't have)
 \TXA
+\
 \.QU2L2
+\
 \STX T
 \EOR T
 \ROR A
+\
 \ADC NA%+7,X
+\
 \EOR NA%+8,X
+\
 \DEX
+\
 \BNE QU2L2
+\
 \RTS
 
 \ ******************************************************************************
@@ -38999,9 +39293,10 @@ ENDIF
 
 .JAMESON
 
- LDY #96                \ We are going to copy the default commander at NA2%
+ LDY #(NAEND%-NA2%)     \ We are going to copy the default commander at NA2%
                         \ over the top of the last saved commander at NA%, so
-                        \ set a counter to copy 97 bytes
+                        \ set a counter to copy all the bytes between NA2% and
+                        \ NAEND%
 
 .JAMEL1
 
@@ -39325,7 +39620,7 @@ ENDIF
 \       Name: FILEPR
 \       Type: Subroutine
 \   Category: Save and load
-\    Summary: Display the currently selected media (disc or tape)
+\    Summary: Display the currently selected media (disk or tape)
 \  Deep dive: Extended text tokens
 \
 \ ******************************************************************************
@@ -39345,7 +39640,7 @@ ENDIF
 \       Name: OTHERFILEPR
 \       Type: Subroutine
 \   Category: Save and load
-\    Summary: Display the non-selected media (disc or tape)
+\    Summary: Display the non-selected media (disk or tape)
 \  Deep dive: Extended text tokens
 \
 \ ******************************************************************************
@@ -39689,7 +39984,7 @@ ENDIF
  LDY #HI(DELI)          \ contains the DFS command for deleting this file
 
  JSR OSCLI              \ Call OSCLI to execute the OS command at (Y X), which
-                        \ catalogues the disc
+                        \ deletes the file
 
  JSR getzp              \ Call getzp to restore the top part of zero page from
                         \ the buffer at &3000
@@ -39702,7 +39997,7 @@ ENDIF
 \       Name: SVE
 \       Type: Subroutine
 \   Category: Save and load
-\    Summary: Display the disc access menu and process saving of commander files
+\    Summary: Display the disk access menu and process saving of commander files
 \  Deep dive: Commander save files
 \             The competition code
 \
@@ -39856,7 +40151,8 @@ ENDIF
                         \ commander data block
 
 \JSR CHECK2             \ These instructions are commented out in the original
-\STA CHK3               \ source
+\                       \ source
+\STA CHK3
 
  JSR CHECK              \ Call CHECK to calculate the checksum for the last
                         \ saved commander and return it in A
@@ -39893,7 +40189,7 @@ ENDIF
                         \ We now copy the current commander data block into the
                         \ TAP% staging area, though this has no effect as we
                         \ then ignore the result (this code is left over from
-                        \ the Commodore 64 version)
+                        \ the Apple II version)
 
  LDY #NT%               \ Set a counter in X to copy the NT% bytes in the
                         \ commander data block
@@ -40072,14 +40368,45 @@ ENDIF
  JMP SVE                \ Jump to SVE to display the disc access menu and return
                         \ from the subroutine using a tail call
 
+\ ******************************************************************************
+\
+\       Name: backtonormal
+\       Type: Subroutine
+\   Category: Utility routines
+\    Summary: Disable the keyboard, set the SVN flag to 0, and return with A = 0
+\
+\ ------------------------------------------------------------------------------
+\
+\ This routine is unused in this version of Elite (it is left over from the
+\ 6502 Second Processor version).
+\
+\ ******************************************************************************
+
 .backtonormal
 
- RTS                    \ Return from the subroutine
+ RTS                    \ Return from the subroutine, as backtonormal does
+                        \ nothing in this version of Elite (it is left over from
+                        \ the 6502 Second Processor version)
+
+\ ******************************************************************************
+\
+\       Name: CLDELAY
+\       Type: Subroutine
+\   Category: Utility routines
+\    Summary: Delay by iterating through 5 * 256 (1280) empty loops
+\
+\ ------------------------------------------------------------------------------
+\
+\ This routine is unused in this version of Elite (it is left over from the
+\ 6502 Second Processor version).
+\
+\ ******************************************************************************
 
 .CLDELAY
 
- RTS                    \ This instruction has no effect as we already returned
-                        \ from the subroutine
+ RTS                    \ Return from the subroutine, as CLDELAY does nothing in
+                        \ this version of Elite (it is left over from the 6502
+                        \ Second Processor version)
 
 \ ******************************************************************************
 \
@@ -40509,8 +40836,10 @@ ENDIF
 \
 \ A normalised vector (also known as a unit vector) has length 1, so this
 \ routine takes an existing vector in K3 and scales it so the length of the
-\ new vector is 1. This is used in two places: when drawing the compass, and
-\ when applying AI tactics to ships.
+\ new vector is 1. This is used in a number of places: when drawing the compass,
+\ when applying AI tactics to ships (so traders fly towards planets and missiles
+\ fly towards their targets, for example), and when implementing the docking
+\ computer in the enhanced versions of Elite.
 \
 \ We do this in two stages. This stage shifts the 16-bit vector coordinates in
 \ K3 to the left as far as they will go without losing any bits off the end, so
@@ -40731,6 +41060,7 @@ ENDIF
 \       Type: Subroutine
 \   Category: Flight
 \    Summary: Perform an in-system jump
+\  Deep dive: A sense of scale
 \
 \ ------------------------------------------------------------------------------
 \
@@ -40981,7 +41311,7 @@ ENDIF
  TYA                    \ Store Y and A on the stack so we can retrieve them
  PHA                    \ below
 
- LDY #20                \ Wait for 20 vertical syncs (20/50 = 0.4 seconds)
+ LDY #20                \ Wait for 20/50 of a second (0.4 seconds)
  JSR DELAY
 
  PLA                    \ Restore A and Y from the stack
@@ -41023,7 +41353,9 @@ ENDIF
 .DOKEY
 
  JSR RDKEY-1            \ Scan the keyboard for a key press and return the
-                        \ ASCII code of the key pressed in X
+                        \ ASCII code of the key pressed in X (calling RDKEY-1
+                        \ only scans the keyboard for valid BCD key numbers,
+                        \ which speeds things up a bit)
 
  LDA auto               \ If auto is 0, then the docking computer is not
  BEQ DK15               \ currently activated, so jump to DK15 to skip the
@@ -41063,7 +41395,7 @@ ENDIF
  LDA #&FF               \ Set A = &FF, which we can insert into the key logger
                         \ to "fake" the docking computer working the keyboard
 
- LDX #15                \ Set X = 0, so we "press" KY+15, i.e. KY1, below
+ LDX #15                \ Set X = 15, so we "press" KY+15, i.e. KY1, below
                         \ ("?", slow down)
 
  LDY INWK+28            \ If the updated acceleration in byte #28 is zero, skip
@@ -41341,8 +41673,8 @@ ENDIF
  JSR WSCAN              \ Call WSCAN to wait for the vertical sync, so the whole
                         \ screen gets drawn
 
- JSR RDKEY              \ Scan the keyboard for a key press and return the
-                        \ ASCII code of the key pressed in X (or 0 for no key
+ JSR RDKEY              \ Scan the keyboard for a key press and return the ASCII
+                        \ code of the key pressed in A and X (or 0 for no key
                         \ press)
 
                         \ --- Mod: Code removed for music: -------------------->
@@ -41570,12 +41902,13 @@ ENDIF
 
 .t
 
- LDY #2                 \ Delay for 2 vertical syncs (2/50 = 0.04 seconds) so we
- JSR DELAY              \ don't take up too much CPU time while looping round
+ LDY #2                 \ Wait for 2/50 of a second (0.04 seconds) to implement
+ JSR DELAY              \ a simple keyboard debounce and prevent multiple key
+                        \ presses being recorded
 
  JSR RDKEY              \ Scan the keyboard for a key press and return the
-                        \ ASCII code of the key pressed in X (or 0 for no key
-                        \ press)
+                        \ ASCII code of the key pressed in A and X (or 0 for no
+                        \ key press)
 
  BNE t                  \ If a key was already being held down when we entered
                         \ this routine, keep looping back up to t, until the
@@ -41661,8 +41994,7 @@ ENDIF
  BEQ infrontvw          \ instruction
 
  JSR CLYNS              \ Clear the bottom three text rows of the upper screen,
-                        \ and move the text cursor to column 1 on row 21, i.e.
-                        \ the start of the top row of the three bottom rows
+                        \ and move the text cursor to the first cleared row
 
 .infrontvw
 
@@ -41890,9 +42222,7 @@ ENDIF
 \
 \   ITEM price, factor, units, quantity, mask
 \
-\ It inserts an item into the market prices table at QQ23. See the deep dive on
-\ "Market item prices and availability" for more information on how the market
-\ system works.
+\ It inserts an item into the market prices table at QQ23.
 \
 \ ------------------------------------------------------------------------------
 \
@@ -41941,6 +42271,7 @@ ENDMACRO
 \       Type: Variable
 \   Category: Market
 \    Summary: Market prices table
+\  Deep dive: Market item prices and availability
 \
 \ ------------------------------------------------------------------------------
 \
@@ -41952,12 +42283,12 @@ ENDMACRO
 \   Byte #2 = Base quantity
 \   Byte #3 = Mask to control price fluctuations
 \
-\ To make it easier for humans to follow, we've defined a macro called ITEM
+\ To make it easier for humans to follow, I've defined a macro called ITEM
 \ that takes the following arguments and builds the four bytes for us:
 \
 \   ITEM base price, economic factor, units, base quantity, mask
 \
-\ So for food, we have the following:
+\ So for food, we have the following, for example:
 \
 \   * Base price = 19
 \   * Economic factor = -2
@@ -41985,6 +42316,18 @@ ENDMACRO
  ITEM 97,  -1, 'k',  66, %00000111  \ 13 = Gold
 
 \EQUD &360A118          \ This data is commented out in the original source
+                        \
+                        \ It would have inserted an item as follows:
+                        \
+                        \   ITEM 24, -1, 'k',  96, %00000011
+                        \
+                        \ So that's an item with a base price of 24 credits that
+                        \ is slightly cheaper than average in agricultural
+                        \ economies but closer to average in rich industrial
+                        \ ones, with a base quantity of 96kg and a reasonably
+                        \ stable price
+                        \
+                        \ I wonder what this mysterious item was going to be?
 
  ITEM 171, -2, 'k',  55, %00011111  \ 14 = Platinum
  ITEM 45,  -1, 'g', 250, %00001111  \ 15 = Gem-Stones
@@ -42392,51 +42735,8 @@ ENDMACRO
 \       Name: KTRAN
 \       Type: Variable
 \   Category: Keyboard
-\    Summary: The key logger buffer that gets updated by the OSWORD 240 command
-\
-\ ------------------------------------------------------------------------------
-\
-\ KTRAN is a buffer that is filled with key logger information by the KEYBOARD
-\ routine in the I/O processor, which is run when the parasite sends an OSWORD
-\ &F0 command to the I/O processor. The buffer contains details of keys being
-\ pressed, with KTRAN being filled with bytes #2 to #14 from the KEYBOARD
-\ routine (because KEYBOARD is called with OSSC pointing to buf, and buf is
-\ equal to KTRAN - 2).
-\
-\ The key logger buffer is filled as follows:
-\
-\   KTRAN + 0           Internal key number of any non-primary flight control
-\                       key that is being pressed
-\
-\   KTRAN + 1           "?" is being pressed (0 = no, &FF = yes)
-\
-\   KTRAN + 2           Space is being pressed (0 = no, &FF = yes)
-\
-\   KTRAN + 3           "<" is being pressed (0 = no, &FF = yes)
-\
-\   KTRAN + 4           ">" is being pressed (0 = no, &FF = yes)
-\
-\   KTRAN + 5           "X" is being pressed (0 = no, &FF = yes)
-\
-\   KTRAN + 6           "S" is being pressed (0 = no, &FF = yes)
-\
-\   KTRAN + 7           "A" is being pressed (0 = no, &FF = yes)
-\
-\   KTRAN + 8           Joystick X value (high byte)
-\
-\   KTRAN + 9           Joystick Y value (high byte)
-\
-\   KTRAN + 10          Bitstik rotation value (high byte)
-\
-\   KTRAN + 12          Joystick 1 fire button is being pressed (Bit 4 set = no,
-\                       Bit 4 clear = yes)
-\
-\ ------------------------------------------------------------------------------
-\
-\ Other entry points:
-\
-\   buf                 The two OSWORD size bytes for transmitting the key
-\                       logger from the I/O processor to the parasite
+\    Summary: An unused key logger buffer that's left over from the 6502 Second
+\             Processor version of Elite
 \
 \ ******************************************************************************
 
@@ -42505,14 +42805,14 @@ ENDMACRO
  BCS nono               \ the bottom of the screen, jump to nono as the ship's
                         \ dot is off the bottom of the space view
 
- JSR Shpt               \ Call Shpt to draw a horizontal 4-pixel dash for the
+ JSR Shpt               \ Call Shpt to draw a horizontal four-pixel dash for the
                         \ first row of the dot (i.e. a four-pixel dash)
 
  LDA K4                 \ Set A = y-coordinate of dot + 1 (so this is the second
- CLC                    \ row of the two-pixel-high dot)
+ CLC                    \ row of the two-pixel high dot)
  ADC #1
 
- JSR Shpt               \ Call Shpt to draw a horizontal 4-pixel dash for the
+ JSR Shpt               \ Call Shpt to draw a horizontal four-pixel dash for the
                         \ second row of the dot (i.e. a four-pixel dash)
 
  LDA #%00001000         \ Set bit 3 of the ship's byte #31 to record that we
@@ -42535,7 +42835,7 @@ ENDMACRO
 
 .Shpt
 
-                        \ This routine draws a horizontal 4-pixel dash, for
+                        \ This routine draws a horizontal four-pixel dash, for
                         \ either the top or the bottom of the ship's dot
 
  STA Y1                 \ Store A in both y-coordinates, as this is a horizontal
@@ -45141,6 +45441,11 @@ ENDMACRO
 
  LDA (V),Y              \ Fetch byte #2 for this edge into X, which contains
  TAX                    \ the number of the vertex at the start of the edge
+                        \
+                        \ Byte #2 contains the vertex number multiplied by 4,
+                        \ so we can use it as an index into the heap at XX3 to
+                        \ fetch the vertex's screen coordinates, which are
+                        \ stored as four bytes containing two 16-bit numbers
 
  LDA XX3,X              \ Fetch the x_lo coordinate of the edge's start vertex
  STA XX15               \ from the XX3 heap into XX15
@@ -45243,8 +45548,6 @@ ENDMACRO
 \ Given a point (x1, y1), a gradient and a direction of slope, move the point
 \ along the line until it is on-screen, so this effectively clips the (x1, y1)
 \ end of a line to be on the screen.
-\
-\ See the deep dive on "Line-clipping" for more details.
 \
 \ ------------------------------------------------------------------------------
 \
@@ -45734,7 +46037,7 @@ ENDMACRO
 \   (S R) = |S R|
 \
 \ This sets up the variables required above to calculate (S R) / XX12+2 and give
-\ the result the opposite sign to XX13+3.
+\ the result the opposite sign to XX12+3.
 \
 \ ******************************************************************************
 
@@ -46657,10 +46960,9 @@ ENDMACRO
 
  LDA INWK+32            \ Fetch the ship's byte #32 (AI flag) into A
 
- BPL MV30               \ If bit 7 of the AI flag is clear, then if this is a
-                        \ ship or missile it is dumb and has no AI, and if this
-                        \ is the space station it is not hostile, so in both
-                        \ cases skip the following as it has no tactics
+ BPL MV30               \ If bit 7 of the AI flag is clear, then skip the
+                        \ following as AI is disabled and the ship has no
+                        \ tactics
 
  CPX #MSL               \ If the ship is a missile, skip straight to MV26 to
  BEQ MV26               \ call the TACTICS routine, as we do this every
@@ -47031,6 +47333,7 @@ ENDMACRO
 \       Type: Subroutine
 \   Category: Moving
 \    Summary: Move current ship: Move the ship in space according to our speed
+\  Deep dive: A sense of scale
 \
 \ ------------------------------------------------------------------------------
 \
@@ -47413,8 +47716,7 @@ ENDMACRO
 \ rotation more stable (though more elliptic).
 \
 \ If that paragraph makes sense to you, then you should probably be writing
-\ this commentary! For the rest of us, there's a detailed explanation of all
-\ this in the deep dive on "Pitching and rolling".
+\ this commentary! For the rest of us, see the associated deep dives.
 \
 \ ------------------------------------------------------------------------------
 \
@@ -47653,8 +47955,6 @@ ENDMACRO
 \   2. z = z + beta * K2
 \   3. y = K2 - beta * z
 \   4. x = x + alpha * y
-\
-\ See the deep dive on "Rotating the universe" for more details on the above.
 \
 \ ******************************************************************************
 
@@ -48071,7 +48371,7 @@ ENDMACRO
 
  STX VIEW               \ Set the current space view to X
 
- JSR TT66               \ Clear the top part of the screen, draw a white border,
+ JSR TT66               \ Clear the top part of the screen, draw a border box,
                         \ and set the current view type in QQ11 to 0 (space
                         \ view)
 
@@ -48091,8 +48391,7 @@ ENDMACRO
 
  LDA #0                 \ Set A = 0, the type number of a space view
 
- JSR DOVDU19            \ Send a #SETVDU19 0 command to the I/O processor to
-                        \ switch to the mode 1 palette for the space view,
+ JSR DOVDU19            \ Switch to the mode 1 palette for the space view,
                         \ which is yellow (colour 1), red (colour 2) and cyan
                         \ (colour 3)
 
@@ -48104,7 +48403,7 @@ ENDMACRO
 
  STX VIEW               \ Change the current space view to X
 
- JSR TT66               \ Clear the top part of the screen, draw a white border,
+ JSR TT66               \ Clear the top part of the screen, draw a border box,
                         \ and set the current view type in QQ11 to 0 (space
                         \ view)
 
@@ -48161,7 +48460,7 @@ ENDMACRO
 
 .SIG1
 
- LDA SIGHTCOL,Y         \ Set the colour from the SIGHTCOL table
+ LDA sightcol,Y         \ Set the colour from the sightcol table
  STA COL
 
  LDA #128               \ Set QQ19 to the x-coordinate of the centre of the
@@ -48187,14 +48486,14 @@ ENDMACRO
 
 \ ******************************************************************************
 \
-\       Name: SIGHTCOL
+\       Name: sightcol
 \       Type: Variable
 \   Category: Drawing lines
 \    Summary: Colours for the crosshair sights on the different laser types
 \
 \ ******************************************************************************
 
-.SIGHTCOL
+.sightcol
 
  EQUB YELLOW            \ Pulse lasers have yellow sights
 
@@ -48204,6 +48503,15 @@ ENDMACRO
 
  EQUB YELLOW            \ Mining lasers have yellow sights
 
+\ ******************************************************************************
+\
+\       Name: beamcol
+\       Type: Variable
+\   Category: Drawing lines
+\    Summary: An unused table of laser colours
+\
+\ ******************************************************************************
+
 .beamcol
 
  EQUB WHITE             \ These bytes appear to be unused - perhaps they were
@@ -48211,8 +48519,18 @@ ENDMACRO
  EQUB WHITE             \ beam for the different lasers?
  EQUB WHITE
 
-\.TRIBTA                \ This data is commented out in the original source
+\ ******************************************************************************
 \
+\       Name: TRIBTA
+\       Type: Variable
+\   Category: Missions
+\    Summary: A table for converting the number of Trumbles in the hold into a
+\             number of sprites in the range 0 to 6
+\
+\ ******************************************************************************
+
+\.TRIBTA                \ These instructions are commented out in the original
+\                       \ source
 \EQUB 0
 \EQUB 1
 \EQUB 2
@@ -48221,9 +48539,19 @@ ENDMACRO
 \EQUB 5
 \EQUB 6
 \EQUB 6
+
+\ ******************************************************************************
 \
-\.TRIBMA
+\       Name: TRIBMA
+\       Type: Variable
+\   Category: Missions
+\    Summary: A table for converting the number of Trumbles in the hold into a
+\             sprite-enable flag to use with VIC register &15
 \
+\ ******************************************************************************
+
+\.TRIBMA                \ These instructions are commented out in the original
+\                       \ source
 \EQUB 0
 \EQUB 4
 \EQUB &C
@@ -48242,7 +48570,7 @@ ENDMACRO
 \
 \ ------------------------------------------------------------------------------
 \
-\ Clear the top part of the screen, draw a white border, and set the current
+\ Clear the top part of the screen, draw a border box, and set the current
 \ view type in QQ11 to A.
 \
 \ ------------------------------------------------------------------------------
@@ -48259,18 +48587,19 @@ ENDMACRO
  STA QQ11               \ Set the current view type in QQ11 to A
 
                         \ Fall through into TTX66K to clear the screen and draw
-                        \ a white border
+                        \ a border box
 
 \ ******************************************************************************
 \
 \       Name: TTX66K
 \       Type: Subroutine
 \   Category: Drawing the screen
-\    Summary: Clear the top part of the screen and draw a white border
+\    Summary: Clear the top part of the screen, draw a border box and configure
+\             the specified view
 \
 \ ------------------------------------------------------------------------------
 \
-\ Clear the top part of the screen (the space view) and draw a white border
+\ Clear the top part of the screen (the space view) and draw a border box
 \ along the top and sides.
 \
 \ ******************************************************************************
@@ -48278,7 +48607,7 @@ ENDMACRO
 .TTX66K
 
  JSR TTX66              \ Call TTX66 to clear the top part of the screen and
-                        \ draw a white border
+                        \ draw a border box
 
  JSR MT2                \ Switch to Sentence Case when printing extended tokens
 
@@ -48480,30 +48809,26 @@ ENDMACRO
 \ Keyboard table for in-flight controls. This table contains the internal key
 \ codes for the flight keys, EOR'd with &FF to invert each bit.
 \
-\ The pitch, roll, speed and laser keys (i.e. the seven primary flight
-\ control keys) have bit 7 set, so they have 128 added to their internal
-\ values. This doesn't appear to be used anywhere.
-\
 \ ******************************************************************************
 
 .IKNS
 
- EQUB &DD EOR &FF       \ E         KYTB+0    KY13     E.C.M.
- EQUB &DC EOR &FF       \ T         KYTB+1    KY10     Arm missile
- EQUB &CA EOR &FF       \ U         KYTB+2    KY11     Unarm missile
- EQUB &C8 EOR &FF       \ P         KYTB+3    KY16     Cancel docking computer
- EQUB &BE EOR &FF       \ A         KYTB+4    KY7      Fire lasers
- EQUB &BD EOR &FF       \ X         KYTB+5    KY5      Pitch up
- EQUB &BA EOR &FF       \ J         KYTB+6    KY14     In-system jump
- EQUB &AE EOR &FF       \ S         KYTB+7    KY6      Pitch down
- EQUB &AD EOR &FF       \ C         KYTB+8    KY15     Docking computer
- EQUB &9F EOR &FF       \ TAB       KYTB+9    KY8      Energy bomb
- EQUB &9D EOR &FF       \ Space     KYTB+10   KY2      Speed up
- EQUB &9A EOR &FF       \ M         KYTB+11   KY12     Fire missile
- EQUB &99 EOR &FF       \ <         KYTB+12   KY3      Roll left
- EQUB &98 EOR &FF       \ >         KYTB+13   KY4      Roll right
- EQUB &97 EOR &FF       \ ?         KYTB+14   KY1      Slow down
- EQUB &8F EOR &FF       \ ESCAPE    KYTB+15   KY9      Launch escape pod
+ EQUB &DD EOR &FF       \ E         IKNS+0    KY13     E.C.M.
+ EQUB &DC EOR &FF       \ T         IKNS+1    KY10     Arm missile
+ EQUB &CA EOR &FF       \ U         IKNS+2    KY11     Unarm missile
+ EQUB &C8 EOR &FF       \ P         IKNS+3    KY16     Cancel docking computer
+ EQUB &BE EOR &FF       \ A         IKNS+4    KY7      Fire lasers
+ EQUB &BD EOR &FF       \ X         IKNS+5    KY5      Pull up
+ EQUB &BA EOR &FF       \ J         IKNS+6    KY14     In-system jump
+ EQUB &AE EOR &FF       \ S         IKNS+7    KY6      Pitch down
+ EQUB &AD EOR &FF       \ C         IKNS+8    KY15     Docking computer
+ EQUB &9F EOR &FF       \ TAB       IKNS+9    KY8      Energy bomb
+ EQUB &9D EOR &FF       \ Space     IKNS+10   KY2      Speed up
+ EQUB &9A EOR &FF       \ M         IKNS+11   KY12     Fire missile
+ EQUB &99 EOR &FF       \ <         IKNS+12   KY3      Roll left
+ EQUB &98 EOR &FF       \ >         IKNS+13   KY4      Roll right
+ EQUB &97 EOR &FF       \ ?         IKNS+14   KY1      Slow down
+ EQUB &8F EOR &FF       \ ESCAPE    IKNS+15   KY9      Launch escape pod
 
  EQUB &F0               \ This value just has to be higher than &80 to act as a
                         \ terminator for the IKNS matching process in FILLKL
@@ -48715,7 +49040,7 @@ IF _SNG47
 .CTRL
 
  LDA #1                 \ Set A to the internal key number for CTRL and fall
-                        \ through to DKS5 to scan the keyboard
+                        \ through into DKS5 to scan the keyboard
 
 ENDIF
 
@@ -48731,9 +49056,9 @@ ENDIF
 \
 \ Arguments:
 \
-\   A                   The internal number of the key to check (see p.142 of
-\                       the Advanced User Guide for a list of internal key
-\                       numbers)
+\   A                   The internal number of the key to check (see page 142 of
+\                       the "Advanced User Guide for the BBC Micro" by Bray,
+\                       Dickens and Holmes for a list of internal key numbers)
 \
 \ ------------------------------------------------------------------------------
 \
@@ -48801,16 +49126,13 @@ ENDIF
 \
 \ Returns:
 \
-\   A                   A is set to 0
-\
 \   X                   X is set to 0
 \
 \ ******************************************************************************
 
 .ZEKTRAN
 
- LDA #0                 \ Set A to 0, as this means "key not pressed" in the
-                        \ key logger at KL
+ LDA #0                 \ We want to zero the key logger buffer, so set A % 0
 
  LDX #17                \ We want to clear the 17 key logger locations from
                         \ KL to KY20, so set a counter in X
@@ -48836,13 +49158,13 @@ ENDIF
 \       Name: RDKEY
 \       Type: Subroutine
 \   Category: Keyboard
-\    Summary: Scan the keyboard for key presses
+\    Summary: Scan the keyboard for key presses and update the key logger
 \
 \ ------------------------------------------------------------------------------
 \
 \ Scan the keyboard, starting with internal key number 16 ("Q") and working
 \ through the set of internal key numbers, returning the resulting key press in
-\ ASCII.
+\ ASCII. The key logger is also updated.
 \
 \ This routine is effectively the same as OSBYTE 122, though the OSBYTE call
 \ preserves A, unlike this routine.
@@ -49054,18 +49376,18 @@ IF _COMPACT
  BCS P%+4               \ following
 
  STX KY6                \ Update the key logger at KY6 to "press" the "S" (pitch
-                        \ forward) button
+                        \ down) button
                         \
                         \ Note that this is the opposite key press to the stick
                         \ direction, as in the default configuration, we want to
-                        \ pitch up when we pull the joystick back (i.e. when the
+                        \ pull up when we pull the joystick back (i.e. when the
                         \ stick is down). To fix this, we flip this result below
 
  LSR A                  \ If PB3 from the User VIA is set (up), skip the
  BCS P%+4               \ following
 
- STX KY5                \ Update the key logger at KY5 to "press" the "X" (pitch
-                        \ back) button
+ STX KY5                \ Update the key logger at KY5 to "press" the "X" (pull
+                        \ up) button
                         \
                         \ Note that this is the opposite key press to the stick
                         \ direction, as in the default configuration, we want to
@@ -49248,7 +49570,8 @@ IF _COMPACT
  ADC #1
  TAY
 
-                        \ Fall through into ECMOF to return from the subroutine
+                        \ Fall through into yetanotherrts to return from the
+                        \ subroutine
 
 ENDIF
 
@@ -49264,16 +49587,9 @@ ENDIF
 \ This routine contains an RTS so we can return from the SFRMIS subroutine with
 \ a branch instruction.
 \
-\ It also contains the DEMON label, which implements the demo in the 6502
-\ Second Processor version, so this presumably acted as a stub for the JSR DEMON
-\ call during conversion of the 6502 Second Processor version into the later
-\ BBC Master version.
-\
-\ ------------------------------------------------------------------------------
-\
-\ Other entry points:
-\
-\   DEMON               Contains an RTS
+\ It also contains the DEMON label, which is left over from the 6502 Second
+\ Processor version, where it implements the demo (there is no demo in this
+\ version of Elite).
 \
 \ ******************************************************************************
 
@@ -49287,13 +49603,8 @@ ENDIF
 \
 \       Name: ECMOF
 \       Type: Subroutine
-\   Category: Sound
-\    Summary: Switch off the E.C.M.
-\
-\ ------------------------------------------------------------------------------
-\
-\ Switch the E.C.M. off, turn off the dashboard bulb and make the sound of the
-\ E.C.M. switching off).
+\   Category: Dashboard
+\    Summary: Switch off the E.C.M. and turn off the dashboard bulb
 \
 \ ******************************************************************************
 
@@ -49332,20 +49643,24 @@ ENDIF
 .SFRMIS
 
  LDX #MSL               \ Set X to the ship type of a missile, and call SFS1-2
- JSR SFS1-2             \ to add the missile to our universe with an AI flag
-                        \ of %11111110 (AI enabled, hostile, no E.C.M.)
+ JSR SFS1-2             \ to add a missile to our universe that has AI (bit 7
+                        \ set), is hostile (bit 6 set) and has been launched
+                        \ (bit 0 clear); the target slot number is set to 31,
+                        \ but this is ignored as the hostile flags means we
+                        \ are the target
 
 IF _SNG47
 
  BCC yetanotherrts      \ The C flag will be set if the call to SFS1-2 was a
-                        \ success, so if it's clear, jump to KYTB to return from
-                        \ the subroutine (as yetanotherrts contains an RTS)
+                        \ success, so if it's clear, jump to yetanotherrts to
+                        \ return from the subroutine (as yetanotherrts contains
+                        \ an RTS)
 
 ELIF _COMPACT
 
  BCC TT17X-1            \ The C flag will be set if the call to SFS1-2 was a
-                        \ success, so if it's clear, jump to KYTB to return from
-                        \ the subroutine (as TT17X-1 contains an RTS)
+                        \ success, so if it's clear, jump to TT17X-1 to return
+                        \ from the subroutine (as TT17X-1 contains an RTS)
 
 ENDIF
 
@@ -49397,8 +49712,9 @@ ENDIF
                         \ where the integer kill count is taken from the KWH%
                         \ table in the same way
 
- BCC davidscockup       \ If there is no carry, jump straight to EXNO3 to skip
-                        \ the following three instructions
+ BCC davidscockup       \ If there is no carry, jump to davidscockup to skip the
+                        \ following three instructions, as we have not earned
+                        \ a "RIGHT ON COMMANDER!" message
 
  INC TALLY+1            \ Increment the high byte of the kill count in TALLY
 
@@ -49440,7 +49756,8 @@ ENDIF
 \       Name: EXNO
 \       Type: Subroutine
 \   Category: Sound
-\    Summary: Make the sound of a laser strike or ship explosion
+\    Summary: Make the sound of a laser strike on another ship or a ship
+\             explosion
 \
 \ ------------------------------------------------------------------------------
 \
@@ -49485,6 +49802,15 @@ ENDIF
  JMP SOFLUSH            \ Call SOFLUSH to reset the sound buffers and return
                         \ from the subroutine using a tail call
 
+\ ******************************************************************************
+\
+\       Name: NMIpissoff
+\       Type: Subroutine
+\   Category: Loader
+\    Summary: Acknowledge NMI interrupts and ignore them
+\
+\ ******************************************************************************
+
 IF _SNG47
 
 .NMIpissoff
@@ -49499,7 +49825,7 @@ ENDIF
 \       Name: F%
 \       Type: Variable
 \   Category: Utility routines
-\    Summary: Denotes the end of the main game code, from Elite A to Elite H
+\    Summary: Denotes the end of the main game code, from ELITE A to ELITE H
 \
 \ ******************************************************************************
 
