@@ -650,11 +650,12 @@ Saving file '3-assembled-output/M128Elt.bin'
      00E1
 .NOSTM
      00E2
-Zero page variables from &0  to &E3 
+ZP workspace from &0 to &E2 inclusive
 .XX3
      0100
 .K%
      0400
+K% workspace from &400 to &5BB inclusive
 .WP
      0E41
 .FRIN
@@ -829,7 +830,7 @@ Zero page variables from &0  to &E3
      12A7
      12A8
      12A9
-WP workspace from  &E41  to &12AA 
+WP workspace from &E41 to &12A9 inclusive
 .TVT3
      1300   00
      1301   34
@@ -899,7 +900,7 @@ WP workspace from  &E41  to &12AA
      1340   88 88
 .WSCAN
      1342   64 5C      STZ &5C
-.DELL1
+.DELL1K
      1344   A5 5C      LDA &5C
      1346   F0 FC      BEQ &1344
      1348   60         RTS
@@ -1058,19 +1059,33 @@ WP workspace from  &E41  to &12AA
      144A   10 A2      BPL &13EE
      144C   60         RTS
 .SOFLG
-     144D
+     144D   00
+     144E   00
+     144F   00
 .SOCNT
-     1450
+     1450   00
+     1451   00
+     1452   00
 .SOVOL
-     1453
+     1453   00
+     1454   00
+     1455   00
 .SOVCH
-     1456
+     1456   00
+     1457   00
+     1458   00
 .SOPR
-     1459
+     1459   00
+     145A   00
+     145B   00
 .SOFRCH
-     145C
+     145C   00
+     145D   00
+     145E   00
 .SOFRQ
-     145F
+     145F   00
+     1460   00
+     1461   00
 .SFXPR
      1462   4B
      1463   5B
@@ -3050,7 +3065,7 @@ WP workspace from  &E41  to &12AA
 .cls
      207F   20 59 21   JSR &2159
      2082   4C 48 21   JMP &2148
-.TT67X
+.TT67K
      2085   A9 0C      LDA #&0C
 .CHPR
      2087   85 12      STA &12
@@ -3261,7 +3276,7 @@ WP workspace from  &E41  to &12AA
      21EF   E6 09      INC &09
      21F1   91 08      STA (&08),Y
      21F3   A0 F7      LDY #&F7
-.EE3
+.EE3K
      21F5   91 08      STA (&08),Y
      21F7   88         DEY
      21F8   D0 FB      BNE &21F5
@@ -3593,6 +3608,7 @@ WP workspace from  &E41  to &12AA
      23FD   2E
      23FE   48
      23FF   41
+     2400   00 00 00 ... INCBIN "1-source-files/fonts/P.FONT.bin"
 .log
      2700   00
      2701   00
@@ -4364,6 +4380,7 @@ WP workspace from  &E41  to &12AA
      29FD   EF
      29FE   F5
      29FF   FA
+.SCTBX1
      2A00   01
      2A01   02
      2A02   03
@@ -4620,6 +4637,7 @@ WP workspace from  &E41  to &12AA
      2AFD   02
      2AFE   03
      2AFF   04
+.SCTBX2
      2B00   01
      2B01   01
      2B02   01
@@ -4876,83 +4894,35 @@ WP workspace from  &E41  to &12AA
      2BFD   25
      2BFE   25
      2BFF   25
-     2C00   96
-     2C01   97
-     2C02   9A
-     2C03   9B
-     2C04   9D
-     2C05   9E
-     2C06   9F
-     2C07   A6
-     2C08   A7
-     2C09   AB
-     2C0A   AC
-     2C0B   AD
-     2C0C   AE
-     2C0D   AF
-     2C0E   B2
-     2C0F   B3
-     2C10   B4
-     2C11   B5
-     2C12   B6
-     2C13   B7
-     2C14   B9
-     2C15   BA
-     2C16   BB
-     2C17   BC
-     2C18   BD
-     2C19   BE
-     2C1A   BF
-     2C1B   CB
-     2C1C   CD
-     2C1D   CE
-     2C1E   CF
-     2C1F   D3
-     2C20   D6
-     2C21   D7
-     2C22   D9
-     2C23   DA
-     2C24   DB
-     2C25   DC
-     2C26   DD
-     2C27   DE
-     2C28   DF
-     2C29   E5
-     2C2A   E6
-     2C2B   E7
-     2C2C   E9
-     2C2D   EA
-     2C2E   EB
-     2C2F   EC
-     2C30   ED
-     2C31   EE
-     2C32   EF
-     2C33   F2
-     2C34   F3
-     2C35   F4
-     2C36   F5
-     2C37   F6
-     2C38   F7
-     2C39   F9
-     2C3A   FA
-     2C3B   FB
-     2C3C   FC
-     2C3D   FD
-     2C3E   FE
-     2C3F   FF
+.wtable
+     2C00   96 97 9A 9B
+     2C04   9D 9E 9F A6
+     2C08   A7 AB AC AD
+     2C0C   AE AF B2 B3
+     2C10   B4 B5 B6 B7
+     2C14   B9 BA BB BC
+     2C18   BD BE BF CB
+     2C1C   CD CE CF D3
+     2C20   D6 D7 D9 DA
+     2C24   DB DC DD DE
+     2C28   DF E5 E6 E7
+     2C2C   E9 EA EB EC
+     2C30   ED EE EF F2
+     2C34   F3 F4 F5 F6
+     2C38   F7 F9 FA FB
+     2C3C   FC FD FE FF
+.UP
+     2C40
 .COMC
      2C40
 .dials
-     2C41   00 00 00 00
-     2C45   00 00 00 00
-     2C49   00 00 00 00
-     2C4D   00 00
+     2C41
 .mscol
-     2C4F   00 00 00 00
+     2C4F
 .CATF
      2C53
 .DFLAG
-     2C54   00
+     2C54
 .DNOIZ
      2C55
 .DAMP
@@ -4978,6 +4948,7 @@ WP workspace from  &E41  to &12AA
      2C60
 .VOL
      2C61   07
+UP workspace from &2C40 to &2C61 inclusive
 .TGINT
      2C62   01
      2C63   41 58 46 ...
@@ -5029,6 +5000,7 @@ WP workspace from  &E41  to &12AA
      2CBF   45
      2CC0   23
 .G%
+     2CC1
 .DOENTRY
      2CC1   20 7F 2D   JSR &2D7F
      2CC4   20 86 63   JSR &6386
@@ -9081,7 +9053,7 @@ S.ELTB &35B6  &3D1E  &1300  &35B6
      493C   D0 CE      BNE &490C
 .PD1
      493E   A2 03      LDX #&03
-.PDL1
+.PDL1K
      4940   B5 60      LDA &60,X
      4942   95 02      STA &02,X
      4944   CA         DEX
@@ -9761,7 +9733,7 @@ S.ELTC &3D1E  &4A7F  &1300  &3D1E
      4DFD   86 7A      STX &7A
      4DFF   A2 0C      LDX #&0C
      4E01   86 06      STX &06
-.TT223
+.TT223K
      4E03   20 60 4E   JSR &4E60
      4E06   B0 C6      BCS &4DCE
      4E08   85 0A      STA &0A
@@ -9867,7 +9839,7 @@ S.ELTC &3D1E  &4A7F  &1300  &3D1E
      4ECD   20 CF 56   JSR &56CF
      4ED0   AC 95 12   LDY &1295
      4ED3   4C FA 4E   JMP &4EFA
-.OUTX
+.OUTK
      4ED6   A5 79      LDA &79
      4ED8   20 AF 3B   JSR &3BAF
      4EDB   38         SEC
@@ -10188,7 +10160,7 @@ S.ELTC &3D1E  &4A7F  &1300  &3D1E
      5132   D0 33      BNE &5167
      5134   A5 DE      LDA &DE
      5136   C9 46      CMP #&46
-.TT187S
+.TT187s
      5138   B0 2D      BCS &5167
      513A   A9 FF      LDA #&FF
      513C   99 9B 00   STA &009B,Y
@@ -11269,7 +11241,7 @@ S.ELTD &4A7F  &578E  &1300  &4A7F
 .TT48
      58F3   60         RTS
 .SWAPPZERO
-     58F4   A2 15      LDX #&15
+     58F4   A2 13      LDX #&13
 .SWPZL
      58F6   B5 00      LDA &00,X
      58F8   B4 00      LDY &00,X
@@ -16491,7 +16463,7 @@ S.ELTG &702A  &7986  &1300  &702A
      7DD5   A9 0A      LDA #&0A
      7DD7   85 6F      STA &6F
      7DD9   4C EB 4C   JMP &4CEB
-.SIGHTCOL
+.sightcol
      7DDC   0F
      7DDD   FF
      7DDE   FF
@@ -16695,6 +16667,7 @@ F% = &7F19
 G% = &2CC1 
 NA2% = &350A 
 .DIALS
+     7000   0F 0A 1E ... INCBIN "1-source-files/images/P.DIALS2P.bin"
      7E00
      7F00
 .XX21
@@ -29942,6 +29915,7 @@ End macro CHAR
      A3FD   1E
      A3FE   1F
      A3FF   1F
+.IANTOK
 .TKN1
      A400   57
 Macro EJMP:
