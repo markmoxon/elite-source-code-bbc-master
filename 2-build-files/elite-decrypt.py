@@ -49,14 +49,14 @@ for arg in argv[1:]:
 
 load_address = 0x1300
 seed = 0x19
-scramble_from = 0x2CC1
+unscramble_to = 0x2CC1
 
 if release == 1:
     # SNG47
-    scramble_to = 0x7F47
+    unscramble_from = 0x7F47
 elif release == 2:
     # Compact
-    scramble_to = 0x7FEC
+    unscramble_from = 0x7FEC
 
 data_block = bytearray()
 
@@ -71,7 +71,7 @@ print("[ Read    ] 4-reference-binaries/" + folder + "/BCODE.bin")
 
 # Do decryption
 
-for n in range(scramble_to, scramble_from - 1, -1):
+for n in range(unscramble_from, unscramble_to - 1, -1):
     new = (data_block[n - load_address] - seed) % 256
     data_block[n - load_address] = new
     seed = new
@@ -90,8 +90,8 @@ print("[ Save    ] 4-reference-binaries/" + folder + "/BCODE.decrypt.bin")
 
 load_address = 0x1300 + 0x5D00
 seed = 0x62
-scramble_from = 0x8000
-scramble_to = 0xB1FF
+unscramble_from = 0xB1FF
+unscramble_to = 0x8000
 
 data_block = bytearray()
 
@@ -106,7 +106,7 @@ print("[ Read    ] 4-reference-binaries/" + folder + "/BDATA.bin")
 
 # Do decryption
 
-for n in range(scramble_to, scramble_from - 1, -1):
+for n in range(unscramble_from, unscramble_to - 1, -1):
     new = (data_block[n - load_address] - seed) % 256
     data_block[n - load_address] = new
     seed = new
