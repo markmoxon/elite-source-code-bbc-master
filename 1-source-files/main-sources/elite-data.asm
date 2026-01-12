@@ -28,6 +28,10 @@
 \
 \   * BDATA.bin
 \
+\ after reading in the following file:
+\
+\   * P.DIALS2P.bin
+\
 \ ******************************************************************************
 
  INCLUDE "1-source-files/main-sources/elite-build-options.asm"

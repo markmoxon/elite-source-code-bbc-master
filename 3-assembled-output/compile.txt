@@ -4233,6 +4233,7 @@ WP workspace from &900 to &AE9 inclusive
      26C8   EF
      26C9   F5
      26CA   FA
+.SCTBX1
      26CB   01
      26CC   02
      26CD   03
@@ -4489,6 +4490,7 @@ WP workspace from &900 to &AE9 inclusive
      27C8   02
      27C9   03
      27CA   04
+.SCTBX2
      27CB   01
      27CC   01
      27CD   01
@@ -4745,70 +4747,23 @@ WP workspace from &900 to &AE9 inclusive
      28C8   25
      28C9   25
      28CA   25
-     28CB   96
-     28CC   97
-     28CD   9A
-     28CE   9B
-     28CF   9D
-     28D0   9E
-     28D1   9F
-     28D2   A6
-     28D3   A7
-     28D4   AB
-     28D5   AC
-     28D6   AD
-     28D7   AE
-     28D8   AF
-     28D9   B2
-     28DA   B3
-     28DB   B4
-     28DC   B5
-     28DD   B6
-     28DE   B7
-     28DF   B9
-     28E0   BA
-     28E1   BB
-     28E2   BC
-     28E3   BD
-     28E4   BE
-     28E5   BF
-     28E6   CB
-     28E7   CD
-     28E8   CE
-     28E9   CF
-     28EA   D3
-     28EB   D6
-     28EC   D7
-     28ED   D9
-     28EE   DA
-     28EF   DB
-     28F0   DC
-     28F1   DD
-     28F2   DE
-     28F3   DF
-     28F4   E5
-     28F5   E6
-     28F6   E7
-     28F7   E9
-     28F8   EA
-     28F9   EB
-     28FA   EC
-     28FB   ED
-     28FC   EE
-     28FD   EF
-     28FE   F2
-     28FF   F3
-     2900   F4
-     2901   F5
-     2902   F6
-     2903   F7
-     2904   F9
-     2905   FA
-     2906   FB
-     2907   FC
-     2908   FD
-     2909   FE
-     290A   FF
+.wtable
+     28CB   96 97 9A 9B
+     28CF   9D 9E 9F A6
+     28D3   A7 AB AC AD
+     28D7   AE AF B2 B3
+     28DB   B4 B5 B6 B7
+     28DF   B9 BA BB BC
+     28E3   BD BE BF CB
+     28E7   CD CE CF D3
+     28EB   D6 D7 D9 DA
+     28EF   DB DC DD DE
+     28F3   DF E5 E6 E7
+     28F7   E9 EA EB EC
+     28FB   ED EE EF F2
+     28FF   F3 F4 F5 F6
+     2903   F7 F9 FA FB
+     2907   FC FD FE FF
 .UP
      290B
 .VOL
@@ -17036,6 +16991,7 @@ NA2% = &3200
 Addresses for the execution address of BCODE in elite-disc.asm
 ENTRY = &2915 
 .DIALS
+     7000   0F 0A 1E ... INCBIN "1-source-files/images/P.DIALS2P.bin"
      7E00
      7F00
 .XX21

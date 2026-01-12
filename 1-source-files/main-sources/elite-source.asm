@@ -3499,14 +3499,13 @@ ENDIF
 
                         \ --- Mod: Code removed for BBC Micro B+: ------------->
 
-\LDA VIA+&18            \ Fetch the ADC channel number into Y from bits 1-2 in
+\LDA VIA+&18            \ Fetch the ADC channel number into Y from bits 0-1 of
 \\BMI JONO              \ the ADC status byte at SHEILA &18
-\AND #3                 \
+\AND #%00000011         \
 \TAY                    \ The BMI is commented out in the original source
 \
 \LDA VIA+&19            \ Fetch the high byte of the value on this ADC channel
-\                       \ to read the relevant joystick position
-
+\                       \ at SHEILA &19 to read the relevant joystick position
 
                         \ --- And replaced by: -------------------------------->
 
@@ -3530,8 +3529,8 @@ ENDIF
 
                         \ --- Mod: Code removed for BBC Micro B+: ------------->
 
-\LDA #0                 \ Set the ADC status byte at SHEILA &18 to 0
-\STA VIA+&18
+\LDA #0                 \ Set the ADC status byte at SHEILA &18 to 0 to reset
+\STA VIA+&18            \ the data latch
 
                         \ --- And replaced by: -------------------------------->
 
@@ -11425,86 +11424,90 @@ ENDIF
 
  NEXT
 
-IF _MATCH_ORIGINAL_BINARIES
+\ ******************************************************************************
+\
+\       Name: SCTBX1
+\       Type: Variable
+\   Category: Drawing the screen
+\    Summary: Lookup table for converting a pixel x-coordinate to the bit number
+\             within the pixel row byte that corresponds to this pixel
+\
+\ ------------------------------------------------------------------------------
+\
+\ This routine is not used in this version of Elite. It is left over from the
+\ Apple II version.
+\
+\ ******************************************************************************
 
- EQUB &01, &02, &03, &04, &05, &06, &00, &01    \ These bytes appear to be
- EQUB &02, &03, &04, &05, &06, &00, &01, &02    \ unused and just contain random
- EQUB &03, &04, &05, &06, &00, &01, &02, &03    \ workspace noise left over from
- EQUB &04, &05, &06, &00, &01, &02, &03, &04    \ the BBC Micro assembly process
- EQUB &05, &06, &00, &01, &02, &03, &04, &05
- EQUB &06, &00, &01, &02, &03, &04, &05, &06
- EQUB &00, &01, &02, &03, &04, &05, &06, &00
- EQUB &01, &02, &03, &04, &05, &06, &00, &01
- EQUB &02, &03, &04, &05, &06, &00, &01, &02
- EQUB &03, &04, &05, &06, &00, &01, &02, &03
- EQUB &04, &05, &06, &00, &01, &02, &03, &04
- EQUB &05, &06, &00, &01, &02, &03, &04, &05
- EQUB &06, &00, &01, &02, &03, &04, &05, &06
- EQUB &00, &01, &02, &03, &04, &05, &06, &00
- EQUB &01, &02, &03, &04, &05, &06, &00, &01
- EQUB &02, &03, &04, &05, &06, &00, &01, &02
- EQUB &03, &04, &05, &06, &00, &01, &02, &03
- EQUB &04, &05, &06, &00, &01, &02, &03, &04
- EQUB &05, &06, &00, &01, &02, &03, &04, &05
- EQUB &06, &00, &01, &02, &03, &04, &05, &06
- EQUB &00, &01, &02, &03, &04, &05, &06, &00
- EQUB &01, &02, &03, &04, &05, &06, &00, &01
- EQUB &02, &03, &04, &05, &06, &00, &01, &02
- EQUB &03, &04, &05, &06, &00, &01, &02, &03
- EQUB &04, &05, &06, &00, &01, &02, &03, &04
- EQUB &05, &06, &00, &01, &02, &03, &04, &05
- EQUB &06, &00, &01, &02, &03, &04, &05, &06
- EQUB &00, &01, &02, &03, &04, &05, &06, &00
- EQUB &01, &02, &03, &04, &05, &06, &00, &01
- EQUB &02, &03, &04, &05, &06, &00, &01, &02
- EQUB &03, &04, &05, &06, &00, &01, &02, &03
- EQUB &04, &05, &06, &00, &01, &02, &03, &04
- EQUB &01, &01, &01, &01, &01, &01, &02, &02
- EQUB &02, &02, &02, &02, &02, &03, &03, &03
- EQUB &03, &03, &03, &03, &04, &04, &04, &04
- EQUB &04, &04, &04, &05, &05, &05, &05, &05
- EQUB &05, &05, &06, &06, &06, &06, &06, &06
- EQUB &06, &07, &07, &07, &07, &07, &07, &07
- EQUB &08, &08, &08, &08, &08, &08, &08, &09
- EQUB &09, &09, &09, &09, &09, &09, &0A, &0A
- EQUB &0A, &0A, &0A, &0A, &0A, &0B, &0B, &0B
- EQUB &0B, &0B, &0B, &0B, &0C, &0C, &0C, &0C
- EQUB &0C, &0C, &0C, &0D, &0D, &0D, &0D, &0D
- EQUB &0D, &0D, &0E, &0E, &0E, &0E, &0E, &0E
- EQUB &0E, &0F, &0F, &0F, &0F, &0F, &0F, &0F
- EQUB &10, &10, &10, &10, &10, &10, &10, &11
- EQUB &11, &11, &11, &11, &11, &11, &12, &12
- EQUB &12, &12, &12, &12, &12, &13, &13, &13
- EQUB &13, &13, &13, &13, &14, &14, &14, &14
- EQUB &14, &14, &14, &15, &15, &15, &15, &15
- EQUB &15, &15, &16, &16, &16, &16, &16, &16
- EQUB &16, &17, &17, &17, &17, &17, &17, &17
- EQUB &18, &18, &18, &18, &18, &18, &18, &19
- EQUB &19, &19, &19, &19, &19, &19, &1A, &1A
- EQUB &1A, &1A, &1A, &1A, &1A, &1B, &1B, &1B
- EQUB &1B, &1B, &1B, &1B, &1C, &1C, &1C, &1C
- EQUB &1C, &1C, &1C, &1D, &1D, &1D, &1D, &1D
- EQUB &1D, &1D, &1E, &1E, &1E, &1E, &1E, &1E
- EQUB &1E, &1F, &1F, &1F, &1F, &1F, &1F, &1F
- EQUB &20, &20, &20, &20, &20, &20, &20, &21
- EQUB &21, &21, &21, &21, &21, &21, &22, &22
- EQUB &22, &22, &22, &22, &22, &23, &23, &23
- EQUB &23, &23, &23, &23, &24, &24, &24, &24
- EQUB &24, &24, &24, &25, &25, &25, &25, &25
- EQUB &96, &97, &9A, &9B, &9D, &9E, &9F, &A6
- EQUB &A7, &AB, &AC, &AD, &AE, &AF, &B2, &B3
- EQUB &B4, &B5, &B6, &B7, &B9, &BA, &BB, &BC
- EQUB &BD, &BE, &BF, &CB, &CD, &CE, &CF, &D3
- EQUB &D6, &D7, &D9, &DA, &DB, &DC, &DD, &DE
- EQUB &DF, &E5, &E6, &E7, &E9, &EA, &EB, &EC
- EQUB &ED, &EE, &EF, &F2, &F3, &F4, &F5, &F6
- EQUB &F7, &F9, &FA, &FB, &FC, &FD, &FE, &FF
+.SCTBX1
 
-ELSE
+FOR I%, 0, 255
 
- SKIP 576               \ These bytes appear to be unused
+ EQUB (I% + 8) MOD 7
 
-ENDIF
+NEXT
+
+\ ******************************************************************************
+\
+\       Name: SCTBX2
+\       Type: Variable
+\   Category: Drawing the screen
+\    Summary: Lookup table for converting a pixel x-coordinate to the byte
+\             number in the pixel row that corresponds to this pixel
+\
+\ ------------------------------------------------------------------------------
+\
+\ This routine is not used in this version of Elite. It is left over from the
+\ Apple II version.
+\
+\ ******************************************************************************
+
+.SCTBX2
+
+FOR I%, 0, 255
+
+ EQUB (I% + 8) DIV 7
+
+NEXT
+
+\ ******************************************************************************
+\
+\       Name: wtable
+\       Type: Variable
+\   Category: Save and load
+\    Summary: 6-bit to 7-bit nibble conversion table
+\
+\ ------------------------------------------------------------------------------
+\
+\ This table is not used in this version of Elite. It is left over from the
+\ Apple II version.
+\
+\ ******************************************************************************
+
+.wtable
+
+ EQUD &9B9A9796         \ NIBL     DFB $96,$97,$9A
+ EQUD &A69F9E9D         \          DFB $9B,$9D,$9E
+ EQUD &ADACABA7         \          DFB $9F,$A6,$A7
+ EQUD &B3B2AFAE         \          DFB $AB,$AC,$AD
+ EQUD &B7B6B5B4         \          DFB $AE,$AF,$B2
+ EQUD &BCBBBAB9         \          DFB $B3,$B4,$B5
+ EQUD &CBBFBEBD         \          DFB $B6,$B7,$B9
+ EQUD &D3CFCECD         \          DFB $BA,$BB,$BC
+ EQUD &DAD9D7D6         \          DFB $BD,$BE,$BF
+ EQUD &DEDDDCDB         \          DFB $CB,$CD,$CE
+ EQUD &E7E6E5DF         \          DFB $CF,$D3,$D6
+ EQUD &ECEBEAE9         \          DFB $D7,$D9,$DA
+ EQUD &F2EFEEED         \          DFB $DB,$DC,$DD
+ EQUD &F6F5F4F3         \          DFB $DE,$DF,$E5
+ EQUD &FBFAF9F7         \          DFB $E6,$E7,$E9
+ EQUD &FFFEFDFC         \          DFB $EA,$EB,$EC
+                        \          DFB $ED,$EE,$EF
+                        \          DFB $F2,$F3,$F4
+                        \          DFB $F5,$F6,$F7
+                        \          DFB $F9,$FA,$FB
+                        \          DFB $FC,$FD,$FE
+                        \          DFB $FF
 
 \ ******************************************************************************
 \
@@ -12799,8 +12802,10 @@ ENDIF
 
  AND #%11111010         \ LASCT will be set to 0 for beam lasers, and to the
  STA LASCT              \ laser power AND %11111010 for pulse lasers, which
-                        \ comes to 10 (as pulse lasers have a power of 15). See
-                        \ MA23 below for more on laser pulsing and LASCT
+                        \ comes to 10 for pulse lasers (as pulse lasers have a
+                        \ power of 15) or 50 for mining lasers (as mining
+                        \ lasers hava a power of 50). See MA23 in part 16 for
+                        \ more on laser pulsing and LASCT
 
 \ ******************************************************************************
 \
@@ -13471,8 +13476,9 @@ ENDIF
 
  STA INWK+35            \ Store the hit ship's updated energy in ship byte #35
 
- LDA TYPE               \ Call ANGRY to make this ship hostile, now that we
- JSR ANGRY              \ have hit it
+ LDA TYPE               \ Call ANGRY to make the target ship or station hostile,
+ JSR ANGRY              \ and if this is a ship, wake up its AI and give it a
+                        \ kick of speed
 
 \ ******************************************************************************
 \
@@ -13869,7 +13875,10 @@ ENDIF
                         \ fair distance from the planet, so jump to MA23 as we
                         \ haven't crashed into the planet
 
- SBC #36                \ Subtract 36 from x_hi^2 + y_hi^2 + z_hi^2
+ SBC #36                \ Subtract 37 from x_hi^2 + y_hi^2 + z_hi^2
+                        \
+                        \ The SBC subtracts 37 as we just passed through a BCS
+                        \ so we know the C flag is clear
                         \
                         \ When we do the 3D Pythagoras calculation, we only use
                         \ the high bytes of the coordinates, so that's x_hi,
@@ -13888,7 +13897,9 @@ ENDIF
                         \ So for the planet, the equivalent figure to test the
                         \ sum of the _hi bytes against is 36, so A now contains
                         \ the high byte of our altitude above the planet
-                        \ surface, squared
+                        \ surface, squared, with an extra 1 subtracted so the
+                        \ test in the next instruction will ensure we crash
+                        \ even if we are exactly one planet radius away
 
  BCC MA28               \ If A < 0 then jump to MA28 as we have crashed into
                         \ the planet
@@ -13953,25 +13964,39 @@ ENDIF
                         \ jump to MA23 to skip the following, as we are too far
                         \ from the sun for scooping or temperature changes
 
- JSR MAS3               \ Set A = x_hi^2 + y_hi^2 + z_hi^2, so using Pythagoras
-                        \ we now know that A now contains the square of the
-                        \ distance between our ship (at the origin) and the
-                        \ heart of the sun at (x_hi, y_hi, z_hi)
+ JSR MAS3               \ Set (A ?) = x_hi^2 + y_hi^2 + z_hi^2, so using
+                        \ Pythagoras we now know that A now contains the high
+                        \ byte of the square of the distance between our ship
+                        \ (at the origin) and the heart of the sun at coordinate
+                        \ (x_hi, y_hi, z_hi)
+                        \
+                        \ If the calculation overflows so it doesn't fit into
+                        \ one byte, then A is set to &FF and the C flag is set
 
  EOR #%11111111         \ Invert A, so A is now small if we are far from the
                         \ sun and large if we are close to the sun, in the
                         \ range 0 = far away to &FF = extremely close, ouch,
                         \ hot, hot, hot!
 
- ADC #30                \ Add the minimum cabin temperature of 30, so we get
-                        \ one of the following:
+ ADC #30                \ Add the minimum cabin temperature of 30, plus the C
+                        \ flag, so we get one of the following:
                         \
-                        \   * If the C flag is clear, A contains the cabin
-                        \     temperature, ranging from 30 to 255, that's hotter
-                        \     the closer we are to the sun
                         \
-                        \   * If the C flag is set, the addition has rolled over
-                        \     and the cabin temperature is over 255
+                        \   * If the MAS3 calculation overflowed then we are a
+                        \     long way from the sun, A will be zero and the C
+                        \     flag will be set, so this addition sets A = 31
+                        \     and clears the C flag
+                        \
+                        \   * If the result of the MAS3 calculation fitted into
+                        \     one byte, then A will be in the range 0 to 255 and
+                        \     the C flag will be clear, so this addition has a
+                        \     result in the range 0 to 285, with the higher
+                        \     values overflowing the addition and setting the
+                        \     C flag
+                        \
+                        \ So the C flag is set if the cabin temperature is too
+                        \ hot to handle, and if it's clear then A contains the
+                        \ cabin temperature
 
  STA CABTMP             \ Store the updated cabin temperature
 
@@ -14221,7 +14246,7 @@ ENDIF
 
  LDA #0                 \ Call SFS1 to spawn the specified cargo from the now
  JSR SFS1               \ deceased parent ship, giving the spawned canister an
-                        \ AI flag of 0 (no AI, no E.C.M., non-hostile)
+                        \ AI flag of 0 (no AI, zero aggression, no E.C.M.)
 
  DEC CNT                \ Decrease the loop counter
 
@@ -17544,7 +17569,7 @@ ENDIF
 \ Given a value in Y that points to the start of a ship data block as an offset
 \ from K%, calculate the following:
 \
-\   A = x_hi^2 + y_hi^2 + z_hi^2
+\   (A ?) = x_hi^2 + y_hi^2 + z_hi^2
 \
 \ returning A = &FF if the calculation overflows a one-byte result. The K%
 \ workspace contains the ship data blocks, so the offset in Y must be 0 or a
@@ -17559,9 +17584,15 @@ ENDIF
 \
 \ Returns
 \
-\   A                   A = x_hi^2 + y_hi^2 + z_hi^2
+\   A                   The high byte of x_hi^2 + y_hi^2 + z_hi^2
 \
-\                       A = &FF if the calculation overflows a one-byte result
+\   C flag              The overflow status (i.e. did the result fit into one
+\                       byte):
+\
+\                         * Clear if the calculation didn't overflow
+\
+\                         * Set if the calculation overflowed (in which case A
+\                           is set to &FF)
 \
 \ ******************************************************************************
 
@@ -17586,7 +17617,8 @@ ENDIF
  JSR SQUA2
 
  ADC R                  \ Add A (high byte of third result) to R, so R now
-                        \ contains the sum of x_hi^2 + y_hi^2 + z_hi^2
+                        \ contains the high byte of the entire sum, i.e. of
+                        \ x_hi^2 + y_hi^2 + z_hi^2
 
  BCC P%+4               \ If there is no carry, skip the following instruction
                         \ to return straight from the subroutine
@@ -20248,6 +20280,7 @@ ENDIF
 \   Category: Tactics
 \    Summary: Apply tactics: Escape pod, station, lone Thargon, safe-zone pirate
 \  Deep dive: Program flow of the tactics routine
+\             Aggression and hostility in ship tactics
 \
 \ ------------------------------------------------------------------------------
 \
@@ -20360,10 +20393,8 @@ ENDIF
 
 .TN5
 
-                        \ We only call the tactics routine for the space station
-                        \ when it is hostile, so if we get here then this is the
-                        \ station, and we already know it's hostile, so we need
-                        \ to spawn some cops
+                        \ If we get here then this is the space station and it
+                        \ is hostile, so we need to spawn some cops
 
  JSR DORND              \ Set A and X to random numbers
 
@@ -20379,7 +20410,7 @@ ENDIF
 .TN6
 
  LDA #%11110001         \ Set the AI flag to give the ship E.C.M., enable AI and
-                        \ make it very aggressive (60 out of 63)
+                        \ make it very aggressive (56 out of 63)
 
  JMP SFS1               \ Jump to SFS1 to spawn the ship, returning from the
                         \ subroutine using a tail call
@@ -20394,8 +20425,8 @@ ENDIF
  CMP #200               \ If A < 200 (78% chance), return from the subroutine
  BCC TA22               \ (as TA22 contains an RTS)
 
- LDX #0                 \ Set byte #32 to %00000000 to disable AI, aggression
- STX INWK+32            \ and E.C.M.
+ LDX #0                 \ Set byte #32 to %00000000 to disable AI, zero the
+ STX INWK+32            \ aggression level and remove E.C.M.
 
  LDX #%00100100         \ Set the ship's NEWB flags to %00100100 so the ship we
  STX NEWB               \ spawn below will inherit the default values from E% as
@@ -20410,10 +20441,12 @@ ENDIF
                         \ or Gecko
 
  JSR TN6                \ Call TN6 to spawn this ship with E.C.M., AI and a high
-                        \ aggression (56 out of 63)
+                        \ aggression (56 out of 63), though we override this in
+                        \ the next instructions
 
- LDA #0                 \ Set byte #32 to %00000000 to disable AI, aggression
- STA INWK+32            \ and E.C.M. (for the rock hermit)
+ LDA #0                 \ Set byte #32 to %00000000 to disable AI, zero the
+ STA INWK+32            \ aggression level and remove E.C.M. (for the rock
+                        \ hermit)
 
  RTS                    \ Return from the subroutine
 
@@ -20434,6 +20467,7 @@ ENDIF
 \   Category: Tactics
 \    Summary: Apply tactics: Calculate dot product to determine ship's aim
 \  Deep dive: Program flow of the tactics routine
+\             Aggression and hostility in ship tactics
 \
 \ ------------------------------------------------------------------------------
 \
@@ -20547,8 +20581,8 @@ ENDIF
                         \ If we get here then this is a pirate and we are inside
                         \ the space station safe zone
 
- LDA INWK+32            \ Set bits 0 and 7 of the AI flag in byte #32 (has AI
- AND #%10000001         \ enabled and has an E.C.M.)
+ LDA INWK+32            \ Clear bits 1 to 6 of the AI flag in byte #32 (to set
+ AND #%10000001         \ the aggression level to zero)
  STA INWK+32
 
 .TN4
@@ -20693,8 +20727,9 @@ ENDIF
  LDY #36                \ Update the NEWB flags in the ship's data block
  STA (INF),Y
 
- LDA #0                 \ Set the AI flag to 0 to disable AI, hostility and
- STA INWK+32            \ E.C.M., so the ship's a sitting duck
+ LDA #%00000000         \ Set the AI flag to 0 to disable AI, set aggression to
+ STA INWK+32            \ zero and disable any E.C.M., so the ship's a sitting
+                        \ duck
 
  JMP SESCP              \ Jump to SESCP to spawn an escape pod from the ship,
                         \ returning from the subroutine using a tail call
@@ -20875,6 +20910,7 @@ ENDIF
 \   Category: Tactics
 \    Summary: Apply tactics: Set pitch, roll, and acceleration
 \  Deep dive: Program flow of the tactics routine
+\             Aggression and hostility in ship tactics
 \
 \ ------------------------------------------------------------------------------
 \
@@ -20917,23 +20953,40 @@ ENDIF
 
  JSR DORND              \ Set A and X to random numbers
 
- ORA #%10000000         \ Set bit 7 of A, so A is at least 128
+ ORA #%10000000         \ Set bit 7 of A, so the following comparison ignores
+                        \ the AI flag in bit 7 (as we already know bit 7 is set
+                        \ in byte #32)
 
  CMP INWK+32            \ If A >= byte #32 (the ship's AI flag) then jump down
  BCS TA15               \ to TA15 so it heads away from us
 
-                        \ We get here if A < byte #32, and the chances of this
-                        \ being true are greater with high values of byte #32,
-                        \ as long as they are at least 128
+                        \ We get here if byte #32 > A, where byte #32 is
+                        \ composed of the following:
                         \
-                        \ In other words, higher byte #32 values increase the
+                        \   * Bit 7 set = AI is enabled
+                        \
+                        \   * Bits 1-6 = aggression level (0 to 63)
+                        \
+                        \   * Bit 0 set = ship has E.C.M.
+                        \
+                        \ We set bit 7 of A above, so if we get here we know the
+                        \ ship has AI enabled, and the comparison then boils
+                        \ down to the following:
+                        \
+                        \   Aggression level * 2 + E.C.M. > random number 0-127
+                        \
+                        \ In other words, higher aggression levels increase the
                         \ chances of a ship changing direction to head towards
                         \ us - or, to put it another way, ships with higher
-                        \ byte #32 values of 128 or more are spoiling for a
-                        \ fight
+                        \ aggression levels are spoiling for a fight, with
+                        \ E.C.M. making them even more aggressive
                         \
-                        \ Thargoids have byte #32 set to 255, which explains
-                        \ an awful lot
+                        \ Thargoids and missiles both have an aggression level
+                        \ of 63 out of 63, which explains an awful lot
+                        \
+                        \ Interestingly, escape pods also have a maximum
+                        \ agression level, but in this case it makes them fly
+                        \ towards the planet rather than towards us
 
 .TA20
 
@@ -21983,7 +22036,7 @@ ENDIF
 \
 \ ------------------------------------------------------------------------------
 \
-\ This is used in two places:
+\ This is used in three places:
 \
 \   * When we launch a missile, in which case the missile is the ship that is
 \     launched ahead of us
@@ -22091,7 +22144,9 @@ ENDIF
 
  LDA FRIN,X             \ Fetch the ship type of the missile's target into A
 
- JSR ANGRY              \ Call ANGRY to make the target ship hostile
+ JSR ANGRY              \ Call ANGRY to make the target ship or station hostile,
+                        \ and if this is a ship, wake up its AI and give it a
+                        \ kick of speed
 
  LDY #0                 \ We have just launched a missile, so we need to remove
  JSR ABORT              \ missile lock and hide the leftmost indicator on the
@@ -22111,13 +22166,16 @@ ENDIF
 \       Name: ANGRY
 \       Type: Subroutine
 \   Category: Tactics
-\    Summary: Make a ship hostile
+\    Summary: Make a ship or station hostile, and if this is a ship then enable
+\             the ship's AI and give it a kick of speed
+\  Deep dive: Aggression and hostility in ship tactics
 \
 \ ------------------------------------------------------------------------------
 \
-\ All this routine does is set the ship's hostile flag, start it turning and
-\ give it a kick of acceleration - later calls to TACTICS will make the ship
-\ start to attack us.
+\ This routine makes a ship or station angry by setting the hostile flag in
+\ NEWB, and for ships it also means enabling the ship's AI and giving it a kick
+\ of turning acceleration. Later calls to TACTICS may make the ship start to
+\ attack us if it has a high enough aggression level.
 \
 \ ------------------------------------------------------------------------------
 \
@@ -22149,11 +22207,12 @@ ENDIF
  LDA (INF),Y
 
  BEQ HI1                \ If the AI flag is zero then this ship has no AI and
-                        \ it can't get hostile, so return from the subroutine
-                        \ (as HI1 contains an RTS)
+                        \ zero aggression, so return from the subroutine (as
+                        \ HI1 contains an RTS)
 
  ORA #%10000000         \ Otherwise set bit 7 (AI enabled) to ensure AI is
- STA (INF),Y            \ definitely enabled
+ STA (INF),Y            \ definitely enabled, so the ship can start acting
+                        \ according to its aggression level
 
  LDY #28                \ Set the ship's byte #28 (acceleration) to 2, so it
  LDA #2                 \ speeds up
@@ -22218,6 +22277,7 @@ ENDIF
 \       Type: Subroutine
 \   Category: Flight
 \    Summary: Spawn an escape pod from the current (parent) ship
+\  Deep dive: Aggression and hostility in ship tactics
 \
 \ ------------------------------------------------------------------------------
 \
@@ -22230,10 +22290,22 @@ ENDIF
 
  LDX #ESC               \ Set X to the ship type for an escape pod
 
- LDA #%11111110         \ Set A to an AI flag that has AI enabled, is hostile,
-                        \ but has no E.C.M.
+ LDA #%11111110         \ Set A to use as an AI flag that has AI enabled, an
+                        \ aggression level of 63 out of 63, and no E.C.M.
+                        \
+                        \ When spawning an escape pod, this high agression level
+                        \ makes the pod turn towards the planet rather than
+                        \ towards us
+                        \
+                        \ This instruction is also used as an entry point to
+                        \ spawn missile (when calling via the SFS1-2 entry
+                        \ point), in which case the missile has AI (bit 7 set),
+                        \ is hostile (bit 6 set) and has been launched (bit 0
+                        \ clear); the target slot number is set to 31, but this
+                        \ is ignored as the hostile flag means we are the target
 
-                        \ Fall through into SFS1 to spawn the escape pod
+                        \ Fall through into SFS1 to spawn the escape pod or
+                        \ missile
 
 \ ******************************************************************************
 \
@@ -22281,8 +22353,11 @@ ENDIF
 \
 \ Other entry points:
 \
-\   SFS1-2              Add a missile to the local bubble that has AI enabled,
-\                       is hostile, but has no E.C.M.
+\   SFS1-2              Used to add a missile to the local bubble that that has
+\                       AI (bit 7 set), is hostile (bit 6 set) and has been
+\                       launched (bit 0 clear); the target slot number is set to
+\                       31, but this is ignored as the hostile flags means we
+\                       are the target
 \
 \ ******************************************************************************
 
@@ -30490,12 +30565,14 @@ ENDIF
 \   Category: Universe
 \    Summary: Spawn a Thargoid ship and a Thargon companion
 \  Deep dive: Fixing ship positions
+\             Aggression and hostility in ship tactics
 \
 \ ******************************************************************************
 
 .GTHG
 
- JSR Ze                 \ Call Ze to initialise INWK
+ JSR Ze                 \ Call Ze to initialise INWK to a fairly aggressive
+                        \ ship (though we increase this below)
                         \
                         \ Note that because Ze uses the value of X returned by
                         \ DORND, and X contains the value of A returned by the
@@ -30503,7 +30580,7 @@ ENDIF
                         \ to a totally random location
 
  LDA #%11111111         \ Set the AI flag in byte #32 so that the ship has AI,
- STA INWK+32            \ is extremely and aggressively hostile, and has E.C.M.
+ STA INWK+32            \ an aggression level of 63 out of 63, and E.C.M.
 
  LDA #THG               \ Call NWSHP to add a new Thargoid ship to our local
  JSR NWSHP              \ bubble of universe
@@ -30522,7 +30599,7 @@ ENDIF
 \ ------------------------------------------------------------------------------
 \
 \ Process a mis-jump into witchspace (which happens very rarely). Witchspace has
-\ a strange, almost dust-free aspect to it, and it is populated by hostile
+\ a strange, almost dust-free aspect to it, and it is populated by aggressive
 \ Thargoids. Using our escape pod will be fatal, and our position on the
 \ galactic chart is in-between systems. It is a scary place...
 \
@@ -34081,8 +34158,8 @@ ENDIF
 
  JSR SPBLB              \ Light up the space station bulb on the dashboard
 
- LDX #%10000001         \ Set the AI flag in byte #32 to %10000001 (hostile,
- STX INWK+32            \ no AI, has an E.C.M.)
+ LDX #%10000001         \ Set the AI flag in byte #32 to %10000001 (AI enabled,
+ STX INWK+32            \ has an E.C.M.)
 
  LDX #0                 \ Set pitch counter to 0 (no pitch, roll only)
  STX INWK+30
@@ -38360,8 +38437,9 @@ ENDIF
 \       Name: Ze
 \       Type: Subroutine
 \   Category: Universe
-\    Summary: Initialise the INWK workspace to a hostile ship
+\    Summary: Initialise the INWK workspace to a fairly aggressive ship
 \  Deep dive: Fixing ship positions
+\             Aggression and hostility in ship tactics
 \
 \ ------------------------------------------------------------------------------
 \
@@ -38374,7 +38452,7 @@ ENDIF
 \
 \   * Give the ship a 4% chance of having E.C.M.
 \
-\   * Set the ship to hostile, with AI enabled
+\   * Set the ship's aggression level to at least 32 out of 63, with AI enabled
 \
 \ This routine also sets A, X, T1 and the C flag to random values.
 \
@@ -38410,8 +38488,8 @@ ENDIF
  ROL A                  \ Set bit 0 of A to the C flag (i.e. there's a 4%
                         \ chance of this ship having E.C.M.)
 
- ORA #%11000000         \ Set bits 6 and 7 of A, so the ship is hostile (bit 6
-                        \ and has AI (bit 7)
+ ORA #%11000000         \ Set bits 6 and 7 of A, so the ship has AI (bit 7) and
+                        \ an aggression level of at least 32 out of 63
 
  STA INWK+32            \ Store A in the AI flag of this ship
 
@@ -38477,6 +38555,7 @@ ENDIF
 \    Summary: Spawn a trader (a Cobra Mk III, Python, Boa or Anaconda)
 \  Deep dive: Program flow of the main game loop
 \             Ship data blocks
+\             Aggression and hostility in ship tactics
 \
 \ ------------------------------------------------------------------------------
 \
@@ -38488,9 +38567,8 @@ ENDIF
 \ This section covers the following:
 \
 \   * Spawn a trader, i.e. a Cobra Mk III, Python, Boa or Anaconda, with a 50%
-\     chance of it having a missile, a 50% chance of it having an E.C.M., a 50%
-\     chance of it docking and being aggressive if attacked, a speed between 16
-\     and 31, and a gentle clockwise roll
+\     chance of it having an E.C.M., a 50% chance of it docking, a random
+\     aggression level, a speed between 16 and 31, and a gentle clockwise roll
 \
 \ We call this from within the main loop.
 \
@@ -38510,9 +38588,25 @@ ENDIF
                         \ clockwise roll (as bit 7 is clear), and a 1 in 127
                         \ chance of it having no damping
 
- ROL INWK+31            \ Set bit 0 of the ship's missile count randomly (as the
-                        \ C flag was set), giving the ship either no missiles or
-                        \ one missile
+ ROL INWK+31            \ This instruction would appear to set bit 0 of the
+                        \ ship's missile count randomly (as the C flag was set),
+                        \ giving the ship either no missiles or one missile
+                        \
+                        \ However, INWK+31 is overwritten in the call to the
+                        \ NWSHP routine below, where it is set to the number of
+                        \ missiles from the ship blueprint, and the value of the
+                        \ C flag is not used, so this instruction actually has
+                        \ no effect
+                        \
+                        \ Interestingly, the original source code for the NWSPS
+                        \ routine also has an instruction that sets INWK+31 and
+                        \ which gets overwritten when it falls through into
+                        \ NWSHP, but in this case the instruction is commented
+                        \ out in the source. Perhaps the original version of
+                        \ NWSHP didn't set the missile count and instead relied
+                        \ on the calling code to set it, and when the authors
+                        \ changed it, they commented out the INWK+31 instruction
+                        \ in NWSPS and forgot about this one. Who knows?
 
  AND #31                \ Set the ship speed to our random number, set to a
  ORA #16                \ minimum of 16 and a maximum of 31
@@ -38526,19 +38620,18 @@ ENDIF
                         \ If we get here then we are going to spawn a ship that
                         \ is minding its own business and trying to dock
 
- LDA INWK+32            \ Set bits 6 and 7 of the ship's AI flag, to make it
- ORA #%11000000         \ aggressive if attacked, and enable its AI
- STA INWK+32
+ LDA INWK+32            \ Set bits 6 and 7 of A, so the ship has AI (bit 7) and
+ ORA #%11000000         \ an aggression level of at least 32 out of 63 (this
+ STA INWK+32            \ makes the ship more likely to turn towards its target,
+                        \ which in this case is the space station, as we are
+                        \ about to set the ship flags so it is docking)
 
  LDX #%00010000         \ Set bit 4 of the ship's NEWB flags, to indicate that
  STX NEWB               \ this ship is docking
 
 .nodo
 
- AND #2                 \ If we jumped here with a random value of A from the
-                        \ BMI above, then this reduces A to a random value of
-                        \ either 0 or 2; if we didn't take the BMI and made the
-                        \ ship hostile, then A will be 0
+ AND #2                 \ This reduces A to a random value of either 0 or 2
 
  ADC #CYL               \ Set A = A + C + #CYL
                         \
@@ -38625,9 +38718,9 @@ ENDIF
                         \ hunters)
                         \
                         \ If we are in that 13%, then 50% of the time this will
-                        \ be a Cobra Mk III trader, and the other 50% of the
-                        \ time it will either be an asteroid (98.5% chance) or,
-                        \ very rarely, a cargo canister (1.5% chance)
+                        \ be a trader, and the other 50% of the time it will
+                        \ either be an asteroid (98.5% chance) or, very rarely,
+                        \ a cargo canister (1.5% chance)
 
  LDA MJ                 \ If we are in witchspace following a mis-jump, skip the
  BNE ytq                \ following by jumping down to MLOOP (via ytq above)
@@ -38727,10 +38820,10 @@ ENDIF
 
  AND #1                 \ Reduce A to a random number that's 0 or 1
 
- ADC #OIL               \ Set A = #OIL + A + C, so there's a tiny chance of us
-                        \ spawning a cargo canister (#OIL) and an even chance of
-                        \ us spawning either a boulder (#OIL + 1) or an asteroid
-                        \ (#OIL + 2)
+ ADC #OIL               \ Set A = #OIL + A + C, so there's a 2% chance of us
+                        \ spawning a cargo canister (#OIL), a 50% chance of
+                        \ us spawning a boulder (#OIL + 1), and a 48% chance of
+                        \ us spawning an asteroid (#OIL + 2)
 
 .whips
 
@@ -38785,7 +38878,7 @@ ENDIF
 
  STA T                  \ Store our badness level in T
 
- JSR Ze                 \ Call Ze to initialise INWK to a potentially hostile
+ JSR Ze                 \ Call Ze to initialise INWK to a fairly aggressive
                         \ ship, and set A and X to random values
                         \
                         \ Note that because Ze uses the value of X returned by
@@ -38823,6 +38916,7 @@ ENDIF
 \             Ship data blocks
 \             Fixing ship positions
 \             The elusive Cougar
+\             Aggression and hostility in ship tactics
 \
 \ ------------------------------------------------------------------------------
 \
@@ -38889,7 +38983,7 @@ ENDIF
                         \ Now to spawn a lone bounty hunter, a Thargoid or a
                         \ group of pirates
 
- JSR Ze                 \ Call Ze to initialise INWK to a potentially hostile
+ JSR Ze                 \ Call Ze to initialise INWK to a fairly aggressive
                         \ ship, and set A and X to random values
                         \
                         \ Note that because Ze uses the value of X returned by
@@ -38959,7 +39053,7 @@ ENDIF
                         \ Constrictor's system, so skip to NOCON
 
  LDA #%11111001         \ Set the AI flag of this ship so that it has E.C.M.,
- STA INWK+32            \ has a very high aggression level of 28 out of 31, is
+ STA INWK+32            \ has a very high aggression level of 60 out of 63, is
                         \ hostile, and has AI enabled - nasty stuff!
 
  LDA TP                 \ Fetch bits 0 and 1 of TP, which contain the status of
@@ -38995,8 +39089,8 @@ ENDIF
  ROL A                  \ Set bit 0 of A to the C flag (i.e. there's a 22%
                         \ chance of this ship having E.C.M.)
 
- ORA #%11000000         \ Set bits 6 and 7 of A, so the ship is hostile (bit 6)
-                        \ and has AI (bit 7)
+ ORA #%11000000         \ Set bits 6 and 7 of A, so the ship has AI (bit 7) and
+                        \ an aggression level of at least 32 out of 63
 
  STA INWK+32            \ Store A in the AI flag of this ship
 
@@ -39044,8 +39138,14 @@ ENDIF
  LDA #18                \ Give the ship we're about to spawn a speed of 27
  STA INWK+27
 
- LDA #%01111001         \ Give it an E.C.M., and make it hostile and pretty
- STA INWK+32            \ aggressive (though don't give it AI)
+ LDA #%01111001         \ Give it an E.C.M. and an aggression level of 60 out of
+ STA INWK+32            \ 63, but don't enable its AI, so the ship will sit
+                        \ still in space unless it is hit, at which point it
+                        \ will defend itself vigorously
+                        \
+                        \ This ensures the Cougar behaves like a ship with a
+                        \ cloaking device that hides it from the scanner, so it
+                        \ minds its own business until it's discovered
 
  LDA #COU               \ Set the ship type to a Cougar and jump up to focoug
  BNE focoug             \ to spawn it
@@ -39861,7 +39961,7 @@ ENDIF
 
 .D1
 
- JSR Ze                 \ Call Ze to initialise INWK to a potentially hostile
+ JSR Ze                 \ Call Ze to initialise INWK to a fairly aggressive
                         \ ship, and set A and X to random values
 
  LSR A                  \ Set A = A / 4, so A is now between 0 and 63, and
@@ -39869,7 +39969,7 @@ ENDIF
  STA INWK
 
  LDY #0                 \ Set the following to 0: x_hi, y_hi, z_hi and the AI
- STY INWK+1             \ flag (no AI or E.C.M. and not hostile)
+ STY INWK+1             \ flag (no AI or E.C.M. and zero aggression)
  STY INWK+4
  STY INWK+7
  STY INWK+32
@@ -42389,8 +42489,10 @@ ENDIF
 \
 \ A normalised vector (also known as a unit vector) has length 1, so this
 \ routine takes an existing vector in K3 and scales it so the length of the
-\ new vector is 1. This is used in two places: when drawing the compass, and
-\ when applying AI tactics to ships.
+\ new vector is 1. This is used in a number of places: when drawing the compass,
+\ when applying AI tactics to ships (so traders fly towards planets and missiles
+\ fly towards their targets, for example), and when implementing the docking
+\ computer in the enhanced versions of Elite.
 \
 \ We do this in two stages. This stage shifts the 16-bit vector coordinates in
 \ K3 to the left as far as they will go without losing any bits off the end, so
@@ -48556,10 +48658,9 @@ ENDMACRO
 
  LDA INWK+32            \ Fetch the ship's byte #32 (AI flag) into A
 
- BPL MV30               \ If bit 7 of the AI flag is clear, then if this is a
-                        \ ship or missile it is dumb and has no AI, and if this
-                        \ is the space station it is not hostile, so in both
-                        \ cases skip the following as it has no tactics
+ BPL MV30               \ If bit 7 of the AI flag is clear, then skip the
+                        \ following as AI is disabled and the ship has no
+                        \ tactics
 
  CPX #MSL               \ If the ship is a missile, skip straight to MV26 to
  BEQ MV26               \ call the TACTICS routine, as we do this every
@@ -51288,8 +51389,11 @@ ENDIF
 .SFRMIS
 
  LDX #MSL               \ Set X to the ship type of a missile, and call SFS1-2
- JSR SFS1-2             \ to add the missile to our universe with an AI flag
-                        \ of %11111110 (AI enabled, hostile, no E.C.M.)
+ JSR SFS1-2             \ to add a missile to our universe that has AI (bit 7
+                        \ set), is hostile (bit 6 set) and has been launched
+                        \ (bit 0 clear); the target slot number is set to 31,
+                        \ but this is ignored as the hostile flags means we
+                        \ are the target
 
 IF _SNG47
 
