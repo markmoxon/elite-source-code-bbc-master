@@ -286,12 +286,9 @@ ENDIF
 IF _COMPACT
 
  LDA #129               \ Call OSBYTE with A = 129, X = 0 and Y = &FF to detect
- LDX #0                 \ the machine type. This call is undocumented and is not
- LDY #&FF               \ the recommended way to determine the machine type
- JSR OSBYTE             \ (OSBYTE 0 is the correct way), but this call returns
-                        \ the following:
-                        \
-                        \   * X = Y = &F5 if this is a Master Compact with MOS 5
+ LDX #0                 \ the machine type, which returns the following:
+ LDY #&FF               \
+ JSR OSBYTE             \   * X = &F5 if this is a Master Compact with MOS 5
 
  LDA #&FF               \ Set A = &FF, the value we want to store in the MOS
                         \ flag if this is not a Master Compact
