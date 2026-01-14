@@ -3609,7 +3609,7 @@ WP workspace from &E41 to &12A9 inclusive
      23FD   2E
      23FE   48
      23FF   41
-     2400   00 00 00 ... INCBIN "versions/master/1-source-files/fonts/P.FONT.bin"
+     2400   00 00 00 ... INCBIN "1-source-files/fonts/P.FONT.bin"
 .log
      2700   00
      2701   00
@@ -16757,7 +16757,7 @@ F% = &7F48
 G% = &2CC1 
 NA2% = &34CD 
 .DIALS
-     7000   0F 0A 1E ... INCBIN "versions/master/1-source-files/images/P.DIALS2P.bin"
+     7000   0F 0A 1E ... INCBIN "1-source-files/images/P.DIALS2P.bin"
      7E00
      7F00
 .XX21
