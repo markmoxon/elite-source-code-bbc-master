@@ -12,7 +12,7 @@ PROCfindSRAM
 PROCloadROM
 PROCpatch
 PROCloadSRAM
-*RUN ELITE
+*RUN M128Elt
 END
 :
 DEF PROCpatch
