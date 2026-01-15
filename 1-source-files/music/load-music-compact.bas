@@ -1,12 +1,14 @@
-MODE7
 DIM CODE% &100
 bank=&70
 temp=&71
-addrBlock=&72
+orig=&72
+addrBlock=&73
 fromAddr=&80
 romNumber=&8E : REM Address of .musicRomNumber
 master%=TRUE
+copro%=FALSE
 :
+VDU 22,7
 PROCtitle
 PROCfindSRAM
 PROCloadROM
@@ -74,6 +76,8 @@ FOR pass%=0 TO 2 STEP 2
 P%=CODE%
 [OPT pass%
 
+ SEI                \ Disable interrupts
+
  LDX #&00           \ Set A = ?&00F4
  LDY #&F4
  JSR GetByteXY
@@ -119,17 +123,20 @@ P%=CODE%
  LDY #&08
  JSR GetByteXY
 
- STA temp           \ Store original value in temp
+ STA orig           \ Store original value in orig
 
- EOR #&FF           \ Set ?&8008 = ~A
- JSR SetByte
+ EOR #&FF           \ Set temp = ~A
+ STA temp
+
+ JSR SetByte        \ Set ?&8008 = ~A
 
  JSR GetByte        \ Set A = ?&8008
 
- CMP temp           \ If &8008 is unchanged, move on to next bank
- BEQ nextBank
+ CMP temp           \ If set <> get, move on to next bank
+ BNE nextBank
 
- JSR SetByte        \ Set ?&8008 = A to restore contents of &8008
+ LDA orig           \ Set ?&8008 = orig to restore &8008
+ JSR SetByte
 
  JMP done           \ Return the bank number in A
 
@@ -149,10 +156,14 @@ P%=CODE%
  PLA                \ Page in original bank
  JSR PageBankA
 
- LDA bank           \ Set ?romNumber = bank and return
+ LDA bank           \ Set ?romNumber = bank
  LDX #0
  LDY #romNumber
- JMP SetByteXY
+ JSR SetByteXY
+
+ CLI                \ Enable interrupts
+
+ RTS                \ Return
 
 .SRLoad
 
@@ -212,11 +223,8 @@ P%=CODE%
 
 .SetByte
 
- STA addrBlock+4    \ Store byte
- LDA #6
- LDX #addrBlock MOD256
- LDY #addrBlock DIV256
- JMP &FFF1
+ OPT FNset          \ Set across Tube
+ RTS
 
 .GetByteXY
 
@@ -225,11 +233,7 @@ P%=CODE%
 
 .GetByte
 
- LDA #5             \ Fetch byte
- LDX #addrBlock MOD256
- LDY #addrBlock DIV256
- JSR &FFF1
- LDA addrBlock+4
+ OPT FNget          \ Get across Tube
  RTS
 ]
 NEXT
@@ -244,5 +248,47 @@ DEF PROCnotBank6
 [OPT pass%
  CMP #6             \ Do not use bank 6 (Elite uses it)
  BEQ nextBank
+]
+ENDPROC
+:
+DEF FNget
+IF copro% PROCgetTube ELSE PROCgetLDA
+=pass%
+:
+DEF PROCgetTube
+[OPT pass%
+ LDA #5
+ LDX #addrBlock MOD256
+ LDY #addrBlock DIV256
+ JSR &FFF1
+ LDA addrBlock+4
+]
+ENDPROC
+:
+DEF PROCgetLDA
+[OPT pass%
+ LDY #0
+ LDA (addrBlock),Y
+]
+ENDPROC
+:
+DEF FNset
+IF copro% PROCsetTube ELSE PROCsetSTA
+=pass%
+:
+DEF PROCsetTube
+[OPT pass%
+ STA addrBlock+4
+ LDA #6
+ LDX #addrBlock MOD256
+ LDY #addrBlock DIV256
+ JSR &FFF1
+]
+ENDPROC
+:
+DEF PROCsetSTA
+[OPT pass%
+ LDY #0
+ STA (addrBlock),Y
 ]
 ENDPROC
