@@ -39974,24 +39974,16 @@ Saving file '3-assembled-output/BDATA.unprot.bin'
      01A2   0D
      01A3   0A
      01A4   0D
-     01A5   53 69 64 ...
+     01A5   53 65 65 ...
+     01C5   0A
+     01C6   0D
      01C7   0A
      01C8   0D
-     01C9   72 6F 75 ...
-     01EB   0A
-     01EC   0D
-     01ED   0A
-     01EE   0D
-     01EF   53 65 65 ...
-     020F   0A
-     0210   0D
-     0211   0A
-     0212   0D
-     0213   42 75 69 ...
-     021A   32 30 32 ...
-     022D   0A
-     022E   0D
-     022F   2D 2D 2D ...
-     0256   0A
-     0257   0D
+     01C9   42 75 69 ...
+     01D0   32 30 32 ...
+     01E3   0A
+     01E4   0D
+     01E5   2D 2D 2D ...
+     020C   0A
+     020D   0D
 Saving file '3-assembled-output/README.txt'
