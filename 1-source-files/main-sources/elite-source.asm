@@ -41502,14 +41502,26 @@ ENDIF
 
  STA JSTY               \ Store A in JSTY to update the current pitch rate
 
-IF _COMPACT
+                        \ --- Mod: Code removed to disable joystick with DC: -->
 
- JMP DK152              \ Jump to DK152 to skip reading the joystick, as this is
-                        \ a Master Compact that doesn't support an analogue
-                        \ joystick (instead it supports a digital joystick,
-                        \ which is read elsewhere)
+\IF _COMPACT
 
-ENDIF
+                        \ --- End of removed code ----------------------------->
+
+ JMP DK152              \ Jump to DK152 to skip reading the joystick, as we just
+                        \ applied the docking computer to the controls and we
+                        \ don't want the joystick to interfere
+                        \
+                        \ Note that this instruction is missing from the Master
+                        \ version, so in that version the joystick can break the
+                        \ docking computer when configured; this instruction was
+                        \ added to the Master Compact version to fix this bug
+
+                        \ --- Mod: Code removed to disable joystick with DC: -->
+
+\ENDIF
+
+                        \ --- End of removed code ----------------------------->
 
 .DK15
 
