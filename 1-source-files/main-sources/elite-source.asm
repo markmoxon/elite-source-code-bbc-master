@@ -7241,7 +7241,7 @@ ENDIF
 \
 \                         * #YELLOW2 = yellow/white (armed)
 \
-\                         * #GREEN2 = green (disarmed)
+\                         * #GREEN2 = green (unarmed)
 \
 \ ------------------------------------------------------------------------------
 \
@@ -7262,14 +7262,14 @@ ENDIF
  PHA                    \ it across the call to this subroutine
 
  ASL A                  \ Set T = A * 16
- ASL A
- ASL A
- ASL A
+ ASL A                  \
+ ASL A                  \ This also clears the C flag, as A is in the range 0
+ ASL A                  \ to 3
  STA T
 
- LDA #97                \ Set SC = 97 - T
- SBC T                  \        = 96 + 1 - (X * 16)
- STA SC
+ LDA #97                \ Set SC = 97 - T - (1 - C)
+ SBC T                  \        = 97 - (X * 16) - 1
+ STA SC                 \        = 96 - (X * 16)
 
                         \ So the low byte of SC(1 0) contains the row address
                         \ for the rightmost missile indicator, made up as
@@ -7278,13 +7278,10 @@ ENDIF
                         \   * 96 (character block 14, as byte #14 * 8 = 96), the
                         \     character block of the rightmost missile
                         \
-                        \   * 1 (so we start drawing on the second row of the
-                        \     character block)
-                        \
-                        \   * Move left one character (8 bytes) for each count
+                        \   * Move left two characters (16 bytes) for each count
                         \     of X, so when X = 0 we are drawing the rightmost
-                        \     missile, for X = 1 we hop to the left by one
-                        \     character, and so on
+                        \     missile, for X = 1 we hop to the left by two
+                        \     characters, and so on
 
  LDA #&7C               \ Set the high byte of SC(1 0) to &7C, the character row
  STA SCH                \ that contains the missile indicators (i.e. the bottom
@@ -7299,7 +7296,7 @@ ENDIF
 
 .MBL1
 
- STA (SC),Y             \ Draw the three-pixel row, and as we do not use EOR
+ STA (SC),Y             \ Draw the two-pixel row, and as we do not use EOR
                         \ logic, this will overwrite anything that is already
                         \ there (so drawing a black missile will delete what's
                         \ there)
@@ -8195,7 +8192,7 @@ ENDIF
 
 IF _SNG47
 
- CPY #' '               \ If the character we want to print in Y is a space,
+ CPY #' '               \ If the character we want to print in Y is not a space,
  BNE RR5                \ jump to RR5
 
                         \ If we get here, then CATF is non-zero, so we are
@@ -10799,7 +10796,7 @@ ENDIF
 \ The key presses that are processed are as follows:
 \
 \   * Space and "?" to speed up and slow down
-\   * "U", "T" and "M" to disarm, arm and fire missiles
+\   * "U", "T" and "M" to unarm, target and fire missiles
 \   * TAB to fire an energy bomb
 \   * ESCAPE to launch an escape pod
 \   * "J" to initiate an in-system jump
@@ -10841,12 +10838,12 @@ ENDIF
  AND NOMSL              \ in NOMSL is non-zero, keep going, otherwise jump down
  BEQ MA20               \ to MA20 to skip the following
 
- LDY #GREEN2            \ The "disarm missiles" key is being pressed, so call
- JSR ABORT              \ ABORT to disarm the missile and update the missile
+ LDY #GREEN2            \ The "unarm missiles" key is being pressed, so call
+ JSR ABORT              \ ABORT to unarm the missile and update the missile
                         \ indicators on the dashboard to green (Y = &EE)
 
  JSR BOOP               \ Call the BOOP routine to make a low, long beep to
-                        \ indicate the missile is now disarmed
+                        \ indicate the missile is now unarmed
 
  LDA #0                 \ Set MSAR to 0 to indicate that no missiles are
  STA MSAR               \ currently armed
@@ -32343,7 +32340,7 @@ ENDIF
 \       Name: ABORT
 \       Type: Subroutine
 \   Category: Dashboard
-\    Summary: Disarm missiles and update the dashboard indicators
+\    Summary: Unarm missiles and update the dashboard indicators
 \
 \ ------------------------------------------------------------------------------
 \
@@ -32357,7 +32354,7 @@ ENDIF
 \
 \                         * #YELLOW2 = yellow/white (armed)
 \
-\                         * #GREEN2 = green (disarmed)
+\                         * #GREEN2 = green (unarmed)
 \
 \ ******************************************************************************
 
@@ -32367,7 +32364,7 @@ ENDIF
                         \ no target lock for our missile
 
                         \ Fall through into ABORT2 to set the missile lock to
-                        \ the value in X, which effectively disarms the missile
+                        \ the value in X, which effectively unarms the missile
 
 \ ******************************************************************************
 \
@@ -32395,7 +32392,7 @@ ENDIF
 \
 \                         * #YELLOW2 = yellow/white (armed)
 \
-\                         * #GREEN2 = green (disarmed)
+\                         * #GREEN2 = green (unarmed)
 \
 \ ******************************************************************************
 
@@ -35435,7 +35432,7 @@ ENDIF
  BNE KS5                \ If our missile is not locked on this ship, jump to KS5
 
  LDY #GREEN2            \ Otherwise we need to remove our missile lock, so call
- JSR ABORT              \ ABORT to disarm the missile and update the missile
+ JSR ABORT              \ ABORT to unarm the missile and update the missile
                         \ indicators on the dashboard to green (Y = #GREEN2)
 
  LDA #200               \ Print recursive token 40 ("TARGET LOST") as an
@@ -45777,8 +45774,7 @@ ENDMACRO
 .MV30
 
  JSR SCAN               \ Draw the ship on the scanner, which has the effect of
-                        \ removing it, as it's already at this point and hasn't
-                        \ yet moved
+                        \ removing it as it hasn't yet moved
 
 \ ******************************************************************************
 \
@@ -47584,7 +47580,7 @@ ENDMACRO
 .IKNS
 
  EQUB &DD EOR &FF       \ E         IKNS+0    KY13     E.C.M.
- EQUB &DC EOR &FF       \ T         IKNS+1    KY10     Arm missile
+ EQUB &DC EOR &FF       \ T         IKNS+1    KY10     Target missile
  EQUB &CA EOR &FF       \ U         IKNS+2    KY11     Unarm missile
  EQUB &C8 EOR &FF       \ P         IKNS+3    KY16     Cancel docking computer
  EQUB &BE EOR &FF       \ A         IKNS+4    KY7      Fire lasers
