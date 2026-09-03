@@ -13156,8 +13156,8 @@ S.ELTE &58AD  &6325  &1300  &58AD
      6653   C9 64      CMP #&64
      6655   B0 4A      BCS &66A1
      6657   EE 7B 0E   INC &0E7B
-     665A   29 03      AND #&03
-     665C   4A         LSR A
+     665A   4A         LSR A
+     665B   29 03      AND #&03
      665D   69 18      ADC #&18
      665F   A8         TAY
      6660   20 4A 64   JSR &644A
