@@ -25602,6 +25602,9 @@ ENDIF
 
 \LDA #198               \ Print recursive token 38 (" BILLION"), followed by a
 \JSR TT60               \ paragraph break and Sentence Case
+\
+\LDA #'('               \ Print an opening bracket
+\JSR TT27
 
                         \ --- And replaced by: -------------------------------->
 
