@@ -459,7 +459,7 @@ ENDIF
 .QQ17
 
  SKIP 1                 \ Contains a number of flags that affect how text tokens
-                        \ are printed, particularly capitalisation:
+                        \ are printed, particularly capitalisation
                         \
                         \   * If all bits are set (255) then text printing is
                         \     disabled
@@ -612,7 +612,7 @@ ENDIF
 .ECMA
 
  SKIP 1                 \ The E.C.M. countdown timer, which determines whether
-                        \ an E.C.M. system is currently operating:
+                        \ an E.C.M. system is currently operating
                         \
                         \   * 0 = E.C.M. is off
                         \
@@ -984,7 +984,9 @@ ENDIF
                         \ the smoother the circle. The values used are:
                         \
                         \   * 2 for big planets and the circles on the charts
+                        \
                         \   * 4 for medium planets and the launch tunnel
+                        \
                         \   * 8 for small planets and the hyperspace tunnel
                         \
                         \ As the step size increases we move from smoother
@@ -1571,14 +1573,14 @@ ENDIF
                         \
                         \   * 10 for a pulse laser
                         \
-                        \ It gets decremented by 2 on each iteration round the
+                        \ It gets decremented by 2 on each iteration around the
                         \ main game loop and is set to a non-zero value for
                         \ pulse lasers only
                         \
                         \ The laser only fires when the value of LASCT hits
                         \ zero, so for pulse lasers with a value of 10, that
-                        \ means the laser fires once every four iterations
-                        \ round the main game loop (LASCT = 10, 6, 2, 0)
+                        \ means the laser fires once every five iterations
+                        \ around the main game loop (LASCT = 10, 8, 6, 4, 2, 0)
                         \
                         \ In comparison, beam lasers fire continuously as the
                         \ value of LASCT is always 0
@@ -1901,14 +1903,17 @@ ENDIF
 .LASER
 
  SKIP 4                 \ The specifications of the lasers fitted to each of the
-                        \ four space views:
+                        \ four space views
                         \
                         \   * Byte #0 = front view
+                        \
                         \   * Byte #1 = rear view
+                        \
                         \   * Byte #2 = left view
+                        \
                         \   * Byte #3 = right view
                         \
-                        \ For each of the views:
+                        \ The value for each view is as follows:
                         \
                         \   * 0 = no laser is fitted to this view
                         \
@@ -2042,7 +2047,7 @@ ENDIF
 .FIST
 
  SKIP 1                 \ Our legal status (FIST stands for "fugitive/innocent
-                        \ status"):
+                        \ status")
                         \
                         \   * 0 = Clean
                         \
@@ -4151,7 +4156,7 @@ ENDIF
 \       Type: Subroutine
 \   Category: Drawing lines
 \    Summary: Draw a line: Calculate the line gradient in the form of deltas
-\  Deep dive: Bresenham's line algorithm
+\  Deep dive: Elite's line-drawing algorithm
 \
 \ ------------------------------------------------------------------------------
 \
@@ -4255,7 +4260,7 @@ ENDIF
 \       Type: Subroutine
 \   Category: Drawing lines
 \    Summary: Draw a line: Line has a shallow gradient, step right along x-axis
-\  Deep dive: Bresenham's line algorithm
+\  Deep dive: Elite's line-drawing algorithm
 \
 \ ------------------------------------------------------------------------------
 \
@@ -4410,7 +4415,7 @@ ENDIF
 \       Type: Subroutine
 \   Category: Drawing lines
 \    Summary: Draw a shallow line going right and up or left and down
-\  Deep dive: Bresenham's line algorithm
+\  Deep dive: Elite's line-drawing algorithm
 \
 \ ------------------------------------------------------------------------------
 \
@@ -4693,7 +4698,7 @@ ENDIF
 \       Type: Subroutine
 \   Category: Drawing lines
 \    Summary: Draw a shallow line going right and down or left and up
-\  Deep dive: Bresenham's line algorithm
+\  Deep dive: Elite's line-drawing algorithm
 \
 \ ------------------------------------------------------------------------------
 \
@@ -5007,7 +5012,7 @@ ENDIF
 \       Type: Subroutine
 \   Category: Drawing lines
 \    Summary: Draw a line: Line has a steep gradient, step up along y-axis
-\  Deep dive: Bresenham's line algorithm
+\  Deep dive: Elite's line-drawing algorithm
 \
 \ ------------------------------------------------------------------------------
 \
@@ -5166,7 +5171,7 @@ ENDIF
 \       Type: Subroutine
 \   Category: Drawing lines
 \    Summary: Draw a steep line going up and left or down and right
-\  Deep dive: Bresenham's line algorithm
+\  Deep dive: Elite's line-drawing algorithm
 \
 \ ------------------------------------------------------------------------------
 \
@@ -5742,7 +5747,7 @@ ENDIF
 \       Type: Subroutine
 \   Category: Drawing lines
 \    Summary: Draw a steep line going up and right or down and left
-\  Deep dive: Bresenham's line algorithm
+\  Deep dive: Elite's line-drawing algorithm
 \
 \ ------------------------------------------------------------------------------
 \
@@ -6805,8 +6810,10 @@ ENDIF
                         \ to skip the following negation
 
  EOR #%01111111         \ The y-coordinate offset is negative, so flip all the
- ADC #1                 \ bits apart from the sign bit and add 1, to convert it
-                        \ from a sign-magnitude number to a signed number
+ ADC #1                 \ bits apart from the sign bit and subtract 1 to convert
+                        \ A from a sign-magnitude number into a traditional
+                        \ signed number, so A is now Y1 in a form that can be
+                        \ used with the SBC instruction
 
 .PX22
 
@@ -7448,7 +7455,7 @@ ENDIF
 \
 \                         * #YELLOW2 = yellow/white (armed)
 \
-\                         * #GREEN2 = green (disarmed)
+\                         * #GREEN2 = green (unarmed)
 \
 \ ------------------------------------------------------------------------------
 \
@@ -7469,14 +7476,14 @@ ENDIF
  PHA                    \ it across the call to this subroutine
 
  ASL A                  \ Set T = A * 16
- ASL A
- ASL A
- ASL A
+ ASL A                  \
+ ASL A                  \ This also clears the C flag, as A is in the range 0
+ ASL A                  \ to 3
  STA T
 
- LDA #97                \ Set SC = 97 - T
- SBC T                  \        = 96 + 1 - (X * 16)
- STA SC
+ LDA #97                \ Set SC = 97 - T - (1 - C)
+ SBC T                  \        = 97 - (X * 16) - 1
+ STA SC                 \        = 96 - (X * 16)
 
                         \ So the low byte of SC(1 0) contains the row address
                         \ for the rightmost missile indicator, made up as
@@ -7485,13 +7492,10 @@ ENDIF
                         \   * 96 (character block 14, as byte #14 * 8 = 96), the
                         \     character block of the rightmost missile
                         \
-                        \   * 1 (so we start drawing on the second row of the
-                        \     character block)
-                        \
-                        \   * Move left one character (8 bytes) for each count
+                        \   * Move left two characters (16 bytes) for each count
                         \     of X, so when X = 0 we are drawing the rightmost
-                        \     missile, for X = 1 we hop to the left by one
-                        \     character, and so on
+                        \     missile, for X = 1 we hop to the left by two
+                        \     characters, and so on
 
  LDA #&7C               \ Set the high byte of SC(1 0) to &7C, the character row
  STA SCH                \ that contains the missile indicators (i.e. the bottom
@@ -7506,7 +7510,7 @@ ENDIF
 
 .MBL1
 
- STA (SC),Y             \ Draw the three-pixel row, and as we do not use EOR
+ STA (SC),Y             \ Draw the two-pixel row, and as we do not use EOR
                         \ logic, this will overwrite anything that is already
                         \ there (so drawing a black missile will delete what's
                         \ there)
@@ -8402,7 +8406,7 @@ ENDIF
 
 IF _SNG47
 
- CPY #' '               \ If the character we want to print in Y is a space,
+ CPY #' '               \ If the character we want to print in Y is not a space,
  BNE RR5                \ jump to RR5
 
                         \ If we get here, then CATF is non-zero, so we are
@@ -11006,7 +11010,7 @@ ENDIF
 \ The key presses that are processed are as follows:
 \
 \   * Space and "?" to speed up and slow down
-\   * "U", "T" and "M" to disarm, arm and fire missiles
+\   * "U", "T" and "M" to unarm, target and fire missiles
 \   * TAB to fire an energy bomb
 \   * ESCAPE to launch an escape pod
 \   * "J" to initiate an in-system jump
@@ -11048,12 +11052,12 @@ ENDIF
  AND NOMSL              \ in NOMSL is non-zero, keep going, otherwise jump down
  BEQ MA20               \ to MA20 to skip the following
 
- LDY #GREEN2            \ The "disarm missiles" key is being pressed, so call
- JSR ABORT              \ ABORT to disarm the missile and update the missile
+ LDY #GREEN2            \ The "unarm missiles" key is being pressed, so call
+ JSR ABORT              \ ABORT to unarm the missile and update the missile
                         \ indicators on the dashboard to green (Y = &EE)
 
  JSR BOOP               \ Call the BOOP routine to make a low, long beep to
-                        \ indicate the missile is now disarmed
+                        \ indicate the missile is now unarmed
 
  LDA #0                 \ Set MSAR to 0 to indicate that no missiles are
  STA MSAR               \ currently armed
@@ -12426,7 +12430,6 @@ ENDIF
 
  ADC #30                \ Add the minimum cabin temperature of 30, plus the C
                         \ flag, so we get one of the following:
-                        \
                         \
                         \   * If the MAS3 calculation overflowed then we are a
                         \     long way from the sun, A will be zero and the C
@@ -16441,7 +16444,7 @@ ENDIF
  LDX Q                  \ Restore the value of X from before the call to ADD
 
  LDA K                  \ Set roofv_x = K(1 0)
- STA INWK,X             \              = (1-1/512) * roofv_x +/- nosev_x / 16
+ STA INWK,X             \             = (1-1/512) * roofv_x +/- nosev_x / 16
  LDA K+1
  STA INWK+1,X
 
@@ -18963,7 +18966,7 @@ ENDIF
                         \
                         \   X = -35 to -36, we are bang in the middle of the
                         \       enemy ship's crosshairs, so they can not only
-                        \       shoot us, they can hit us
+                        \       shoot at us, they can hit us
 
 \BPL TA4                \ This instruction is commented out in the original
                         \ source
@@ -19265,7 +19268,7 @@ ENDIF
  STX RAT2               \ opposite directions but are quite aligned, so set
                         \ RAT2 = 0 instead of the default value of 4, so we
                         \ always apply roll and pitch when we turn the ship
-                        \ towards the planet
+                        \ all the way around towards the planet
 
 .ttt
 
@@ -19500,8 +19503,8 @@ ENDIF
                         \ If we get here, we refine our approach using pitch and
                         \ roll to aim for the station
 
- LDX #0                 \ Set RAT2 = 0
- STX RAT2
+ LDX #0                 \ Set RAT2 = 0 so we always apply roll and pitch when we
+ STX RAT2               \ refine the ship's approach
 
  STX INWK+30            \ Set the pitch counter to 0 to stop any pitching
 
@@ -19825,7 +19828,7 @@ ENDIF
  STA S                  \ Set (S R) = (A X)
  STX R
 
- LDX K%+NI%+4,Y         \ Set Q = the Y+2-th byte of K%+NI%, i.e. vect_z
+ LDX K%+NI%+4,Y         \ Set Q = the Y+4-th byte of K%+NI%, i.e. vect_z
  STX Q
 
  LDA XX15+2             \ Set A = XX15+2
@@ -21428,7 +21431,7 @@ ENDIF
  STA T
 
  TXA                    \ Set A = |A|
- AND #127
+ AND #%01111111
 
  BEQ MU6                \ If A = 0, jump to MU6 to set P(1 0) = 0 and return
                         \ from the subroutine using a tail call
@@ -23203,8 +23206,8 @@ ENDIF
                         \ If we get here, then we need to apply auto-recentre,
                         \ if it is configured
 
- LDA DJD                \ If keyboard auto-recentre is disabled, then
- BNE RE2+2              \ jump to RE2+2 to restore A and return
+ LDA DJD                \ If keyboard auto-recentre is disabled, then jump to
+ BNE RE2+2              \ RE2+2 to restore A and return
 
  LDX #128               \ If we get here then keyboard auto-recentre is enabled,
  BMI RE2+2              \ so set X to 128 (the middle of our range) and jump to
@@ -29150,9 +29153,9 @@ ENDIF
  LDA #14
 
  STA Q                  \ Set QQ25 = A (so QQ25 is in the range 3-14 and
- STA QQ25               \ represents number of the most advanced item available
- INC Q                  \ in this system, which we can pass to gnum below when
-                        \ asking which item we want to buy)
+ STA QQ25               \ represents the number of the most advanced item
+ INC Q                  \ available in this system, which we can pass to gnum
+                        \ below when asking which item we want to buy)
                         \
                         \ Set Q = A + 1 (so Q is in the range 4-15 and contains
                         \ QQ25 + 1, i.e. the highest item number on sale + 1)
@@ -31220,8 +31223,8 @@ ENDIF
                         \           = y +/- random * cloud size
 
  BNE EX11               \ If A is non-zero, the particle is off-screen as the
-                        \ coordinate is bigger than 255), so jump to EX11 to do
-                        \ the next particle
+                        \ coordinate is either negative or bigger than 255, so
+                        \ jump to EX11 to do the next particle
 
  CPX #2*Y-1             \ If X > the y-coordinate of the bottom of the screen,
  BCS EX11               \ the particle is off the bottom of the screen, so jump
@@ -31616,7 +31619,7 @@ ENDIF
 
  BEQ WS2                \ If the slot contains 0 then it is empty and we have
                         \ checked all the slots (as they are always shuffled
-                        \ down in the main loop to close up and gaps), so jump
+                        \ down in the main loop to close up any gaps), so jump
                         \ to WS2 as we are done
 
  BMI WS1                \ If the slot contains a ship type with bit 7 set, then
@@ -32596,7 +32599,7 @@ ENDIF
 \       Name: ABORT
 \       Type: Subroutine
 \   Category: Dashboard
-\    Summary: Disarm missiles and update the dashboard indicators
+\    Summary: Unarm missiles and update the dashboard indicators
 \
 \ ------------------------------------------------------------------------------
 \
@@ -32610,7 +32613,7 @@ ENDIF
 \
 \                         * #YELLOW2 = yellow/white (armed)
 \
-\                         * #GREEN2 = green (disarmed)
+\                         * #GREEN2 = green (unarmed)
 \
 \ ******************************************************************************
 
@@ -32620,7 +32623,7 @@ ENDIF
                         \ no target lock for our missile
 
                         \ Fall through into ABORT2 to set the missile lock to
-                        \ the value in X, which effectively disarms the missile
+                        \ the value in X, which effectively unarms the missile
 
 \ ******************************************************************************
 \
@@ -32648,7 +32651,7 @@ ENDIF
 \
 \                         * #YELLOW2 = yellow/white (armed)
 \
-\                         * #GREEN2 = green (disarmed)
+\                         * #GREEN2 = green (unarmed)
 \
 \ ******************************************************************************
 
@@ -32776,7 +32779,7 @@ ENDIF
 
  TXA                    \ And then the high bytes. #Y is the y-coordinate of
  ADC #0                 \ the centre of the space view, so this converts the
- STA K4+1               \ space x-coordinate into a screen y-coordinate
+ STA K4+1               \ space y-coordinate into a screen y-coordinate
 
  CLC                    \ Clear the C flag to indicate success
 
@@ -35688,7 +35691,7 @@ ENDIF
  BNE KS5                \ If our missile is not locked on this ship, jump to KS5
 
  LDY #GREEN2            \ Otherwise we need to remove our missile lock, so call
- JSR ABORT              \ ABORT to disarm the missile and update the missile
+ JSR ABORT              \ ABORT to unarm the missile and update the missile
                         \ indicators on the dashboard to green (Y = #GREEN2)
 
  LDA #200               \ Print recursive token 40 ("TARGET LOST") as an
@@ -36955,7 +36958,7 @@ ENDIF
                         \
                         \ This is presumably a bug, which could be very easily
                         \ fixed by inserting one of the following instructions
-                        \ before the ADC #CYL2 instruction above:
+                        \ before the AND #3 instruction above:
                         \
                         \   * SEC would change the range to 25 to 28, which
                         \     would cover the Asp Mk II, Python (pirate),
@@ -40812,10 +40815,14 @@ ENDIF
 
 IF _COMPACT
 
- JMP DK152              \ Jump to DK152 to skip reading the joystick, as this is
-                        \ a Master Compact that doesn't support an analogue
-                        \ joystick (instead it supports a digital joystick,
-                        \ which is read elsewhere)
+ JMP DK152              \ Jump to DK152 to skip reading the joystick, as we just
+                        \ applied the docking computer to the controls and we
+                        \ don't want the joystick to interfere
+                        \
+                        \ Note that this instruction is missing from the Master
+                        \ version, so in that version the joystick can break the
+                        \ docking computer when configured; this instruction was
+                        \ added to the Master Compact version to fix this bug
 
 ENDIF
 
@@ -41318,7 +41325,7 @@ ENDIF
  STA XC                 \ Move the text cursor to column messXC
 
  JSR MT15               \ Call MT15 to switch to left-aligned text when printing
-                        \ extended tokens disabling the justify text setting we
+                        \ extended tokens, disabling the justify text setting we
                         \ set above
 
  LDA MCH                \ Set MCH to the token we are about to display
@@ -42439,9 +42446,7 @@ ENDMACRO
 \ When called from part 6 of LL9, XX12 contains the vector [x y z] of the vertex
 \ we're analysing, and XX16 contains the transposed orientation vectors with
 \ each of them containing the x, y and z elements of the original vectors, so it
-\ ------------------------------------------------------------------------------
-\
-\ Returns:
+\ returns:
 \
 \   [ x ]   [ sidev_x ]         [ x ]   [ sidev_y ]         [ x ]   [ sidev_z ]
 \   [ y ] . [ roofv_x ]         [ y ] . [ roofv_y ]         [ y ] . [ roofv_z ]
@@ -42828,7 +42833,7 @@ ENDMACRO
                         \ this vertex's entry in the XX3 heap will still be 255,
                         \ which we can check in part 9 to see if the laser
                         \ vertex is visible (and therefore whether we should
-                        \ draw laser lines if the ship is firing on us)
+                        \ draw laser lines if the ship is firing at us)
 
  LDA XX1+6              \ Set (A T) = (z_hi z_lo)
  STA T
@@ -46134,8 +46139,7 @@ ENDMACRO
 .MV30
 
  JSR SCAN               \ Draw the ship on the scanner, which has the effect of
-                        \ removing it, as it's already at this point and hasn't
-                        \ yet moved
+                        \ removing it as it hasn't yet moved
 
 \ ******************************************************************************
 \
@@ -46268,7 +46272,14 @@ ENDMACRO
 \ This routine has multiple stages. This stage does the following:
 \
 \   * Rotate the ship's location in space by the amount of pitch and roll of
-\     our ship. See below for a deeper explanation of this routine
+\     our ship
+\
+\ We implement this as follows:
+\
+\   1. K2 = y - alpha * x
+\   2. z = z + beta * K2
+\   3. y = K2 - beta * z
+\   4. x = x + alpha * y
 \
 \ ******************************************************************************
 
@@ -47769,7 +47780,7 @@ ENDMACRO
  LDA QQ11               \ If this is not a space view, jump to tt66 to skip
  BNE tt66               \ displaying the view name
 
- LDA #11                \ Move the text cursor to row 11
+ LDA #11                \ Move the text cursor to column 11
  STA XC
 
  LDA #CYAN              \ Switch to colour 3, which is cyan in the space view
@@ -47938,7 +47949,7 @@ ENDMACRO
 .IKNS
 
  EQUB &DD EOR &FF       \ E         IKNS+0    KY13     E.C.M.
- EQUB &DC EOR &FF       \ T         IKNS+1    KY10     Arm missile
+ EQUB &DC EOR &FF       \ T         IKNS+1    KY10     Target missile
  EQUB &CA EOR &FF       \ U         IKNS+2    KY11     Unarm missile
  EQUB &C8 EOR &FF       \ P         IKNS+3    KY16     Cancel docking computer
  EQUB &BE EOR &FF       \ A         IKNS+4    KY7      Fire lasers
