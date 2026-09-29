@@ -1,5 +1,6 @@
 BEEBASM?=beebasm
 PYTHON?=python
+DISC?=oaknut-disc
 
 # A make command with no arguments will build the SNG47 variant with
 # encrypted binaries, checksums enabled, the standard commander and
@@ -101,8 +102,18 @@ all:
 ifneq ($(verify), no)
 	@$(PYTHON) 2-build-files/crc32.py 4-reference-binaries/$(folder) 3-assembled-output
 endif
+ifeq ($(variant), compact)
+	$(DISC) create 5-compiled-game-discs/elite-master$(suffix).adf --title "E L I T E" --geometry m
+	$(DISC) opt 5-compiled-game-discs/elite-master$(suffix).adf RUN
+	$(DISC) cp -r 5-compiled-game-discs/elite-master$(suffix).ssd:* 5-compiled-game-discs/elite-master$(suffix).adf
+	$(DISC) mkdir 5-compiled-game-discs/elite-master$(suffix).adf:$$.E
+endif
 
 .PHONY:b2
 b2:
 	curl -G "http://localhost:48075/reset/b2"
+ifeq ($(variant), compact)
+	curl -H "Content-Type:application/binary" --upload-file "5-compiled-game-discs/elite-master$(suffix).adf" "http://localhost:48075/run/b2?name=elite-master$(suffix).adf"
+else
 	curl -H "Content-Type:application/binary" --upload-file "5-compiled-game-discs/elite-master$(suffix).ssd" "http://localhost:48075/run/b2?name=elite-master$(suffix).ssd"
+endif
