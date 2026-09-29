@@ -95,6 +95,8 @@ The commentary is copyright &copy; Mark Moxon. Any misunderstandings or mistakes
 
 Huge thanks are due to the original authors for not only creating such an important piece of my childhood, but also for releasing the source code for us to play with; to Paul Brink for his annotated disassembly; and to Kieran Connell for his [BeebAsm version](https://github.com/kieranhj/elite-beebasm), which I forked as the original basis for this project. You can find more information about this project in the [accompanying website's project page](https://elite.bbcelite.com/about_site/about_this_project.html).
 
+Thank you to Rob Smallshire for [oaknut-disc](https://rob-smallshire.github.io/oaknut/disc/index.html), which produces the ADFS disc image for the Master Compact.
+
 The following archive from Ian Bell's personal website forms the basis for this project:
 
 * [BBC Elite, Master version](http://www.elitehomepage.org/archive/a/b8020001.zip)
@@ -147,7 +149,7 @@ There are five main folders in this repository, which reflect the order of the b
 
 * [4-reference-binaries](4-reference-binaries) contains the correct binaries for each variant, so we can verify that our assembled output matches the reference.
 
-* [5-compiled-game-discs](5-compiled-game-discs) contains the final output of the build process: an SSD disc image that contains the compiled game and which can be run on real hardware or in an emulator.
+* [5-compiled-game-discs](5-compiled-game-discs) contains the final output of the build process: an SSD or ADF disc image that contains the compiled game and which can be run on real hardware or in an emulator.
 
 ## Flicker-free Elite
 
@@ -204,6 +206,8 @@ You will need the following to build BBC Master Elite from the source:
 * Python. The build process has only been tested on 3.x, but 2.7 might work.
 
 * Mac and Linux users may need to install `make` if it isn't already present (for Windows users, `make.exe` is included in this repository).
+
+* If you want to build the Master Compact variant, then you will need to install the [oaknut-disc Python tool](https://rob-smallshire.github.io/oaknut/disc/index.html), which can be installed using `pip install oaknut-disc` (pipx, uv and uvx are also supported).
 
 For details of how the build process works, see the [build documentation on bbcelite.com](https://elite.bbcelite.com/about_site/building_elite.html).
 
@@ -366,7 +370,7 @@ or this on a Mac or Linux:
 make variant=compact
 ```
 
-This will produce a file called `elite-master-compact.ssd` in the `5-compiled-game-discs` folder that contains the Master Compact variant.
+This will produce a file called `elite-master-compact.adf` in the `5-compiled-game-discs` folder that contains the Master Compact variant.
 
 The verification checksums for this version are as follows:
 
